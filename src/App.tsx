@@ -18,6 +18,8 @@ import { AdminDashboard } from './pages/AdminDashboard';
 import { Forbidden } from './pages/Forbidden';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { useLanguage } from './hooks/useLanguage';
+import { FamilyTree } from './pages/FamilyTree';
+import { FamilyTreeDiagram } from './pages/FamilyTreeDiagram';
 
 function MainPortfolio() {
   return (
@@ -108,6 +110,9 @@ function App() {
           />
           <Route path="/403" element={<Forbidden />} />
           <Route path="*" element={<MainPortfolio />} />
+          <Route path="/family-tree" element={<FamilyTree />} />
+          <Route path="/gia-pha" element={<FamilyTree />} />
+          <Route path="/family-tree/diagram" element={<FamilyTreeDiagram />} />
         </Routes>
       )}
     </>

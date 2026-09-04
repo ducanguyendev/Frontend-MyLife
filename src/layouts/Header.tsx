@@ -10,6 +10,14 @@ import { LoginModal } from '../components/LoginModal';
 import { UserMenu } from '../components/UserMenu';
 import { UserProfileModal } from '../components/UserProfileModal';
 
+interface NavLinkItem {
+  id: string;
+  labelKey: string;
+  type: 'scroll' | 'route';
+  path?: string;
+  defaultValue?: string;
+}
+
 export const Header: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
   const { t } = useLanguage();
@@ -22,30 +30,37 @@ export const Header: React.FC = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
-  const navLinks = [
-    { id: 'home', labelKey: 'navigation.home' },
-    { id: 'about', labelKey: 'navigation.about' },
-    { id: 'skills', labelKey: 'navigation.skills' },
-    { id: 'projects', labelKey: 'navigation.projects' },
-    { id: 'experience', labelKey: 'navigation.experience' },
-    { id: 'contact', labelKey: 'navigation.contact' },
+  const navLinks: NavLinkItem[] = [
+    { id: 'home', labelKey: 'navigation.home', type: 'scroll' },
+    { id: 'about', labelKey: 'navigation.about', type: 'scroll' },
+    { id: 'skills', labelKey: 'navigation.skills', type: 'scroll' },
+    { id: 'projects', labelKey: 'navigation.projects', type: 'scroll' },
+    { id: 'experience', labelKey: 'navigation.experience', type: 'scroll' },
+    { id: 'family-tree', labelKey: 'navigation.familyTree', defaultValue: 'Gia Phả', type: 'route', path: '/family-tree' },
+    { id: 'contact', labelKey: 'navigation.contact', type: 'scroll' },
   ];
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
 
-      // Detect active section
-      const scrollPosition = window.scrollY + 100;
-      for (const link of navLinks) {
-        const el = document.getElementById(link.id);
-        if (el) {
-          const top = el.offsetTop;
-          const height = el.offsetHeight;
-          if (scrollPosition >= top && scrollPosition < top + height) {
-            setActiveSection(link.id);
+      // Detect active section chỉ khi đang ở trang chủ
+      if (window.location.pathname === '/' || window.location.pathname === '/home') {
+        const scrollPosition = window.scrollY + 100;
+        for (const link of navLinks) {
+          if (link.type === 'scroll') {
+            const el = document.getElementById(link.id);
+            if (el) {
+              const top = el.offsetTop;
+              const height = el.offsetHeight;
+              if (scrollPosition >= top && scrollPosition < top + height) {
+                setActiveSection(link.id);
+              }
+            }
           }
         }
+      } else {
+        setActiveSection('');
       }
     };
 
@@ -61,7 +76,6 @@ export const Header: React.FC = () => {
       setIsLoginModalOpen(true);
     };
 
-    // Lắng nghe sự kiện mở Login từ trang Register (sau khi đăng ký thành công)
     const handleOpenLogin = () => {
       setIsLoginModalOpen(true);
     };
@@ -74,22 +88,37 @@ export const Header: React.FC = () => {
     };
   }, []);
 
-  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, link: NavLinkItem) => {
     e.preventDefault();
-    const el = document.getElementById(id);
-    if (el) {
-      const offset = 80; // Header height
-      const bodyRect = document.body.getBoundingClientRect().top;
-      const elementRect = el.getBoundingClientRect().top;
-      const elementPosition = elementRect - bodyRect;
-      const offsetPosition = elementPosition - offset;
+    setIsMobileMenuOpen(false);
 
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth',
-      });
-      setActiveSection(id);
-      setIsMobileMenuOpen(false);
+    if (link.type === 'route' && link.path) {
+      navigate(link.path);
+      setActiveSection(link.id);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      if (window.location.pathname !== '/' && window.location.pathname !== '/home') {
+        navigate('/');
+        setTimeout(() => {
+          const el = document.getElementById(link.id);
+          if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      } else {
+        const el = document.getElementById(link.id);
+        if (el) {
+          const offset = 80;
+          const bodyRect = document.body.getBoundingClientRect().top;
+          const elementRect = el.getBoundingClientRect().top;
+          const elementPosition = elementRect - bodyRect;
+          const offsetPosition = elementPosition - offset;
+
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth',
+          });
+        }
+      }
+      setActiveSection(link.id);
     }
   };
 
@@ -110,40 +139,41 @@ export const Header: React.FC = () => {
         }`}
       >
         <div className="max-w-7xl mx-auto px-6 md:px-12 flex items-center justify-between">
-          {/* Left Side (Empty Slot as requested) */}
+          {/* Left Side */}
           <div className="w-24 min-h-[1px]"></div>
 
           {/* Desktop Navigation */}
           <nav className="hidden xl:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <a
-                key={link.id}
-                href={`#${link.id}`}
-                onClick={(e) => handleNavClick(e, link.id)}
-                className={`text-sm font-medium tracking-widest uppercase transition-colors relative py-1 ${
-                  activeSection === link.id
-                    ? 'text-primary-text font-semibold'
-                    : 'text-secondary-text hover:text-primary-text'
-                }`}
-              >
-                {t(link.labelKey)}
-                {activeSection === link.id && (
-                  <motion.div
-                    layoutId="activeNavIndicator"
-                    className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-primary-text"
-                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                  />
-                )}
-              </a>
-            ))}
+            {navLinks.map((link) => {
+              const labelText = t(link.labelKey) !== link.labelKey ? t(link.labelKey) : (link.defaultValue || link.id);
+              return (
+                <a
+                  key={link.id}
+                  href={link.type === 'route' ? link.path : `#${link.id}`}
+                  onClick={(e) => handleNavClick(e, link)}
+                  className={`text-sm font-medium tracking-widest uppercase transition-colors relative py-1 ${
+                    activeSection === link.id
+                      ? 'text-primary-text font-semibold'
+                      : 'text-secondary-text hover:text-primary-text'
+                  }`}
+                >
+                  {labelText}
+                  {activeSection === link.id && (
+                    <motion.div
+                      layoutId="activeNavIndicator"
+                      className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-primary-text"
+                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                    />
+                  )}
+                </a>
+              );
+            })}
           </nav>
 
           {/* Header Right */}
           <div className="hidden md:flex items-center gap-4">
-            {/* Language Switcher */}
             <LanguageSwitcher />
 
-            {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
               className="text-primary-text hover:text-accent transition-colors p-2 cursor-pointer"
@@ -152,7 +182,6 @@ export const Header: React.FC = () => {
               {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
             </button>
 
-            {/* If Authenticated -> Show User Avatar Dropdown; Else -> Show Login Button */}
             {isAuthenticated ? (
               <UserMenu
                 onOpenProfile={() => setIsProfileModalOpen(true)}
@@ -228,7 +257,6 @@ export const Header: React.FC = () => {
               className="md:hidden bg-primary-bg border-b border-custom-border overflow-hidden"
             >
               <div className="px-6 py-8 flex flex-col gap-6">
-                {/* User Info Header on Mobile Drawer if logged in */}
                 {isAuthenticated && user && (
                   <div className="p-4 bg-secondary-bg/80 border border-custom-border rounded-2xl flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -250,18 +278,21 @@ export const Header: React.FC = () => {
                   </div>
                 )}
 
-                {navLinks.map((link) => (
-                  <a
-                    key={link.id}
-                    href={`#${link.id}`}
-                    onClick={(e) => handleNavClick(e, link.id)}
-                    className={`text-base font-medium tracking-widest uppercase py-2 border-b border-custom-border/50 ${
-                      activeSection === link.id ? 'text-primary-text font-bold' : 'text-secondary-text'
-                    }`}
-                  >
-                    {t(link.labelKey)}
-                  </a>
-                ))}
+                {navLinks.map((link) => {
+                  const labelText = t(link.labelKey) !== link.labelKey ? t(link.labelKey) : (link.defaultValue || link.id);
+                  return (
+                    <a
+                      key={link.id}
+                      href={link.type === 'route' ? link.path : `#${link.id}`}
+                      onClick={(e) => handleNavClick(e, link)}
+                      className={`text-base font-medium tracking-widest uppercase py-2 border-b border-custom-border/50 ${
+                        activeSection === link.id ? 'text-primary-text font-bold' : 'text-secondary-text'
+                      }`}
+                    >
+                      {labelText}
+                    </a>
+                  );
+                })}
 
                 {isAuthenticated && (
                   <div className="pt-2 flex flex-col gap-2">
@@ -289,7 +320,6 @@ export const Header: React.FC = () => {
                   </div>
                 )}
 
-                {/* Language Switcher for Mobile */}
                 <LanguageSwitcher isMobile />
               </div>
             </motion.div>
@@ -297,13 +327,11 @@ export const Header: React.FC = () => {
         </AnimatePresence>
       </header>
 
-      {/* Inline Popup Modal Form */}
       <LoginModal
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
       />
 
-      {/* User Profile Modal */}
       <UserProfileModal
         isOpen={isProfileModalOpen}
         onClose={() => setIsProfileModalOpen(false)}
