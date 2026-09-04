@@ -1,0 +1,17 @@
+{
+  "home": "Home",
+  "about": "About",
+  "skills": "Skills",
+  "projects": "Projects",
+  "experience": "Experience",
+  "contact": "Contact",
+  "resume": "Resume",
+  "hire": "Hire Me",
+  "langVi": "Vietnamese",
+  "langEn": "English",
+  "profile": "Personal Information",
+  "switchAccount": "Switch Account",
+  "logout": "Log Out",
+  "roleAdmin": "Administrator",
+  "roleMember": "Member"
+}

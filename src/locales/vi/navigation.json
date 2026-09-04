@@ -1,0 +1,17 @@
+{
+  "home": "Trang chủ",
+  "about": "Giới thiệu",
+  "skills": "Kỹ năng",
+  "projects": "Dự án",
+  "experience": "Kinh nghiệm",
+  "contact": "Liên hệ",
+  "resume": "Hồ sơ",
+  "hire": "Tuyển dụng",
+  "langVi": "Tiếng Việt",
+  "langEn": "Tiếng Anh",
+  "profile": "Thông tin cá nhân",
+  "switchAccount": "Chuyển đổi tài khoản",
+  "logout": "Đăng xuất",
+  "roleAdmin": "Quản trị viên",
+  "roleMember": "Thành viên"
+}

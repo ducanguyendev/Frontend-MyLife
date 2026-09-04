@@ -1,0 +1,77 @@
+{
+  "loading": "Loading...",
+  "errorTitle": "Error 404",
+  "notFound": "Not Found",
+  "notFoundDesc": "The page you are looking for doesn't exist or has been moved to another editorial section.",
+  "btnBackHome": "Return Home",
+  "logo": "NGUYEN DUC",
+  "login": "Login",
+  "loginDesc": "Enter your account credentials to continue.",
+  "email": "Email",
+  "password": "Password",
+  "rememberMe": "Remember Me",
+  "loginSuccess": "Login successful!",
+  "logoutSuccess": "Logged out successfully!",
+  "orLoginWith": "or log in with",
+  "loginWithGoogle": "Sign in with Google",
+  "switchAccount": "Switch Account",
+  "logout": "Log Out",
+  "register": "Sign up now",
+  "noAccount": "Don't have an account?",
+  "profile": {
+    "title": "User Profile",
+    "status": "Status",
+    "active": "Active",
+    "authType": "Auth Type",
+    "session": "Session Expiry",
+    "sessionVal": "2 minutes (Auto-refreshed)",
+    "admin": "Administrator",
+    "member": "Member"
+  },
+  "errors": {
+    "invalidCredentials": "Incorrect email or password.",
+    "emailRequired": "Please enter your email address.",
+    "invalidEmailFormat": "Invalid email format. Please check again.",
+    "passwordRequired": "Please enter your password.",
+    "passwordLength": "Password must be between 8 and 72 characters.",
+    "accountLocked": "Your account has been locked. Please contact administrator.",
+    "connectionError": "Cannot connect to server. Please check your connection!",
+    "sessionExpired": "Session has expired, please log in again.",
+    "googleLoginFailed": "Google sign-in failed. Please try again!",
+    "defaultError": "Login failed. Please check your credentials."
+  },
+  "name": "NGUYEN DUC",
+  "seo": {
+    "title": "NGUYEN DUC | Premium UI/UX & Graphic Designer Portfolio",
+    "desc": "Welcome to the premium portfolio of NGUYEN DUC. Explore minimal luxury UI/UX designs and high-quality graphic works.",
+    "ogTitle": "NGUYEN DUC | Personal Portfolio",
+    "ogDesc": "Discover fine editorial graphic layouts and minimal elegant interface designs by NGUYEN DUC."
+  },
+  "stats": {
+    "projects": "Projects Completed",
+    "clients": "Happy Clients",
+    "experience": "Years Experience",
+    "certificates": "Certificates Obtained"
+  },
+  "testimonials": {
+    "subtitle": "Endorsements",
+    "title": "Client Reviews",
+    "items": {
+      "t1": {
+        "name": "Janny Lee",
+        "role": "Marketing Director, BrightWay Co.",
+        "quote": "“Manan brought our marketing materials to life. His attention to print quality, alignment, and modern typography completely elevated our brand presence at our annual product showcase.”"
+      },
+      "t2": {
+        "name": "Milo Vance",
+        "role": "Founder, TechVentures",
+        "quote": "“The web dashboard Manan designed for us is clean, responsive, and incredibly user-friendly. We have seen a 25% increase in user engagement since launching the redesign.”"
+      },
+      "t3": {
+        "name": "Luki Novak",
+        "role": "Creative Lead, Horizon Agency",
+        "quote": "“Working with Manan on our product photography was seamless. He caught the lighting perfectly, creating premium assets that we are proudly displaying in our global campaigns.”"
+      }
+    }
+  }
+}

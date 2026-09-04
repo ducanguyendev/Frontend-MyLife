@@ -1,0 +1,38 @@
+{
+  "title": "Liên Hệ Tôi",
+  "subtitle": "Kết Nối",
+  "desc": "Bạn có ý tưởng dự án, muốn hợp tác hay chỉ muốn gửi lời chào? Đừng ngần ngại liên hệ qua bất kỳ kênh nào dưới đây!",
+  "form": {
+    "title": "Gửi Tin Nhắn",
+    "name": "Họ và tên",
+    "email": "Email",
+    "subject": "Tiêu đề",
+    "message": "Nội dung tin nhắn",
+    "placeholderName": "Tên của bạn",
+    "placeholderEmail": "Địa chỉ email của bạn",
+    "placeholderSubject": "Tiêu đề liên hệ",
+    "placeholderMessage": "Nhập nội dung tin nhắn tại đây...",
+    "btnSend": "Gửi Tin Nhắn",
+    "sending": "Đang gửi...",
+    "success": "Tin nhắn của bạn đã được gửi thành công!",
+    "error": "Có lỗi xảy ra. Vui lòng thử lại."
+  },
+  "errors": {
+    "name": "Họ và tên là bắt buộc",
+    "email": "Email là bắt buộc",
+    "emailInvalid": "Địa chỉ email không hợp lệ",
+    "subject": "Tiêu đề là bắt buộc",
+    "message": "Nội dung tin nhắn là bắt buộc"
+  },
+  "details": {
+    "title": "Thông Tin Chi Tiết",
+    "email": "Email",
+    "emailVal": "contact@mananparmar.com",
+    "phone": "Điện thoại",
+    "phoneVal": "+84 (90) 123-4567",
+    "location": "Vị trí",
+    "locationVal": "TP. Hồ Chí Minh, Việt Nam",
+    "follow": "Theo Dõi Tôi"
+  },
+  "thanks": "Cảm Ơn Sự Kiên Nhẫn Của Bạn!"
+}

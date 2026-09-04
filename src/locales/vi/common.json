@@ -1,0 +1,77 @@
+{
+  "loading": "Đang tải...",
+  "errorTitle": "Lỗi 404",
+  "notFound": "Không Tìm Thấy Trang",
+  "notFoundDesc": "Trang bạn đang tìm kiếm không tồn tại hoặc đã được di chuyển sang danh mục ấn phẩm khác.",
+  "btnBackHome": "Quay Lại Trang Chủ",
+  "logo": "NGUYỄN ĐỨC",
+  "login": "Đăng Nhập",
+  "loginDesc": "Nhập thông tin tài khoản của bạn để tiếp tục.",
+  "email": "Email",
+  "password": "Mật Khẩu",
+  "rememberMe": "Ghi nhớ mật khẩu",
+  "loginSuccess": "Đăng nhập thành công!",
+  "logoutSuccess": "Đăng xuất thành công!",
+  "orLoginWith": "hoặc đăng nhập bằng",
+  "loginWithGoogle": "Đăng nhập với Google",
+  "switchAccount": "Chuyển đổi tài khoản",
+  "logout": "Đăng xuất",
+  "register": "Đăng ký ngay",
+  "noAccount": "Chưa có tài khoản?",
+  "profile": {
+    "title": "Thông Tin Người Dùng",
+    "status": "Trạng thái",
+    "active": "Đang hoạt động",
+    "authType": "Loại xác thực",
+    "session": "Phiên đăng nhập",
+    "sessionVal": "2 phút (Tự động gia hạn)",
+    "admin": "Quản trị viên",
+    "member": "Thành viên"
+  },
+  "errors": {
+    "invalidCredentials": "Email hoặc mật khẩu không chính xác.",
+    "emailRequired": "Vui lòng nhập địa chỉ email.",
+    "invalidEmailFormat": "Email không đúng định dạng. Vui lòng kiểm tra lại.",
+    "passwordRequired": "Vui lòng nhập mật khẩu.",
+    "passwordLength": "Mật khẩu phải có độ dài từ 8 đến 72 ký tự.",
+    "accountLocked": "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.",
+    "connectionError": "Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại!",
+    "sessionExpired": "Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.",
+    "googleLoginFailed": "Đăng nhập bằng Google thất bại. Vui lòng thử lại!",
+    "defaultError": "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin."
+  },
+  "name": "Nguyễn Huỳnh Minh Đức",
+  "seo": {
+    "title": "Nguyễn Huỳnh Minh Đức | Portfolio Thiết Kế Đồ Họa & UI/UX Cao Cấp",
+    "desc": "Chào mừng bạn đến với portfolio của Nguyễn Huỳnh Minh Đức. Khám phá các thiết kế UI/UX tối giản sang trọng và các tác phẩm thiết kế đồ họa chất lượng.",
+    "ogTitle": "Nguyễn Huỳnh Minh Đức | Portfolio Cá Nhân",
+    "ogDesc": "Xem các dự án thiết kế giao diện UI/UX và đồ họa tối giản tinh tế của Nguyễn Huỳnh Minh Đức."
+  },
+  "stats": {
+    "projects": "Dự Án Hoàn Thành",
+    "clients": "Khách Hàng Hài Lòng",
+    "experience": "Năm Kinh Nghiệm",
+    "certificates": "Chứng Chỉ Đạt Được"
+  },
+  "testimonials": {
+    "subtitle": "Đánh Giá",
+    "title": "Khách Hàng Nói Gì",
+    "items": {
+      "t1": {
+        "name": "Janny Lee",
+        "role": "Giám đốc Marketing, BrightWay Co.",
+        "quote": "“Manan đã giúp các tài liệu marketing của chúng tôi trở nên sống động. Sự chú ý của anh ấy đến chất lượng in ấn, căn chỉnh và kiểu chữ hiện đại hoàn toàn nâng tầm sự hiện diện thương hiệu của chúng tôi tại buổi giới thiệu sản phẩm thường niên.”"
+      },
+      "t2": {
+        "name": "Milo Vance",
+        "role": "Nhà sáng lập, TechVentures",
+        "quote": "“Giao diện quản trị web mà Manan thiết kế cho chúng tôi rất sạch sẽ, nhạy bén và cực kỳ thân thiện với người dùng. Chúng tôi đã thấy tỷ lệ tương tác của người dùng tăng 25% kể từ khi khởi chạy bản thiết kế lại.”"
+      },
+      "t3": {
+        "name": "Luki Novak",
+        "role": "Trưởng nhóm sáng tạo, Horizon Agency",
+        "quote": "“Làm việc với Manan về chụp ảnh sản phẩm của chúng tôi rất liền mạch. Anh ấy bắt được ánh sáng một cách hoàn hảo, tạo ra các tài nguyên cao cấp mà chúng tôi tự hào trưng bày trong các chiến dịch toàn cầu.”"
+      }
+    }
+  }
+}

@@ -1,0 +1,90 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', sans-serif;
+  --font-display: 'Inter', sans-serif;
+  
+  --color-primary-bg: var(--primary-bg);
+  --color-secondary-bg: var(--secondary-bg);
+  --color-primary-text: var(--primary-text);
+  --color-secondary-text: var(--secondary-text);
+  --color-custom-border: var(--custom-border);
+  
+  --color-accent: var(--accent-color);
+  --color-accent-hover: var(--accent-hover-color);
+  --color-success: #22c55e;
+  --color-error: #ef4444;
+
+  @keyframes scan {
+    0% {
+      top: 0%;
+      opacity: 0;
+    }
+    5% {
+      opacity: 1;
+    }
+    95% {
+      opacity: 1;
+    }
+    100% {
+      top: 100%;
+      opacity: 0;
+    }
+  }
+}
+
+@layer base {
+  /* Light mode is white background by default */
+  :root {
+    --primary-bg: #ffffff;
+    --secondary-bg: #f9f9f9;
+    --primary-text: #111111;
+    --secondary-text: #666666;
+    --custom-border: #eaeaea;
+    --accent-color: #b58900; /* Darker, richer gold for high contrast on white */
+    --accent-hover-color: #936f00;
+    --hud-opacity: 0.05; /* Lower opacity in light mode to prevent glare */
+    --hud-filter: grayscale(0.5) brightness(1.1) contrast(0.9);
+  }
+
+  /* Dark mode is black background */
+  .dark {
+    --primary-bg: #0a0a0a;
+    --secondary-bg: #121212;
+    --primary-text: #ffffff;
+    --secondary-text: #9e9e9e;
+    --custom-border: #1e1e1e;
+    --accent-color: #e5c158; /* Bright gold for dark theme */
+    --accent-hover-color: #cfa83c;
+    --hud-opacity: 0.15;
+    --hud-filter: hue-rotate(180deg) brightness(0.6);
+  }
+  
+  body {
+    background-color: var(--primary-bg);
+    color: var(--primary-text);
+    transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+    overflow-x: hidden;
+  }
+  
+  /* Smooth Scroll */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Custom selection */
+  ::selection {
+    background-color: #e5c158;
+    color: #0a0a0a;
+  }
+}
+
+/* Custom Hide Scrollbar Utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
