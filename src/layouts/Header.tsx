@@ -37,6 +37,7 @@ export const Header: React.FC = () => {
     { id: 'projects', labelKey: 'navigation.projects', type: 'scroll' },
     { id: 'experience', labelKey: 'navigation.experience', type: 'scroll' },
     { id: 'family-tree', labelKey: 'navigation.familyTree', defaultValue: 'Gia Phả', type: 'route', path: '/family-tree' },
+    { id: 'expense-tracker', labelKey: 'navigation.expenseTracker', defaultValue: 'Chi Tiêu', type: 'route', path: '/expense-tracker' },
     { id: 'contact', labelKey: 'navigation.contact', type: 'scroll' },
   ];
 

@@ -15,13 +15,17 @@ import {
   BookOpen,
   Edit3,
   Save,
-  ArrowLeft,
   MoreVertical,
   Eye,
   Trash2,
   ArrowUpDown,
-  FolderTree
+  FolderTree,
+  Globe
 } from 'lucide-react';
+
+import { AncestorMemorial } from '../components/family/AncestorMemorial';
+import { FamilyLibrary } from '../components/family/FamilyLibrary';
+import { FamilyMapStats } from '../components/family/FamilyMapStats';
 
 interface FamilyMember {
   id: string;
@@ -30,6 +34,7 @@ interface FamilyMember {
   role: string;
   birthYear: string;
   deathYear?: string;
+  lunarDeathDate?: string;
   gender: 'male' | 'female';
   spouse?: string;
   address: string;
@@ -45,6 +50,7 @@ const initialFamilyMembers: FamilyMember[] = [
     role: 'Thủy tổ dòng họ',
     birthYear: '1920',
     deathYear: '1995',
+    lunarDeathDate: '15/08 Âm lịch',
     gender: 'male',
     spouse: 'Trần Thị Mai',
     address: 'Nam Định',
@@ -102,13 +108,12 @@ const initialFamilyMembers: FamilyMember[] = [
 
 export const FamilyTree: React.FC = () => {
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState<'members' | 'memorial' | 'library' | 'map'>('members');
   const [members, setMembers] = useState<FamilyMember[]>(initialFamilyMembers);
   const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGen, setSelectedGen] = useState<string>('all');
-  
-  // State sắp xếp (sorting)
-  const [sortBy, setSortBy] = useState<string>('newest'); // 'newest' | 'generation' | 'name-asc' | 'name-desc' | 'birth-asc'
+  const [sortBy, setSortBy] = useState<string>('newest');
   
   const [activeMember, setActiveMember] = useState<FamilyMember | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -168,7 +173,6 @@ export const FamilyTree: React.FC = () => {
     setIsEditing(false);
   };
 
-  // 1. Lọc dữ liệu
   const filteredMembers = members.filter((member) => {
     const matchesSearch = member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           member.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -177,34 +181,33 @@ export const FamilyTree: React.FC = () => {
     return matchesSearch && matchesGen;
   });
 
-  // 2. Sắp xếp dữ liệu sau khi lọc
   const sortedMembers = [...filteredMembers].sort((a, b) => {
     if (sortBy === 'newest') {
-      return Number(b.id) - Number(a.id); // ID dựa theo Date.now() nên mới nhất xếp trước
+      return Number(b.id) - Number(a.id);
     } else if (sortBy === 'generation') {
-      return a.generation - b.generation; // Sắp xếp từ đời nhỏ đến lớn (Đời 1 -> Đời 3)
+      return a.generation - b.generation;
     } else if (sortBy === 'name-asc') {
-      return a.name.localeCompare(b.name); // Tên A-Z
+      return a.name.localeCompare(b.name);
     } else if (sortBy === 'name-desc') {
-      return b.name.localeCompare(a.name); // Tên Z-A
+      return b.name.localeCompare(a.name);
     } else if (sortBy === 'birth-asc') {
-      return Number(a.birthYear) - Number(b.birthYear); // Năm sinh tăng dần (già nhất xếp trước)
+      return Number(a.birthYear) - Number(b.birthYear);
     }
     return 0;
   });
 
   return (
     <div className="min-h-screen bg-primary-bg text-primary-text pt-28 pb-16 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto space-y-8">
         
         {/* Tiêu đề trang */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 text-accent mb-2">
               <Users className="w-6 h-6" />
               <span className="font-semibold uppercase tracking-wider text-sm">Gia Phả Dòng Họ</span>
             </div>
-            <h1 className="text-3xl sm:text-4xl font-bold">Quản Lý Thành Viên Gia Phả</h1>
+            <h1 className="text-3xl sm:text-4xl font-bold">Không Gian Văn Hóa & Kết Nối Dòng Họ</h1>
             <p className="text-gray-400 mt-1">Lưu giữ cội nguồn, kết nối các thế hệ trong dòng họ Nguyễn.</p>
           </div>
 
@@ -217,257 +220,299 @@ export const FamilyTree: React.FC = () => {
           </button>
         </div>
 
-        {/* Thanh tìm kiếm, Lọc theo đời và Sắp xếp (Sort) */}
-        <div className="bg-secondary-bg border border-white/10 rounded-2xl p-4 mb-8 flex flex-col lg:flex-row gap-4 items-center justify-between">
-          
-          <div className="relative w-full lg:w-72">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input 
-              type="text"
-              placeholder="Tìm kiếm thành viên..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-primary-bg border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-primary-text focus:outline-none focus:border-accent transition"
-            />
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto justify-between lg:justify-end">
-            
-            {/* Lọc theo đời */}
-            <select
-              value={selectedGen}
-              onChange={(e) => setSelectedGen(e.target.value)}
-              className="bg-primary-bg border border-white/10 rounded-xl px-4 py-2.5 text-sm text-primary-text focus:outline-none focus:border-accent transition cursor-pointer"
-            >
-              <option value="all">Tất cả các đời</option>
-              <option value="1">Đời thứ 1</option>
-              <option value="2">Đời thứ 2</option>
-              <option value="3">Đời thứ 3</option>
-            </select>
-
-            {/* Sắp xếp (Sort By) */}
-            <div className="flex items-center gap-2 bg-primary-bg border border-white/10 rounded-xl px-3 py-1.5">
-              <ArrowUpDown className="w-4 h-4 text-accent shrink-0" />
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="bg-transparent text-sm text-primary-text focus:outline-none transition cursor-pointer"
-              >
-                <option value="newest" className="bg-secondary-bg">Mới được thêm gần đây</option>
-                <option value="generation" className="bg-secondary-bg">Thứ tự thế hệ (Đời 1 → n)</option>
-                <option value="name-asc" className="bg-secondary-bg">Tên thành viên (A - Z)</option>
-                <option value="name-desc" className="bg-secondary-bg">Tên thành viên (Z - A)</option>
-                <option value="birth-asc" className="bg-secondary-bg">Năm sinh (Cao niên trước)</option>
-              </select>
-            </div>
-
-            {/* Nút chuyển đổi View Mode */}
-            <div className="flex items-center bg-primary-bg border border-white/10 rounded-xl p-1">
-              <button
-                onClick={() => setViewMode('card')}
-                className={`p-2 rounded-lg transition cursor-pointer ${viewMode === 'card' ? 'bg-accent text-white' : 'text-gray-400 hover:text-white'}`}
-                title="Dạng Thẻ (Card)"
-              >
-                <LayoutGrid className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => setViewMode('list')}
-                className={`p-2 rounded-lg transition cursor-pointer ${viewMode === 'list' ? 'bg-accent text-white' : 'text-gray-400 hover:text-white'}`}
-                title="Dạng Danh Sách (List)"
-              >
-                <ListIcon className="w-4 h-4" />
-              </button>
-                <button 
-                    onClick={() => navigate('/family-tree/diagram')}
-                    className="flex items-center gap-2 bg-secondary-bg hover:bg-white/10 text-primary-text px-4 py-2.5 rounded-xl border border-white/10 text-sm font-medium transition cursor-pointer"
-                    >
-                    <FolderTree className="w-4 h-4 text-accent" />
-                    {/* <span>Xem Sơ Đồ Cây (Mindmap)</span> */}
-                </button>
-            </div>
-          </div>
+        {/* --- THANH TAB CHUYỂN ĐỔI TÍNH NĂNG --- */}
+        <div className="flex flex-wrap gap-2 border-b border-white/10 pb-4">
+          <button
+            onClick={() => setActiveTab('members')}
+            className={`px-4 py-2 rounded-xl text-sm font-semibold transition cursor-pointer flex items-center gap-2 ${
+              activeTab === 'members' ? 'bg-accent text-white shadow-lg shadow-accent/20' : 'bg-secondary-bg hover:bg-white/5 text-gray-400'
+            }`}
+          >
+            <Users className="w-4 h-4" /> Thành viên gia phả
+          </button>
+          <button
+            onClick={() => setActiveTab('memorial')}
+            className={`px-4 py-2 rounded-xl text-sm font-semibold transition cursor-pointer flex items-center gap-2 ${
+              activeTab === 'memorial' ? 'bg-accent text-white shadow-lg shadow-accent/20' : 'bg-secondary-bg hover:bg-white/5 text-gray-400'
+            }`}
+          >
+            <Calendar className="w-4 h-4" /> Lịch giỗ chạp (Âm lịch)
+          </button>
+          <button
+            onClick={() => setActiveTab('library')}
+            className={`px-4 py-2 rounded-xl text-sm font-semibold transition cursor-pointer flex items-center gap-2 ${
+              activeTab === 'library' ? 'bg-accent text-white shadow-lg shadow-accent/20' : 'bg-secondary-bg hover:bg-white/5 text-gray-400'
+            }`}
+          >
+            <BookOpen className="w-4 h-4" /> Thư viện dòng họ
+          </button>
+          <button
+            onClick={() => setActiveTab('map')}
+            className={`px-4 py-2 rounded-xl text-sm font-semibold transition cursor-pointer flex items-center gap-2 ${
+              activeTab === 'map' ? 'bg-accent text-white shadow-lg shadow-accent/20' : 'bg-secondary-bg hover:bg-white/5 text-gray-400'
+            }`}
+          >
+            <Globe className="w-4 h-4" /> Bản đồ phân bố con cháu
+          </button>
         </div>
 
-        {/* HIỂN THỊ DẠNG CARD */}
-        {viewMode === 'card' ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {sortedMembers.map((member) => (
-              <motion.div
-                key={member.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-                className="bg-secondary-bg border border-white/10 rounded-2xl overflow-hidden hover:border-accent/50 transition flex flex-col relative"
-              >
-                <div className="absolute top-4 right-4 z-10" ref={openMenuId === member.id ? menuRef : null}>
-                  <button
-                    onClick={() => setOpenMenuId(openMenuId === member.id ? null : member.id)}
-                    className="p-1.5 text-gray-400 hover:text-white bg-primary-bg/60 hover:bg-white/10 rounded-xl border border-white/5 transition cursor-pointer"
+        {/* --- TAB 1: THÀNH VIÊN GIA PHẢ (Giao diện Card / List chuẩn) --- */}
+        {activeTab === 'members' && (
+          <div className="space-y-6">
+            <div className="bg-secondary-bg border border-white/10 rounded-2xl p-4 flex flex-col lg:flex-row gap-4 items-center justify-between">
+              <div className="relative w-full lg:w-72">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input 
+                  type="text"
+                  placeholder="Tìm kiếm thành viên..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full bg-primary-bg border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-primary-text focus:outline-none focus:border-accent transition"
+                />
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto justify-between lg:justify-end">
+                <select
+                  value={selectedGen}
+                  onChange={(e) => setSelectedGen(e.target.value)}
+                  className="bg-primary-bg border border-white/10 rounded-xl px-4 py-2.5 text-sm text-primary-text focus:outline-none focus:border-accent transition cursor-pointer"
+                >
+                  <option value="all">Tất cả các đời</option>
+                  <option value="1">Đời thứ 1</option>
+                  <option value="2">Đời thứ 2</option>
+                  <option value="3">Đời thứ 3</option>
+                </select>
+
+                <div className="flex items-center gap-2 bg-primary-bg border border-white/10 rounded-xl px-3 py-1.5">
+                  <ArrowUpDown className="w-4 h-4 text-accent shrink-0" />
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="bg-transparent text-sm text-primary-text focus:outline-none transition cursor-pointer"
                   >
-                    <MoreVertical className="w-4 h-4" />
+                    <option value="newest" className="bg-secondary-bg">Mới được thêm gần đây</option>
+                    <option value="generation" className="bg-secondary-bg">Thứ tự thế hệ (Đời 1 → n)</option>
+                    <option value="name-asc" className="bg-secondary-bg">Tên thành viên (A - Z)</option>
+                    <option value="name-desc" className="bg-secondary-bg">Tên thành viên (Z - A)</option>
+                    <option value="birth-asc" className="bg-secondary-bg">Năm sinh (Cao niên trước)</option>
+                  </select>
+                </div>
+
+                <div className="flex items-center bg-primary-bg border border-white/10 rounded-xl p-1">
+                  <button
+                    onClick={() => setViewMode('card')}
+                    className={`p-2 rounded-lg transition cursor-pointer ${viewMode === 'card' ? 'bg-accent text-white' : 'text-gray-400 hover:text-white'}`}
+                    title="Dạng Thẻ (Card)"
+                  >
+                    <LayoutGrid className="w-4 h-4" />
                   </button>
-
-                  {openMenuId === member.id && (
-                    <div className="absolute right-0 mt-2 w-44 bg-secondary-bg border border-white/15 rounded-xl shadow-2xl py-1.5 z-20 backdrop-blur-md">
-                      <button
-                        onClick={() => handleOpenModal(member, false)}
-                        className="w-full text-left px-4 py-2 text-xs text-primary-text hover:bg-white/10 flex items-center gap-2.5 transition cursor-pointer"
-                      >
-                        <Eye className="w-3.5 h-3.5 text-accent" />
-                        <span>Xem chi tiết</span>
-                      </button>
-                      <button
-                        onClick={() => handleOpenModal(member, true)}
-                        className="w-full text-left px-4 py-2 text-xs text-primary-text hover:bg-white/10 flex items-center gap-2.5 transition cursor-pointer"
-                      >
-                        <Edit3 className="w-3.5 h-3.5 text-blue-400" />
-                        <span>Chỉnh sửa</span>
-                      </button>
-                      <div className="h-[1px] bg-white/10 my-1"></div>
-                      <button
-                        onClick={() => handleDeleteMember(member.id)}
-                        className="w-full text-left px-4 py-2 text-xs text-red-400 hover:bg-red-500/10 flex items-center gap-2.5 transition cursor-pointer"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                        <span>Xóa thành viên</span>
-                      </button>
-                    </div>
-                  )}
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className={`p-2 rounded-lg transition cursor-pointer ${viewMode === 'list' ? 'bg-accent text-white' : 'text-gray-400 hover:text-white'}`}
+                    title="Dạng Danh Sách (List)"
+                  >
+                    <ListIcon className="w-4 h-4" />
+                  </button>
+                  <button 
+                    onClick={() => navigate('/family-tree/diagram')}
+                    className="flex items-center gap-2 bg-secondary-bg hover:bg-white/10 text-primary-text px-3 py-1.5 rounded-lg border border-white/10 text-xs font-medium transition cursor-pointer ml-1"
+                    title="Xem sơ đồ cây"
+                  >
+                    <FolderTree className="w-3.5 h-3.5 text-accent" />
+                  </button>
                 </div>
-
-                <div className="p-6 flex items-start gap-4 pr-12">
-                  <img 
-                    src={member.avatar} 
-                    alt={member.name} 
-                    className="w-16 h-16 rounded-2xl object-cover border-2 border-accent/30"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-accent/10 text-accent mb-1">
-                      Đời thứ {member.generation}
-                    </span>
-                    <h3 className="text-lg font-bold truncate">{member.name}</h3>
-                    <p className="text-sm text-gray-400 font-medium">{member.role}</p>
-                  </div>
-                </div>
-
-                <div className="px-6 py-3 bg-primary-bg/50 border-t border-b border-white/5 space-y-2 text-xs text-gray-300 flex-grow">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-accent" />
-                    <span>Năm sinh: {member.birthYear} {member.deathYear ? `- ${member.deathYear}` : '(Còn sống)'}</span>
-                  </div>
-                  {member.spouse && (
-                    <div className="flex items-center gap-2">
-                      <Heart className="w-4 h-4 text-rose-500" />
-                      <span>Phối ngẫu: {member.spouse}</span>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-emerald-500" />
-                    <span>Quê quán/Nơi ở: {member.address}</span>
-                  </div>
-                </div>
-
-                <div className="p-6 pt-4">
-                  <p className="text-xs text-gray-400 italic line-clamp-2">"{member.bio}"</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        ) : (
-          /* HIỂN THỊ DẠNG LIST */
-          <div className="bg-secondary-bg border border-white/10 rounded-2xl overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-white/10 bg-primary-bg/60 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    <th className="py-4 px-6">Thành viên</th>
-                    <th className="py-4 px-6">Thế hệ</th>
-                    <th className="py-4 px-6">Vai trò</th>
-                    <th className="py-4 px-6">Năm sinh / Mất</th>
-                    <th className="py-4 px-6">Phối ngẫu</th>
-                    <th className="py-4 px-6">Địa chỉ</th>
-                    <th className="py-4 px-6 text-right">Thao tác</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/5 text-sm">
-                  {sortedMembers.map((member) => (
-                    <tr key={member.id} className="hover:bg-white/[0.02] transition relative">
-                      <td className="py-4 px-6">
-                        <div className="flex items-center gap-3">
-                          <img src={member.avatar} alt={member.name} className="w-10 h-10 rounded-full object-cover border border-accent/30" />
-                          <div>
-                            <div className="font-bold text-primary-text">{member.name}</div>
-                            <div className="text-xs text-gray-400">{member.gender === 'male' ? 'Nam' : 'Nữ'}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-4 px-6">
-                        <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-accent/10 text-accent">
-                          Đời {member.generation}
-                        </span>
-                      </td>
-                      <td className="py-4 px-6 font-medium text-gray-300">{member.role}</td>
-                      <td className="py-4 px-6 text-gray-400">
-                        {member.birthYear} {member.deathYear ? `- ${member.deathYear}` : ''}
-                      </td>
-                      <td className="py-4 px-6 text-gray-400">{member.spouse || '—'}</td>
-                      <td className="py-4 px-6 text-gray-400">{member.address}</td>
-                      <td className="py-4 px-6 text-right relative">
-                        <div className="inline-block" ref={openMenuId === member.id ? menuRef : null}>
-                          <button 
-                            onClick={() => setOpenMenuId(openMenuId === member.id ? null : member.id)}
-                            className="p-1.5 text-gray-400 hover:text-white rounded-lg bg-white/5 hover:bg-white/10 transition cursor-pointer border border-white/5"
-                          >
-                            <MoreVertical className="w-4 h-4" />
-                          </button>
-
-                          {openMenuId === member.id && (
-                            <div className="absolute right-6 mt-1 w-44 bg-secondary-bg border border-white/15 rounded-xl shadow-2xl py-1.5 z-30 backdrop-blur-md text-left">
-                              <button
-                                onClick={() => handleOpenModal(member, false)}
-                                className="w-full text-left px-4 py-2 text-xs text-primary-text hover:bg-white/10 flex items-center gap-2.5 transition cursor-pointer"
-                              >
-                                <Eye className="w-3.5 h-3.5 text-accent" />
-                                <span>Xem chi tiết</span>
-                              </button>
-                              <button
-                                onClick={() => handleOpenModal(member, true)}
-                                className="w-full text-left px-4 py-2 text-xs text-primary-text hover:bg-white/10 flex items-center gap-2.5 transition cursor-pointer"
-                              >
-                                <Edit3 className="w-3.5 h-3.5 text-blue-400" />
-                                <span>Chỉnh sửa</span>
-                              </button>
-                              <div className="h-[1px] bg-white/10 my-1"></div>
-                              <button
-                                onClick={() => handleDeleteMember(member.id)}
-                                className="w-full text-left px-4 py-2 text-xs text-red-400 hover:bg-red-500/10 flex items-center gap-2.5 transition cursor-pointer"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                                <span>Xóa thành viên</span>
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              </div>
             </div>
+
+            {viewMode === 'card' ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {sortedMembers.map((member) => (
+                  <motion.div
+                    key={member.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="bg-secondary-bg border border-white/10 rounded-2xl overflow-hidden hover:border-accent/50 transition flex flex-col relative"
+                  >
+                    <div className="absolute top-4 right-4 z-10" ref={openMenuId === member.id ? menuRef : null}>
+                      <button
+                        onClick={() => setOpenMenuId(openMenuId === member.id ? null : member.id)}
+                        className="p-1.5 text-gray-400 hover:text-white bg-primary-bg/60 hover:bg-white/10 rounded-xl border border-white/5 transition cursor-pointer"
+                      >
+                        <MoreVertical className="w-4 h-4" />
+                      </button>
+
+                      {openMenuId === member.id && (
+                        <div className="absolute right-0 mt-2 w-44 bg-secondary-bg border border-white/15 rounded-xl shadow-2xl py-1.5 z-20 backdrop-blur-md">
+                          <button
+                            onClick={() => handleOpenModal(member, false)}
+                            className="w-full text-left px-4 py-2 text-xs text-primary-text hover:bg-white/10 flex items-center gap-2.5 transition cursor-pointer"
+                          >
+                            <Eye className="w-3.5 h-3.5 text-accent" />
+                            <span>Xem chi tiết</span>
+                          </button>
+                          <button
+                            onClick={() => handleOpenModal(member, true)}
+                            className="w-full text-left px-4 py-2 text-xs text-primary-text hover:bg-white/10 flex items-center gap-2.5 transition cursor-pointer"
+                          >
+                            <Edit3 className="w-3.5 h-3.5 text-blue-400" />
+                            <span>Chỉnh sửa</span>
+                          </button>
+                          <div className="h-[1px] bg-white/10 my-1"></div>
+                          <button
+                            onClick={() => handleDeleteMember(member.id)}
+                            className="w-full text-left px-4 py-2 text-xs text-red-400 hover:bg-red-500/10 flex items-center gap-2.5 transition cursor-pointer"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>Xóa thành viên</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="p-6 flex items-start gap-4 pr-12">
+                      <img 
+                        src={member.avatar} 
+                        alt={member.name} 
+                        className="w-16 h-16 rounded-2xl object-cover border-2 border-accent/30"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-accent/10 text-accent mb-1">
+                          Đời thứ {member.generation}
+                        </span>
+                        <h3 className="text-lg font-bold truncate">{member.name}</h3>
+                        <p className="text-sm text-gray-400 font-medium">{member.role}</p>
+                      </div>
+                    </div>
+
+                    <div className="px-6 py-3 bg-primary-bg/50 border-t border-b border-white/5 space-y-2 text-xs text-gray-300 flex-grow">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-accent" />
+                        <span>Năm sinh: {member.birthYear} {member.deathYear ? `- ${member.deathYear}` : '(Còn sống)'}</span>
+                      </div>
+                      {member.spouse && (
+                        <div className="flex items-center gap-2">
+                          <Heart className="w-4 h-4 text-rose-500" />
+                          <span>Phối ngẫu: {member.spouse}</span>
+                        </div>
+                      )}
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-4 h-4 text-emerald-500" />
+                        <span>Quê quán/Nơi ở: {member.address}</span>
+                      </div>
+                    </div>
+
+                    <div className="p-6 pt-4">
+                      <p className="text-xs text-gray-400 italic line-clamp-2">"{member.bio}"</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <div className="bg-secondary-bg border border-white/10 rounded-2xl overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-white/10 bg-primary-bg/60 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                        <th className="py-4 px-6">Thành viên</th>
+                        <th className="py-4 px-6">Thế hệ</th>
+                        <th className="py-4 px-6">Vai trò</th>
+                        <th className="py-4 px-6">Năm sinh / Mất</th>
+                        <th className="py-4 px-6">Phối ngẫu</th>
+                        <th className="py-4 px-6">Địa chỉ</th>
+                        <th className="py-4 px-6 text-right">Thao tác</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/5 text-sm">
+                      {sortedMembers.map((member) => (
+                        <tr key={member.id} className="hover:bg-white/[0.02] transition relative">
+                          <td className="py-4 px-6">
+                            <div className="flex items-center gap-3">
+                              <img src={member.avatar} alt={member.name} className="w-10 h-10 rounded-full object-cover border border-accent/30" />
+                              <div>
+                                <div className="font-bold text-primary-text">{member.name}</div>
+                                <div className="text-xs text-gray-400">{member.gender === 'male' ? 'Nam' : 'Nữ'}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-4 px-6">
+                            <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-accent/10 text-accent">
+                              Đời {member.generation}
+                            </span>
+                          </td>
+                          <td className="py-4 px-6 font-medium text-gray-300">{member.role}</td>
+                          <td className="py-4 px-6 text-gray-400">
+                            {member.birthYear} {member.deathYear ? `- ${member.deathYear}` : ''}
+                          </td>
+                          <td className="py-4 px-6 text-gray-400">{member.spouse || '—'}</td>
+                          <td className="py-4 px-6 text-gray-400">{member.address}</td>
+                          <td className="py-4 px-6 text-right relative">
+                            <div className="inline-block" ref={openMenuId === member.id ? menuRef : null}>
+                              <button 
+                                onClick={() => setOpenMenuId(openMenuId === member.id ? null : member.id)}
+                                className="p-1.5 text-gray-400 hover:text-white rounded-lg bg-white/5 hover:bg-white/10 transition cursor-pointer border border-white/5"
+                              >
+                                <MoreVertical className="w-4 h-4" />
+                              </button>
+
+                              {openMenuId === member.id && (
+                                <div className="absolute right-6 mt-1 w-44 bg-secondary-bg border border-white/15 rounded-xl shadow-2xl py-1.5 z-30 backdrop-blur-md text-left">
+                                  <button
+                                    onClick={() => handleOpenModal(member, false)}
+                                    className="w-full text-left px-4 py-2 text-xs text-primary-text hover:bg-white/10 flex items-center gap-2.5 transition cursor-pointer"
+                                  >
+                                    <Eye className="w-3.5 h-3.5 text-accent" />
+                                    <span>Xem chi tiết</span>
+                                  </button>
+                                  <button
+                                    onClick={() => handleOpenModal(member, true)}
+                                    className="w-full text-left px-4 py-2 text-xs text-primary-text hover:bg-white/10 flex items-center gap-2.5 transition cursor-pointer"
+                                  >
+                                    <Edit3 className="w-3.5 h-3.5 text-blue-400" />
+                                    <span>Chỉnh sửa</span>
+                                  </button>
+                                  <div className="h-[1px] bg-white/10 my-1"></div>
+                                  <button
+                                    onClick={() => handleDeleteMember(member.id)}
+                                    className="w-full text-left px-4 py-2 text-xs text-red-400 hover:bg-red-500/10 flex items-center gap-2.5 transition cursor-pointer"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                    <span>Xóa thành viên</span>
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {sortedMembers.length === 0 && (
+              <div className="text-center py-16 bg-secondary-bg border border-white/10 rounded-2xl mt-4">
+                <User className="w-12 h-12 text-gray-500 mx-auto mb-3" />
+                <h3 className="text-lg font-bold">Không tìm thấy thành viên phù hợp</h3>
+                <p className="text-gray-400 text-sm mt-1">Hãy thử tìm kiếm với từ khóa hoặc bộ lọc khác.</p>
+              </div>
+            )}
           </div>
         )}
 
-        {sortedMembers.length === 0 && (
-          <div className="text-center py-16 bg-secondary-bg border border-white/10 rounded-2xl mt-4">
-            <User className="w-12 h-12 text-gray-500 mx-auto mb-3" />
-            <h3 className="text-lg font-bold">Không tìm thấy thành viên phù hợp</h3>
-            <p className="text-gray-400 text-sm mt-1">Hãy thử tìm kiếm với từ khóa hoặc bộ lọc khác.</p>
-          </div>
-        )}
+        {/* --- TAB 2: LỊCH GIỖ CHẠP ÂM LỊCH --- */}
+        {activeTab === 'memorial' && <AncestorMemorial />}
+
+        {/* --- TAB 3: THƯ VIỆN & KỶ VẬT CỔ --- */}
+        {activeTab === 'library' && <FamilyLibrary />}
+
+        {/* --- TAB 4: BẢN ĐỒ PHÂN BỐ CON CHÁU --- */}
+        {activeTab === 'map' && <FamilyMapStats />}
 
       </div>
 
-      {/* MODAL CHI TIẾT & CHỈNH SỬA */}
+      {/* MODAL CHI TIẾT & CHỈNH SỬA THÀNH VIÊN */}
       <AnimatePresence>
         {activeMember && editForm && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
@@ -485,7 +530,7 @@ export const FamilyTree: React.FC = () => {
                       className="p-1.5 text-gray-400 hover:text-white rounded-lg bg-white/5 transition cursor-pointer mr-1"
                       title="Quay lại xem chi tiết"
                     >
-                      <ArrowLeft className="w-4 h-4" />
+                      <X className="w-4 h-4" />
                     </button>
                   )}
                   <h2 className="text-xl font-bold">

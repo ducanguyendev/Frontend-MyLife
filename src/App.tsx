@@ -20,6 +20,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { useLanguage } from './hooks/useLanguage';
 import { FamilyTree } from './pages/FamilyTree';
 import { FamilyTreeDiagram } from './pages/FamilyTreeDiagram';
+import { ExpenseTracker } from './pages/ExpenseTracker';
 
 function MainPortfolio() {
   return (
@@ -113,6 +114,7 @@ function App() {
           <Route path="/family-tree" element={<FamilyTree />} />
           <Route path="/gia-pha" element={<FamilyTree />} />
           <Route path="/family-tree/diagram" element={<FamilyTreeDiagram />} />
+          <Route path="/expense-tracker" element={<ExpenseTracker />} />
         </Routes>
       )}
     </>
