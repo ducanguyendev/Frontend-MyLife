@@ -82,6 +82,66 @@ export const Register: React.FC = () => {
     return { score: normalizedScore, ...map[normalizedScore] };
   })();
 
+  // Chặn và cảnh báo khi nhập số hoặc ký tự đặc biệt ở ô Họ và Tên
+  const handleFullNameKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key.length !== 1 || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (!/^[\p{L}\s]$/u.test(e.key)) {
+      e.preventDefault();
+      setErrorMessage('Họ và tên không được chứa số hoặc ký tự đặc biệt.');
+    }
+  };
+
+  const handleFullNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    if (!/^[\p{L}\s]*$/u.test(val)) {
+      setErrorMessage('Họ và tên không được chứa số hoặc ký tự đặc biệt.');
+      const cleaned = val.replace(/[^\p{L}\s]/gu, '');
+      setFullName(cleaned);
+      return;
+    }
+    setFullName(val);
+  };
+
+  const handleFullNamePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    const pasteData = e.clipboardData.getData('text');
+    if (!/^[\p{L}\s]*$/u.test(pasteData)) {
+      e.preventDefault();
+      setErrorMessage('Họ và tên không được chứa số hoặc ký tự đặc biệt.');
+      const cleaned = pasteData.replace(/[^\p{L}\s]/gu, '');
+      setFullName((prev) => (prev + cleaned).slice(0, 50));
+    }
+  };
+
+  // Chặn và cảnh báo khi nhập ký tự không phải chữ số ở ô Số Điện Thoại
+  const handlePhoneKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key.length !== 1 || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (!/^[0-9]$/.test(e.key)) {
+      e.preventDefault();
+      setErrorMessage('Số điện thoại chỉ được chứa các chữ số (0-9).');
+    }
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    if (/[^0-9]/.test(val)) {
+      setErrorMessage('Số điện thoại chỉ được chứa các chữ số (0-9).');
+      const cleaned = val.replace(/[^0-9]/g, '').slice(0, 10);
+      setPhoneNumber(cleaned);
+      return;
+    }
+    setPhoneNumber(val.slice(0, 10));
+  };
+
+  const handlePhonePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    const pasteData = e.clipboardData.getData('text');
+    if (/[^0-9]/.test(pasteData)) {
+      e.preventDefault();
+      setErrorMessage('Số điện thoại chỉ được chứa các chữ số (0-9).');
+      const cleaned = pasteData.replace(/[^0-9]/g, '').slice(0, 10);
+      setPhoneNumber((prev) => (prev + cleaned).slice(0, 10));
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
@@ -319,7 +379,9 @@ export const Register: React.FC = () => {
                   autoComplete="name"
                   maxLength={50}
                   value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
+                  onKeyDown={handleFullNameKeyDown}
+                  onChange={handleFullNameChange}
+                  onPaste={handleFullNamePaste}
                   className="w-full bg-primary-bg border border-custom-border focus:border-accent rounded-xl pl-10 pr-3 py-2.5 text-sm text-primary-text outline-none transition-all"
                 />
               </div>
@@ -336,9 +398,11 @@ export const Register: React.FC = () => {
                   type="tel"
                   name="phoneNumber"
                   autoComplete="tel"
-                  maxLength={11}
+                  maxLength={10}
                   value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  onKeyDown={handlePhoneKeyDown}
+                  onChange={handlePhoneChange}
+                  onPaste={handlePhonePaste}
                   className="w-full bg-primary-bg border border-custom-border focus:border-accent rounded-xl pl-10 pr-3 py-2.5 text-sm text-primary-text outline-none transition-all font-mono"
                 />
               </div>
