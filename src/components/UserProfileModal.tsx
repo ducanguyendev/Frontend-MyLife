@@ -240,9 +240,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     return email ? email.substring(0, 2).toUpperCase() : 'US';
   };
 
-  const currentAvatarSrc = previewUrl || (user.avatar && user.avatar !== 'none' ? authService.getDisplayAvatarUrl(user.avatar) : null);
-  const hasAvatar = !imgError && !!currentAvatarSrc;
-
   return (
     <AnimatePresence>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -310,7 +307,11 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 className="hidden"
               />
 
-              <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-accent/50 shadow-xl bg-primary-bg">
+              <div 
+                onClick={() => !isUploading && fileInputRef.current?.click()}
+                className="w-20 h-20 rounded-full overflow-hidden border-2 border-accent/50 shadow-xl bg-primary-bg relative cursor-pointer"
+                title="Bấm để đổi ảnh đại diện"
+              >
                 {!imgError && currentSrc ? (
                   <img
                     key={currentSrc}
@@ -327,12 +328,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 )}
 
                 {/* Upload Hover Overlay */}
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploading}
-                  className="absolute inset-0 bg-black/60 backdrop-blur-xs flex flex-col items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer disabled:opacity-50"
-                  title="Thay đổi ảnh đại diện"
+                <div
+                  className="absolute inset-0 bg-black/60 backdrop-blur-xs flex flex-col items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                 >
                   {isUploading ? (
                     <Loader2 size={20} className="animate-spin text-accent" />
@@ -342,7 +339,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                       <span className="text-[9px] font-semibold">Đổi ảnh</span>
                     </>
                   )}
-                </button>
+                </div>
               </div>
 
               {/* Chấm xanh trạng thái Online (Đồng nhất, không bị che) */}
@@ -374,20 +371,33 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 </span>
               </div>
 
-              {/* Nút Xóa ảnh nhanh (Không cần chữ tải ảnh mới) */}
-              {hasAvatar && (
-                <div className="flex items-center justify-center sm:justify-start pt-2">
-                  <button
-                    type="button"
-                    onClick={handleDeleteAvatar}
-                    disabled={isUploading}
-                    className="text-xs text-red-400 hover:text-red-300 hover:underline flex items-center gap-1 cursor-pointer font-medium"
-                  >
-                    <Trash2 size={12} />
-                    <span>Xóa ảnh</span>
-                  </button>
-                </div>
-              )}
+              {/* Nút thao tác nhanh Avatar: Đổi ảnh & Xóa ảnh */}
+              <div className="flex items-center justify-center sm:justify-start gap-2.5 mt-2.5 text-xs">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploading}
+                  className="text-accent hover:underline flex items-center gap-1 cursor-pointer font-medium disabled:opacity-50"
+                >
+                  <Camera size={13} />
+                  <span>Đổi ảnh</span>
+                </button>
+
+                {(!imgError && (!!currentSrc || (!!user.avatar && user.avatar !== 'none'))) && (
+                  <>
+                    <span className="text-secondary-text/60">•</span>
+                    <button
+                      type="button"
+                      onClick={handleDeleteAvatar}
+                      disabled={isUploading}
+                      className="text-red-400 hover:text-red-300 hover:underline flex items-center gap-1 cursor-pointer font-medium disabled:opacity-50"
+                    >
+                      <Trash2 size={13} />
+                      <span>Xóa ảnh</span>
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 
