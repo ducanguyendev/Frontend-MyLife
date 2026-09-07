@@ -110,17 +110,17 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
     const localBlobUrl = URL.createObjectURL(file);
     setPreviewUrl(localBlobUrl);
+    setCurrentSrc(localBlobUrl);
     setImgError(false);
     setIsUploading(true);
 
     try {
-      const res = await authService.uploadAvatar(file);
-      const displayUrl = authService.getDisplayAvatarUrl(res.avatarUrl) || localBlobUrl;
-      setPreviewUrl(displayUrl);
+      await authService.uploadAvatar(file);
       setImgError(false);
       showFeedback('Cập nhật ảnh đại diện thành công!', true);
     } catch (err: any) {
       setPreviewUrl(null);
+      setCurrentSrc(null);
       showFeedback(err?.message || 'Lỗi khi tải ảnh đại diện.', false);
     } finally {
       setIsUploading(false);
@@ -371,33 +371,20 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 </span>
               </div>
 
-              {/* Nút thao tác nhanh Avatar: Đổi ảnh & Xóa ảnh */}
-              <div className="flex items-center justify-center sm:justify-start gap-2.5 mt-2.5 text-xs">
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploading}
-                  className="text-accent hover:underline flex items-center gap-1 cursor-pointer font-medium disabled:opacity-50"
-                >
-                  <Camera size={13} />
-                  <span>Đổi ảnh</span>
-                </button>
-
-                {(!imgError && (!!currentSrc || (!!user.avatar && user.avatar !== 'none'))) && (
-                  <>
-                    <span className="text-secondary-text/60">•</span>
-                    <button
-                      type="button"
-                      onClick={handleDeleteAvatar}
-                      disabled={isUploading}
-                      className="text-red-400 hover:text-red-300 hover:underline flex items-center gap-1 cursor-pointer font-medium disabled:opacity-50"
-                    >
-                      <Trash2 size={13} />
-                      <span>Xóa ảnh</span>
-                    </button>
-                  </>
-                )}
-              </div>
+              {/* Nút Xóa ảnh (Chỉ hiển thị khi có ảnh) */}
+              {(!imgError && (!!currentSrc || (!!user.avatar && user.avatar !== 'none'))) && (
+                <div className="flex items-center justify-center sm:justify-start mt-2">
+                  <button
+                    type="button"
+                    onClick={handleDeleteAvatar}
+                    disabled={isUploading}
+                    className="text-xs text-red-400 hover:text-red-300 hover:underline flex items-center gap-1 cursor-pointer font-medium disabled:opacity-50"
+                  >
+                    <Trash2 size={13} />
+                    <span>Xóa ảnh</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
