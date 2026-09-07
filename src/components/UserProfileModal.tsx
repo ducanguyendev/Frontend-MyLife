@@ -58,21 +58,16 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
       setCurrentSrc(previewUrl);
       setImgError(false);
     } else if (user?.avatar && user.avatar !== 'none') {
-      setCurrentSrc(authService.getDisplayAvatarUrl(user.avatar));
+      setCurrentSrc(authService.getDisplayAvatarUrl(user.avatar, user.email, Date.now()));
       setImgError(false);
     } else {
       setCurrentSrc(null);
       setImgError(false);
     }
-  }, [previewUrl, user?.avatar]);
+  }, [previewUrl, user?.avatar, user?.email]);
 
   const handleImageError = () => {
-    if (currentSrc && currentSrc.includes('google') && user?.email) {
-      // Fallback về API proxy cục bộ nếu Google Drive CDN bị hạn chế quyền truy cập
-      setCurrentSrc(`${authService.getAvatarUrl(user.email)}?t=${Date.now()}`);
-    } else {
-      setImgError(true);
-    }
+    setImgError(true);
   };
 
   // Sync state on open
@@ -80,6 +75,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     if (isOpen && user) {
       setImgError(false);
       setPreviewUrl(null);
+      setCurrentSrc(user.avatar && user.avatar !== 'none' ? authService.getDisplayAvatarUrl(user.avatar, user.email, Date.now()) : null);
       setDisplayName(user.name || user.email.split('@')[0]);
       setCurrentPassword('');
       setNewPassword('');
@@ -115,12 +111,14 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     setIsUploading(true);
 
     try {
-      await authService.uploadAvatar(file);
+      const res = await authService.uploadAvatar(file);
+      setPreviewUrl(null);
+      setCurrentSrc(authService.getDisplayAvatarUrl(res.avatarUrl, user.email, Date.now()));
       setImgError(false);
       showFeedback('Cập nhật ảnh đại diện thành công!', true);
     } catch (err: any) {
       setPreviewUrl(null);
-      setCurrentSrc(null);
+      setCurrentSrc(user?.avatar ? authService.getDisplayAvatarUrl(user.avatar, user.email) : null);
       showFeedback(err?.message || 'Lỗi khi tải ảnh đại diện.', false);
     } finally {
       setIsUploading(false);
@@ -133,7 +131,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
       await authService.deleteAvatar();
       setPreviewUrl(null);
       setCurrentSrc(null);
-      setImgError(true);
+      setImgError(false);
       showFeedback('Đã xóa ảnh đại diện thành công.', true);
     } catch (err: any) {
       showFeedback(err?.message || 'Lỗi khi xóa ảnh đại diện.', false);
@@ -310,7 +308,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               <div 
                 onClick={() => !isUploading && fileInputRef.current?.click()}
                 className="w-20 h-20 rounded-full overflow-hidden border-2 border-accent/50 shadow-xl bg-primary-bg relative cursor-pointer"
-                title="Bấm để đổi ảnh đại diện"
               >
                 {!imgError && currentSrc ? (
                   <img
@@ -327,17 +324,14 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   </div>
                 )}
 
-                {/* Upload Hover Overlay */}
+                {/* Upload Hover Overlay (Chỉ hiển thị icon Camera, không có chữ Đổi ảnh) */}
                 <div
-                  className="absolute inset-0 bg-black/60 backdrop-blur-xs flex flex-col items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                  className="absolute inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                 >
                   {isUploading ? (
-                    <Loader2 size={20} className="animate-spin text-accent" />
+                    <Loader2 size={22} className="animate-spin text-accent" />
                   ) : (
-                    <>
-                      <Camera size={18} className="text-accent mb-0.5" />
-                      <span className="text-[9px] font-semibold">Đổi ảnh</span>
-                    </>
+                    <Camera size={22} className="text-accent" />
                   )}
                 </div>
               </div>
@@ -372,7 +366,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               </div>
 
               {/* Nút Xóa ảnh (Chỉ hiển thị khi có ảnh) */}
-              {(!imgError && (!!currentSrc || (!!user.avatar && user.avatar !== 'none'))) && (
+              {(!!currentSrc || (!!user.avatar && user.avatar !== 'none')) && (
                 <div className="flex items-center justify-center sm:justify-start mt-2">
                   <button
                     type="button"

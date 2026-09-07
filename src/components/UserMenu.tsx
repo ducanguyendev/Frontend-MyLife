@@ -44,21 +44,25 @@ export const UserMenu: React.FC<UserMenuProps> = ({ onOpenProfile, onSwitchAccou
   const [menuAvatarSrc, setMenuAvatarSrc] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user?.avatar && user.avatar !== 'none') {
-      setMenuAvatarSrc(authService.getDisplayAvatarUrl(user.avatar));
-      setImgError(false);
-    } else {
-      setMenuAvatarSrc(null);
-      setImgError(false);
-    }
+    const updateAvatar = (e?: any) => {
+      const av = e?.detail?.avatarUrl ?? user?.avatar;
+      const ts = e?.detail?.timestamp ?? Date.now();
+      if (av && av !== 'none') {
+        setMenuAvatarSrc(authService.getDisplayAvatarUrl(av, user?.email, ts));
+        setImgError(false);
+      } else {
+        setMenuAvatarSrc(null);
+        setImgError(false);
+      }
+    };
+
+    updateAvatar();
+    window.addEventListener('auth:avatarUpdated', updateAvatar);
+    return () => window.removeEventListener('auth:avatarUpdated', updateAvatar);
   }, [user?.avatar, user?.email]);
 
   const handleMenuImageError = () => {
-    if (menuAvatarSrc && menuAvatarSrc.includes('google') && user?.email) {
-      setMenuAvatarSrc(`${authService.getAvatarUrl(user.email)}?t=${Date.now()}`);
-    } else {
-      setImgError(true);
-    }
+    setImgError(true);
   };
 
   if (!user) return null;

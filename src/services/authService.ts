@@ -512,17 +512,27 @@ export const authService = {
   /**
    * Chuyển đổi định dạng URL Google Drive hoặc link cục bộ thành URL xem ảnh trực tiếp
    */
-  getDisplayAvatarUrl(url?: string | null): string | null {
-    if (!url || url === 'none') return null;
-    const driveMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-    if (driveMatch && driveMatch[1]) {
-      return `https://drive.google.com/thumbnail?id=${driveMatch[1]}&sz=w1000`;
+  getDisplayAvatarUrl(url?: string | null, email?: string, timestamp?: number): string | null {
+    if (!url || url === 'none' || url === 'null' || url === 'undefined') return null;
+
+    // 1. Nếu là ảnh avatar từ Google OAuth Profile (lh3.googleusercontent.com) -> tải trực tiếp
+    if (url.startsWith('https://lh3.googleusercontent.com') || url.startsWith('http://lh3.googleusercontent.com')) {
+      return url;
     }
-    const ucMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-    if (ucMatch && ucMatch[1] && url.includes('drive.google.com')) {
-      return `https://drive.google.com/thumbnail?id=${ucMatch[1]}&sz=w1000`;
+
+    // 2. Nếu là URL Google Drive (chứa file/d/ hoặc drive.google.com) hoặc relative endpoint
+    // -> route qua Backend API stream (/api/avatar/{email}) để tránh lỗi 403 Forbidden do quyền riêng tư của Google Drive
+    const targetEmail = email || this.getStoredEmail();
+    if (targetEmail && (url.includes('drive.google.com') || url.startsWith('/api/avatar') || url.includes('/api/avatar/'))) {
+      const ts = timestamp || Date.now();
+      return `${API_BASE_URL}/api/avatar/${encodeURIComponent(targetEmail)}?t=${ts}`;
     }
-    return url;
+
+    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('blob:') || url.startsWith('data:')) {
+      return url;
+    }
+
+    return `${API_BASE_URL}${url}`;
   },
 
   /**
@@ -561,11 +571,15 @@ export const authService = {
     }
 
     // Cập nhật timestamp vào userAvatar để trigger re-render
-    const freshAvatarUrl = data.avatarUrl.startsWith('http') 
-      ? data.avatarUrl 
-      : `${API_BASE_URL}${data.avatarUrl}`;
+    const timestamp = Date.now();
+    const freshAvatarUrl = data.avatarUrl;
     localStorage.setItem('userAvatar', freshAvatarUrl);
-    window.dispatchEvent(new CustomEvent('auth:avatarUpdated', { detail: { avatarUrl: freshAvatarUrl } }));
+    window.dispatchEvent(new CustomEvent('auth:avatarUpdated', { 
+      detail: { 
+        avatarUrl: freshAvatarUrl,
+        timestamp 
+      } 
+    }));
 
     return data;
   },

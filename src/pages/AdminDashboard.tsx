@@ -70,20 +70,22 @@ function StatusBadge({ status }: { status: string }) {
 function UserAvatarItem({ email, avatarUrl }: { email: string; avatarUrl?: string }) {
   const [imgError, setImgError] = useState(false);
   const [currentSrc, setCurrentSrc] = useState<string | null>(
-    authService.getDisplayAvatarUrl(avatarUrl) || authService.getAvatarUrl(email)
+    avatarUrl && avatarUrl !== 'none'
+      ? authService.getDisplayAvatarUrl(avatarUrl, email)
+      : authService.getAvatarUrl(email)
   );
 
   useEffect(() => {
-    setCurrentSrc(authService.getDisplayAvatarUrl(avatarUrl) || authService.getAvatarUrl(email));
+    setCurrentSrc(
+      avatarUrl && avatarUrl !== 'none'
+        ? authService.getDisplayAvatarUrl(avatarUrl, email)
+        : authService.getAvatarUrl(email)
+    );
     setImgError(false);
   }, [avatarUrl, email]);
 
   const handleError = () => {
-    if (currentSrc && currentSrc.includes('google')) {
-      setCurrentSrc(`${authService.getAvatarUrl(email)}?t=${Date.now()}`);
-    } else {
-      setImgError(true);
-    }
+    setImgError(true);
   };
 
   if (imgError || !currentSrc) {
