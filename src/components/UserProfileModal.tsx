@@ -1,4 +1,4 @@
-﻿import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../hooks/useLanguage';
 import { useAuth } from '../context/AuthContext';
@@ -230,6 +230,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
         {/* Modal Card */}
         <motion.div
+          layout
           initial={{ opacity: 0, scale: 0.96, y: 16 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.96, y: 16 }}
@@ -245,21 +246,27 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             <X size={20} />
           </button>
 
-          {/* Toast / Alert Feedback (Căn lề gọn gàng, không bị đè nút đóng) */}
+          {/* Toast / Alert Feedback */}
           <AnimatePresence>
             {feedback && (
               <motion.div
-                initial={{ opacity: 0, y: -12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -12 }}
-                className={`mb-5 mr-8 p-3 px-4 rounded-xl border text-xs font-medium flex items-center gap-2.5 shadow-sm ${
-                  feedback.ok
-                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
-                    : 'bg-red-500/10 border-red-500/30 text-red-400'
-                }`}
+                layout
+                initial={{ opacity: 0, height: 0, scale: 0.96 }}
+                animate={{ opacity: 1, height: 'auto', scale: 1 }}
+                exit={{ opacity: 0, height: 0, scale: 0.96 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+                className="overflow-hidden mr-8"
               >
-                {feedback.ok ? <CheckCircle2 size={16} className="shrink-0" /> : <AlertCircle size={16} className="shrink-0" />}
-                <span className="leading-snug">{feedback.message}</span>
+                <div
+                  className={`mb-5 p-3 px-4 rounded-xl border text-xs font-medium flex items-center gap-2.5 shadow-sm ${
+                    feedback.ok
+                      ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                      : 'bg-red-500/10 border-red-500/30 text-red-400'
+                  }`}
+                >
+                  {feedback.ok ? <CheckCircle2 size={16} className="shrink-0" /> : <AlertCircle size={16} className="shrink-0" />}
+                  <span className="leading-snug flex-1">{feedback.message}</span>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>

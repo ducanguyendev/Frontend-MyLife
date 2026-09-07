@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Phone, MapPin, Send, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useLanguage } from '../hooks/useLanguage';
 
@@ -153,18 +154,38 @@ export const Contact: React.FC = () => {
               </div>
 
               {/* Submission State UI */}
-              {submitStatus === 'success' && (
-                <div className="flex items-center gap-2 text-success bg-success/10 border border-success/20 p-3 rounded-lg text-sm">
-                  <CheckCircle2 size={16} />
-                  {t('contact.form.success')}
-                </div>
-              )}
-              {submitStatus === 'error' && (
-                <div className="flex items-center gap-2 text-error bg-error/10 border border-error/20 p-3 rounded-lg text-sm">
-                  <AlertCircle size={16} />
-                  {t('contact.form.error')}
-                </div>
-              )}
+              <AnimatePresence>
+                {submitStatus === 'success' && (
+                  <motion.div
+                    layout
+                    initial={{ opacity: 0, height: 0, scale: 0.96 }}
+                    animate={{ opacity: 1, height: 'auto', scale: 1 }}
+                    exit={{ opacity: 0, height: 0, scale: 0.96 }}
+                    transition={{ duration: 0.25, ease: 'easeOut' }}
+                    className="overflow-hidden"
+                  >
+                    <div className="flex items-center gap-2 text-success bg-success/10 border border-success/20 p-3 rounded-lg text-sm mb-1">
+                      <CheckCircle2 size={16} />
+                      {t('contact.form.success')}
+                    </div>
+                  </motion.div>
+                )}
+                {submitStatus === 'error' && (
+                  <motion.div
+                    layout
+                    initial={{ opacity: 0, height: 0, scale: 0.96 }}
+                    animate={{ opacity: 1, height: 'auto', scale: 1 }}
+                    exit={{ opacity: 0, height: 0, scale: 0.96 }}
+                    transition={{ duration: 0.25, ease: 'easeOut' }}
+                    className="overflow-hidden"
+                  >
+                    <div className="flex items-center gap-2 text-error bg-error/10 border border-error/20 p-3 rounded-lg text-sm mb-1">
+                      <AlertCircle size={16} />
+                      {t('contact.form.error')}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {/* Submit Button */}
               <button

@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -230,9 +230,11 @@ export const AdminDashboard: React.FC = () => {
               className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm cursor-pointer"
             />
             <motion.div
+              layout
               initial={{ opacity: 0, scale: 0.95, y: 16 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 16 }}
+              transition={{ type: 'spring', duration: 0.35, bounce: 0.15 }}
               className="relative w-full max-w-md bg-secondary-bg border border-custom-border p-6 rounded-3xl shadow-2xl z-10 space-y-5"
             >
               <div className="flex items-center gap-3 text-red-400">
@@ -250,10 +252,10 @@ export const AdminDashboard: React.FC = () => {
                   Bạn có chắc chắn muốn xóa vĩnh viễn tài khoản <strong className="text-primary-text font-bold">{userToDelete.email}</strong>?
                 </p>
                 <p className="text-red-400/90 font-medium">
-                  • Toàn bộ dữ liệu của người dùng này trong Database PostgreSQL sẽ bị xóa hoàn toàn.
+                  • Toàn bộ dữ liệu của người dùng này trong cơ sở dữ liệu sẽ bị xóa hoàn toàn.
                 </p>
                 <p className="text-red-400/90 font-medium">
-                  • Ảnh đại diện trên Google Drive và các phiên đăng nhập cũng sẽ bị thu hồi vĩnh viễn.
+                  • Ảnh đại diện và các phiên đăng nhập cũng sẽ bị thu hồi vĩnh viễn.
                 </p>
               </div>
 

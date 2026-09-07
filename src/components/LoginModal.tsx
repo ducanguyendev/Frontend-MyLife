@@ -233,6 +233,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
 
         {/* Modal Popup Card */}
         <motion.div
+          layout
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -266,14 +267,17 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
             <AnimatePresence>
               {errorMessage && (
                 <motion.div
-                  initial={{ opacity: 0, y: -8, scale: 0.96 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -8, scale: 0.96 }}
-                  transition={{ duration: 0.25 }}
-                  className="flex items-center gap-2.5 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-xs"
+                  layout
+                  initial={{ opacity: 0, height: 0, scale: 0.96 }}
+                  animate={{ opacity: 1, height: 'auto', scale: 1 }}
+                  exit={{ opacity: 0, height: 0, scale: 0.96 }}
+                  transition={{ duration: 0.25, ease: 'easeOut' }}
+                  className="overflow-hidden"
                 >
-                  <AlertCircle size={16} className="shrink-0" />
-                  <span className="flex-1 leading-snug">{errorMessage}</span>
+                  <div className="flex items-center gap-2.5 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-xs mb-1">
+                    <AlertCircle size={16} className="shrink-0" />
+                    <span className="flex-1 leading-snug">{errorMessage}</span>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>

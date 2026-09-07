@@ -534,7 +534,7 @@ export const authService = {
 
     const data = await response.json();
     if (!response.ok) {
-      throw new Error(data?.message || 'Không thể upload ảnh lên Google Drive.');
+      throw new Error(data?.message || 'Không thể upload ảnh đại diện.');
     }
 
     // Cập nhật timestamp vào userAvatar để trigger re-render

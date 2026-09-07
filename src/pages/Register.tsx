@@ -130,6 +130,7 @@ export const Register: React.FC = () => {
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-accent/5 rounded-full blur-3xl translate-x-1/2 translate-y-1/2 pointer-events-none" />
 
       <motion.div
+        layout
         initial={{ opacity: 0, y: 24, scale: 0.97 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ type: 'spring', duration: 0.45 }}
@@ -159,14 +160,17 @@ export const Register: React.FC = () => {
           <AnimatePresence>
             {errorMessage && (
               <motion.div
-                initial={{ opacity: 0, y: -8, scale: 0.96 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -8, scale: 0.96 }}
-                transition={{ duration: 0.25 }}
-                className="flex items-center gap-2.5 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-xs"
+                layout
+                initial={{ opacity: 0, height: 0, scale: 0.96 }}
+                animate={{ opacity: 1, height: 'auto', scale: 1 }}
+                exit={{ opacity: 0, height: 0, scale: 0.96 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+                className="overflow-hidden"
               >
-                <AlertCircle size={16} className="shrink-0" />
-                <span className="flex-1 leading-snug">{errorMessage}</span>
+                <div className="flex items-center gap-2.5 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-xs mb-1">
+                  <AlertCircle size={16} className="shrink-0" />
+                  <span className="flex-1 leading-snug">{errorMessage}</span>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
@@ -175,14 +179,17 @@ export const Register: React.FC = () => {
           <AnimatePresence>
             {successMessage && (
               <motion.div
-                initial={{ opacity: 0, y: -8, scale: 0.96 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -8, scale: 0.96 }}
-                transition={{ duration: 0.25 }}
-                className="flex items-center gap-2.5 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 text-xs"
+                layout
+                initial={{ opacity: 0, height: 0, scale: 0.96 }}
+                animate={{ opacity: 1, height: 'auto', scale: 1 }}
+                exit={{ opacity: 0, height: 0, scale: 0.96 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+                className="overflow-hidden"
               >
-                <CheckCircle2 size={16} className="shrink-0" />
-                <span className="flex-1 leading-snug">{successMessage}</span>
+                <div className="flex items-center gap-2.5 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 text-xs mb-1">
+                  <CheckCircle2 size={16} className="shrink-0" />
+                  <span className="flex-1 leading-snug">{successMessage}</span>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
