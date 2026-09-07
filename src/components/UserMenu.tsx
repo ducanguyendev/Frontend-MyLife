@@ -41,15 +41,29 @@ export const UserMenu: React.FC<UserMenuProps> = ({ onOpenProfile, onSwitchAccou
     };
   }, [isOpen]);
 
+  const [menuAvatarSrc, setMenuAvatarSrc] = useState<string | null>(null);
+
   useEffect(() => {
-    setImgError(false);
+    if (user?.avatar && user.avatar !== 'none') {
+      setMenuAvatarSrc(authService.getDisplayAvatarUrl(user.avatar));
+      setImgError(false);
+    } else {
+      setMenuAvatarSrc(null);
+      setImgError(false);
+    }
   }, [user?.avatar, user?.email]);
+
+  const handleMenuImageError = () => {
+    if (menuAvatarSrc && menuAvatarSrc.includes('google') && user?.email) {
+      setMenuAvatarSrc(`${authService.getAvatarUrl(user.email)}?t=${Date.now()}`);
+    } else {
+      setImgError(true);
+    }
+  };
 
   if (!user) return null;
 
   const initials = user.email ? user.email.substring(0, 2).toUpperCase() : 'US';
-  const avatarSrc = (user.avatar && user.avatar !== 'none') ? authService.getDisplayAvatarUrl(user.avatar) : null;
-  const hasAvatar = !imgError && !!avatarSrc;
 
   const handleProfileClick = () => {
     setIsOpen(false);
@@ -78,11 +92,12 @@ export const UserMenu: React.FC<UserMenuProps> = ({ onOpenProfile, onSwitchAccou
       >
         <div className="relative shrink-0">
           <div className="w-8 h-8 rounded-full overflow-hidden border border-custom-border shadow-sm bg-primary-bg">
-            {hasAvatar && avatarSrc ? (
+            {!imgError && menuAvatarSrc ? (
               <img
-                src={avatarSrc}
+                key={menuAvatarSrc}
+                src={menuAvatarSrc}
                 alt={user.email}
-                onError={() => setImgError(true)}
+                onError={handleMenuImageError}
                 referrerPolicy="no-referrer"
                 className="w-full h-full object-cover"
               />
@@ -123,11 +138,12 @@ export const UserMenu: React.FC<UserMenuProps> = ({ onOpenProfile, onSwitchAccou
               <div className="flex items-center gap-3">
                 <div className="relative shrink-0">
                   <div className="w-10 h-10 rounded-full overflow-hidden border border-custom-border shadow-sm bg-primary-bg">
-                    {hasAvatar && avatarSrc ? (
+                    {!imgError && menuAvatarSrc ? (
                       <img
-                        src={avatarSrc}
+                        key={menuAvatarSrc}
+                        src={menuAvatarSrc}
                         alt={user.email}
-                        onError={() => setImgError(true)}
+                        onError={handleMenuImageError}
                         referrerPolicy="no-referrer"
                         className="w-full h-full object-cover"
                       />

@@ -50,6 +50,31 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   // Feedback Notification
   const [feedback, setFeedback] = useState<{ message: string; ok: boolean } | null>(null);
 
+  // Dynamic Avatar Source with Google Drive Fallback
+  const [currentSrc, setCurrentSrc] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (previewUrl) {
+      setCurrentSrc(previewUrl);
+      setImgError(false);
+    } else if (user?.avatar && user.avatar !== 'none') {
+      setCurrentSrc(authService.getDisplayAvatarUrl(user.avatar));
+      setImgError(false);
+    } else {
+      setCurrentSrc(null);
+      setImgError(false);
+    }
+  }, [previewUrl, user?.avatar]);
+
+  const handleImageError = () => {
+    if (currentSrc && currentSrc.includes('google') && user?.email) {
+      // Fallback về API proxy cục bộ nếu Google Drive CDN bị hạn chế quyền truy cập
+      setCurrentSrc(`${authService.getAvatarUrl(user.email)}?t=${Date.now()}`);
+    } else {
+      setImgError(true);
+    }
+  };
+
   // Sync state on open
   useEffect(() => {
     if (isOpen && user) {
@@ -90,8 +115,9 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
     try {
       const res = await authService.uploadAvatar(file);
-      const fullUrl = res.avatarUrl.startsWith('http') ? res.avatarUrl : `${import.meta.env.VITE_API_URL || ''}${res.avatarUrl}`;
-      setPreviewUrl(fullUrl);
+      const displayUrl = authService.getDisplayAvatarUrl(res.avatarUrl) || localBlobUrl;
+      setPreviewUrl(displayUrl);
+      setImgError(false);
       showFeedback('Cập nhật ảnh đại diện thành công!', true);
     } catch (err: any) {
       setPreviewUrl(null);
@@ -106,6 +132,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     try {
       await authService.deleteAvatar();
       setPreviewUrl(null);
+      setCurrentSrc(null);
       setImgError(true);
       showFeedback('Đã xóa ảnh đại diện thành công.', true);
     } catch (err: any) {
@@ -284,12 +311,12 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               />
 
               <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-accent/50 shadow-xl bg-primary-bg">
-                {hasAvatar && currentAvatarSrc ? (
+                {!imgError && currentSrc ? (
                   <img
-                    key={currentAvatarSrc}
-                    src={currentAvatarSrc}
+                    key={currentSrc}
+                    src={currentSrc}
                     alt={user.email}
-                    onError={() => setImgError(true)}
+                    onError={handleImageError}
                     referrerPolicy="no-referrer"
                     className="w-full h-full object-cover"
                   />

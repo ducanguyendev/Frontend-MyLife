@@ -69,9 +69,24 @@ function StatusBadge({ status }: { status: string }) {
 
 function UserAvatarItem({ email, avatarUrl }: { email: string; avatarUrl?: string }) {
   const [imgError, setImgError] = useState(false);
-  const src = authService.getDisplayAvatarUrl(avatarUrl) || authService.getAvatarUrl(email);
+  const [currentSrc, setCurrentSrc] = useState<string | null>(
+    authService.getDisplayAvatarUrl(avatarUrl) || authService.getAvatarUrl(email)
+  );
 
-  if (imgError) {
+  useEffect(() => {
+    setCurrentSrc(authService.getDisplayAvatarUrl(avatarUrl) || authService.getAvatarUrl(email));
+    setImgError(false);
+  }, [avatarUrl, email]);
+
+  const handleError = () => {
+    if (currentSrc && currentSrc.includes('google')) {
+      setCurrentSrc(`${authService.getAvatarUrl(email)}?t=${Date.now()}`);
+    } else {
+      setImgError(true);
+    }
+  };
+
+  if (imgError || !currentSrc) {
     return (
       <div className="w-7 h-7 rounded-full bg-accent/20 text-accent text-[10px] font-bold flex items-center justify-center">
         {email.substring(0, 2).toUpperCase()}
@@ -81,9 +96,10 @@ function UserAvatarItem({ email, avatarUrl }: { email: string; avatarUrl?: strin
 
   return (
     <img
-      src={src}
+      key={currentSrc}
+      src={currentSrc}
       alt={email}
-      onError={() => setImgError(true)}
+      onError={handleError}
       className="w-7 h-7 rounded-full object-cover"
       referrerPolicy="no-referrer"
     />
