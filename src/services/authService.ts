@@ -90,6 +90,13 @@ export const authService = {
       // Lưu role thực từ database (ADMIN hoặc USER)
       localStorage.setItem('userRole', responseData?.role ?? 'USER');
 
+      // Lưu avatar nếu có từ DB
+      if (responseData?.avatarUrl) {
+        localStorage.setItem('userAvatar', responseData.avatarUrl);
+      } else {
+        localStorage.removeItem('userAvatar');
+      }
+
       // Xử lý Ghi nhớ mật khẩu / email
       if (data.rememberMe) {
         this.saveRemembered(data.email, data.password);

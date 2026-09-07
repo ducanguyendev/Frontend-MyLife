@@ -131,10 +131,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const response = await authService.login(credentials);
     const email = credentials.email;
     const role = response.role ?? authService.getStoredRole(); // Dùng role từ API response
+    const avatar = response.avatarUrl || authService.getStoredAvatar() || undefined;
     setUser({
       email,
       name: email.split('@')[0],
       role,
+      avatar,
       authProvider: 0,
     });
     setIsAuthenticated(true);
