@@ -11,7 +11,7 @@ import {
   UserRound,
   Phone,
   Calendar,
-  Sparkles,
+  ShieldCheck,
   AlertCircle,
   CheckCircle2,
   Check,
@@ -301,10 +301,10 @@ export const Register: React.FC = () => {
 
       <motion.div
         layout
-        initial={{ opacity: 0, y: 20, scale: 0.98 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ type: 'spring', duration: 0.45 }}
-        className="relative w-full max-w-2xl bg-secondary-bg border border-custom-border p-6 sm:p-8 rounded-3xl shadow-2xl z-10 font-sans text-primary-text"
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ type: 'spring', duration: 0.3 }}
+        className="relative w-full max-w-xl bg-secondary-bg border border-custom-border p-8 rounded-3xl shadow-2xl z-10 font-sans text-primary-text"
       >
         {/* Close / Back button */}
         <button
@@ -315,13 +315,13 @@ export const Register: React.FC = () => {
           <X size={20} />
         </button>
 
-        {/* Header */}
-        <div className="text-center space-y-1.5 mb-6">
-          <div className="w-12 h-12 rounded-2xl bg-accent/15 text-accent flex items-center justify-center mx-auto mb-2 shadow-inner">
-            <Sparkles size={26} />
+        {/* Header matching LoginModal */}
+        <div className="text-center space-y-2 mb-6">
+          <div className="w-12 h-12 rounded-2xl bg-accent/15 text-accent flex items-center justify-center mx-auto mb-3">
+            <ShieldCheck size={28} />
           </div>
-          <h2 className="text-2xl font-bold tracking-tight text-primary-text">Đăng Ký Tài Khoản</h2>
-          <p className="text-xs text-secondary-text">Vui lòng điền đầy đủ thông tin để tạo tài khoản mới.</p>
+          <h2 className="text-2xl font-bold tracking-tight text-primary-text">Đăng Ký</h2>
+          <p className="text-xs text-secondary-text">Nhập thông tin tài khoản của bạn để đăng ký.</p>
         </div>
 
         {/* Form */}
@@ -337,7 +337,7 @@ export const Register: React.FC = () => {
                 transition={{ duration: 0.25, ease: 'easeOut' }}
                 className="overflow-hidden"
               >
-                <div className="flex items-center gap-2.5 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-xs mb-1 shadow-sm">
+                <div className="flex items-center gap-2.5 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-xs mb-1">
                   <AlertCircle size={16} className="shrink-0" />
                   <span className="flex-1 leading-snug font-medium">{errorMessage}</span>
                 </div>
@@ -356,7 +356,7 @@ export const Register: React.FC = () => {
                 transition={{ duration: 0.25, ease: 'easeOut' }}
                 className="overflow-hidden"
               >
-                <div className="flex items-center gap-2.5 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 text-xs mb-1 shadow-sm">
+                <div className="flex items-center gap-2.5 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 text-xs mb-1">
                   <CheckCircle2 size={16} className="shrink-0" />
                   <span className="flex-1 leading-snug font-medium">{successMessage}</span>
                 </div>
@@ -368,11 +368,11 @@ export const Register: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Họ và Tên */}
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-secondary-text mb-1.5">
-                Họ và Tên <span className="text-red-400">*</span>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-secondary-text mb-2">
+                HỌ VÀ TÊN
               </label>
               <div className="relative">
-                <UserRound className="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary-text" size={17} />
+                <UserRound className="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary-text" size={18} />
                 <input
                   type="text"
                   name="fullName"
@@ -382,18 +382,18 @@ export const Register: React.FC = () => {
                   onKeyDown={handleFullNameKeyDown}
                   onChange={handleFullNameChange}
                   onPaste={handleFullNamePaste}
-                  className="w-full bg-primary-bg border border-custom-border focus:border-accent rounded-xl pl-10 pr-3 py-2.5 text-sm text-primary-text outline-none transition-all"
+                  className="w-full bg-primary-bg border border-custom-border focus:border-accent rounded-xl pl-11 pr-4 py-3 text-sm text-primary-text outline-none transition-all"
                 />
               </div>
             </div>
 
             {/* Số điện thoại */}
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-secondary-text mb-1.5">
-                Số Điện Thoại <span className="text-red-400">*</span>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-secondary-text mb-2">
+                SỐ ĐIỆN THOẠI
               </label>
               <div className="relative">
-                <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary-text" size={17} />
+                <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary-text" size={18} />
                 <input
                   type="tel"
                   name="phoneNumber"
@@ -403,7 +403,7 @@ export const Register: React.FC = () => {
                   onKeyDown={handlePhoneKeyDown}
                   onChange={handlePhoneChange}
                   onPaste={handlePhonePaste}
-                  className="w-full bg-primary-bg border border-custom-border focus:border-accent rounded-xl pl-10 pr-3 py-2.5 text-sm text-primary-text outline-none transition-all font-mono"
+                  className="w-full bg-primary-bg border border-custom-border focus:border-accent rounded-xl pl-11 pr-4 py-3 text-sm text-primary-text outline-none transition-all font-mono"
                 />
               </div>
             </div>
@@ -413,11 +413,11 @@ export const Register: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Ngày sinh */}
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-secondary-text mb-1.5">
-                Ngày Sinh <span className="text-red-400">*</span>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-secondary-text mb-2">
+                NGÀY SINH
               </label>
               <div className="relative">
-                <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary-text pointer-events-none" size={17} />
+                <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary-text pointer-events-none" size={18} />
                 <input
                   type="date"
                   name="dateOfBirth"
@@ -425,23 +425,23 @@ export const Register: React.FC = () => {
                   min={minBirthDate}
                   value={dateOfBirth}
                   onChange={(e) => setDateOfBirth(e.target.value)}
-                  className="w-full bg-primary-bg border border-custom-border focus:border-accent rounded-xl pl-10 pr-3 py-2.5 text-sm text-primary-text outline-none transition-all [color-scheme:dark]"
+                  className="w-full bg-primary-bg border border-custom-border focus:border-accent rounded-xl pl-11 pr-4 py-3 text-sm text-primary-text outline-none transition-all [color-scheme:dark]"
                 />
               </div>
             </div>
 
             {/* Giới tính - Pill Segmented Switch */}
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-secondary-text mb-1.5">
-                Giới Tính <span className="text-red-400">*</span>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-secondary-text mb-2">
+                GIỚI TÍNH
               </label>
-              <div className="grid grid-cols-3 gap-1.5 bg-primary-bg p-1 rounded-xl border border-custom-border">
+              <div className="grid grid-cols-3 gap-1.5 bg-primary-bg p-1.5 rounded-xl border border-custom-border h-[46px] items-center">
                 {(['Nam', 'Nữ', 'Khác'] as const).map((opt) => (
                   <button
                     key={opt}
                     type="button"
                     onClick={() => setGender(opt)}
-                    className={`py-1.5 text-xs font-medium rounded-lg transition-all flex items-center justify-center gap-1 cursor-pointer ${
+                    className={`h-full text-xs font-medium rounded-lg transition-all flex items-center justify-center gap-1 cursor-pointer ${
                       gender === opt
                         ? 'bg-accent text-primary-bg font-semibold shadow-sm'
                         : 'text-secondary-text hover:text-primary-text hover:bg-secondary-bg'
@@ -457,11 +457,11 @@ export const Register: React.FC = () => {
 
           {/* Row 3: Email (Full Width) */}
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-secondary-text mb-1.5">
-              {t('common.email', { defaultValue: 'Địa Chỉ Email' })} <span className="text-red-400">*</span>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-secondary-text mb-2">
+              {t('common.email', { defaultValue: 'EMAIL' })}
             </label>
             <div className="relative">
-              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary-text" size={17} />
+              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary-text" size={18} />
               <input
                 type="email"
                 name="email"
@@ -469,7 +469,7 @@ export const Register: React.FC = () => {
                 maxLength={254}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-primary-bg border border-custom-border focus:border-accent rounded-xl pl-10 pr-4 py-2.5 text-sm text-primary-text outline-none transition-all"
+                className="w-full bg-primary-bg border border-custom-border focus:border-accent rounded-xl pl-11 pr-4 py-3 text-sm text-primary-text outline-none transition-all"
               />
             </div>
           </div>
@@ -478,11 +478,11 @@ export const Register: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Mật khẩu */}
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-secondary-text mb-1.5">
-                {t('common.password', { defaultValue: 'Mật Khẩu' })} <span className="text-red-400">*</span>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-secondary-text mb-2">
+                {t('common.password', { defaultValue: 'MẬT KHẨU' })}
               </label>
               <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary-text" size={17} />
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary-text" size={18} />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   name="password"
@@ -497,21 +497,21 @@ export const Register: React.FC = () => {
                   onCut={(e) => {
                     e.preventDefault();
                   }}
-                  className="w-full bg-primary-bg border border-custom-border focus:border-accent rounded-xl pl-10 pr-10 py-2.5 text-sm text-primary-text outline-none transition-all font-mono"
+                  className="w-full bg-primary-bg border border-custom-border focus:border-accent rounded-xl pl-11 pr-11 py-3 text-sm text-primary-text outline-none transition-all font-mono"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary-text hover:text-primary-text p-1 cursor-pointer"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-secondary-text hover:text-primary-text p-1 cursor-pointer"
                   title={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                 >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
 
               {/* Password Strength Bar */}
               {password.length > 0 && (
-                <div className="mt-1.5 space-y-0.5">
+                <div className="mt-2 space-y-1">
                   <div className="flex gap-1">
                     {[1, 2, 3, 4].map((bar) => (
                       <div
@@ -525,8 +525,8 @@ export const Register: React.FC = () => {
                     ))}
                   </div>
                   {passwordStrength.label && (
-                    <p className="text-[11px] text-secondary-text">
-                      Độ mạnh:{' '}
+                    <p className="text-xs text-secondary-text">
+                      Độ mạnh mật khẩu:{' '}
                       <span
                         className={
                           passwordStrength.score <= 1
@@ -548,11 +548,11 @@ export const Register: React.FC = () => {
 
             {/* Nhập Lại Mật Khẩu */}
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-secondary-text mb-1.5">
-                Nhập Lại Mật Khẩu <span className="text-red-400">*</span>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-secondary-text mb-2">
+                NHẬP LẠI MẬT KHẨU
               </label>
               <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary-text" size={17} />
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary-text" size={18} />
                 <input
                   type={showConfirmPassword ? 'text' : 'password'}
                   name="confirmPassword"
@@ -570,7 +570,7 @@ export const Register: React.FC = () => {
                   onCut={(e) => {
                     e.preventDefault();
                   }}
-                  className={`w-full bg-primary-bg border rounded-xl pl-10 pr-10 py-2.5 text-sm text-primary-text outline-none transition-all font-mono ${
+                  className={`w-full bg-primary-bg border rounded-xl pl-11 pr-11 py-3 text-sm text-primary-text outline-none transition-all font-mono ${
                     confirmPassword.length > 0
                       ? confirmPassword === password
                         ? 'border-emerald-500/60 focus:border-emerald-500'
@@ -581,17 +581,17 @@ export const Register: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary-text hover:text-primary-text p-1 cursor-pointer"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-secondary-text hover:text-primary-text p-1 cursor-pointer"
                   title={showConfirmPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                 >
-                  {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
 
               {/* Match indicator */}
               {confirmPassword.length > 0 && (
                 <p
-                  className={`text-[11px] mt-1 ${
+                  className={`text-xs mt-1 ${
                     confirmPassword === password ? 'text-emerald-400' : 'text-red-400'
                   }`}
                 >
@@ -605,9 +605,9 @@ export const Register: React.FC = () => {
           <button
             type="submit"
             disabled={isLoading || !!successMessage}
-            className="w-full py-3 px-4 bg-accent hover:opacity-90 text-primary-bg font-semibold text-sm rounded-xl transition-all shadow-lg cursor-pointer disabled:opacity-50 mt-2 active:scale-[0.99]"
+            className="w-full py-3.5 px-4 bg-accent hover:opacity-90 text-primary-bg font-semibold text-sm rounded-xl transition-all shadow-lg cursor-pointer disabled:opacity-50 mt-2"
           >
-            {isLoading ? 'Đang xử lý...' : 'Tạo Tài Khoản'}
+            {isLoading ? 'Đang xử lý...' : 'Đăng Ký'}
           </button>
 
           {/* Link sang Login */}
