@@ -213,7 +213,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     return email ? email.substring(0, 2).toUpperCase() : 'US';
   };
 
-  const currentAvatarSrc = previewUrl || (user.avatar && user.avatar !== 'none' ? user.avatar : null);
+  const currentAvatarSrc = previewUrl || (user.avatar && user.avatar !== 'none' ? authService.getDisplayAvatarUrl(user.avatar) : null);
   const hasAvatar = !imgError && !!currentAvatarSrc;
 
   return (

@@ -510,7 +510,19 @@ export const authService = {
   },
 
   /**
-   * Lấy URL ảnh đại diện từ Backend Google Drive API
+   * Chuyển đổi định dạng URL Google Drive hoặc link cục bộ thành URL xem ảnh trực tiếp
+   */
+  getDisplayAvatarUrl(url?: string | null): string | null {
+    if (!url || url === 'none') return null;
+    const driveMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+    if (driveMatch && driveMatch[1]) {
+      return `https://drive.google.com/thumbnail?id=${driveMatch[1]}&sz=w1000`;
+    }
+    return url;
+  },
+
+  /**
+   * Lấy URL ảnh đại diện từ Backend API
    */
   getAvatarUrl(email?: string, timestamp?: number): string {
     const targetEmail = email || this.getStoredEmail();

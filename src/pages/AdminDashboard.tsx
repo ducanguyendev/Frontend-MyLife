@@ -69,7 +69,7 @@ function StatusBadge({ status }: { status: string }) {
 
 function UserAvatarItem({ email, avatarUrl }: { email: string; avatarUrl?: string }) {
   const [imgError, setImgError] = useState(false);
-  const src = avatarUrl || authService.getAvatarUrl(email);
+  const src = authService.getDisplayAvatarUrl(avatarUrl) || authService.getAvatarUrl(email);
 
   if (imgError) {
     return (

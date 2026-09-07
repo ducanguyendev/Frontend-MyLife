@@ -1,7 +1,8 @@
-﻿import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../hooks/useLanguage';
 import { useAuth } from '../context/AuthContext';
+import { authService } from '../services/authService';
 import { User, LogOut, ArrowLeftRight, ChevronDown, Shield, LayoutDashboard } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -47,7 +48,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ onOpenProfile, onSwitchAccou
   if (!user) return null;
 
   const initials = user.email ? user.email.substring(0, 2).toUpperCase() : 'US';
-  const avatarSrc = (user.avatar && user.avatar !== 'none') ? user.avatar : null;
+  const avatarSrc = (user.avatar && user.avatar !== 'none') ? authService.getDisplayAvatarUrl(user.avatar) : null;
   const hasAvatar = !imgError && !!avatarSrc;
 
   const handleProfileClick = () => {
