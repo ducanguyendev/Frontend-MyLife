@@ -1,8 +1,7 @@
-﻿import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../hooks/useLanguage';
 import { useAuth } from '../context/AuthContext';
-import { authService } from '../services/authService';
 import { User, LogOut, ArrowLeftRight, ChevronDown, Shield, LayoutDashboard } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -48,7 +47,8 @@ export const UserMenu: React.FC<UserMenuProps> = ({ onOpenProfile, onSwitchAccou
   if (!user) return null;
 
   const initials = user.email ? user.email.substring(0, 2).toUpperCase() : 'US';
-  const avatarSrc = user.avatar || authService.getAvatarUrl(user.email);
+  const avatarSrc = (user.avatar && user.avatar !== 'none') ? user.avatar : null;
+  const hasAvatar = !imgError && !!avatarSrc;
 
   const handleProfileClick = () => {
     setIsOpen(false);
@@ -76,7 +76,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ onOpenProfile, onSwitchAccou
         aria-expanded={isOpen}
       >
         <div className="relative w-8 h-8 rounded-full overflow-hidden border border-custom-border shadow-sm">
-          {!imgError ? (
+          {hasAvatar && avatarSrc ? (
             <img
               src={avatarSrc}
               alt={user.email}
@@ -118,7 +118,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ onOpenProfile, onSwitchAccou
             <div className="px-3 py-3 border-b border-custom-border/60">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full overflow-hidden border border-custom-border shadow-sm shrink-0">
-                  {!imgError ? (
+                  {hasAvatar && avatarSrc ? (
                     <img
                       src={avatarSrc}
                       alt={user.email}

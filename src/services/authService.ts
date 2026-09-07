@@ -481,7 +481,9 @@ export const authService = {
   },
 
   getStoredAvatar(): string | null {
-    return localStorage.getItem('userAvatar');
+    const av = localStorage.getItem('userAvatar');
+    if (!av || av === 'none' || av === 'null' || av === 'undefined') return null;
+    return av;
   },
 
   getStoredAuthProvider(): number {
@@ -503,10 +505,11 @@ export const authService = {
   /**
    * Lấy URL ảnh đại diện từ Backend Google Drive API
    */
-  getAvatarUrl(email?: string): string {
+  getAvatarUrl(email?: string, timestamp?: number): string {
     const targetEmail = email || this.getStoredEmail();
     if (!targetEmail) return '';
-    return `${API_BASE_URL}/api/avatar/${encodeURIComponent(targetEmail)}`;
+    const ts = timestamp ? `?t=${timestamp}` : '';
+    return `${API_BASE_URL}/api/avatar/${encodeURIComponent(targetEmail)}${ts}`;
   },
 
   /**
@@ -535,7 +538,9 @@ export const authService = {
     }
 
     // Cập nhật timestamp vào userAvatar để trigger re-render
-    const freshAvatarUrl = `${API_BASE_URL}${data.avatarUrl}`;
+    const freshAvatarUrl = data.avatarUrl.startsWith('http') 
+      ? data.avatarUrl 
+      : `${API_BASE_URL}${data.avatarUrl}`;
     localStorage.setItem('userAvatar', freshAvatarUrl);
     window.dispatchEvent(new CustomEvent('auth:avatarUpdated', { detail: { avatarUrl: freshAvatarUrl } }));
 
@@ -563,8 +568,8 @@ export const authService = {
       throw new Error(data?.message || 'Không thể xóa ảnh đại diện.');
     }
 
-    localStorage.removeItem('userAvatar');
-    window.dispatchEvent(new CustomEvent('auth:avatarUpdated', { detail: { avatarUrl: '' } }));
+    localStorage.setItem('userAvatar', 'none');
+    window.dispatchEvent(new CustomEvent('auth:avatarUpdated', { detail: { avatarUrl: 'none' } }));
 
     return data;
   },

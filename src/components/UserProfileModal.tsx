@@ -1,4 +1,4 @@
-﻿import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../hooks/useLanguage';
 import { useAuth } from '../context/AuthContext';
@@ -220,8 +220,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     return email ? email.substring(0, 2).toUpperCase() : 'US';
   };
 
-  const currentAvatarSrc = previewUrl || user.avatar || authService.getAvatarUrl(user.email);
-  const hasAvatar = !imgError && (!!previewUrl || !!user.avatar || !!currentAvatarSrc);
+  const currentAvatarSrc = previewUrl || (user.avatar && user.avatar !== 'none' ? user.avatar : null);
+  const hasAvatar = !imgError && !!currentAvatarSrc;
 
   return (
     <AnimatePresence>
@@ -284,7 +284,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               />
 
               <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-accent/50 shadow-xl bg-primary-bg">
-                {!imgError ? (
+                {hasAvatar && currentAvatarSrc ? (
                   <img
                     key={currentAvatarSrc}
                     src={currentAvatarSrc}

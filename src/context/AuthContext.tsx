@@ -57,7 +57,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     const handleAvatarUpdated = (e: any) => {
-      const newAvatar = e.detail?.avatarUrl || undefined;
+      const av = e.detail?.avatarUrl;
+      const newAvatar = (av && av !== 'none') ? av : undefined;
       setUser((prev) => (prev ? { ...prev, avatar: newAvatar } : null));
     };
 
