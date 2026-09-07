@@ -159,16 +159,16 @@ export const Register: React.FC = () => {
     }
 
     // ─────────────────────────────────────────────────────────────
-    // 5. Validation Email (Bắt buộc, đúng định dạng chuẩn)
+    // 5. Validation Email (Bắt buộc, đúng định dạng Gmail @gmail.com)
     // ─────────────────────────────────────────────────────────────
     const trimmedEmail = email.trim().toLowerCase();
     if (!trimmedEmail) {
       setErrorMessage('Vui lòng nhập địa chỉ email.');
       return;
     }
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
     if (!emailRegex.test(trimmedEmail) || trimmedEmail.length > 254) {
-      setErrorMessage('Địa chỉ email không đúng định dạng chuẩn (ví dụ: user@example.com).');
+      setErrorMessage('Địa chỉ email phải có định dạng Gmail hợp lệ (ví dụ: example@gmail.com).');
       return;
     }
 
