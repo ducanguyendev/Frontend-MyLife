@@ -35,14 +35,18 @@ export const Register: React.FC = () => {
     }
   }, [successMessage, navigate]);
 
-  // Kiểm tra độ mạnh mật khẩu
+  // Kiểm tra độ mạnh mật khẩu (gồm chữ hoa, chữ thường, số, ký tự đặc biệt và độ dài >= 8)
   const passwordStrength = (() => {
     if (!password) return { score: 0, label: '', color: '' };
     let score = 0;
     if (password.length >= 8) score++;
+    if (/[a-z]/.test(password)) score++;
     if (/[A-Z]/.test(password)) score++;
     if (/[0-9]/.test(password)) score++;
     if (/[^A-Za-z0-9]/.test(password)) score++;
+
+    // Quy về thang điểm 4 mức
+    const normalizedScore = Math.min(4, Math.floor((score / 5) * 4) + (score >= 3 ? 1 : 0));
     const map = [
       { label: '', color: '' },
       { label: 'Yếu', color: 'bg-red-500' },
@@ -50,7 +54,7 @@ export const Register: React.FC = () => {
       { label: 'Khá', color: 'bg-blue-500' },
       { label: 'Mạnh', color: 'bg-emerald-500' },
     ];
-    return { score, ...map[score] };
+    return { score: normalizedScore, ...map[normalizedScore] };
   })();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -58,12 +62,23 @@ export const Register: React.FC = () => {
     setErrorMessage(null);
 
     // --- Validation phía Client ---
+    // 1. Họ và tên: Bắt buộc, 2 - 50 ký tự, không chứa số hoặc ký tự đặc biệt
     const trimmedFullName = fullName.trim();
-    if (!trimmedFullName || trimmedFullName.length < 2) {
-      setErrorMessage('Vui lòng nhập họ và tên (ít nhất 2 ký tự).');
+    if (!trimmedFullName) {
+      setErrorMessage('Vui lòng nhập họ và tên.');
+      return;
+    }
+    if (trimmedFullName.length < 2 || trimmedFullName.length > 50) {
+      setErrorMessage('Họ và tên phải có độ dài từ 2 đến 50 ký tự.');
+      return;
+    }
+    const nameRegex = /^[\p{L}\s]+$/u;
+    if (!nameRegex.test(trimmedFullName)) {
+      setErrorMessage('Họ và tên không được chứa số hoặc ký tự đặc biệt.');
       return;
     }
 
+    // 2. Email: Bắt buộc, đúng định dạng chuẩn
     const trimmedEmail = email.trim();
     if (!trimmedEmail) {
       setErrorMessage('Vui lòng nhập địa chỉ email.');
@@ -71,37 +86,43 @@ export const Register: React.FC = () => {
     }
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(trimmedEmail) || trimmedEmail.length > 254) {
-      setErrorMessage('Email không đúng định dạng. Vui lòng kiểm tra lại.');
+      setErrorMessage('Địa chỉ email không đúng định dạng chuẩn (ví dụ: user@example.com).');
       return;
     }
 
+    // 3. Mật khẩu: Bắt buộc, >= 8 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt
     if (!password) {
       setErrorMessage('Vui lòng nhập mật khẩu.');
       return;
     }
     if (password.length < 8 || password.length > 72) {
-      setErrorMessage('Mật khẩu phải có độ dài từ 8 đến 72 ký tự.');
+      setErrorMessage('Mật khẩu phải có độ dài tối thiểu từ 8 ký tự trở lên.');
+      return;
+    }
+    if (!/[a-z]/.test(password)) {
+      setErrorMessage('Mật khẩu phải chứa ít nhất 1 chữ thường.');
       return;
     }
     if (!/[A-Z]/.test(password)) {
-      setErrorMessage('Mật khẩu phải có ít nhất 1 chữ hoa.');
+      setErrorMessage('Mật khẩu phải chứa ít nhất 1 chữ in hoa.');
       return;
     }
     if (!/[0-9]/.test(password)) {
-      setErrorMessage('Mật khẩu phải có ít nhất 1 chữ số.');
+      setErrorMessage('Mật khẩu phải chứa ít nhất 1 chữ số.');
       return;
     }
     if (!/[^A-Za-z0-9]/.test(password)) {
-      setErrorMessage('Mật khẩu phải có ít nhất 1 ký tự đặc biệt (vd: @, #, !).');
+      setErrorMessage('Mật khẩu phải chứa ít nhất 1 ký tự đặc biệt (ví dụ: @, #, $, !...).');
       return;
     }
 
+    // 4. Xác nhận mật khẩu: Bắt buộc, khớp hoàn toàn với Mật khẩu
     if (!confirmPassword) {
-      setErrorMessage('Vui lòng nhập lại mật khẩu.');
+      setErrorMessage('Vui lòng nhập lại mật khẩu xác nhận.');
       return;
     }
     if (password !== confirmPassword) {
-      setErrorMessage('Mật khẩu nhập lại không khớp. Vui lòng kiểm tra lại.');
+      setErrorMessage('Mật khẩu xác nhận phải khớp hoàn toàn với trường mật khẩu.');
       return;
     }
 
@@ -205,9 +226,10 @@ export const Register: React.FC = () => {
                 type="text"
                 name="fullName"
                 autoComplete="name"
-                maxLength={100}
+                maxLength={50}
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
+                placeholder="Nhập họ và tên (2-50 ký tự)..."
                 className="w-full bg-primary-bg border border-custom-border focus:border-accent rounded-xl pl-11 pr-4 py-3 text-sm text-primary-text outline-none transition-all"
               />
             </div>
@@ -227,6 +249,7 @@ export const Register: React.FC = () => {
                 maxLength={254}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                placeholder="example@domain.com"
                 className="w-full bg-primary-bg border border-custom-border focus:border-accent rounded-xl pl-11 pr-4 py-3 text-sm text-primary-text outline-none transition-all"
               />
             </div>
@@ -246,6 +269,14 @@ export const Register: React.FC = () => {
                 maxLength={72}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                onCopy={(e) => {
+                  e.preventDefault();
+                  setErrorMessage('Không được phép sao chép mật khẩu vì lý do an toàn bảo mật.');
+                }}
+                onCut={(e) => {
+                  e.preventDefault();
+                }}
+                placeholder="Ít nhất 8 ký tự, gồm chữ hoa, số & ký tự đặc biệt..."
                 className="w-full bg-primary-bg border border-custom-border focus:border-accent rounded-xl pl-11 pr-11 py-3 text-sm text-primary-text outline-none transition-all font-mono"
               />
               <button
@@ -309,6 +340,17 @@ export const Register: React.FC = () => {
                 maxLength={72}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
+                onPaste={(e) => {
+                  e.preventDefault();
+                  setErrorMessage('Không được phép dán (paste). Vui lòng tự nhập lại mật khẩu để xác nhận.');
+                }}
+                onCopy={(e) => {
+                  e.preventDefault();
+                }}
+                onCut={(e) => {
+                  e.preventDefault();
+                }}
+                placeholder="Nhập lại mật khẩu..."
                 className={`w-full bg-primary-bg border rounded-xl pl-11 pr-11 py-3 text-sm text-primary-text outline-none transition-all font-mono ${
                   confirmPassword.length > 0
                     ? confirmPassword === password
