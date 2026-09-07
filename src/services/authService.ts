@@ -429,7 +429,10 @@ export const authService = {
     let token = this.getAccessToken();
 
     const headers = new Headers(options.headers || {});
-    headers.set('Content-Type', 'application/json');
+    // Không tự động set Content-Type: application/json nếu body là FormData (để browser tự generate boundary)
+    if (!(options.body instanceof FormData) && !headers.has('Content-Type')) {
+      headers.set('Content-Type', 'application/json');
+    }
     if (token) {
       headers.set('Authorization', `Bearer ${token}`);
     }
@@ -440,7 +443,7 @@ export const authService = {
       credentials: 'include',
     });
 
-    // Nếu Access Token hết hạn (401), tự động dùng Refresh Token để lấy token mới
+    // Nếu Access Token hết hạn (401), tự động dùng Refresh Token để lấy token mới và gọi lại
     if (response.status === 401 && this.getRefreshToken()) {
       try {
         const refreshed = await this.refreshToken();
@@ -546,22 +549,14 @@ export const authService = {
   },
 
   /**
-   * Tải ảnh đại diện mới lên Google Drive (Multipart Form Data)
+   * Tải ảnh đại diện mới lên Google Drive (Multipart Form Data) - Không giới hạn số lần
    */
   async uploadAvatar(file: File): Promise<{ message: string; avatarUrl: string }> {
     const formData = new FormData();
     formData.append('file', file);
 
-    const token = this.getAccessToken();
-    const headers: HeadersInit = {};
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    const response = await fetch(`${API_BASE_URL}/api/avatar/upload`, {
+    const response = await this.fetchWithAuth(`${API_BASE_URL}/api/avatar/upload`, {
       method: 'POST',
-      headers,
-      credentials: 'include',
       body: formData,
     });
 
@@ -588,16 +583,8 @@ export const authService = {
    * Xóa ảnh đại diện khỏi Google Drive
    */
   async deleteAvatar(): Promise<{ message: string }> {
-    const token = this.getAccessToken();
-    const headers: HeadersInit = {};
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    const response = await fetch(`${API_BASE_URL}/api/avatar`, {
+    const response = await this.fetchWithAuth(`${API_BASE_URL}/api/avatar`, {
       method: 'DELETE',
-      headers,
-      credentials: 'include',
     });
 
     const data = await response.json();
@@ -615,18 +602,8 @@ export const authService = {
    * Đổi mật khẩu tài khoản Local
    */
   async changePassword(data: { currentPassword: string; newPassword: string; confirmPassword: string }): Promise<{ message: string }> {
-    const token = this.getAccessToken();
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-    };
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    const response = await fetch(`${API_BASE_URL}/api/auth/change-password`, {
+    const response = await this.fetchWithAuth(`${API_BASE_URL}/api/auth/change-password`, {
       method: 'POST',
-      headers,
-      credentials: 'include',
       body: JSON.stringify(data),
     });
 
