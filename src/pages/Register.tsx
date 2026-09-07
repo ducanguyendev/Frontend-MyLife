@@ -320,7 +320,6 @@ export const Register: React.FC = () => {
                   maxLength={50}
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Nguyễn Văn A"
                   className="w-full bg-primary-bg border border-custom-border focus:border-accent rounded-xl pl-10 pr-3 py-2.5 text-sm text-primary-text outline-none transition-all"
                 />
               </div>
@@ -340,7 +339,6 @@ export const Register: React.FC = () => {
                   maxLength={11}
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
-                  placeholder="0912345678"
                   className="w-full bg-primary-bg border border-custom-border focus:border-accent rounded-xl pl-10 pr-3 py-2.5 text-sm text-primary-text outline-none transition-all font-mono"
                 />
               </div>
@@ -407,7 +405,6 @@ export const Register: React.FC = () => {
                 maxLength={254}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="example@domain.com"
                 className="w-full bg-primary-bg border border-custom-border focus:border-accent rounded-xl pl-10 pr-4 py-2.5 text-sm text-primary-text outline-none transition-all"
               />
             </div>
@@ -436,7 +433,6 @@ export const Register: React.FC = () => {
                   onCut={(e) => {
                     e.preventDefault();
                   }}
-                  placeholder="Tối thiểu 8 ký tự..."
                   className="w-full bg-primary-bg border border-custom-border focus:border-accent rounded-xl pl-10 pr-10 py-2.5 text-sm text-primary-text outline-none transition-all font-mono"
                 />
                 <button
@@ -510,7 +506,6 @@ export const Register: React.FC = () => {
                   onCut={(e) => {
                     e.preventDefault();
                   }}
-                  placeholder="Khớp với mật khẩu..."
                   className={`w-full bg-primary-bg border rounded-xl pl-10 pr-10 py-2.5 text-sm text-primary-text outline-none transition-all font-mono ${
                     confirmPassword.length > 0
                       ? confirmPassword === password
