@@ -16,6 +16,9 @@ export interface LoginResponse {
 
 export interface RegisterRequest {
   fullName: string;
+  phoneNumber: string;
+  gender: string;
+  dateOfBirth: string; // yyyy-MM-dd
   email: string;
   password: string;
   confirmPassword: string;
@@ -28,10 +31,19 @@ export interface RegisterResponse {
 
 export interface UserInfoResponse {
   message: string;
+  id?: string;
   email: string;
+  name?: string;
+  fullName?: string;
+  phoneNumber?: string;
+  gender?: string;
+  dateOfBirth?: string;
   avatarUrl?: string;
   authProvider?: number;
   authProviderName?: string;
+  role?: string;
+  isActive?: boolean;
+  verifiedAt?: string;
   isAuthenticated: boolean;
 }
 
