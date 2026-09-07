@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+﻿import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../hooks/useLanguage';
 import { useAuth } from '../context/AuthContext';
@@ -68,28 +68,31 @@ export const UserMenu: React.FC<UserMenuProps> = ({ onOpenProfile, onSwitchAccou
 
   return (
     <div className="relative" ref={menuRef}>
-      {/* Trigger Button: User Avatar */}
+      {/* Trigger Button: User Avatar (Trên) */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2.5 p-1.5 pr-3 rounded-full border border-custom-border hover:border-accent bg-secondary-bg/60 hover:bg-secondary-bg transition-all cursor-pointer group"
         aria-label="User profile menu"
         aria-expanded={isOpen}
       >
-        <div className="relative w-8 h-8 rounded-full overflow-hidden border border-custom-border shadow-sm">
-          {hasAvatar && avatarSrc ? (
-            <img
-              src={avatarSrc}
-              alt={user.email}
-              onError={() => setImgError(true)}
-              referrerPolicy="no-referrer"
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full bg-accent text-black font-mono font-bold text-xs flex items-center justify-center">
-              {initials}
-            </div>
-          )}
-          <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-secondary-bg" />
+        <div className="relative shrink-0">
+          <div className="w-8 h-8 rounded-full overflow-hidden border border-custom-border shadow-sm bg-primary-bg">
+            {hasAvatar && avatarSrc ? (
+              <img
+                src={avatarSrc}
+                alt={user.email}
+                onError={() => setImgError(true)}
+                referrerPolicy="no-referrer"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full bg-accent text-black font-mono font-bold text-xs flex items-center justify-center">
+                {initials}
+              </div>
+            )}
+          </div>
+          {/* Chấm xanh online không bị che */}
+          <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-secondary-bg z-10 shadow-sm" />
         </div>
 
         <span className="text-xs font-semibold text-primary-text max-w-[120px] truncate hidden lg:inline">
@@ -104,7 +107,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ onOpenProfile, onSwitchAccou
         />
       </button>
 
-      {/* Floating Dropdown Menu */}
+      {/* Floating Dropdown Menu (Dưới) */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -117,26 +120,30 @@ export const UserMenu: React.FC<UserMenuProps> = ({ onOpenProfile, onSwitchAccou
             {/* Header with info */}
             <div className="px-3 py-3 border-b border-custom-border/60">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full overflow-hidden border border-custom-border shadow-sm shrink-0">
-                  {hasAvatar && avatarSrc ? (
-                    <img
-                      src={avatarSrc}
-                      alt={user.email}
-                      onError={() => setImgError(true)}
-                      referrerPolicy="no-referrer"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-accent text-black font-mono font-bold text-sm flex items-center justify-center">
-                      {initials}
-                    </div>
-                  )}
+                <div className="relative shrink-0">
+                  <div className="w-10 h-10 rounded-full overflow-hidden border border-custom-border shadow-sm bg-primary-bg">
+                    {hasAvatar && avatarSrc ? (
+                      <img
+                        src={avatarSrc}
+                        alt={user.email}
+                        onError={() => setImgError(true)}
+                        referrerPolicy="no-referrer"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-accent text-black font-mono font-bold text-sm flex items-center justify-center">
+                        {initials}
+                      </div>
+                    )}
+                  </div>
+                  {/* Chấm xanh đồng nhất ở menu dưới */}
+                  <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full border-2 border-secondary-bg z-10 shadow-sm" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-bold text-primary-text truncate">{user.email}</p>
                   <span className="inline-flex items-center gap-1 mt-0.5 text-[10px] font-semibold text-accent bg-accent/15 px-2 py-0.5 rounded-full">
                     <Shield size={10} />
-                    {user.role === 'ADMIN' || user.role === 'Administrator'
+                    {isAdmin
                       ? t('navigation.roleAdmin', { defaultValue: 'Quản trị viên' })
                       : t('navigation.roleMember', { defaultValue: 'Thành viên' })}
                   </span>
@@ -144,52 +151,47 @@ export const UserMenu: React.FC<UserMenuProps> = ({ onOpenProfile, onSwitchAccou
               </div>
             </div>
 
-            {/* Menu Options */}
-            <div className="py-1 space-y-0.5">
-              {/* Admin Dashboard (Only visible for Admin) */}
+            {/* Menu Items */}
+            <div className="p-1 space-y-1">
               {isAdmin && (
                 <button
                   onClick={() => {
                     setIsOpen(false);
                     navigate('/Home/Admin');
                   }}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium text-accent hover:bg-accent/10 transition-colors text-left cursor-pointer group"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-accent hover:bg-accent/10 transition-colors cursor-pointer"
                 >
-                  <LayoutDashboard size={16} className="text-accent" />
-                  <span className="font-semibold">Quản trị hệ thống</span>
+                  <LayoutDashboard size={15} />
+                  <span>Quản trị hệ thống</span>
                 </button>
               )}
 
-              {/* Profile Details */}
               <button
                 onClick={handleProfileClick}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium text-primary-text hover:bg-primary-bg transition-colors text-left cursor-pointer group"
+                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-primary-text hover:bg-primary-bg transition-colors cursor-pointer"
               >
-                <User size={16} className="text-secondary-text group-hover:text-accent transition-colors" />
+                <User size={15} className="text-secondary-text" />
                 <span>{t('navigation.profile', { defaultValue: 'Thông tin cá nhân' })}</span>
               </button>
 
-              {/* Switch Account */}
               <button
                 onClick={handleSwitchClick}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium text-primary-text hover:bg-primary-bg transition-colors text-left cursor-pointer group"
+                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-primary-text hover:bg-primary-bg transition-colors cursor-pointer"
               >
-                <ArrowLeftRight size={16} className="text-secondary-text group-hover:text-accent transition-colors" />
-                <span>{t('navigation.switchAccount', { defaultValue: 'Chuyển đổi tài khoản' })}</span>
+                <ArrowLeftRight size={15} className="text-secondary-text" />
+                <span>{t('common.switchAccount', { defaultValue: 'Chuyển đổi tài khoản' })}</span>
               </button>
+
+              <div className="pt-1 mt-1 border-t border-custom-border/50">
+                <button
+                  onClick={handleLogoutClick}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
+                >
+                  <LogOut size={15} />
+                  <span>{t('common.logout', { defaultValue: 'Đăng xuất' })}</span>
+                </button>
+              </div>
             </div>
-
-            {/* Divider */}
-            <div className="h-[1px] bg-custom-border/60 my-1" />
-
-            {/* Logout */}
-            <button
-              onClick={handleLogoutClick}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium text-red-500 hover:bg-red-500/10 transition-colors text-left cursor-pointer group"
-            >
-              <LogOut size={16} className="text-red-500" />
-              <span>{t('navigation.logout', { defaultValue: 'Đăng xuất' })}</span>
-            </button>
           </motion.div>
         )}
       </AnimatePresence>

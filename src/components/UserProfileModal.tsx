@@ -1,11 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
+﻿import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../hooks/useLanguage';
 import { useAuth } from '../context/AuthContext';
 import { authService } from '../services/authService';
 import {
   X, Mail, Shield, LogOut, ArrowLeftRight, CheckCircle2,
-  Camera, Trash2, Cloud, Loader2, AlertCircle, User,
+  Camera, Trash2, Loader2, AlertCircle, User,
   Lock, KeyRound, Eye, EyeOff, Save, Check, ShieldCheck
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -92,11 +92,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
       const res = await authService.uploadAvatar(file);
       const fullUrl = res.avatarUrl.startsWith('http') ? res.avatarUrl : `${import.meta.env.VITE_API_URL || ''}${res.avatarUrl}`;
       setPreviewUrl(fullUrl);
-
-      const successMsg = isAdmin 
-        ? 'Cập nhật ảnh đại diện lên Google Drive thành công!' 
-        : 'Cập nhật ảnh đại diện thành công!';
-      showFeedback(successMsg, true);
+      showFeedback('Cập nhật ảnh đại diện thành công!', true);
     } catch (err: any) {
       setPreviewUrl(null);
       showFeedback(err?.message || 'Lỗi khi tải ảnh đại diện.', false);
@@ -111,10 +107,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
       await authService.deleteAvatar();
       setPreviewUrl(null);
       setImgError(true);
-      const deleteMsg = isAdmin
-        ? 'Đã xóa ảnh đại diện khỏi Google Drive.'
-        : 'Đã xóa ảnh đại diện thành công.';
-      showFeedback(deleteMsg, true);
+      showFeedback('Đã xóa ảnh đại diện thành công.', true);
     } catch (err: any) {
       showFeedback(err?.message || 'Lỗi khi xóa ảnh đại diện.', false);
     } finally {
@@ -246,34 +239,34 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="absolute top-5 right-5 text-secondary-text hover:text-primary-text p-2 rounded-full hover:bg-primary-bg transition-colors cursor-pointer"
+            className="absolute top-5 right-5 z-20 text-secondary-text hover:text-primary-text p-2 rounded-full hover:bg-primary-bg transition-colors cursor-pointer"
             aria-label="Close"
           >
             <X size={20} />
           </button>
 
-          {/* Toast / Alert Feedback */}
+          {/* Toast / Alert Feedback (Căn lề gọn gàng, không bị đè nút đóng) */}
           <AnimatePresence>
             {feedback && (
               <motion.div
                 initial={{ opacity: 0, y: -12 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -12 }}
-                className={`mb-5 p-3.5 rounded-2xl border text-xs font-medium flex items-center gap-2.5 shadow-sm ${
+                className={`mb-5 mr-8 p-3 px-4 rounded-xl border text-xs font-medium flex items-center gap-2.5 shadow-sm ${
                   feedback.ok
                     ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
                     : 'bg-red-500/10 border-red-500/30 text-red-400'
                 }`}
               >
-                {feedback.ok ? <CheckCircle2 size={17} className="shrink-0" /> : <AlertCircle size={17} className="shrink-0" />}
-                <span>{feedback.message}</span>
+                {feedback.ok ? <CheckCircle2 size={16} className="shrink-0" /> : <AlertCircle size={16} className="shrink-0" />}
+                <span className="leading-snug">{feedback.message}</span>
               </motion.div>
             )}
           </AnimatePresence>
 
           {/* Profile Header Block */}
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 mb-6 pb-6 border-b border-custom-border/60">
-            {/* Avatar with Camera Trigger */}
+            {/* Avatar with Camera Hover */}
             <div className="relative group shrink-0">
               <input
                 ref={fileInputRef}
@@ -283,7 +276,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 className="hidden"
               />
 
-              <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-accent/50 shadow-xl bg-primary-bg">
+              <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-accent/50 shadow-xl bg-primary-bg">
                 {hasAvatar && currentAvatarSrc ? (
                   <img
                     key={currentAvatarSrc}
@@ -305,7 +298,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isUploading}
                   className="absolute inset-0 bg-black/60 backdrop-blur-xs flex flex-col items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer disabled:opacity-50"
-                  title={isAdmin ? "Thay đổi ảnh (Lưu vào Google Drive)" : "Thay đổi ảnh đại diện"}
+                  title="Thay đổi ảnh đại diện"
                 >
                   {isUploading ? (
                     <Loader2 size={20} className="animate-spin text-accent" />
@@ -318,20 +311,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 </button>
               </div>
 
-              {/* Status or Cloud Badge */}
-              {isAdmin ? (
-                <div
-                  className="absolute bottom-0 right-0 w-5 h-5 bg-accent text-black rounded-full border-2 border-secondary-bg flex items-center justify-center shadow"
-                  title="Lưu trữ Google Drive"
-                >
-                  <Cloud size={10} />
-                </div>
-              ) : (
-                <div
-                  className="absolute bottom-0 right-0 w-4 h-4 bg-emerald-500 rounded-full border-2 border-secondary-bg"
-                  title="Đang hoạt động"
-                />
-              )}
+              {/* Chấm xanh trạng thái Online (Đồng nhất, không bị che) */}
+              <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-emerald-500 rounded-full border-2 border-secondary-bg z-10 shadow-sm" />
             </div>
 
             {/* Profile Info Summary */}
@@ -359,33 +340,20 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 </span>
               </div>
 
-              {/* Quick avatar buttons */}
-              <div className="flex items-center justify-center sm:justify-start gap-2 mt-2 text-[11px]">
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploading}
-                  className="text-accent hover:underline flex items-center gap-1 cursor-pointer font-medium"
-                >
-                  <Camera size={11} />
-                  <span>Tải ảnh mới</span>
-                </button>
-
-                {hasAvatar && (
-                  <>
-                    <span className="text-secondary-text">•</span>
-                    <button
-                      type="button"
-                      onClick={handleDeleteAvatar}
-                      disabled={isUploading}
-                      className="text-red-400 hover:underline flex items-center gap-1 cursor-pointer font-medium"
-                    >
-                      <Trash2 size={11} />
-                      <span>Xóa ảnh</span>
-                    </button>
-                  </>
-                )}
-              </div>
+              {/* Nút Xóa ảnh nhanh (Không cần chữ tải ảnh mới) */}
+              {hasAvatar && (
+                <div className="flex items-center justify-center sm:justify-start pt-2">
+                  <button
+                    type="button"
+                    onClick={handleDeleteAvatar}
+                    disabled={isUploading}
+                    className="text-xs text-red-400 hover:text-red-300 hover:underline flex items-center gap-1 cursor-pointer font-medium"
+                  >
+                    <Trash2 size={12} />
+                    <span>Xóa ảnh</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
@@ -478,16 +446,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     {user.authProvider === 1 ? 'Google OAuth 2.0' : 'Email & Mật khẩu (Local)'}
                   </span>
                 </div>
-
-                {isAdmin && (
-                  <div className="flex items-center justify-between py-1.5 border-b border-custom-border/50">
-                    <span className="text-secondary-text flex items-center gap-2">
-                      <Cloud size={14} className="text-blue-400" />
-                      <span>Kho lưu trữ Avatar:</span>
-                    </span>
-                    <span className="font-semibold text-blue-400">Google Drive</span>
-                  </div>
-                )}
 
                 <div className="flex items-center justify-between py-1.5">
                   <span className="text-secondary-text flex items-center gap-2">
