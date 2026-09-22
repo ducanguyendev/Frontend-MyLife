@@ -1,27 +1,31 @@
 import { useState, useEffect } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useNavigate } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
-import { CustomCursor } from './components/CustomCursor';
-import { ScrollProgressBar } from './components/ScrollProgressBar';
-import { LoadingScreen } from './components/LoadingScreen';
-import { Header } from './layouts/Header';
-import { Footer } from './layouts/Footer';
-import { Hero } from './pages/Hero';
-import { About } from './pages/About';
-import { Skills } from './pages/Skills';
-import { Projects } from './pages/Projects';
-import { Experience } from './pages/Experience';
-import { Stats } from './pages/Stats';
-import { Contact } from './pages/Contact';
-import { Register } from './pages/Register';
-import { AdminDashboard } from './pages/AdminDashboard';
-import { Forbidden } from './pages/Forbidden';
-import { ProtectedRoute } from './components/ProtectedRoute';
-import { useLanguage } from './hooks/useLanguage';
+import { CustomCursor } from '@/shared/components/CustomCursor';
+import { ScrollProgressBar } from '@/shared/components/ScrollProgressBar';
+import { LoadingScreen } from '@/shared/components/LoadingScreen';
+import { Header } from '@/shared/layouts/Header';
+import { Footer } from '@/shared/layouts/Footer';
+import { Hero } from '@/features/portfolio/pages/Hero';
+import { About } from '@/features/portfolio/pages/About';
+import { Skills } from '@/features/portfolio/pages/Skills';
+import { Projects } from '@/features/portfolio/pages/Projects';
+import { Experience } from '@/features/portfolio/pages/Experience';
+import { Stats } from '@/features/portfolio/pages/Stats';
+import { Contact } from '@/features/portfolio/pages/Contact';
+import { Register } from '@/features/auth/pages/Register';
+import { AdminDashboard } from '@/features/admin/pages/AdminDashboard';
+import { FamilyTreePage } from '@/features/family-tree/pages/FamilyTreePage';
+import { Forbidden } from '@/features/portfolio/pages/Forbidden';
+import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute';
+import { useLanguage } from '@/shared/hooks/useLanguage';
+import { NotificationProvider } from '@/shared/contexts/NotificationContext';
+import { SessionExpiredModal } from '@/features/auth/components/SessionExpiredModal';
+import { LoginModal } from '@/features/auth/components/LoginModal';
 
 function MainPortfolio() {
   return (
-    <div className="flex flex-col min-h-screen bg-primary-bg text-primary-text relative antialiased selection:bg-accent selection:text-white">
+    <div className="flex flex-col min-h-screen bg-primary-bg font-sans overflow-x-hidden transition-colors duration-300 relative antialiased">
       {/* Global UI Extras */}
       <CustomCursor />
       <ScrollProgressBar />
@@ -47,8 +51,12 @@ function MainPortfolio() {
 }
 
 function App() {
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const { language, t } = useLanguage();
+
+  const [isSessionExpiredOpen, setIsSessionExpiredOpen] = useState(false);
+  const [isGlobalLoginOpen, setIsGlobalLoginOpen] = useState(false);
 
   useEffect(() => {
     // Simulate loading screen
@@ -58,6 +66,22 @@ function App() {
 
     return () => clearTimeout(timer);
   }, []);
+
+  // Lắng nghe sự kiện hết hạn token trên toàn hệ thống
+  useEffect(() => {
+    const handleExpired = () => {
+      setIsSessionExpiredOpen(true);
+    };
+
+    window.addEventListener('auth:expired', handleExpired);
+    return () => window.removeEventListener('auth:expired', handleExpired);
+  }, []);
+
+  const handleConfirmSessionExpired = () => {
+    setIsSessionExpiredOpen(false);
+    navigate('/Home');
+    setIsGlobalLoginOpen(true);
+  };
 
   // Dynamically update document SEO metadata based on selected language
   useEffect(() => {
@@ -78,39 +102,85 @@ function App() {
   }, [language, t, isLoading]);
 
   return (
-    <>
+    <NotificationProvider>
       <AnimatePresence mode="wait">
         {isLoading && <LoadingScreen key="loader" />}
       </AnimatePresence>
 
       {!isLoading && (
-        <Routes>
-          <Route path="/" element={<MainPortfolio />} />
-          <Route path="/home" element={<MainPortfolio />} />
-          <Route path="/Home" element={<MainPortfolio />} />
-          <Route path="/Register" element={<Register />} />
-          <Route path="/register" element={<Register />} />
-          <Route
-            path="/Home/Admin"
-            element={
-              <ProtectedRoute requiredRole="ADMIN">
-                <AdminDashboard />
-              </ProtectedRoute>
-            }
+        <>
+          <Routes>
+            <Route path="/" element={<MainPortfolio />} />
+            <Route path="/home" element={<MainPortfolio />} />
+            <Route path="/Home" element={<MainPortfolio />} />
+            <Route path="/Register" element={<Register />} />
+            <Route path="/register" element={<Register />} />
+            <Route
+              path="/FamilyTree"
+              element={
+                <ProtectedRoute>
+                  <FamilyTreePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/family-tree"
+              element={
+                <ProtectedRoute>
+                  <FamilyTreePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/Home/FamilyTree"
+              element={
+                <ProtectedRoute>
+                  <FamilyTreePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/home/family-tree"
+              element={
+                <ProtectedRoute>
+                  <FamilyTreePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/Home/Admin"
+              element={
+                <ProtectedRoute requiredRole="ADMIN">
+                  <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/home/admin"
+              element={
+                <ProtectedRoute requiredRole="ADMIN">
+                  <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/403" element={<Forbidden />} />
+            <Route path="*" element={<MainPortfolio />} />
+          </Routes>
+
+          {/* Hộp thoại thông báo hết hạn phiên làm việc - bắt buộc bấm Xác nhận */}
+          <SessionExpiredModal
+            isOpen={isSessionExpiredOpen}
+            onConfirm={handleConfirmSessionExpired}
           />
-          <Route
-            path="/home/admin"
-            element={
-              <ProtectedRoute requiredRole="ADMIN">
-                <AdminDashboard />
-              </ProtectedRoute>
-            }
+
+          {/* Form đăng nhập hiển thị ngay sau khi người dùng xác nhận thông báo hết hạn */}
+          <LoginModal
+            isOpen={isGlobalLoginOpen}
+            onClose={() => setIsGlobalLoginOpen(false)}
           />
-          <Route path="/403" element={<Forbidden />} />
-          <Route path="*" element={<MainPortfolio />} />
-        </Routes>
+        </>
       )}
-    </>
+    </NotificationProvider>
   );
 }
 
