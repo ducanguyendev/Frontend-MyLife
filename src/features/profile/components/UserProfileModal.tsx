@@ -7,7 +7,7 @@ import { Input, PasswordInput } from '@/shared/components/ui';
 import {
   X, Mail, Shield, LogOut, ArrowLeftRight, CheckCircle2,
   Camera, Trash2, Loader2, AlertCircle, User,
-  Lock, KeyRound, Save, Check, ShieldCheck
+  Lock, KeyRound, Save, Check, ShieldCheck, Phone, Calendar
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -35,9 +35,14 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   const [imgError, setImgError] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  // Edit Name State
-  const [displayName, setDisplayName] = useState('');
-  const [isSavingName, setIsSavingName] = useState(false);
+  // Profile Info States
+  const [fullName, setFullName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [gender, setGender] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState('');
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [isFetchingInfo, setIsFetchingInfo] = useState(false);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
 
   // Change Password States
   const [currentPassword, setCurrentPassword] = useState('');
@@ -47,14 +52,29 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
   // Validation field errors
   const [fieldErrors, setFieldErrors] = useState<{
-    displayName?: string;
+    fullName?: string;
+    phoneNumber?: string;
+    gender?: string;
+    dateOfBirth?: string;
     currentPassword?: string;
     newPassword?: string;
     confirmPassword?: string;
   }>({});
 
   // Feedback Notification
-  const [feedback, setFeedback] = useState<{ message: string; ok: boolean } | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>;
+    if (errorMessage || successMessage) {
+      timer = setTimeout(() => {
+        setErrorMessage(null);
+        setSuccessMessage(null);
+      }, 4000);
+    }
+    return () => clearTimeout(timer);
+  }, [errorMessage, successMessage]);
 
   // Dynamic Avatar Source with Google Drive Fallback
   const [currentSrc, setCurrentSrc] = useState<string | null>(null);
@@ -82,21 +102,41 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
       setImgError(false);
       setPreviewUrl(null);
       setCurrentSrc(user.avatar && user.avatar !== 'none' ? authService.getDisplayAvatarUrl(user.avatar, user.email, Date.now()) : null);
-      setDisplayName(user.name || user.email.split('@')[0]);
+      
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
       setFieldErrors({});
+      setErrorMessage(null);
+      setSuccessMessage(null);
       setActiveTab('info');
+      setIsEditingProfile(false);
+      
+      // Fetch full user info
+      const fetchInfo = async () => {
+        setIsFetchingInfo(true);
+        try {
+          const info = await authService.getUserInfo();
+          setFullName(info.fullName || user.name || user.email.split('@')[0]);
+          setPhoneNumber(info.phoneNumber || '');
+          setGender(info.gender || '');
+          if (info.dateOfBirth) {
+             const [y, m, d] = info.dateOfBirth.split('T')[0].split('-');
+             setDateOfBirth(`${d}/${m}/${y}`);
+          } else {
+             setDateOfBirth('');
+          }
+        } catch (err) {
+           console.error(err);
+        } finally {
+          setIsFetchingInfo(false);
+        }
+      };
+      fetchInfo();
     }
   }, [isOpen, user?.email, user?.avatar, user?.name]);
 
   if (!isOpen || !user) return null;
-
-  const showFeedback = (message: string, ok: boolean) => {
-    setFeedback({ message, ok });
-    setTimeout(() => setFeedback(null), 3500);
-  };
 
   // ───────────────────────────────────────────────────────────────────────────
   // Avatar Handlers
@@ -108,18 +148,22 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
     // Validate size (< 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      showFeedback(t('common.userProfile.msgAvatarSize', { defaultValue: 'Kích thước ảnh không được vượt quá 5MB.' }), false);
+      setErrorMessage(t('common.userProfile.msgAvatarSize', { defaultValue: 'Kích thước ảnh không được vượt quá 5MB.' }));
+      setSuccessMessage(null);
       return;
     }
 
     // Validate type
     const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
     if (!validTypes.includes(file.type)) {
-      showFeedback(t('common.userProfile.msgAvatarFormat', { defaultValue: 'Định dạng ảnh không hợp lệ (JPG, PNG, WEBP, GIF).' }), false);
+      setErrorMessage(t('common.userProfile.msgAvatarFormat', { defaultValue: 'Định dạng ảnh không hợp lệ (JPG, PNG, WEBP, GIF).' }));
+      setSuccessMessage(null);
       return;
     }
 
     setIsUploading(true);
+    setErrorMessage(null);
+    setSuccessMessage(null);
     try {
       const res = await authService.uploadAvatar(file);
       setImgError(false);
@@ -128,9 +172,9 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
         setPreviewUrl(freshUrl);
         setCurrentSrc(freshUrl);
       }
-      showFeedback(t('common.userProfile.msgUploadAvatarSuccess', { defaultValue: 'Cập nhật ảnh đại diện thành công!' }), true);
+      setSuccessMessage(t('common.userProfile.msgUploadAvatarSuccess', { defaultValue: 'Cập nhật ảnh đại diện thành công!' }));
     } catch (err: any) {
-      showFeedback(err?.message || t('common.userProfile.msgUploadAvatarError', { defaultValue: 'Lỗi khi tải ảnh đại diện lên.' }), false);
+      setErrorMessage(err?.message || t('common.userProfile.msgUploadAvatarError', { defaultValue: 'Lỗi khi tải ảnh đại diện lên.' }));
     } finally {
       setIsUploading(false);
     }
@@ -139,42 +183,93 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   const handleDeleteAvatar = async () => {
     if (isUploading) return;
     setIsUploading(true);
+    setErrorMessage(null);
+    setSuccessMessage(null);
     try {
       await authService.deleteAvatar();
       setPreviewUrl(null);
       setCurrentSrc(null);
       setImgError(false);
-      showFeedback(t('common.userProfile.msgDeleteAvatarSuccess', { defaultValue: 'Đã xóa ảnh đại diện thành công.' }), true);
+      setSuccessMessage(t('common.userProfile.msgDeleteAvatarSuccess', { defaultValue: 'Đã xóa ảnh đại diện thành công.' }));
     } catch (err: any) {
-      showFeedback(err?.message || t('common.userProfile.msgDeleteAvatarError', { defaultValue: 'Lỗi khi xóa ảnh đại diện.' }), false);
+      setErrorMessage(err?.message || t('common.userProfile.msgDeleteAvatarError', { defaultValue: 'Lỗi khi xóa ảnh đại diện.' }));
     } finally {
       setIsUploading(false);
     }
   };
 
   // ───────────────────────────────────────────────────────────────────────────
-  // Edit Display Name Handler
+  // Edit Profile Handler
   // ───────────────────────────────────────────────────────────────────────────
-  const handleSaveName = (e: React.FormEvent) => {
+  const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    const cleanName = displayName.trim();
-    if (!cleanName) {
-      setFieldErrors((prev) => ({ ...prev, displayName: t('common.userProfile.msgNameEmpty', { defaultValue: 'Tên hiển thị không được để trống.' }) }));
-      showFeedback(t('common.userProfile.msgNameEmpty', { defaultValue: 'Tên hiển thị không được để trống.' }), false);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+    
+    const errors: typeof fieldErrors = {};
+    const trimmedFullName = fullName.trim();
+    if (!trimmedFullName) {
+      errors.fullName = t('common.registerPage.errors.nameRequired', { defaultValue: 'Vui lòng nhập họ và tên.' });
+    } else if (trimmedFullName.length < 2 || trimmedFullName.length > 50) {
+      errors.fullName = t('common.registerPage.errors.nameLength', { defaultValue: 'Họ và tên phải có độ dài từ 2 đến 50 ký tự.' });
+    } else if (!/^[\p{L}\s]+$/u.test(trimmedFullName)) {
+      errors.fullName = t('common.registerPage.errors.nameSpecialChars', { defaultValue: 'Họ và tên không được chứa số hoặc ký tự đặc biệt.' });
+    }
+
+    const trimmedPhone = phoneNumber.trim().replace(/\s+/g, '');
+    if (!trimmedPhone) {
+      errors.phoneNumber = t('common.registerPage.errors.phoneRequired', { defaultValue: 'Vui lòng nhập số điện thoại.' });
+    } else if (!/^(0[3|5|7|8|9])[0-9]{8}$/.test(trimmedPhone)) {
+      errors.phoneNumber = t('common.registerPage.errors.phoneInvalid', { defaultValue: 'Số điện thoại không hợp lệ (10 chữ số bắt đầu bằng 03, 05, 07, 08, 09).' });
+    }
+    
+    // dateOfBirth format DD/MM/YYYY
+    let backendDob = '';
+    if (!dateOfBirth) {
+       errors.dateOfBirth = t('common.registerPage.errors.dobRequired', { defaultValue: 'Vui lòng nhập ngày sinh.' });
+    } else {
+       const dobParts = dateOfBirth.split('/');
+       if (dobParts.length !== 3) {
+           errors.dateOfBirth = t('common.registerPage.errors.dobFormat', { defaultValue: 'Ngày sinh không hợp lệ (DD/MM/YYYY).' });
+       } else {
+           const [d, m, y] = dobParts;
+           const dobStr = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+           const dDate = new Date(dobStr);
+           if (isNaN(dDate.getTime())) {
+               errors.dateOfBirth = t('common.registerPage.errors.dobInvalid', { defaultValue: 'Ngày sinh không hợp lệ.' });
+           } else {
+               backendDob = dobStr;
+           }
+       }
+    }
+
+    if (!gender || !['Nam', 'Nữ', 'Khác'].includes(gender)) {
+      errors.gender = t('common.registerPage.errors.genderRequired', { defaultValue: 'Vui lòng chọn giới tính hợp lệ (Nam, Nữ hoặc Khác).' });
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setErrorMessage(Object.values(errors)[0] || t('common.registerPage.errors.checkInputs', { defaultValue: 'Vui lòng kiểm tra lại thông tin nhập.' }));
       return;
     }
-    if (cleanName.length < 2) {
-      setFieldErrors((prev) => ({ ...prev, displayName: t('common.userProfile.msgNameShort', { defaultValue: 'Tên hiển thị phải có ít nhất 2 ký tự.' }) }));
-      showFeedback(t('common.userProfile.msgNameShort', { defaultValue: 'Tên hiển thị phải có ít nhất 2 ký tự.' }), false);
-      return;
+
+    setFieldErrors({});
+    setIsSavingProfile(true);
+    try {
+      await authService.updateProfile({
+        fullName: trimmedFullName,
+        phoneNumber: trimmedPhone,
+        gender,
+        dateOfBirth: backendDob
+      });
+      authService.setStoredName(trimmedFullName);
+      setSuccessMessage(t('common.userProfile.msgProfileSuccess', { defaultValue: 'Cập nhật hồ sơ thành công!' }));
+      setIsEditingProfile(false);
+    } catch (err: any) {
+      setErrorMessage(err?.message || 'Lỗi khi cập nhật hồ sơ.');
+    } finally {
+      setIsSavingProfile(false);
     }
-    setFieldErrors((prev) => ({ ...prev, displayName: undefined }));
-    setIsSavingName(true);
-    setTimeout(() => {
-      authService.setStoredName(cleanName);
-      setIsSavingName(false);
-      showFeedback(t('common.userProfile.msgNameSuccess', { defaultValue: 'Cập nhật tên hiển thị thành công!' }), true);
-    }, 300);
   };
 
   // ───────────────────────────────────────────────────────────────────────────
@@ -218,6 +313,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage(null);
+    setSuccessMessage(null);
     const errors: typeof fieldErrors = {};
 
     if (!currentPassword) {
@@ -238,7 +335,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
-      showFeedback(Object.values(errors)[0] || 'Vui lòng kiểm tra lại thông tin.', false);
+      setErrorMessage(Object.values(errors)[0] || 'Vui lòng kiểm tra lại thông tin.');
       return;
     }
 
@@ -250,12 +347,12 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
         newPassword,
         confirmPassword,
       });
-      showFeedback(res.message || t('common.userProfile.msgPassSuccess', { defaultValue: 'Đổi mật khẩu thành công!' }), true);
+      setSuccessMessage(res.message || t('common.userProfile.msgPassSuccess', { defaultValue: 'Đổi mật khẩu thành công!' }));
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
     } catch (err: any) {
-      showFeedback(err?.message || t('common.userProfile.msgPassError', { defaultValue: 'Không thể đổi mật khẩu. Vui lòng thử lại.' }), false);
+      setErrorMessage(err?.message || t('common.userProfile.msgPassError', { defaultValue: 'Không thể đổi mật khẩu. Vui lòng thử lại.' }));
     } finally {
       setIsChangingPassword(false);
     }
@@ -301,26 +398,39 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             <X size={20} />
           </button>
 
-          {/* Toast / Alert Feedback */}
+          {/* Error Banner */}
           <AnimatePresence>
-            {feedback && (
+            {errorMessage && (
               <motion.div
                 layout
                 initial={{ opacity: 0, height: 0, scale: 0.96 }}
                 animate={{ opacity: 1, height: 'auto', scale: 1 }}
                 exit={{ opacity: 0, height: 0, scale: 0.96 }}
                 transition={{ duration: 0.25, ease: 'easeOut' }}
-                className="overflow-hidden mr-8"
+                className="overflow-hidden mb-5"
               >
-                <div
-                  className={`mb-5 p-3 px-4 rounded-xl border text-xs font-medium flex items-center gap-2.5 shadow-sm ${
-                    feedback.ok
-                      ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
-                      : 'bg-red-500/10 border-red-500/30 text-red-400'
-                  }`}
-                >
-                  {feedback.ok ? <CheckCircle2 size={16} className="shrink-0" /> : <AlertCircle size={16} className="shrink-0" />}
-                  <span className="leading-snug flex-1">{feedback.message}</span>
+                <div className="p-3 px-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-medium flex items-center gap-2.5 shadow-sm">
+                  <AlertCircle size={16} className="shrink-0" />
+                  <span className="leading-snug flex-1">{errorMessage}</span>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Success Banner */}
+          <AnimatePresence>
+            {successMessage && (
+              <motion.div
+                layout
+                initial={{ opacity: 0, height: 0, scale: 0.96 }}
+                animate={{ opacity: 1, height: 'auto', scale: 1 }}
+                exit={{ opacity: 0, height: 0, scale: 0.96 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+                className="overflow-hidden mb-5"
+              >
+                <div className="p-3 px-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-medium flex items-center gap-2.5 shadow-sm">
+                  <CheckCircle2 size={16} className="shrink-0" />
+                  <span className="leading-snug flex-1">{successMessage}</span>
                 </div>
               </motion.div>
             )}
@@ -352,7 +462,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full bg-gradient-to-tr from-accent to-accent-hover text-black flex items-center justify-center text-xl font-bold font-mono">
+                  <div className="w-full h-full bg-gradient-to-tr from-accent to-accent-hover text-primary-bg flex items-center justify-center text-xl font-bold font-mono">
                     {getInitials(user.email)}
                   </div>
                 )}
@@ -454,36 +564,145 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               transition={{ duration: 0.2 }}
               className="space-y-5"
             >
-              {/* Form Sửa Tên hiển thị */}
-              <form onSubmit={handleSaveName} className="space-y-3 bg-primary-bg/50 border border-custom-border rounded-2xl p-4">
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-start gap-3">
-                  <div className="flex-1">
+              {/* Form Sửa Hồ Sơ */}
+              {!isEditingProfile ? (
+                <div className="space-y-4 bg-primary-bg/50 border border-custom-border rounded-2xl p-4">
+                  {isFetchingInfo ? (
+                     <div className="flex justify-center p-4"><Loader2 size={24} className="animate-spin text-accent" /></div>
+                  ) : (
+                    <>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="flex flex-col">
+                          <span className="text-[11px] font-semibold text-secondary-text mb-1 uppercase">Họ và tên</span>
+                          <span className="text-sm font-bold text-primary-text">{fullName || user.name || user.email.split('@')[0]}</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[11px] font-semibold text-secondary-text mb-1 uppercase">Số điện thoại</span>
+                          <span className="text-sm font-bold text-primary-text">{phoneNumber || 'Chưa cập nhật'}</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[11px] font-semibold text-secondary-text mb-1 uppercase">Ngày sinh</span>
+                          <span className="text-sm font-bold text-primary-text">{dateOfBirth || 'Chưa cập nhật'}</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[11px] font-semibold text-secondary-text mb-1 uppercase">Giới tính</span>
+                          <span className="text-sm font-bold text-primary-text">{gender || 'Chưa cập nhật'}</span>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setIsEditingProfile(true)}
+                        className="w-full h-[40px] rounded-xl border border-accent text-accent font-semibold text-xs hover:bg-accent hover:text-primary-bg transition-all flex items-center justify-center gap-1.5 mt-2 cursor-pointer"
+                      >
+                        Chỉnh sửa hồ sơ
+                      </button>
+                    </>
+                  )}
+                </div>
+              ) : (
+                <form onSubmit={handleSaveProfile} className="space-y-3 bg-primary-bg/50 border border-custom-border rounded-2xl p-4">
+                  {isFetchingInfo ? (
+                     <div className="flex justify-center p-4"><Loader2 size={24} className="animate-spin text-accent" /></div>
+                  ) : (
+                    <>
+                    {/* Full Name */}
                     <Input
-                      label={t('common.userProfile.editDisplayName', { defaultValue: 'Tên hiển thị' })}
+                      label={t('common.userProfile.editDisplayName', { defaultValue: 'Họ và tên' })}
                       leftIcon={<User size={16} />}
-                      value={displayName}
+                      value={fullName}
                       onChange={(e) => {
-                        setDisplayName(e.target.value);
-                        if (fieldErrors.displayName) setFieldErrors((prev) => ({ ...prev, displayName: undefined }));
+                        setFullName(e.target.value);
+                        if (fieldErrors.fullName) setFieldErrors((prev) => ({ ...prev, fullName: undefined }));
                       }}
                       maxLength={50}
-                      error={fieldErrors.displayName}
+                      error={fieldErrors.fullName}
                     />
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={isSavingName || displayName === user.name}
-                    className="h-[56px] px-5 rounded-2xl bg-accent text-black font-semibold text-xs hover:opacity-90 transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 shrink-0"
-                  >
-                    {isSavingName ? (
-                      <Loader2 size={15} className="animate-spin" />
-                    ) : (
-                      <Save size={15} />
-                    )}
-                    <span>{t('common.userProfile.save', { defaultValue: 'Lưu' })}</span>
-                  </button>
-                </div>
-              </form>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <Input
+                        label={t('common.userProfile.phoneNumber', { defaultValue: 'Số điện thoại' })}
+                        leftIcon={<Phone size={16} />}
+                        value={phoneNumber}
+                        onChange={(e) => {
+                          setPhoneNumber(e.target.value);
+                          if (fieldErrors.phoneNumber) setFieldErrors((prev) => ({ ...prev, phoneNumber: undefined }));
+                        }}
+                        maxLength={10}
+                        error={fieldErrors.phoneNumber}
+                      />
+
+                      <Input
+                        label={t('common.userProfile.dateOfBirth', { defaultValue: 'Ngày sinh (DD/MM/YYYY)' })}
+                        leftIcon={<Calendar size={16} />}
+                        value={dateOfBirth}
+                        onChange={(e) => {
+                          let val = e.target.value.replace(/[^0-9]/g, '');
+                          if (val.length > 2) val = val.slice(0, 2) + '/' + val.slice(2);
+                          if (val.length > 5) val = val.slice(0, 5) + '/' + val.slice(5, 9);
+                          setDateOfBirth(val);
+                          if (fieldErrors.dateOfBirth) setFieldErrors((prev) => ({ ...prev, dateOfBirth: undefined }));
+                        }}
+                        maxLength={10}
+                        error={fieldErrors.dateOfBirth}
+                      />
+                    </div>
+
+                    {/* Gender Selector */}
+                    <div>
+                      <label className="block text-[11px] font-semibold text-secondary-text mb-1.5 ml-1 uppercase tracking-wider">
+                        {t('common.gender', { defaultValue: 'Giới tính' })}
+                      </label>
+                      <div className="grid grid-cols-3 gap-2">
+                        {[
+                          { val: 'Nam', label: t('common.genderMale', { defaultValue: 'Nam' }) },
+                          { val: 'Nữ', label: t('common.genderFemale', { defaultValue: 'Nữ' }) },
+                          { val: 'Khác', label: t('common.genderOther', { defaultValue: 'Khác' }) },
+                        ].map((opt) => (
+                          <button
+                            key={opt.val}
+                            type="button"
+                            onClick={() => {
+                              setGender(opt.val);
+                              if (fieldErrors.gender) setFieldErrors((prev) => ({ ...prev, gender: undefined }));
+                            }}
+                            className={`py-2.5 rounded-xl border border-custom-border text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                              gender === opt.val
+                                ? 'bg-accent text-primary-bg font-semibold shadow-sm'
+                                : 'text-secondary-text hover:text-primary-text hover:bg-secondary-bg'
+                            }`}
+                          >
+                            {gender === opt.val && <Check size={13} className="stroke-[3]" />}
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2 mt-2">
+                      <button
+                        type="button"
+                        onClick={() => setIsEditingProfile(false)}
+                        className="flex-1 h-[48px] rounded-xl bg-secondary-bg border border-custom-border text-primary-text font-semibold text-xs hover:opacity-90 transition-all cursor-pointer"
+                      >
+                        Hủy
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isSavingProfile}
+                        className="flex-1 h-[48px] rounded-xl bg-accent text-primary-bg font-semibold text-xs hover:opacity-90 transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                      >
+                        {isSavingProfile ? (
+                          <Loader2 size={15} className="animate-spin" />
+                        ) : (
+                          <Save size={15} />
+                        )}
+                        <span>{t('common.userProfile.save', { defaultValue: 'Lưu thay đổi' })}</span>
+                      </button>
+                    </div>
+                    </>
+                  )}
+                </form>
+              )}
 
               {/* Thông tin chi tiết */}
               <div className="space-y-2.5 bg-primary-bg/50 border border-custom-border rounded-2xl p-4 text-xs">
@@ -571,6 +790,13 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                           if (err) setFieldErrors((prev) => ({ ...prev, newPassword: err }));
                         }
                       }}
+                      onCopy={(e) => {
+                        e.preventDefault();
+                        setErrorMessage(t('common.registerPage.errors.copyPasswordBlocked', { defaultValue: 'Không được phép sao chép mật khẩu vì lý do an toàn bảo mật.' }));
+                      }}
+                      onCut={(e) => {
+                        e.preventDefault();
+                      }}
                       error={fieldErrors.newPassword}
                     />
 
@@ -601,6 +827,16 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                         setConfirmPassword(e.target.value);
                         if (fieldErrors.confirmPassword) setFieldErrors((prev) => ({ ...prev, confirmPassword: undefined }));
                       }}
+                      onPaste={(e) => {
+                        e.preventDefault();
+                        setErrorMessage(t('common.registerPage.errors.pastePasswordBlocked', { defaultValue: 'Không được phép dán (paste). Vui lòng tự nhập lại mật khẩu để xác nhận.' }));
+                      }}
+                      onCopy={(e) => {
+                        e.preventDefault();
+                      }}
+                      onCut={(e) => {
+                        e.preventDefault();
+                      }}
                       error={fieldErrors.confirmPassword}
                     />
 
@@ -623,7 +859,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   <button
                     type="submit"
                     disabled={isChangingPassword || !currentPassword || !newPassword || !confirmPassword}
-                    className="w-full mt-2 py-3.5 rounded-2xl bg-accent text-black font-semibold text-xs hover:opacity-90 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                    className="w-full mt-2 py-3.5 rounded-2xl bg-accent text-primary-bg font-semibold text-xs hover:opacity-90 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                   >
                     {isChangingPassword ? (
                       <Loader2 size={15} className="animate-spin" />

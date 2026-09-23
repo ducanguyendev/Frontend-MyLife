@@ -25,17 +25,17 @@ export const ScreenPreviewBlock: React.FC<ScreenPreviewBlockProps> = ({
 }) => {
   const textColumn = (
     <div className={`lg:col-span-5 flex flex-col gap-3 ${reverse ? 'order-1 lg:order-2' : ''}`}>
-      <span className="text-[10px] font-bold tracking-widest text-gray-500 uppercase">
+      <span className="text-[10px] font-bold tracking-widest text-gray-500 dark:text-secondary-text uppercase">
         {tag}
       </span>
-      <h4 className="text-xl font-bold text-[#111111]">
+      <h4 className="text-xl font-bold text-[#111111] dark:text-primary-text">
         {title}
       </h4>
-      <p className="text-gray-600 text-sm font-light leading-relaxed">
+      <p className="text-gray-600 dark:text-secondary-text text-sm font-light leading-relaxed">
         {desc}
       </p>
       {desc2 && (
-        <p className="text-gray-600 text-sm font-light leading-relaxed">
+        <p className="text-gray-600 dark:text-secondary-text text-sm font-light leading-relaxed">
           {desc2}
         </p>
       )}
@@ -47,9 +47,9 @@ export const ScreenPreviewBlock: React.FC<ScreenPreviewBlockProps> = ({
       {images.map((img, idx) => (
         <div 
           key={idx} 
-          className={`w-full ${img.maxWidthClass || ''} bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden flex flex-col`}
+          className={`w-full ${img.maxWidthClass || ''} bg-white dark:bg-primary-bg border border-gray-200 dark:border-custom-border rounded-xl shadow-lg overflow-hidden flex flex-col`}
         >
-          <div className="bg-white border-b border-gray-200 px-3 py-2.5 flex gap-1.5">
+          <div className="bg-white dark:bg-primary-bg border-b border-gray-200 dark:border-custom-border px-3 py-2.5 flex gap-1.5">
             <span className="w-2 h-2 rounded-full bg-red-500/70" />
             <span className="w-2 h-2 rounded-full bg-yellow-500/70" />
             <span className="w-2 h-2 rounded-full bg-green-500/70" />

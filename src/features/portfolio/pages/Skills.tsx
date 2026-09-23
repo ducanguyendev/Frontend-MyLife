@@ -26,18 +26,18 @@ export const Skills: React.FC = () => {
   const circumference = 2 * Math.PI * radius;
 
   return (
-    <section id="skills" className="py-24 bg-[#fafafa]">
+    <section id="skills" className="py-24 bg-[#fafafa] dark:bg-secondary-bg">
       <div className="max-w-7xl mx-auto px-6 md:px-12">
         
         {/* Section Header */}
         <div className="text-center mb-20">
-          <span className="text-xs font-semibold tracking-[0.3em] uppercase text-gray-500 mb-2 block">
+          <span className="text-xs font-semibold tracking-[0.3em] uppercase text-gray-500 dark:text-secondary-text mb-2 block">
             {t('skills.subtitle')}
           </span>
-          <h2 className="text-3xl md:text-5xl font-light tracking-tight text-[#111111] font-display">
+          <h2 className="text-3xl md:text-5xl font-light tracking-tight text-[#111111] dark:text-primary-text font-display">
             {t('skills.title')}
           </h2>
-          <div className="w-12 h-[2px] bg-[#111111] mx-auto mt-6" />
+          <div className="w-12 h-[2px] bg-[#111111] dark:bg-accent mx-auto mt-6" />
         </div>
 
         {/* Circular Skills Row */}
@@ -62,7 +62,7 @@ export const Skills: React.FC = () => {
                       cx="56"
                       cy="56"
                       r={radius}
-                      className="stroke-gray-200"
+                      className="stroke-gray-200 dark:stroke-custom-border"
                       strokeWidth={strokeWidth - 2}
                       fill="transparent"
                     />
@@ -71,7 +71,7 @@ export const Skills: React.FC = () => {
                       cx="56"
                       cy="56"
                       r={radius}
-                      stroke="#111111"
+                      className="stroke-[#111111] dark:stroke-primary-text"
                       strokeWidth={strokeWidth}
                       fill="transparent"
                       strokeDasharray={circumference}
@@ -84,15 +84,15 @@ export const Skills: React.FC = () => {
                   </svg>
 
                   {/* Inner Label (Software Brand Style) */}
-                  <div className="absolute font-semibold text-lg text-[#111111] uppercase bg-white w-20 h-20 rounded-full flex items-center justify-center border border-gray-100 shadow-sm">
+                  <div className="absolute font-semibold text-lg text-[#111111] dark:text-primary-text uppercase bg-white dark:bg-primary-bg w-20 h-20 rounded-full flex items-center justify-center border border-gray-100 dark:border-custom-border shadow-sm">
                     <span className="font-display font-bold tracking-wider">{skill.label}</span>
                   </div>
                 </div>
 
                 {/* Percentage & Name */}
                 <div className="text-center">
-                  <div className="text-sm font-bold text-[#111111]">{skill.level}%</div>
-                  <div className="text-xs text-gray-500 font-light uppercase tracking-wider mt-1">{skill.name}</div>
+                  <div className="text-sm font-bold text-[#111111] dark:text-primary-text">{skill.level}%</div>
+                  <div className="text-xs text-gray-500 dark:text-secondary-text font-light uppercase tracking-wider mt-1">{skill.name}</div>
                 </div>
               </motion.div>
             );

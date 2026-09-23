@@ -23,22 +23,22 @@ export const Projects: React.FC = () => {
   };
 
   return (
-    <section id="projects" className="py-24 bg-white relative overflow-hidden">
+    <section id="projects" className="py-24 bg-white dark:bg-primary-bg relative overflow-hidden">
       {/* Background Visual Effects */}
-      <div className="absolute top-1/4 left-[-15%] w-[450px] h-[450px] rounded-full bg-[#111111]/5 filter blur-3xl pointer-events-none" />
-      <div className="absolute top-2/3 right-[-10%] w-[550px] h-[550px] rounded-full bg-gray-100/50 filter blur-3xl pointer-events-none" />
-      <div className="absolute bottom-[-10%] left-[20%] w-[400px] h-[400px] rounded-full bg-[#111111]/5 filter blur-3xl pointer-events-none" />
+      <div className="absolute top-1/4 left-[-15%] w-[450px] h-[450px] rounded-full bg-[#111111]/5 dark:bg-white/5 filter blur-3xl pointer-events-none" />
+      <div className="absolute top-2/3 right-[-10%] w-[550px] h-[550px] rounded-full bg-gray-100/50 dark:bg-white/5 filter blur-3xl pointer-events-none" />
+      <div className="absolute bottom-[-10%] left-[20%] w-[400px] h-[400px] rounded-full bg-[#111111]/5 dark:bg-white/5 filter blur-3xl pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
         {/* Section Header */}
         <div className="text-center mb-24">
-          <span className="text-xs font-semibold tracking-[0.3em] uppercase text-gray-500 mb-2 block">
+          <span className="text-xs font-semibold tracking-[0.3em] uppercase text-gray-500 dark:text-secondary-text mb-2 block">
             {t('projects.subtitle')}
           </span>
-          <h2 className="text-3xl md:text-5xl font-light tracking-tight text-[#111111] font-display">
+          <h2 className="text-3xl md:text-5xl font-light tracking-tight text-[#111111] dark:text-primary-text font-display">
             {t('projects.title')}
           </h2>
-          <div className="w-12 h-[1px] bg-[#111111] mx-auto mt-6" />
+          <div className="w-12 h-[1px] bg-[#111111] dark:bg-accent mx-auto mt-6" />
         </div>
 
         {/* Projects Alternating Stack */}

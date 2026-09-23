@@ -611,6 +611,28 @@ export const authService = {
   },
 
   /**
+   * Cập nhật thông tin hồ sơ
+   */
+  async updateProfile(data: { fullName: string; phoneNumber: string; gender: string; dateOfBirth: string }): Promise<{ message: string }> {
+    const response = await this.fetchWithAuth(`${API_BASE_URL}/api/me/profile`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+
+    const responseData = await response.json();
+    if (!response.ok) {
+      if (responseData.errors) {
+        const firstKey = Object.keys(responseData.errors)[0];
+        const firstMsg = responseData.errors[firstKey]?.[0];
+        if (firstMsg) throw new Error(firstMsg);
+      }
+      throw new Error(responseData?.message || 'Không thể cập nhật hồ sơ.');
+    }
+
+    return responseData;
+  },
+
+  /**
    * Đổi mật khẩu tài khoản Local
    */
   async changePassword(data: { currentPassword: string; newPassword: string; confirmPassword: string }): Promise<{ message: string }> {

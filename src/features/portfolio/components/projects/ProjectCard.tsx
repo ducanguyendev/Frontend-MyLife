@@ -22,7 +22,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project, onOpenModal }
         {Array.isArray(tags) && tags.map((tag) => (
           <span 
             key={tag} 
-            className="text-[10px] font-bold tracking-widest bg-[#fafafa] text-gray-600 px-3.5 py-1.5 rounded-full border border-gray-200/80 shadow-sm"
+            className="text-[10px] font-bold tracking-widest bg-[#fafafa] dark:bg-primary-bg text-gray-600 dark:text-secondary-text px-3.5 py-1.5 rounded-full border border-gray-200/80 dark:border-custom-border shadow-sm"
           >
             {tag}
           </span>
@@ -30,30 +30,30 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project, onOpenModal }
       </div>
 
       {/* Title */}
-      <h3 className="text-3xl md:text-4xl font-light font-display tracking-tight text-[#111111] mb-6">
+      <h3 className="text-3xl md:text-4xl font-light font-display tracking-tight text-[#111111] dark:text-primary-text mb-6">
         {t(project.titleKey)}
       </h3>
 
       {/* Problem Statement */}
       <div className="border-l-2 border-gray-200 pl-4 mb-6">
-        <span className="text-[10px] font-bold tracking-[0.2em] text-gray-500 uppercase block mb-1">
+        <span className="text-[10px] font-bold tracking-[0.2em] text-gray-500 dark:text-secondary-text uppercase block mb-1">
           {t(project.problemTagKey)}
         </span>
-        <p className="text-gray-600 text-sm italic font-light leading-relaxed">
+        <p className="text-gray-600 dark:text-secondary-text text-sm italic font-light leading-relaxed">
           "{t(project.problemKey)}"
         </p>
       </div>
 
       {/* Description */}
-      <p className="text-gray-600 text-sm md:text-base leading-relaxed font-light mb-6">
+      <p className="text-gray-600 dark:text-secondary-text text-sm md:text-base leading-relaxed font-light mb-6">
         {t(project.descKey)}
       </p>
 
       {/* Features List */}
       <ul className="flex flex-col gap-3 mb-8">
         {Array.isArray(features) && features.map((feature, idx) => (
-          <li key={idx} className="flex items-start gap-3 text-sm font-light text-gray-600">
-            <span className="text-gray-500 mt-0.5 flex-shrink-0">
+          <li key={idx} className="flex items-start gap-3 text-sm font-light text-gray-600 dark:text-secondary-text">
+            <span className="text-gray-500 dark:text-secondary-text mt-0.5 flex-shrink-0">
               <Check size={16} />
             </span>
             <span>{feature}</span>
@@ -74,7 +74,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project, onOpenModal }
           href={project.githubUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-xs font-bold tracking-widest uppercase border border-gray-200 text-[#111111] px-6 py-3.5 hover:bg-[#fafafa] transition-colors cursor-pointer rounded flex items-center gap-2"
+          className="text-xs font-bold tracking-widest uppercase border border-gray-200 dark:border-custom-border text-[#111111] dark:text-primary-text px-6 py-3.5 hover:bg-[#fafafa] dark:hover:bg-primary-bg transition-colors cursor-pointer rounded flex items-center gap-2"
         >
           <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
             <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />

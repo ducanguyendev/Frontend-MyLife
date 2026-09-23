@@ -137,6 +137,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
   };
 
   const handleRemoveChild = (childId: number) => {
+    if (!editingMember) return;
     const current = editingMember.childIds || [];
     onChange({ ...editingMember, childIds: current.filter((id) => id !== childId) });
   };
@@ -169,6 +170,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
   };
 
   const handleRemoveSibling = (siblingId: number) => {
+    if (!editingMember) return;
     const current = editingMember.horizontalRelations || [];
     onChange({
       ...editingMember,
@@ -191,6 +193,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
   };
 
   const handleFullNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!editingMember) return;
     const val = e.target.value;
     if (!/^[\p{L}\s]*$/u.test(val)) {
       setErrors((prev) => ({
@@ -208,6 +211,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
   };
 
   const handleFullNamePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    if (!editingMember) return;
     const pasteData = e.clipboardData.getData("text");
     if (!/^[\p{L}\s]*$/u.test(pasteData)) {
       e.preventDefault();
@@ -237,6 +241,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!editingMember) return;
     const val = e.target.value;
     if (/[^0-9]/.test(val)) {
       setErrors((prev) => ({
@@ -254,6 +259,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
   };
 
   const handlePhonePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    if (!editingMember) return;
     const pasteData = e.clipboardData.getData("text");
     if (/[^0-9]/.test(pasteData)) {
       e.preventDefault();
@@ -270,6 +276,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!editingMember) return;
     const newErrors: FormErrors = {};
     let sectionToOpen = "";
 

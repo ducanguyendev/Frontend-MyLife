@@ -51,8 +51,8 @@
     --primary-text: #ffffff; /* Pure white */
     --secondary-text: #a1a1aa; /* Zinc 400 for secondary text */
     --custom-border: #27272a; /* Zinc 800 for borders */
-    --accent-color: #eab308; /* Gold */
-    --accent-hover-color: #ca8a04; 
+    --accent-color: #ffffff; /* White */
+    --accent-hover-color: #e5e5e5; 
     
     /* Semantic Colors */
     --color-success: #10b981;

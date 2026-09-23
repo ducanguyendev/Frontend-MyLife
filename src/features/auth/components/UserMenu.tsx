@@ -107,7 +107,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ onOpenProfile, onSwitchAccou
                 className="w-full h-full object-cover"
               />
             ) : (
-              <div className="w-full h-full bg-accent text-white font-mono font-bold text-xs flex items-center justify-center">
+              <div className="w-full h-full bg-accent text-white dark:text-black font-mono font-bold text-xs flex items-center justify-center">
                 {initials}
               </div>
             )}
@@ -153,7 +153,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ onOpenProfile, onSwitchAccou
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full bg-accent text-white font-mono font-bold text-sm flex items-center justify-center">
+                      <div className="w-full h-full bg-accent text-white dark:text-black font-mono font-bold text-sm flex items-center justify-center">
                         {initials}
                       </div>
                     )}

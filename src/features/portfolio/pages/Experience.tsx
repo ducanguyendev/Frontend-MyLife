@@ -39,22 +39,22 @@ export const Experience: React.FC = () => {
   ];
 
   return (
-    <section id="experience" className="py-24 bg-[#fafafa] relative">
+    <section id="experience" className="py-24 bg-[#fafafa] dark:bg-secondary-bg relative">
       <div className="max-w-4xl mx-auto px-6 md:px-12 relative z-10">
         
         {/* Section Header */}
         <div className="text-center mb-20">
-          <span className="text-xs font-semibold tracking-[0.3em] uppercase text-gray-500 mb-2 block">
+          <span className="text-xs font-semibold tracking-[0.3em] uppercase text-gray-500 dark:text-secondary-text mb-2 block">
             {t('experience.subtitle')}
           </span>
-          <h2 className="text-3xl md:text-5xl font-light tracking-tight text-[#111111] font-display">
+          <h2 className="text-3xl md:text-5xl font-light tracking-tight text-[#111111] dark:text-primary-text font-display">
             {t('experience.title')}
           </h2>
-          <div className="w-12 h-[1px] bg-[#111111] mx-auto mt-6" />
+          <div className="w-12 h-[1px] bg-[#111111] dark:bg-accent mx-auto mt-6" />
         </div>
 
         {/* Timeline body */}
-        <div className="relative border-l border-gray-200/70 ml-4 md:ml-6 flex flex-col gap-12">
+        <div className="relative border-l border-gray-200/70 dark:border-custom-border ml-4 md:ml-6 flex flex-col gap-12">
           
           {experiences.map((exp, index) => {
             // Retrieve array of responsibilities via t
@@ -71,19 +71,19 @@ export const Experience: React.FC = () => {
                 className="relative pl-8 md:pl-10 text-left group"
               >
                 {/* Timeline Icon Point */}
-                <span className="absolute -left-[17px] top-1 bg-white border border-gray-200/80 text-gray-600 p-2 rounded-full shadow group-hover:border-gray-200 group-hover:text-gray-500 transition-colors duration-300 z-10">
+                <span className="absolute -left-[17px] top-1 bg-white dark:bg-primary-bg border border-gray-200/80 dark:border-custom-border text-gray-600 dark:text-secondary-text p-2 rounded-full shadow group-hover:border-gray-200 dark:group-hover:border-custom-border group-hover:text-gray-500 dark:group-hover:text-primary-text transition-colors duration-300 z-10">
                   <Briefcase size={14} />
                 </span>
 
                 {/* Content Box */}
                 <div>
-                  <span className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-1.5">
+                  <span className="text-xs font-bold text-gray-500 dark:text-secondary-text uppercase tracking-widest block mb-1.5">
                     {t(exp.durationKey)}
                   </span>
-                  <h3 className="text-lg font-semibold text-[#111111] mb-1">
+                  <h3 className="text-lg font-semibold text-[#111111] dark:text-primary-text mb-1">
                     {t(exp.roleKey)}
                   </h3>
-                  <div className="text-sm font-medium text-gray-600 mb-4">
+                  <div className="text-sm font-medium text-gray-600 dark:text-secondary-text mb-4">
                     {t(exp.companyKey)}
                   </div>
                   
@@ -92,9 +92,9 @@ export const Experience: React.FC = () => {
                     {respList.map((resp: string, i: number) => (
                       <li 
                         key={i} 
-                        className="text-gray-600 text-sm font-light leading-relaxed flex items-start gap-2"
+                        className="text-gray-600 dark:text-secondary-text text-sm font-light leading-relaxed flex items-start gap-2"
                       >
-                        <span className="text-gray-500 mt-1.5 shrink-0 block w-1.5 h-1.5 bg-[#111111] rounded-full" />
+                        <span className="text-gray-500 dark:text-secondary-text mt-1.5 shrink-0 block w-1.5 h-1.5 bg-[#111111] dark:bg-accent rounded-full" />
                         <span>{resp}</span>
                       </li>
                     ))}

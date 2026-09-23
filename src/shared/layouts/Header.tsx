@@ -110,11 +110,11 @@ export const Header: React.FC = () => {
       >
         <div className="max-w-7xl mx-auto px-6 md:px-12 flex items-center justify-between gap-4">
           {/* Left Side: Logo */}
-          <div className="flex items-center">
+           <div className="flex items-center">
              <img 
-               src={(theme === 'dark' || !isScrolled) ? '/assets/logo-light.png' : '/assets/logo-dark.png'} 
+               src={theme === 'dark' ? '/assets/logo-dark.png' : '/assets/logo-light.png'}
                alt="Mylife" 
-               className={`h-10 w-auto object-contain transition-opacity duration-300 ${(theme === 'dark' || !isScrolled) ? 'mix-blend-screen' : 'mix-blend-multiply'}`}
+               className="h-10 w-auto aspect-[261/172] object-contain transition-opacity duration-300 dark:bg-white"
              />
           </div>
 
@@ -129,15 +129,15 @@ export const Header: React.FC = () => {
                 onClick={(e) => handleNavClick(e, link.id)}
                 className={`px-5 h-full flex items-center justify-center rounded-full text-sm whitespace-nowrap font-medium transition-all duration-300 relative z-10 ${
                   activeSection === link.id
-                    ? (isScrolled ? 'text-white dark:text-primary-bg' : 'text-[#111111] dark:text-primary-bg')
-                    : (isScrolled ? 'text-gray-500 dark:text-secondary-text hover:text-[#111111] dark:hover:text-primary-text hover:bg-gray-100 dark:hover:bg-secondary-bg' : 'text-white/70 hover:text-white hover:bg-white/10 dark:hover:bg-white/10')
+                    ? (isScrolled ? 'text-white dark:text-[#111111]' : 'text-[#111111] dark:text-white')
+                    : (isScrolled ? 'text-gray-500 dark:text-white/70 hover:text-[#111111] dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10' : 'text-white/70 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-white/10 dark:hover:bg-white/10')
                 }`}
               >
                 {activeSection === link.id && (
                   <motion.div
                     layoutId="activeNavIndicator"
                     className={`absolute inset-0 rounded-full border -z-10 ${
-                      isScrolled ? 'bg-[#111111] dark:bg-accent border-[#111111] dark:border-accent' : 'bg-white dark:bg-accent border-white dark:border-accent'
+                      isScrolled ? 'bg-[#111111] dark:bg-white border-[#111111] dark:border-white' : 'bg-white dark:bg-[#111111] border-white dark:border-[#111111]'
                     }`}
                     transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                   />
@@ -168,8 +168,8 @@ export const Header: React.FC = () => {
                 onClick={() => setIsLoginModalOpen(true)}
                 className={`px-6 h-11 flex items-center justify-center text-sm font-bold rounded-full transition-transform whitespace-nowrap cursor-pointer ${
                   isScrolled 
-                    ? 'bg-[#111111] dark:bg-accent text-white dark:text-primary-bg hover:scale-105' 
-                    : 'bg-white dark:bg-accent text-black dark:text-primary-bg hover:scale-105 shadow-[0_0_15px_rgba(255,255,255,0.4)]'
+                    ? 'bg-[#111111] dark:bg-white text-white dark:text-black hover:scale-105' 
+                    : 'bg-white dark:bg-[#111111] text-black dark:text-white hover:scale-105 shadow-[0_0_15px_rgba(255,255,255,0.4)] dark:shadow-[0_0_15px_rgba(0,0,0,0.4)]'
                 }`}
               >
                 {t('navigation.login')}

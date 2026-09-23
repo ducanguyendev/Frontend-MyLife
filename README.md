@@ -1,6 +1,29 @@
 # Frontend - MyLife Portfolio
 
-Ứng dụng Portfolio & CV cá nhân tương tác cao được xây dựng bằng React 19, TypeScript, Tailwind CSS v4, Framer Motion và Vite.
+Ứng dụng Portfolio & CV cá nhân tương tác cao được xây dựng bằng React 19, TypeScript, Tailwind CSS v4, Framer Motion và Vite. Nằm trong dự án tổng thể **MYLIFE**, phần Frontend mang phong cách **Tech-Noir tối giản**, cung cấp trải nghiệm mượt mà với nhiều tính năng và hiệu ứng ấn tượng.
+
+---
+
+## ✨ Tính năng nổi bật
+
+* **Landing Page / Portfolio:**
+  * Thanh điều hướng thông minh (ẩn/hiện tự động, chuyển đổi ngôn ngữ đa quốc gia).
+  * **Hero & About:** Giới thiệu bản thân, ảnh đại diện, chức danh.
+  * **Stats & Skills:** Hiển thị số liệu trực quan và bộ kỹ năng hiện đại.
+  * **Projects & Experience:** Trình bày dự án & kinh nghiệm dạng timeline chuyên nghiệp.
+  * Form liên hệ trực tiếp.
+  * **UI/UX đặc biệt:** Custom Cursor (con trỏ chuột tùy chỉnh), Scroll Progress Bar, Loading Screen đậm chất Tech-Noir.
+* **Xác thực & Phiên (Auth):**
+  * Giao diện Đăng nhập / Đăng ký dạng Modal popup mượt mà và Trang độc lập.
+  * Hỗ trợ xác thực với **Google OAuth 2.0**.
+  * Quản lý phiên thông minh: Bắt sự kiện `auth:expired` để hiển thị Modal hết hạn phiên.
+  * **Protected Routes:** Cơ chế phân quyền, chặn truy cập tài nguyên với người dùng chưa đăng nhập hoặc không đủ quyền (`403 Forbidden`).
+* **Trang Gia phả (Family Tree):**
+  * Giao diện trực quan để xem và quản lý cây phả hệ gia đình (tính năng dành riêng cho người dùng đã đăng nhập).
+* **Admin Dashboard:**
+  * Thống kê tổng quan toàn bộ hệ thống.
+  * Quản lý người dùng: Bật/tắt trạng thái hoạt động (khóa/mở khóa), xóa tài khoản.
+  * Trình xem và phân tích lịch sử hoạt động (Logs).
 
 ---
 

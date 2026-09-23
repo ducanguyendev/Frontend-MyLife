@@ -74,14 +74,14 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
             exit={{ opacity: 0, scale: 0.95, y: 15 }}
             transition={{ duration: 0.4, ease: 'easeOut' }}
             onClick={(e) => e.stopPropagation()}
-            className="relative bg-[#fafafa] w-full max-w-5xl h-[85vh] rounded-2xl border border-gray-200 shadow-[0_8px_30px_rgb(0,0,0,0.06)] flex flex-col overflow-hidden z-10 text-left"
+            className="relative bg-[#fafafa] dark:bg-primary-bg w-full max-w-5xl h-[85vh] rounded-2xl border border-gray-200 dark:border-custom-border shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.3)] flex flex-col overflow-hidden z-10 text-left"
           >
             {/* Modal Header */}
-            <div className="px-6 py-5 border-b border-gray-200 flex items-center justify-between bg-white/30">
+            <div className="px-6 py-5 border-b border-gray-200 dark:border-custom-border flex items-center justify-between bg-white/30 dark:bg-primary-bg">
               <div>
                 <div className="flex items-center gap-3">
-                  <span className="w-2 h-2 rounded-full bg-[#111111] animate-pulse" />
-                  <h3 className="text-base md:text-lg font-bold text-[#111111] tracking-wide font-display">
+                  <span className="w-2 h-2 rounded-full bg-[#111111] dark:bg-accent animate-pulse" />
+                  <h3 className="text-base md:text-lg font-bold text-[#111111] dark:text-primary-text tracking-wide font-display">
                     {t(`projects.${activeProject}.modal.title`)}
                   </h3>
                 </div>
@@ -91,7 +91,7 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
               </div>
               <button
                 onClick={onClose}
-                className="text-gray-600 hover:text-[#111111] p-2 hover:bg-white rounded-full transition-colors cursor-pointer"
+                className="text-gray-600 dark:text-secondary-text hover:text-[#111111] dark:hover:text-primary-text p-2 hover:bg-white dark:hover:bg-secondary-bg rounded-full transition-colors cursor-pointer"
                 aria-label="Close modal"
               >
                 <X size={20} />
@@ -99,7 +99,7 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
             </div>
 
             {/* Navigation Tabs */}
-            <div className="px-6 py-3 border-b border-gray-200 flex gap-2 overflow-x-auto no-scrollbar bg-white/10 select-none">
+            <div className="px-6 py-3 border-b border-gray-200 dark:border-custom-border flex gap-2 overflow-x-auto no-scrollbar bg-white/10 dark:bg-primary-bg select-none">
               {projectConfig.tabs.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.key;
@@ -109,8 +109,8 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
                     onClick={() => onTabChange(tab.key)}
                     className={`text-[10px] font-bold tracking-widest uppercase px-4 py-2.5 rounded-lg border transition-all duration-300 cursor-pointer flex items-center gap-2 whitespace-nowrap ${
                       isActive
-                        ? 'bg-[#111111] text-white border-primary-text shadow-sm'
-                        : 'bg-transparent text-gray-600 border-transparent hover:border-gray-200 hover:text-[#111111]'
+                        ? 'bg-[#111111] dark:bg-accent text-white dark:text-black border-[#111111] dark:border-accent shadow-sm'
+                        : 'bg-transparent text-gray-600 dark:text-secondary-text border-transparent hover:border-gray-200 dark:hover:border-custom-border hover:text-[#111111] dark:hover:text-primary-text'
                     }`}
                   >
                     <Icon size={12} />
@@ -121,7 +121,7 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
             </div>
 
             {/* Scrollable Tab Panels */}
-            <div className="flex-grow overflow-y-auto p-6 md:p-10 no-scrollbar bg-[#fafafa]">
+            <div className="flex-grow overflow-y-auto p-6 md:p-10 no-scrollbar bg-[#fafafa] dark:bg-primary-bg">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={activeTab}
@@ -139,7 +139,7 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
             </div>
 
             {/* Modal Footer */}
-            <div className="px-6 py-4 border-t border-gray-200 bg-white/20 text-center text-[9px] font-bold tracking-[0.2em] text-gray-600/80 select-none">
+            <div className="px-6 py-4 border-t border-gray-200 dark:border-custom-border bg-white/20 dark:bg-primary-bg text-center text-[9px] font-bold tracking-[0.2em] text-gray-600/80 dark:text-secondary-text/80 select-none">
               {t(`projects.${activeProject}.modal.footer`)}
             </div>
           </motion.div>
