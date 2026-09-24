@@ -38,6 +38,9 @@ export const Header: React.FC = () => {
     { id: 'experience', labelKey: 'navigation.experience', type: 'scroll' },
     { id: 'family-tree', labelKey: 'navigation.familyTree', defaultValue: 'Gia Phả', type: 'route', path: '/family-tree' },
     { id: 'expense-tracker', labelKey: 'navigation.expenseTracker', defaultValue: 'Chi Tiêu', type: 'route', path: '/expense-tracker' },
+    { id: 'asset-tracker', labelKey: 'navigation.assetTracker', defaultValue: 'Tài Sản', type: 'route', path: '/asset-tracker' },
+    { id: 'family-health', labelKey: 'navigation.familyHealth', defaultValue: 'Sức Khỏe', type: 'route', path: '/family-health' },
+    { id: 'family-gravesite', labelKey: 'navigation.familyGravesite', defaultValue: 'Mộ Phần', type: 'route', path: '/family-gravesite' },
     { id: 'contact', labelKey: 'navigation.contact', type: 'scroll' },
   ];
 

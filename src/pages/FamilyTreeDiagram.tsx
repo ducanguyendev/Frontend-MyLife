@@ -1,4 +1,4 @@
-import React, {  useCallback, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { 
   ReactFlow, 
   Background, 
@@ -6,205 +6,178 @@ import {
   MiniMap, 
   useNodesState, 
   useEdgesState,
-  addEdge
+  addEdge,
+  type Node,
+  type Edge
 } from '@xyflow/react';
-import type { Connection,  } from '@xyflow/react';
+import type { Connection } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { ArrowLeft, Plus, X } from 'lucide-react';
+import { ArrowLeft, Plus, X, Heart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 
-const initialNodes = [
-  // --- TẦNG 1: ÔNG BÀ (Thủy tổ / Đời 1) ---
+interface FamilyCoupleNode {
+  id: string;
+  generation: number;
+  husband: { name: string; avatar: string; role: string };
+  wife?: { name: string; avatar: string; role: string };
+  childrenIds?: string[];
+}
+
+// Dữ liệu gia phả nhóm theo Cặp đôi (Couple) để gộp chung một thẻ
+const familyCouplesData: FamilyCoupleNode[] = [
   {
     id: 'couple-1',
-    type: 'default',
-    position: { x: 500, y: 50 },
-    data: { 
-      label: (
-        <div className="p-3 bg-secondary-bg border border-accent/60 rounded-2xl shadow-xl text-center w-60">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=80" alt="" className="w-10 h-10 rounded-full object-cover border border-accent" />
-            <span className="text-rose-500 font-bold"> & </span>
-            <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=80" alt="" className="w-10 h-10 rounded-full object-cover border border-white/20" />
-          </div>
-          <p className="font-bold text-xs text-primary-text">Nguyễn Văn Đạo & Trần Thị Mai</p>
-          <p className="text-[10px] text-accent font-semibold uppercase mt-1">Đời 1 • Ông Bà (Thủy Tổ)</p>
-        </div>
-      ) 
-    },
+    generation: 1,
+    husband: { name: 'Nguyễn Văn Đạo', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200', role: 'Thủy tổ' },
+    wife: { name: 'Trần Thị Mai', avatar: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&q=80&w=200', role: 'Bà nội' },
+    childrenIds: ['couple-2', 'person-3']
   },
-
-  // --- TẦNG 2: CHA MẸ, CÔ, CHÚ, BÁC (Đời 2 - phân bổ dàn đều sang trái/phải) ---
   {
     id: 'couple-2',
-    type: 'default',
-    position: { x: 200, y: 280 }, // Nhánh trưởng nam bên trái
-    data: { 
-      label: (
-        <div className="p-3 bg-secondary-bg border border-white/20 rounded-2xl shadow-xl text-center w-60">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=80" alt="" className="w-10 h-10 rounded-full object-cover border border-white/20" />
-            <span className="text-rose-500 font-bold"> & </span>
-            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=80" alt="" className="w-10 h-10 rounded-full object-cover border border-white/20" />
-          </div>
-          <p className="font-bold text-xs text-primary-text">Nguyễn Văn Hùng & Lê Thị Hoa</p>
-          <p className="text-[10px] text-gray-400 font-semibold uppercase mt-1">Đời 2 • Cha Mẹ (Trưởng Nam)</p>
-        </div>
-      ) 
-    },
+    generation: 2,
+    husband: { name: 'Nguyễn Văn Hùng', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200', role: 'Trưởng nam' },
+    wife: { name: 'Lê Thị Hoa', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200', role: 'Mẹ' },
+    childrenIds: ['couple-4', 'person-5']
   },
   {
     id: 'person-3',
-    type: 'default',
-    position: { x: 850, y: 280 }, // Nhánh cô/chú/bác bên phải
-    data: { 
-      label: (
-        <div className="p-3 bg-secondary-bg border border-white/20 rounded-2xl shadow-xl text-center w-52">
-          <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=80" alt="" className="w-12 h-12 rounded-full mx-auto mb-2 object-cover border border-white/20" />
-          <p className="font-bold text-sm text-primary-text">Nguyễn Thị Lan</p>
-          <p className="text-[10px] text-gray-400 font-semibold uppercase">Đời 2 • Cô / Út Thím</p>
-        </div>
-      ) 
-    },
+    generation: 2,
+    husband: { name: 'Nguyễn Thị Lan', avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200', role: 'Cô ruột' },
+    childrenIds: ['person-6']
   },
-
-  // --- TẦNG 3: CON CÁI, ANH CHỊ EM RUỘT & HỌ HÀNG (Đời 3) ---
   {
-    id: 'person-4',
-    type: 'default',
-    position: { x: 50, y: 510 }, // Con của Trưởng Nam (Nhánh 1)
-    data: { 
-      label: (
-        <div className="p-3 bg-secondary-bg border border-white/20 rounded-2xl shadow-xl text-center w-48">
-          <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=80" alt="" className="w-12 h-12 rounded-full mx-auto mb-2 object-cover border border-white/20" />
-          <p className="font-bold text-sm text-primary-text">Nguyễn Minh Tuấn</p>
-          <p className="text-[10px] text-gray-400 font-semibold uppercase">Đời 3 • Anh Trai (Trưởng)</p>
-        </div>
-      ) 
-    },
+    id: 'couple-4',
+    generation: 3,
+    husband: { name: 'Nguyễn Minh Tuấn', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=200', role: 'Trưởng nam (Tôi)' },
+    wife: { name: 'Hoàng Thùy Linh', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200', role: 'Vợ' },
+    childrenIds: ['person-7']
   },
   {
     id: 'person-5',
-    type: 'default',
-    position: { x: 350, y: 510 }, // Anh chị em ruột với Tuấn (Con thứ)
-    data: { 
-      label: (
-        <div className="p-3 bg-secondary-bg border border-white/20 rounded-2xl shadow-xl text-center w-48">
-          <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=80" alt="" className="w-12 h-12 rounded-full mx-auto mb-2 object-cover border border-white/20" />
-          <p className="font-bold text-sm text-primary-text">Nguyễn Hoàng Nam</p>
-          <p className="text-[10px] text-gray-400 font-semibold uppercase">Đời 3 • Em Trai (Ruột)</p>
-        </div>
-      ) 
-    },
+    generation: 3,
+    husband: { name: 'Nguyễn Thanh Hà', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200', role: 'Em gái ruột' }
   },
   {
     id: 'person-6',
-    type: 'default',
-    position: { x: 800, y: 510 }, // Anh chị em họ (Con của cô Lan)
-    data: { 
-      label: (
-        <div className="p-3 bg-secondary-bg border border-white/20 rounded-2xl shadow-xl text-center w-48">
-          <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=80" alt="" className="w-12 h-12 rounded-full mx-auto mb-2 object-cover border border-white/20" />
-          <p className="font-bold text-sm text-primary-text">Phạm Minh Thư</p>
-          <p className="text-[10px] text-gray-400 font-semibold uppercase">Đời 3 • Anh Chị Em Họ</p>
-        </div>
-      ) 
-    },
+    generation: 3,
+    husband: { name: 'Phạm Văn Nam', avatar: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&q=80&w=200', role: 'Anh em họ' }
+  },
+  {
+    id: 'person-7',
+    generation: 4,
+    husband: { name: 'Nguyễn Gia Bảo', avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=200', role: 'Con trai đích tôn' }
   }
 ];
 
-// --- THIẾT LẬP ĐƯỜNG NỐI (EDGES) GIỮA CÁC THẾ HỆ ---
-const initialEdges = [
-  // Ông bà sinh ra cha mẹ & cô chú (Đời 1 nối xuống Đời 2)
-  { id: 'e1-2', source: 'couple-1', target: 'couple-2', animated: true, style: { stroke: '#0f62fe', strokeWidth: 2 } },
-  { id: 'e1-3', source: 'couple-1', target: 'person-3', animated: true, style: { stroke: '#0f62fe', strokeWidth: 2 } },
+const generateCoupleNodesAndEdges = () => {
+  const generatedNodes: Node[] = [];
+  const generatedEdges: Edge[] = [];
+  const genCounts: Record<number, number> = {};
 
-  // Cha mẹ sinh ra các con ruột (Đời 2 nối xuống Đời 3)
-  { id: 'e2-4', source: 'couple-2', target: 'person-4', animated: true, style: { stroke: '#0f62fe', strokeWidth: 2 } },
-  { id: 'e2-5', source: 'couple-2', target: 'person-5', animated: true, style: { stroke: '#0f62fe', strokeWidth: 2 } },
+  familyCouplesData.forEach((item) => {
+    const gen = item.generation;
+    if (!genCounts[gen]) genCounts[gen] = 0;
+    
+    const yPos = (gen - 1) * 280 + 50;
+    const xPos = genCounts[gen] * 320 + (gen % 2 === 0 ? 50 : 200);
 
-  // Cô Lan sinh ra anh chị em họ
-  { id: 'e3-6', source: 'person-3', target: 'person-6', animated: true, style: { stroke: '#0f62fe', strokeWidth: 2 } },
-];
+    generatedNodes.push({
+      id: item.id,
+      type: 'default',
+      position: { x: xPos, y: yPos },
+      data: { 
+        label: (
+          <div className="p-3.5 bg-secondary-bg border border-white/20 hover:border-accent rounded-3xl shadow-2xl text-center w-64 transition cursor-pointer backdrop-blur-md">
+            {item.wife ? (
+              // Giao diện Thẻ Cặp đôi (Vợ & Chồng chung một thẻ)
+              <div>
+                <div className="flex items-center justify-center gap-3 mb-2.5">
+                  <img src={item.husband.avatar} alt="" className="w-11 h-11 rounded-full object-cover border-2 border-accent/70 shadow-md" />
+                  <div className="p-1.5 rounded-full bg-rose-500/10 text-rose-500 animate-pulse">
+                    <Heart className="w-4 h-4 fill-rose-500/20" />
+                  </div>
+                  <img src={item.wife.avatar} alt="" className="w-11 h-11 rounded-full object-cover border-2 border-white/30 shadow-md" />
+                </div>
+                <p className="font-bold text-xs text-primary-text">{item.husband.name} & {item.wife.name}</p>
+                <p className="text-[10px] text-accent font-semibold uppercase mt-1">Đời {item.generation} • Gia Đình</p>
+              </div>
+            ) : (
+              // Giao diện Thẻ Cá nhân đơn lẻ
+              <div>
+                <img src={item.husband.avatar} alt="" className="w-12 h-12 rounded-full mx-auto mb-2 object-cover border-2 border-accent/60 shadow-md" />
+                <p className="font-bold text-xs text-primary-text">{item.husband.name}</p>
+                <p className="text-[10px] text-gray-400 font-semibold uppercase mt-1">Đời {item.generation} • {item.husband.role}</p>
+              </div>
+            )}
+          </div>
+        ) 
+      }
+    });
+
+    genCounts[gen] += 1;
+
+    // Tạo đường nối từ cặp đôi xuống các con
+    if (item.childrenIds && item.childrenIds.length > 0) {
+      item.childrenIds.forEach(childId => {
+        generatedEdges.push({
+          id: `e${item.id}-${childId}`,
+          source: item.id,
+          target: childId,
+          animated: true,
+          style: { stroke: '#0f62fe', strokeWidth: 2 }
+        });
+      });
+    }
+  });
+
+  return { generatedNodes, generatedEdges };
+};
 
 export const FamilyTreeDiagram: React.FC = () => {
-const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [newMemberForm, setNewMemberForm] = useState({
-    name: '',
-    generation: 2,
-    role: '',
-    birthYear: '',
-    address: '',
-    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=200',
-    bio: ''
-  });
   const navigate = useNavigate();
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [newMemberForm, setNewMemberForm] = useState({
+    name: '', generation: 2, role: '', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=200'
+  });
+
+  const { generatedNodes, generatedEdges } = generateCoupleNodesAndEdges();
+  
+  const [nodes, setNodes, onNodesChange] = useNodesState(generatedNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(generatedEdges);
 
   const onConnect = useCallback(
     (params: Connection) => setEdges((eds) => addEdge({ ...params, animated: true, style: { stroke: '#0f62fe', strokeWidth: 2 } }, eds)),
     [setEdges],
   );
 
-  // Hàm thêm node mới trực tiếp lên sơ đồ mindmap
-//   const handleAddNode = () => {
-//     const newId = Date.now().toString();
-//     const newNode = {
-//       id: newId,
-//       type: 'default',
-//       position: { x: Math.random() * 400 + 200, y: Math.random() * 300 + 300 },
-//       data: {
-//         label: (
-//           <div className="p-3 bg-secondary-bg border border-white/20 rounded-2xl shadow-xl text-center w-48">
-//             <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=100" alt="" className="w-12 h-12 rounded-full mx-auto mb-2 object-cover border border-white/20" />
-//             <p className="font-bold text-sm text-primary-text">Thành Viên Mới</p>
-//             <p className="text-[10px] text-accent font-semibold uppercase">Đời Mới</p>
-//           </div>
-//         )
-//       }
-//     };
-//     setNodes((nds) => [...nds, newNode]);
-//   };
-
   const handleCreateMemberNode = (e: React.FormEvent) => {
     e.preventDefault();
     const newId = Date.now().toString();
 
-    // Tạo node mới với giao diện thẻ card chứa thông tin vừa nhập
     const newNode = {
       id: newId,
-      type: 'output',
-      position: { x: Math.random() * 400 + 200, y: Math.random() * 300 + 300 },
+      type: 'default',
+      position: { x: Math.random() * 400 + 100, y: Math.random() * 300 + 100 },
       data: {
         label: (
-          <div className="p-3 bg-secondary-bg border border-white/20 rounded-2xl shadow-xl text-center w-52">
-            <img src={newMemberForm.avatar} alt="" className="w-12 h-12 rounded-full mx-auto mb-2 object-cover border border-accent" />
-            <p className="font-bold text-sm text-primary-text">{newMemberForm.name}</p>
-            <p className="text-[10px] text-accent font-semibold uppercase">Đời {newMemberForm.generation} • {newMemberForm.role}</p>
+          <div className="p-3.5 bg-secondary-bg border border-accent rounded-3xl shadow-2xl text-center w-56">
+            <img src={newMemberForm.avatar} alt="" className="w-12 h-12 rounded-full mx-auto mb-2 object-cover border-2 border-accent shadow-md" />
+            <p className="font-bold text-xs text-primary-text">{newMemberForm.name}</p>
+            <p className="text-[10px] text-accent font-semibold uppercase mt-1">Đời {newMemberForm.generation} • {newMemberForm.role}</p>
           </div>
         )
       }
     };
 
     setNodes((nds) => [...nds, newNode]);
-    setIsAddModalOpen(false); // Đóng modal
-    // Reset form
-    setNewMemberForm({
-      name: '',
-      generation: 2,
-      role: '',
-      birthYear: '',
-      address: '',
-      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=200',
-      bio: ''
-    });
+    setIsAddModalOpen(false);
+    setNewMemberForm({ name: '', generation: 2, role: '', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=200' });
   };
 
   return (
     <div className="min-h-screen bg-primary-bg text-primary-text flex flex-col pt-24">
-      {/* Thanh điều hướng phía trên */}
+      {/* Thanh điều hướng */}
       <div className="max-w-7xl mx-auto px-6 w-full flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <button 
@@ -215,8 +188,8 @@ const [isAddModalOpen, setIsAddModalOpen] = useState(false);
             <span>Quay lại dạng Bảng</span>
           </button>
           <div>
-            <h1 className="text-xl font-bold">Sơ Đồ Phả Hệ Trực Quan (Mindmap)</h1>
-            <p className="text-xs text-gray-400">Kéo thả các thẻ thành viên hoặc nối các mối quan hệ gia đình tùy ý.</p>
+            <h1 className="text-xl font-bold">Sơ Đồ Phả Hệ (Dạng Cặp Đôi)</h1>
+            <p className="text-xs text-gray-400">Vợ chồng gộp chung một thẻ, kết nối gọn gàng xuống các thế hệ con cháu.</p>
           </div>
         </div>
 
@@ -225,11 +198,11 @@ const [isAddModalOpen, setIsAddModalOpen] = useState(false);
           className="flex items-center gap-2 bg-accent hover:bg-accent/90 text-white px-4 py-2 rounded-xl text-sm font-medium transition cursor-pointer shadow-lg shadow-accent/20"
         >
           <Plus className="w-4 h-4" />
-          <span>Thêm Thành Viên Vào Sơ Đồ</span>
+          <span>Thêm Thẻ Tự Do</span>
         </button>
       </div>
 
-      {/* Khu vực vẽ Mindmap */}
+      {/* Mindmap */}
       <div className="flex-grow w-full h-[calc(100vh-140px)] border-t border-white/15 bg-primary-bg">
         <ReactFlow
           nodes={nodes}
@@ -245,6 +218,8 @@ const [isAddModalOpen, setIsAddModalOpen] = useState(false);
           <Background gap={20} size={1} color="#333" />
         </ReactFlow>
       </div>
+      
+      {/* Modal Thêm Thẻ */}
       <AnimatePresence>
         {isAddModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
@@ -255,7 +230,7 @@ const [isAddModalOpen, setIsAddModalOpen] = useState(false);
               className="bg-secondary-bg border border-white/10 rounded-3xl max-w-xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
             >
               <div className="p-6 border-b border-white/10 flex items-center justify-between sticky top-0 bg-secondary-bg/90 backdrop-blur-md z-10">
-                <h2 className="text-xl font-bold">Thêm Thành Viên Mới Vào Sơ Đồ</h2>
+                <h2 className="text-xl font-bold">Thêm Thẻ Thành Viên Mới</h2>
                 <button 
                   onClick={() => setIsAddModalOpen(false)}
                   className="p-2 text-gray-400 hover:text-white rounded-full bg-white/5 transition cursor-pointer"
@@ -273,18 +248,16 @@ const [isAddModalOpen, setIsAddModalOpen] = useState(false);
                       value={newMemberForm.name}
                       onChange={(e) => setNewMemberForm({ ...newMemberForm, name: e.target.value })}
                       required
-                      placeholder="Ví dụ: Nguyễn Văn A"
                       className="w-full bg-primary-bg border border-white/10 rounded-xl px-4 py-2.5 text-sm text-primary-text focus:outline-none focus:border-accent"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-400 mb-1 uppercase">Vai trò / Chức vụ</label>
+                    <label className="block text-xs font-semibold text-gray-400 mb-1 uppercase">Vai trò</label>
                     <input 
                       type="text" 
                       value={newMemberForm.role}
                       onChange={(e) => setNewMemberForm({ ...newMemberForm, role: e.target.value })}
                       required
-                      placeholder="Ví dụ: Trưởng nam"
                       className="w-full bg-primary-bg border border-white/10 rounded-xl px-4 py-2.5 text-sm text-primary-text focus:outline-none focus:border-accent"
                     />
                   </div>
@@ -292,7 +265,7 @@ const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-gray-400 mb-1 uppercase">Đời thứ mấy</label>
+                    <label className="block text-xs font-semibold text-gray-400 mb-1 uppercase">Đời thứ</label>
                     <input 
                       type="number" 
                       value={newMemberForm.generation}
@@ -302,53 +275,19 @@ const [isAddModalOpen, setIsAddModalOpen] = useState(false);
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-400 mb-1 uppercase">Năm sinh</label>
+                    <label className="block text-xs font-semibold text-gray-400 mb-1 uppercase">Avatar URL</label>
                     <input 
                       type="text" 
-                      value={newMemberForm.birthYear}
-                      onChange={(e) => setNewMemberForm({ ...newMemberForm, birthYear: e.target.value })}
-                      placeholder="Ví dụ: 1990"
+                      value={newMemberForm.avatar}
+                      onChange={(e) => setNewMemberForm({ ...newMemberForm, avatar: e.target.value })}
                       className="w-full bg-primary-bg border border-white/10 rounded-xl px-4 py-2.5 text-sm text-primary-text focus:outline-none focus:border-accent"
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-gray-400 mb-1 uppercase">Link ảnh Avatar</label>
-                  <input 
-                    type="text" 
-                    value={newMemberForm.avatar}
-                    onChange={(e) => setNewMemberForm({ ...newMemberForm, avatar: e.target.value })}
-                    required
-                    className="w-full bg-primary-bg border border-white/10 rounded-xl px-4 py-2.5 text-sm text-primary-text focus:outline-none focus:border-accent"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-gray-400 mb-1 uppercase">Tiểu sử</label>
-                  <textarea 
-                    rows={2}
-                    value={newMemberForm.bio}
-                    onChange={(e) => setNewMemberForm({ ...newMemberForm, bio: e.target.value })}
-                    placeholder="Vài dòng tiểu sử..."
-                    className="w-full bg-primary-bg border border-white/10 rounded-xl px-4 py-2.5 text-sm text-primary-text focus:outline-none focus:border-accent resize-none"
-                  />
-                </div>
-
-                <div className="pt-4 border-t border-white/10 flex justify-end gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setIsAddModalOpen(false)}
-                    className="px-5 py-2.5 bg-white/10 hover:bg-white/15 text-sm font-medium rounded-xl transition cursor-pointer"
-                  >
-                    Hủy
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-5 py-2.5 bg-accent hover:bg-accent/90 text-white text-sm font-medium rounded-xl transition flex items-center gap-2 cursor-pointer shadow-lg shadow-accent/20"
-                  >
-                    <span>Thêm Vào Sơ Đồ</span>
-                  </button>
+                <div className="pt-4 flex justify-end gap-3">
+                  <button type="button" onClick={() => setIsAddModalOpen(false)} className="px-5 py-2.5 bg-white/10 text-sm font-medium rounded-xl">Hủy</button>
+                  <button type="submit" className="px-5 py-2.5 bg-accent text-white text-sm font-medium rounded-xl">Tạo Thẻ</button>
                 </div>
               </form>
             </motion.div>
@@ -356,6 +295,5 @@ const [isAddModalOpen, setIsAddModalOpen] = useState(false);
         )}
       </AnimatePresence>
     </div>
-    
   );
 };

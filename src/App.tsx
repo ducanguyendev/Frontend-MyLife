@@ -21,6 +21,9 @@ import { useLanguage } from './hooks/useLanguage';
 import { FamilyTree } from './pages/FamilyTree';
 import { FamilyTreeDiagram } from './pages/FamilyTreeDiagram';
 import { ExpenseTracker } from './pages/ExpenseTracker';
+import { AssetTracker } from './pages/AssetTracker';
+import { FamilyHealth } from './pages/FamilyHealth';
+import { FamilyGravesite } from './pages/FamilyGravesite';
 
 function MainPortfolio() {
   return (
@@ -115,7 +118,10 @@ function App() {
           <Route path="/gia-pha" element={<FamilyTree />} />
           <Route path="/family-tree/diagram" element={<FamilyTreeDiagram />} />
           <Route path="/expense-tracker" element={<ExpenseTracker />} />
-        </Routes>
+          <Route path="/asset-tracker" element={<AssetTracker />} />
+          <Route path="/family-health" element={<FamilyHealth />} />
+          <Route path="/family-gravesite" element={<FamilyGravesite />} />
+          </Routes>
       )}
     </>
   );

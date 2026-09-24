@@ -88,3 +88,59 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Tùy chỉnh giao diện react-datepicker cho Dark Theme / Secondary Background */
+.react-datepicker {
+  background-color: var(--color-secondary-bg, #1e222d) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 1rem !important;
+  font-family: inherit !important;
+  color: #fff !important;
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.5);
+}
+
+.react-datepicker__header {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-top-left-radius: 1rem !important;
+  border-top-right-radius: 1rem !important;
+  padding-top: 12px !important;
+}
+
+.react-datepicker__current-month,
+.react-datepicker__day-name {
+  color: #fff !important;
+}
+
+.react-datepicker__day {
+  color: #d1d5db !important;
+  border-radius: 50% !important;
+  transition: all 0.2s;
+}
+
+.react-datepicker__day:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
+}
+
+.react-datepicker__day--selected {
+  background-color: var(--color-accent, #6366f1) !important;
+  color: #fff !important;
+  font-weight: bold;
+}
+
+.react-datepicker__navigation-icon::before {
+  border-color: #9ca3af !important;
+}
+
+.react-datepicker__year-dropdown, 
+.react-datepicker__month-dropdown {
+  background-color: #1e222d !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
+}
+
+.react-datepicker__year-option:hover, 
+.react-datepicker__month-option:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
