@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
-  Plus, Loader2, Search, LayoutGrid, List, Users, CalendarDays, BookOpen, Globe
+  Plus, Loader2, Search, LayoutGrid, List, Users, CalendarDays, BookOpen, Globe, Network
 } from "lucide-react";
 import { useLanguage } from "@/shared/hooks/useLanguage";
 import { Button } from "@/shared/components/ui";
@@ -16,6 +16,7 @@ import {
   AnniversaryTab,
   LibraryTab,
   FamilyMapTab,
+  FamilyMindmap,
 } from "./family-tree";
 
 const API = import.meta.env.VITE_API_URL || "";
@@ -36,7 +37,7 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast,
 
   // UI State
   const [activeTab, setActiveTab] = useState<"members" | "anniversaries" | "library" | "map">("members");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [viewMode, setViewMode] = useState<"grid" | "list" | "mindmap">("grid");
   const [searchQuery, setSearchQuery] = useState("");
   const [generationFilter, setGenerationFilter] = useState("all");
 
@@ -227,7 +228,7 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast,
             <h2 className="text-2xl font-black tracking-wide text-primary-text flex items-center gap-3">
               <span>{t("admin.family_tree_title", { defaultValue: "CÂY GIA PHẢ DÒNG TỘC" })}</span>
               <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-accent/20 text-accent border border-accent/30 uppercase">
-                Họ Nguyễn • Tiên Điền
+                Dòng họ Nguyễn
               </span>
             </h2>
             <p className="text-secondary-text text-xs mt-1">
@@ -301,14 +302,23 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast,
                 <button
                   onClick={() => setViewMode("grid")}
                   className={`p-1.5 rounded-lg transition-colors cursor-pointer ${viewMode === "grid" ? "bg-accent text-primary-bg" : "text-secondary-text hover:text-primary-text"}`}
+                  title={t("admin.view_grid", { defaultValue: "Lưới" })}
                 >
                   <LayoutGrid size={16} />
                 </button>
                 <button
                   onClick={() => setViewMode("list")}
                   className={`p-1.5 rounded-lg transition-colors cursor-pointer ${viewMode === "list" ? "bg-accent text-primary-bg" : "text-secondary-text hover:text-primary-text"}`}
+                  title={t("admin.view_list", { defaultValue: "Danh sách" })}
                 >
                   <List size={16} />
+                </button>
+                <button
+                  onClick={() => setViewMode("mindmap")}
+                  className={`p-1.5 rounded-lg transition-colors cursor-pointer ${viewMode === "mindmap" ? "bg-accent text-primary-bg" : "text-secondary-text hover:text-primary-text"}`}
+                  title={t("admin.view_mindmap", { defaultValue: "Sơ đồ phả hệ" })}
+                >
+                  <Network size={16} />
                 </button>
               </div>
             </div>
@@ -343,7 +353,7 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast,
                   />
                 ))}
               </div>
-            ) : (
+            ) : viewMode === "list" ? (
               <div className="space-y-3">
                 {filteredMembers.map((m) => (
                   <MemberListItem
@@ -355,6 +365,13 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast,
                   />
                 ))}
               </div>
+            ) : (
+              <FamilyMindmap 
+                members={filteredMembers}
+                onView={setMemberToView}
+                onEdit={handleOpenModal}
+                onDelete={setMemberToDelete}
+              />
             )}
           </div>
         </div>
