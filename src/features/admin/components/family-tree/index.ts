@@ -8,3 +8,5 @@ export * from "./AnniversaryTab";
 export * from "./LibraryTab";
 export * from "./PhotoLightboxModal";
 export * from "./FamilyMapTab";
+export * from "./FamilyMindmap";
+export * from "./MemberMindmapNode";
