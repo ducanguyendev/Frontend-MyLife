@@ -8,12 +8,18 @@ export const CustomCursor: React.FC = () => {
   const cursorX = useMotionValue(-100);
   const cursorY = useMotionValue(-100);
 
+  // Khai báo các hook ở top-level (cấp cao nhất của component)
+  const dotX = useMotionValue(-100);
+  const dotY = useMotionValue(-100);
+
   const springConfig = { damping: 40, stiffness: 400, mass: 0.4 };
   const cursorXSpring = useSpring(cursorX, springConfig);
   const cursorYSpring = useSpring(cursorY, springConfig);
+  
+  const dotXSpring = useSpring(dotX, springConfig);
+  const dotYSpring = useSpring(dotY, springConfig);
 
   useEffect(() => {
-    // Only show custom cursor on non-touch devices
     const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     if (isTouchDevice) return;
 
@@ -22,6 +28,8 @@ export const CustomCursor: React.FC = () => {
     const moveCursor = (e: MouseEvent) => {
       cursorX.set(e.clientX - 16);
       cursorY.set(e.clientY - 16);
+      dotX.set(e.clientX - 4);
+      dotY.set(e.clientY - 4);
     };
 
     const handleMouseOver = (e: MouseEvent) => {
@@ -43,7 +51,7 @@ export const CustomCursor: React.FC = () => {
       window.removeEventListener('mousemove', moveCursor);
       window.removeEventListener('mouseover', handleMouseOver);
     };
-  }, [cursorX, cursorY]);
+  }, [cursorX, cursorY, dotX, dotY]);
 
   if (!isVisible) return null;
 
@@ -64,13 +72,8 @@ export const CustomCursor: React.FC = () => {
       <motion.div
         className="fixed top-0 left-0 w-2 h-2 bg-accent rounded-full pointer-events-none z-50 hidden md:block"
         style={{
-          x: useSpring(useMotionValue(-100), springConfig),
-          y: useSpring(useMotionValue(-100), springConfig),
-        }}
-        // Let the dot follow the center of the ring
-        animate={{
-          x: cursorX.get() + 12,
-          y: cursorY.get() + 12,
+          x: dotXSpring,
+          y: dotYSpring,
         }}
       />
     </>
