@@ -10,6 +10,15 @@ import { LoginModal } from '@/features/auth/components/LoginModal';
 import { UserMenu } from '@/features/auth/components/UserMenu';
 import { UserProfileModal } from '@/features/profile/components/UserProfileModal';
 
+const NAV_LINKS = [
+  { id: 'home', labelKey: 'navigation.home' },
+  { id: 'about', labelKey: 'navigation.about' },
+  { id: 'skills', labelKey: 'navigation.skills' },
+  { id: 'projects', labelKey: 'navigation.projects' },
+  { id: 'experience', labelKey: 'navigation.experience' },
+  { id: 'contact', labelKey: 'navigation.contact' },
+] as const;
+
 export const Header: React.FC = () => {
   const { t } = useLanguage();
   const { isAuthenticated, user, logout } = useAuth();
@@ -22,22 +31,13 @@ export const Header: React.FC = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
-  const navLinks = [
-    { id: 'home', labelKey: 'navigation.home' },
-    { id: 'about', labelKey: 'navigation.about' },
-    { id: 'skills', labelKey: 'navigation.skills' },
-    { id: 'projects', labelKey: 'navigation.projects' },
-    { id: 'experience', labelKey: 'navigation.experience' },
-    { id: 'contact', labelKey: 'navigation.contact' },
-  ];
-
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
 
       // Detect active section
       const scrollPosition = window.scrollY + 100;
-      for (const link of navLinks) {
+      for (const link of NAV_LINKS) {
         const el = document.getElementById(link.id);
         if (el) {
           const top = el.offsetTop;
@@ -92,10 +92,10 @@ export const Header: React.FC = () => {
     }
   };
 
-  const handleSwitchAccount = () => {
+  const handleSwitchAccount = async () => {
     setIsProfileModalOpen(false);
     setIsMobileMenuOpen(false);
-    logout();
+    await logout();
     setIsLoginModalOpen(true);
   };
 
@@ -122,7 +122,7 @@ export const Header: React.FC = () => {
           <nav className={`hidden xl:flex items-center justify-center gap-2 p-1.5 h-11 rounded-full border transition-colors ${
             isScrolled ? 'bg-gray-50/50 dark:bg-primary-bg/50 border-gray-200 dark:border-custom-border' : 'glass-pill'
           }`}>
-            {navLinks.map((link) => (
+        {NAV_LINKS.map((link) => (
               <a
                 key={link.id}
                 href={`#${link.id}`}
@@ -248,7 +248,7 @@ export const Header: React.FC = () => {
                   </div>
                 )}
 
-                {navLinks.map((link) => (
+              {NAV_LINKS.map((link) => (
                   <a
                     key={link.id}
                     href={`#${link.id}`}
@@ -284,9 +284,9 @@ export const Header: React.FC = () => {
                       <span>{t('navigation.profile', { defaultValue: 'Thông tin cá nhân' })}</span>
                     </button>
                     <button
-                      onClick={() => {
+                      onClick={async () => {
                         setIsMobileMenuOpen(false);
-                        logout();
+                        await logout();
                         navigate('/');
                       }}
                       className="w-full flex items-center gap-3 py-2 text-sm text-red-400 font-medium"

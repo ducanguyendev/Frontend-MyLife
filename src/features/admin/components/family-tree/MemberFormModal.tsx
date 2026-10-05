@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { ChevronDown, Users, Phone, FileText, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/shared/hooks/useLanguage";
+import { apiClient } from "@/shared/api/apiClient";
 import {
   Modal,
   Button,
@@ -15,14 +16,11 @@ import {
 } from "@/shared/components/ui";
 import { type FamilyMember, type Generation, removeVietnameseTones } from "./types";
 
-const API = import.meta.env.VITE_API_URL || "";
-
 interface MemberFormModalProps {
   isOpen: boolean;
   editingMember: Partial<FamilyMember> | null;
   members: FamilyMember[];
   isSaving: boolean;
-  getHeaders?: () => Record<string, string>;
   onClose: () => void;
   onChange: (updated: Partial<FamilyMember>) => void;
   onSubmit: (e: React.FormEvent) => void;
@@ -43,7 +41,6 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
   editingMember,
   members,
   isSaving,
-  getHeaders,
   onClose,
   onChange,
   onSubmit,
@@ -73,23 +70,18 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
 
     const fetchGenerations = async () => {
       try {
-        const res = await fetch(`${API}/api/family-tree/generations`, {
-          credentials: "include",
-          headers: getHeaders ? getHeaders() : {},
-        });
-        if (res.ok) {
-          const json = await res.json();
-          if (json.success && Array.isArray(json.data) && json.data.length > 0) {
-            setGenerations(json.data);
-          }
+        const json = await apiClient.get<{ success?: boolean; data?: Generation[] }>("/api/family-tree/generations");
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+          setGenerations(json.data);
         }
-      } catch {
-        // Retain fallback 5 generations
+      } catch (error) {
+        // Retain fallback generations, but do not hide an operational failure.
+        console.warn("Unable to load family tree generations.", error);
       }
     };
 
-    fetchGenerations();
-  }, [isOpen, getHeaders]);
+    void fetchGenerations();
+  }, [isOpen]);
 
   const isUpdate = !!editingMember?.id;
 

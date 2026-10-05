@@ -13,8 +13,7 @@ import { useTheme } from "@/shared/context/ThemeContext";
 import { useLanguage } from "@/shared/hooks/useLanguage";
 import { LanguageSwitcher } from "@/shared/components/LanguageSwitcher";
 import { useNotification } from "@/shared/contexts/NotificationContext";
-
-const API = import.meta.env.VITE_API_URL || "";
+import { apiClient, getApiErrorMessage } from "@/shared/api/apiClient";
 
 interface AdminStats {
   totalUsers: number;
@@ -24,14 +23,15 @@ interface AdminStats {
 }
 
 interface AdminUser {
-  id: string;
+  id: number;
   email: string;
-  role: string;
-  authProvider: number;
-  authProviderName: string;
+  role: "ADMIN" | "USER";
+  authProvider?: number;
+  authProviderName?: string;
+  loginProviders?: { local: boolean; google: boolean };
   isActive: boolean;
   avatarUrl?: string;
-  createdAt: string;
+  createdAt?: string;
 }
 
 interface LoginLog {
@@ -56,7 +56,7 @@ function StatCard({ icon, label, value, color }: { icon: React.ReactNode; label:
   );
 }
 
-function StatusBadge({ status, t }: { status: string, t: any }) {
+function StatusBadge({ status, t }: { status: string; t: ReturnType<typeof useLanguage>['t'] }) {
   const map: Record<string, { label: string; cls: string, dot: string, bg: string }> = {
     SUCCESS: { label: t("admin.success", { defaultValue: "Thành công" }), cls: "text-emerald-700 dark:text-emerald-400", dot: "bg-emerald-500", bg: "bg-emerald-500/10" },
     FAILED: { label: t("admin.failed", { defaultValue: "Thất bại" }), cls: "text-rose-700 dark:text-rose-400", dot: "bg-rose-500", bg: "bg-rose-500/10" },
@@ -124,15 +124,11 @@ export const AdminDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"dashboard" | "users" | "logs">("dashboard");
   const [loading, setLoading] = useState(true);
   const { showNotification } = useNotification();
-  const [toggling, setToggling] = useState<string | null>(null);
+  const [toggling, setToggling] = useState<number | null>(null);
+  const [roleUpdating, setRoleUpdating] = useState<number | null>(null);
 
   const [userToDelete, setUserToDelete] = useState<AdminUser | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-
-  const getHeaders = useCallback(() => ({
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${localStorage.getItem("accessToken") ?? ""}`,
-  }), []);
 
   const showToast = useCallback((text: string, ok: boolean) => {
     showNotification({
@@ -145,41 +141,64 @@ export const AdminDashboard: React.FC = () => {
     setLoading(true);
     try {
       const [sRes, uRes, lRes] = await Promise.all([
-        fetch(`${API}/api/admin/stats`, { credentials: "include", headers: getHeaders() }),
-        fetch(`${API}/api/admin/users`, { credentials: "include", headers: getHeaders() }),
-        fetch(`${API}/api/admin/logs`, { credentials: "include", headers: getHeaders() }),
+        apiClient.get<AdminStats>("/api/admin/stats"),
+        apiClient.get<AdminUser[]>("/api/admin/users"),
+        apiClient.get<LoginLog[]>("/api/admin/logs"),
       ]);
-      if (sRes.ok) setStats(await sRes.json());
-      if (uRes.ok) setUsers(await uRes.json());
-      if (lRes.ok) setLogs(await lRes.json());
-    } catch {
+      setStats(sRes);
+      setUsers(uRes);
+      setLogs(lRes);
+    } catch (error) {
+      console.warn("Unable to load administration data.", getApiErrorMessage(error));
       showToast(t("admin.error_connect", { defaultValue: "Lỗi kết nối đến Backend!" }), false);
     } finally {
       setLoading(false);
     }
-  }, [getHeaders, showToast, t]);
+  }, [showToast, t]);
 
-  useEffect(() => { fetchAll(); }, [fetchAll]);
+  useEffect(() => { void fetchAll(); }, [fetchAll]);
 
   const handleToggle = async (u: AdminUser) => {
     setToggling(u.id);
     try {
-      const res = await fetch(`${API}/api/admin/users/${u.id}/toggle-active`, {
-        method: "PUT",
-        credentials: "include",
-        headers: getHeaders(),
-      });
-      const data = await res.json();
-      if (res.ok) {
+      const data = await apiClient.put<{ success?: boolean; isActive: boolean; message?: string }>(
+        `/api/admin/users/${u.id}/status`,
+        { isActive: !u.isActive },
+      );
+      if (data.success !== false) {
         setUsers((prev) => prev.map((x) => (x.id === u.id ? { ...x, isActive: data.isActive } : x)));
-        showToast(data.message, true);
+        showToast(data.message ?? (u.isActive ? "User locked." : "User unlocked."), true);
       } else {
         showToast(data.message ?? t("admin.action_failed", { defaultValue: "Thao tác thất bại!" }), false);
       }
-    } catch {
+    } catch (error) {
+      console.warn("Unable to update user status.", getApiErrorMessage(error));
       showToast(t("admin.error_connect", { defaultValue: "Lỗi kết nối!" }), false);
     } finally {
       setToggling(null);
+    }
+  };
+
+  const handleRoleChange = async (target: AdminUser, role: AdminUser['role']) => {
+    if (target.role === role) return;
+
+    setRoleUpdating(target.id);
+    try {
+      const data = await apiClient.put<{ success?: boolean; role: AdminUser['role']; message?: string }>(
+        `/api/admin/users/${target.id}/role`,
+        { role },
+      );
+      if (data.success !== false) {
+        setUsers((previous) => previous.map((item) => (
+          item.id === target.id ? { ...item, role: data.role } : item
+        )));
+        showToast(data.message ?? `Role updated to ${data.role}.`, true);
+      }
+    } catch (error) {
+      console.warn("Unable to update user role.", getApiErrorMessage(error));
+      showToast(getApiErrorMessage(error, "Unable to update the user role."), false);
+    } finally {
+      setRoleUpdating(null);
     }
   };
 
@@ -187,13 +206,10 @@ export const AdminDashboard: React.FC = () => {
     if (!userToDelete) return;
     setIsDeleting(true);
     try {
-      const res = await fetch(`${API}/api/admin/users/${userToDelete.id}`, {
-        method: "DELETE",
-        credentials: "include",
-        headers: getHeaders(),
-      });
-      const data = await res.json();
-      if (res.ok) {
+      const data = await apiClient.delete<{ success?: boolean; message?: string; deletedId?: number }>(
+        `/api/admin/users/${userToDelete.id}`,
+      );
+      if (data.success !== false) {
         setUsers((prev) => prev.filter((x) => x.id !== userToDelete.id));
         setStats((prev) => prev ? {
           ...prev,
@@ -206,15 +222,21 @@ export const AdminDashboard: React.FC = () => {
       } else {
         showToast(data.message || t("admin.delete_failed", { defaultValue: "Không thể xóa tài khoản." }), false);
       }
-    } catch {
+    } catch (error) {
+      console.warn("Unable to delete user.", getApiErrorMessage(error));
       showToast(t("admin.error_connect", { defaultValue: "Lỗi kết nối khi xóa người dùng!" }), false);
     } finally {
       setIsDeleting(false);
     }
   };
 
-  const fmtDate = (d: string) =>
-    new Date(d).toLocaleString("vi-VN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  const fmtDate = (value?: string) => {
+    if (!value) return "—";
+    const date = new Date(value);
+    return Number.isNaN(date.getTime())
+      ? "—"
+      : date.toLocaleString("vi-VN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  };
 
   const getPageTitle = () => {
     switch(activeTab) {
@@ -225,7 +247,7 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
-  const navItems = [
+  const navItems: Array<{ id: typeof activeTab; label: string; icon: React.ReactNode }> = [
     { id: "dashboard", label: t("admin.dashboard", { defaultValue: "Dashboard" }), icon: <LayoutDashboard size={18} /> },
     { id: "users", label: t("admin.users", { defaultValue: "Users" }), icon: <Users size={18} /> },
     { id: "logs", label: t("admin.logs", { defaultValue: "Logs" }), icon: <Clock size={18} /> },
@@ -253,7 +275,7 @@ export const AdminDashboard: React.FC = () => {
               return (
                 <button
                   key={item.id}
-                  onClick={() => setActiveTab(item.id as any)}
+                  onClick={() => setActiveTab(item.id)}
                   className={`relative flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-300 cursor-pointer shrink-0 ${
                     isActive
                       ? "text-primary-bg"
@@ -306,12 +328,12 @@ export const AdminDashboard: React.FC = () => {
             <Home size={14} />
           </button>
 
-          <button onClick={() => { logout(); navigate("/"); }} className="w-8 h-8 flex items-center justify-center rounded-full bg-secondary-bg/50 hover:bg-error/10 border border-custom-border hover:border-error/30 text-secondary-text hover:text-error transition-colors cursor-pointer" title="Logout">
+          <button onClick={async () => { await logout(); navigate("/"); }} className="w-8 h-8 flex items-center justify-center rounded-full bg-secondary-bg/50 hover:bg-error/10 border border-custom-border hover:border-error/30 text-secondary-text hover:text-error transition-colors cursor-pointer" title="Logout">
             <LogOut size={14} />
           </button>
           
           <div className="flex items-center gap-2 pl-2">
-             <UserAvatarItem email={user?.email || "Admin"} avatarUrl={(user as any)?.avatar || (user as any)?.avatarUrl} />
+             <UserAvatarItem email={user?.email || "Admin"} avatarUrl={user?.avatar} />
           </div>
         </div>
       </header>
@@ -383,15 +405,22 @@ export const AdminDashboard: React.FC = () => {
                       <span className="text-primary-text font-semibold text-sm truncate">{u.email}</span>
                     </div>
                     <div className="col-span-2 hidden md:flex items-center">
-                      {u.role === "ADMIN" ? (
-                        <span className="bg-primary-text text-primary-bg px-2 py-0.5 rounded-full font-bold text-[10px] tracking-wider uppercase">Admin</span>
-                      ) : (
-                        <span className="bg-secondary-text/10 text-secondary-text px-2 py-0.5 rounded-full font-bold text-[10px] tracking-wider uppercase">User</span>
-                      )}
+                      <select
+                        value={u.role}
+                        disabled={roleUpdating === u.id || user?.id === u.id}
+                        onChange={(event) => void handleRoleChange(u, event.target.value as AdminUser['role'])}
+                        className="rounded-full border border-custom-border bg-secondary-bg px-2 py-0.5 text-[10px] font-bold tracking-wider text-primary-text uppercase disabled:cursor-not-allowed disabled:opacity-60"
+                        aria-label={`Change role for ${u.email}`}
+                      >
+                        <option value="USER">User</option>
+                        <option value="ADMIN">Admin</option>
+                      </select>
                     </div>
                     <div className="col-span-2 hidden md:flex items-center text-secondary-text text-xs font-medium gap-1.5">
                       {u.authProvider === 1 ? <Globe size={14} className="text-blue-500" /> : <Mail size={14} />}
-                      {u.authProviderName}
+                       {u.authProviderName ?? (u.loginProviders?.local && u.loginProviders?.google
+                         ? 'Email + Google'
+                         : u.authProvider === 1 ? 'Google OAuth 2.0' : 'Email & Password')}
                     </div>
                     <div className="col-span-4 md:col-span-2 flex items-center">
                       <StatusBadge status={u.isActive ? "SUCCESS" : "FAILED"} t={t} />

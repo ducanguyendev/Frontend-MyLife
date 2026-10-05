@@ -1,12 +1,20 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { authService, type LoginRequest, type LoginResponse } from '../services/authService';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import {
+  authService,
+  type AuthenticatedUser,
+  type LoginRequest,
+  type LoginResponse,
+  type UserRole,
+} from '../services/authService';
 
 export interface User {
+  id: number;
   email: string;
   name: string;
-  role: string; // 'ADMIN' | 'USER'
+  role: UserRole;
   avatar?: string;
-  authProvider?: number; // 0 = LOCAL, 1 = GOOGLE
+  authProvider?: number;
+  loginProviders?: AuthenticatedUser['loginProviders'];
 }
 
 interface AuthContextType {
@@ -15,161 +23,116 @@ interface AuthContextType {
   isAdmin: boolean;
   isLoading: boolean;
   login: (credentials: LoginRequest) => Promise<LoginResponse>;
-  loginWithGoogle: (code: string, redirectUri?: string) => Promise<LoginResponse>;
-  logout: () => void;
-  switchAccount: () => void;
+  loginWithGoogle: (code: string, redirectUri: string) => Promise<LoginResponse>;
+  logout: () => Promise<void>;
+  switchAccount: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+function isGoogleOAuthPopupCallback(): boolean {
+  if (typeof window === 'undefined' || !window.opener) return false;
+  const params = new URLSearchParams(window.location.search);
+  return params.has('code') || params.has('error');
+}
+
+function toContextUser(user: AuthenticatedUser): User {
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.fullName?.trim() || user.name?.trim() || user.email.split('@')[0],
+    role: user.role === 'ADMIN' ? 'ADMIN' : 'USER',
+    avatar: user.avatarUrl ?? undefined,
+    authProvider: user.authProvider,
+    loginProviders: user.loginProviders,
+  };
+}
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState(() => !isGoogleOAuthPopupCallback());
+
+  const clearAuthenticatedState = useCallback(() => {
+    authService.clearSessionState();
+    setUser(null);
+  }, []);
 
   useEffect(() => {
-    // Check authentication on initial load
-    const token = authService.getAccessToken();
-    const storedEmail = authService.getStoredEmail();
-    const storedName = authService.getStoredName();
-    const storedAvatar = authService.getStoredAvatar() || undefined;
-    const storedAuthProvider = authService.getStoredAuthProvider();
-    const storedRole = authService.getStoredRole(); // Đọc role thực từ localStorage
+    // The OAuth redirect loads this SPA inside a popup. Its parent reads the
+    // authorization code from the callback URL, so this transient document
+    // must not call /me, refresh, or logout shared cookies.
+    if (isGoogleOAuthPopupCallback()) return undefined;
 
-    if (token && storedEmail) {
-      setUser({
-        email: storedEmail,
-        name: storedName || storedEmail.split('@')[0],
-        role: storedRole,
-        avatar: storedAvatar,
-        authProvider: storedAuthProvider,
-      });
-      setIsAuthenticated(true);
-    } else {
-      setUser(null);
-      setIsAuthenticated(false);
-    }
-    setIsLoading(false);
+    let isMounted = true;
+
+    const verifySession = async () => {
+      authService.prepareSessionCheck();
+
+      try {
+        // apiClient transparently performs one cookie-based refresh after a
+        // /api/me 401. The server response, never localStorage, is the source
+        // of truth for identity and role after every app start.
+        const currentUser = await authService.getUserInfo();
+        if (isMounted) setUser(toContextUser(currentUser));
+      } catch {
+        if (isMounted) clearAuthenticatedState();
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
 
     const handleExpired = () => {
-      setUser(null);
-      setIsAuthenticated(false);
+      if (!isMounted) return;
+      clearAuthenticatedState();
     };
 
-    const handleAvatarUpdated = (e: any) => {
-      const av = e.detail?.avatarUrl;
-      const newAvatar = (av && av !== 'none') ? av : undefined;
-      setUser((prev) => (prev ? { ...prev, avatar: newAvatar } : null));
+    const handleAvatarUpdated = (event: Event) => {
+      const { avatarUrl } = (event as CustomEvent<{ avatarUrl?: string | null }>).detail ?? {};
+      setUser((previous) => previous ? { ...previous, avatar: avatarUrl ?? undefined } : null);
     };
 
-    const handleNameUpdated = (e: any) => {
-      const newName = e.detail?.name;
-      if (newName) {
-        setUser((prev) => (prev ? { ...prev, name: newName } : null));
+    const handleNameUpdated = (event: Event) => {
+      const { name } = (event as CustomEvent<{ name?: string }>).detail ?? {};
+      if (name?.trim()) {
+        setUser((previous) => previous ? { ...previous, name: name.trim() } : null);
       }
     };
 
     window.addEventListener('auth:expired', handleExpired);
     window.addEventListener('auth:avatarUpdated', handleAvatarUpdated);
     window.addEventListener('auth:nameUpdated', handleNameUpdated);
+    void verifySession();
+
     return () => {
+      isMounted = false;
       window.removeEventListener('auth:expired', handleExpired);
       window.removeEventListener('auth:avatarUpdated', handleAvatarUpdated);
       window.removeEventListener('auth:nameUpdated', handleNameUpdated);
     };
+  }, [clearAuthenticatedState]);
+
+  const login = useCallback(async (credentials: LoginRequest): Promise<LoginResponse> => {
+    const response = await authService.login(credentials);
+    setUser(toContextUser(response.user));
+    return response;
   }, []);
 
-  // Theo dõi thời gian không thao tác (Inactivity / Expiry Timer):
-  // Khi không có bất kỳ thao tác refresh nào trong vòng 2 phút -> Tự động LOGOUT
-  useEffect(() => {
-    if (!isAuthenticated) return;
-
-    let timer: ReturnType<typeof setTimeout>;
-
-    const resetExpiryTimer = () => {
-      clearTimeout(timer);
-      const refreshExpiresAt = Number(localStorage.getItem('refreshExpiresAt')) || (Date.now() + 120 * 1000);
-      const remainingMs = Math.max(0, refreshExpiresAt - Date.now());
-
-      timer = setTimeout(() => {
-        console.log(
-          `%c[AUTH] ⏰ [${new Date().toLocaleTimeString()}] Đã qua 2 phút không thao tác -> Refresh Token hết hạn, tự động LOGOUT!`,
-          'color: #ef4444; font-weight: bold;'
-        );
-        authService.logout();
-        setUser(null);
-        setIsAuthenticated(false);
-        window.dispatchEvent(new CustomEvent('auth:expired'));
-      }, remainingMs);
-    };
-
-    resetExpiryTimer();
-
-    // Lắng nghe các thao tác của người dùng (Click, gõ phím, chuyển trang)
-    let lastActivityCheck = 0;
-    const handleActivity = () => {
-      const now = Date.now();
-      // Throttle kiểm tra mỗi 3 giây 1 lần khi người dùng thao tác
-      if (now - lastActivityCheck > 3000) {
-        lastActivityCheck = now;
-        authService.handleUserActivity();
-      }
-    };
-
-    const activityEvents = ['mousedown', 'keydown', 'touchstart'];
-    activityEvents.forEach((ev) => window.addEventListener(ev, handleActivity));
-    window.addEventListener('auth:refreshed', resetExpiryTimer);
-
-    return () => {
-      clearTimeout(timer);
-      activityEvents.forEach((ev) => window.removeEventListener(ev, handleActivity));
-      window.removeEventListener('auth:refreshed', resetExpiryTimer);
-    };
-  }, [isAuthenticated]);
-
-  const login = async (credentials: LoginRequest): Promise<LoginResponse> => {
-    const response = await authService.login(credentials);
-    const email = credentials.email;
-    const role = response.role ?? authService.getStoredRole(); // Dùng role từ API response
-    const avatar = response.avatarUrl || authService.getStoredAvatar() || undefined;
-    setUser({
-      email,
-      name: email.split('@')[0],
-      role,
-      avatar,
-      authProvider: 0,
-    });
-    setIsAuthenticated(true);
-    return response;
-  };
-
-  const loginWithGoogle = async (code: string, redirectUri?: string): Promise<LoginResponse> => {
+  const loginWithGoogle = useCallback(async (code: string, redirectUri: string): Promise<LoginResponse> => {
     const response = await authService.loginWithGoogle(code, redirectUri);
-    const email = response.email || authService.getStoredEmail() || (code.includes('@') ? code.trim().toLowerCase() : '');
-    const avatar = response.avatarUrl || authService.getStoredAvatar() || undefined;
-    const role = response.role ?? authService.getStoredRole();
-    setUser({
-      email,
-      name: email.split('@')[0],
-      role,
-      avatar,
-      authProvider: 1,
-    });
-    setIsAuthenticated(true);
+    setUser(toContextUser(response.user));
     return response;
-  };
+  }, []);
 
-  const logout = (): void => {
-    authService.logout();
+  const logout = useCallback(async (): Promise<void> => {
+    await authService.logout();
     setUser(null);
-    setIsAuthenticated(false);
-  };
+  }, []);
 
-  const switchAccount = (): void => {
-    logout();
-  };
+  const switchAccount = useCallback(async (): Promise<void> => {
+    await logout();
+  }, [logout]);
 
-  // Computed: Admin khi role là 'ADMIN' (chính xác từ DB)
+  const isAuthenticated = user !== null;
   const isAdmin = user?.role === 'ADMIN';
 
   return (

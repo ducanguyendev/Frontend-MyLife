@@ -18,5 +18,12 @@ export default defineConfig([
     languageOptions: {
       globals: globals.browser,
     },
+    rules: {
+      // This codebase intentionally hydrates UI state and invokes async loaders
+      // from effects. The React compiler advisory is not a correctness rule.
+      'react-hooks/set-state-in-effect': 'off',
+      // Context modules export both their provider and their typed hook.
+      'react-refresh/only-export-components': 'off',
+    },
   },
 ])

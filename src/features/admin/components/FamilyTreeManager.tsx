@@ -4,6 +4,7 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/shared/hooks/useLanguage";
 import { Button } from "@/shared/components/ui";
+import { apiClient } from "@/shared/api/apiClient";
 import {
   type FamilyMember,
   type FamilyTreeManagerProps,
@@ -19,9 +20,7 @@ import {
   FamilyMindmap,
 } from "./family-tree";
 
-const API = import.meta.env.VITE_API_URL || "";
-
-export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast, getHeaders }) => {
+export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast }) => {
   const { t } = useLanguage();
 
   const [members, setMembers] = useState<FamilyMember[]>([]);
@@ -36,7 +35,8 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast,
   }, [activeDropdown]);
 
   // UI State
-  const [activeTab, setActiveTab] = useState<"members" | "anniversaries" | "library" | "map">("members");
+  type FamilyTab = "members" | "anniversaries" | "library" | "map";
+  const [activeTab, setActiveTab] = useState<FamilyTab>("members");
   const [viewMode, setViewMode] = useState<"grid" | "list" | "mindmap">("grid");
   const [searchQuery, setSearchQuery] = useState("");
   const [generationFilter, setGenerationFilter] = useState("all");
@@ -54,10 +54,7 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast,
   const fetchMembers = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API}/api/family-tree`, {
-        credentials: "include",
-        headers: getHeaders(),
-      });
+      const res = await apiClient.requestRaw("/api/family-tree");
       if (res.ok) {
         const json = await res.json();
         console.log("Fetched members:", json.data);
@@ -70,7 +67,7 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast,
     } finally {
       setLoading(false);
     }
-  }, [getHeaders, showToast, t]);
+  }, [showToast, t]);
 
   useEffect(() => {
     fetchMembers();
@@ -135,11 +132,6 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast,
     setIsSaving(true);
 
     const isUpdate = !!editingMember.id;
-    const url = isUpdate
-      ? `${API}/api/family-tree/${editingMember.id}`
-      : `${API}/api/family-tree`;
-    const method = isUpdate ? "PUT" : "POST";
-
     const payload = {
       ...editingMember,
       dateOfBirth: editingMember.dateOfBirth || null,
@@ -151,12 +143,10 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast,
     };
 
     try {
-      const res = await fetch(url, {
-        method,
-        credentials: "include",
-        headers: getHeaders(),
-        body: JSON.stringify(payload),
-      });
+      const res = await apiClient.requestRaw(
+        isUpdate ? `/api/family-tree/${editingMember.id}` : "/api/family-tree",
+        { method: isUpdate ? "PUT" : "POST", body: payload },
+      );
 
       const data = await res.json();
       if (res.ok) {
@@ -187,11 +177,7 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast,
     setIsDeleting(true);
 
     try {
-      const res = await fetch(`${API}/api/family-tree/${memberToDelete.id}`, {
-        method: "DELETE",
-        credentials: "include",
-        headers: getHeaders(),
-      });
+      const res = await apiClient.requestRaw(`/api/family-tree/${memberToDelete.id}`, { method: "DELETE" });
       const data = await res.json();
 
       if (res.ok) {
@@ -212,7 +198,7 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast,
     }
   };
 
-  const tabs = [
+  const tabs: Array<{ id: FamilyTab; label: string; icon: React.ReactNode }> = [
     { id: "members", label: t("admin.tab_members", { defaultValue: "Danh Sách Phả Hệ" }), icon: <Users size={16} /> },
     { id: "anniversaries", label: t("admin.tab_anniversaries", { defaultValue: "Ngày Giỗ & Kỷ Niệm" }), icon: <CalendarDays size={16} /> },
     { id: "library", label: t("admin.tab_library", { defaultValue: "Tư Liệu & Kỷ Vật" }), icon: <BookOpen size={16} /> },
@@ -253,7 +239,7 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast,
           {tabs.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all border cursor-pointer ${
                 activeTab === tab.id
                   ? "bg-accent/10 border-accent/50 text-accent shadow-sm"
@@ -397,7 +383,6 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast,
         editingMember={editingMember}
         members={members}
         isSaving={isSaving}
-        getHeaders={getHeaders}
         onClose={handleCloseModal}
         onChange={setEditingMember}
         onSubmit={handleSaveMember}

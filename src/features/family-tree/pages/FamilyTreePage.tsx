@@ -18,11 +18,6 @@ export const FamilyTreePage: React.FC = () => {
   const { showNotification } = useNotification();
   const [isProfileModalOpen, setIsProfileModalOpen] = React.useState(false);
 
-  const getHeaders = useCallback(() => ({
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${localStorage.getItem('accessToken') ?? ''}`,
-  }), []);
-
   const showToast = useCallback((text: string, ok: boolean) => {
     showNotification({
       message: text,
@@ -87,8 +82,8 @@ export const FamilyTreePage: React.FC = () => {
           {/* User Menu */}
           <UserMenu
             onOpenProfile={() => setIsProfileModalOpen(true)}
-            onSwitchAccount={() => {
-              logout();
+            onSwitchAccount={async () => {
+              await logout();
               navigate('/');
             }}
           />
@@ -98,7 +93,7 @@ export const FamilyTreePage: React.FC = () => {
       {/* Main Family Tree Manager Container */}
       <main className="relative z-10 flex-1 w-[96%] max-w-[1400px] mx-auto pb-12">
         <div className="glass-pill rounded-3xl p-4 sm:p-6 shadow-xl border border-custom-border overflow-hidden min-h-[700px]">
-          <FamilyTreeManager showToast={showToast} getHeaders={getHeaders} />
+          <FamilyTreeManager showToast={showToast} />
         </div>
       </main>
 
@@ -106,9 +101,9 @@ export const FamilyTreePage: React.FC = () => {
       <UserProfileModal
         isOpen={isProfileModalOpen}
         onClose={() => setIsProfileModalOpen(false)}
-        onSwitchAccount={() => {
+        onSwitchAccount={async () => {
           setIsProfileModalOpen(false);
-          logout();
+          await logout();
           navigate('/');
         }}
       />

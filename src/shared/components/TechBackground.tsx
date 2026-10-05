@@ -8,7 +8,7 @@ export const TechBackground: React.FC = () => {
         className="absolute inset-0 bg-cover bg-center transition-all duration-1000"
         style={{ 
           backgroundImage: `url('/hud_background.png')`,
-          opacity: 'var(--hud-opacity)' as any,
+          opacity: 'var(--hud-opacity)',
           filter: 'var(--hud-filter)'
         }}
       />

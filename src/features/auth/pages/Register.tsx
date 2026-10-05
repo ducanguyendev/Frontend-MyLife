@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useLanguage } from '@/shared/hooks/useLanguage';
 import { authService } from '../services/authService';
+import { getApiErrorMessage } from '@/shared/api/apiClient';
 import { Input, PasswordInput, DateInput, validateDob } from '@/shared/components/ui';
 import { LanguageSwitcher } from '@/shared/components/LanguageSwitcher';
 import {
@@ -243,8 +244,8 @@ export const Register: React.FC = () => {
       });
 
       setSuccessMessage(t('common.registerPage.errors.registerSuccess', { defaultValue: 'Đăng ký tài khoản thành công! Đang chuyển đến trang đăng nhập...' }));
-    } catch (err: any) {
-      setErrorMessage(err.message || t('common.registerPage.errors.registerFailed', { defaultValue: 'Đăng ký thất bại. Vui lòng thử lại.' }));
+    } catch (err: unknown) {
+      setErrorMessage(getApiErrorMessage(err, t('common.registerPage.errors.registerFailed', { defaultValue: 'Đăng ký thất bại. Vui lòng thử lại.' })));
     } finally {
       setIsLoading(false);
     }

@@ -35,7 +35,6 @@ export interface Generation {
 
 export interface FamilyTreeManagerProps {
   showToast: (text: string, ok: boolean) => void;
-  getHeaders: () => Record<string, string>;
 }
 
 export interface AnniversaryItem {

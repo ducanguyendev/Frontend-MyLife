@@ -1,15 +1,65 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AlertCircle, Lock, Mail, ShieldCheck, X } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { getApiErrorMessage } from '@/shared/api/apiClient';
+import { Input, PasswordInput } from '@/shared/components/ui';
 import { useLanguage } from '@/shared/hooks/useLanguage';
 import { useAuth } from '../context/AuthContext';
 import { authService } from '../services/authService';
-import { Input, PasswordInput } from '@/shared/components/ui';
-import { X, Lock, Mail, ShieldCheck, AlertCircle } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 
 interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
+}
+
+function waitForGoogleAuthorizationCode(popup: Window, expectedState: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    const finish = (error?: Error, code?: string) => {
+      if (settled) return;
+      settled = true;
+      window.clearInterval(poll);
+      window.clearTimeout(timeout);
+      if (!popup.closed) popup.close();
+      if (error) reject(error);
+      else resolve(code ?? '');
+    };
+
+    const poll = window.setInterval(() => {
+      if (popup.closed) {
+        finish(new Error('Google sign-in was cancelled.'));
+        return;
+      }
+
+      try {
+        const callbackUrl = new URL(popup.location.href);
+        if (callbackUrl.origin !== window.location.origin) return;
+
+        const providerError = callbackUrl.searchParams.get('error');
+        if (providerError) {
+          finish(new Error(`Google sign-in failed: ${providerError}.`));
+          return;
+        }
+
+        const code = callbackUrl.searchParams.get('code');
+        if (!code) return;
+
+        if (callbackUrl.searchParams.get('state') !== expectedState) {
+          finish(new Error('Google sign-in response could not be verified.'));
+          return;
+        }
+
+        finish(undefined, code);
+      } catch {
+        // The popup is cross-origin until Google redirects it to this origin.
+      }
+    }, 400);
+
+    const timeout = window.setTimeout(() => {
+      finish(new Error('Google sign-in timed out. Please try again.'));
+    }, 120_000);
+  });
 }
 
 export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
@@ -25,99 +75,81 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
 
-  // Tự động tắt thông báo lỗi sau đúng 3 giây
   useEffect(() => {
-    if (errorMessage) {
-      const timer = setTimeout(() => {
-        setErrorMessage(null);
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
+    if (!errorMessage) return undefined;
+    const timer = window.setTimeout(() => setErrorMessage(null), 3_000);
+    return () => window.clearTimeout(timer);
   }, [errorMessage]);
 
-  // Khi mở/đóng Modal: Nạp email và mật khẩu đã ghi nhớ (nếu có)
   useEffect(() => {
-    if (isOpen) {
-      const remembered = authService.getRemembered();
-      if (remembered.rememberMe && remembered.email) {
-        setEmail(remembered.email);
-        setPassword(remembered.password);
-        setRememberMe(true);
-      } else {
-        setEmail('');
-        setPassword('');
-        setRememberMe(false);
+    const timer = window.setTimeout(() => {
+      if (!isOpen) {
+        setErrorMessage(null);
+        return;
       }
-    } else {
-      setErrorMessage(null);
-    }
+
+      const remembered = authService.getRemembered();
+      setEmail(remembered.rememberMe ? remembered.email : '');
+      setPassword('');
+      setRememberMe(remembered.rememberMe);
+      setFieldErrors({});
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, [isOpen]);
 
   if (!isOpen) return null;
 
-  const getLocalizedErrorMessage = (rawError: string): string => {
-    const lower = rawError.toLowerCase();
-    if (lower.includes('chính xác') || lower.includes('credentials') || lower.includes('invalid') || lower.includes('401')) {
-      return t('common.errors.invalidCredentials', { defaultValue: 'Email hoặc mật khẩu không chính xác.' });
+  const localizeError = (rawError: string): string => {
+    const error = rawError.toLowerCase();
+    if (error.includes('credential') || error.includes('invalid email') || error.includes('401')) {
+      return t('common.errors.invalidCredentials', { defaultValue: 'Email or password is incorrect.' });
     }
-    if (lower.includes('khóa') || lower.includes('lock')) {
-      return t('common.errors.accountLocked', { defaultValue: 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.' });
+    if (error.includes('locked')) {
+      return t('common.errors.accountLocked', { defaultValue: 'This account is locked. Please contact an administrator.' });
     }
-    if (lower.includes('8') && lower.includes('72')) {
-      return t('common.errors.passwordLength', { defaultValue: 'Mật khẩu phải có độ dài từ 8 đến 72 ký tự.' });
+    if (error.includes('connect') || error.includes('network') || error.includes('server')) {
+      return t('common.errors.connectionError', { defaultValue: 'Unable to connect to the server. Please try again.' });
     }
-    if (lower.includes('kết nối') || lower.includes('failed to fetch') || lower.includes('500') || lower.includes('502')) {
-      return t('common.errors.connectionError', { defaultValue: 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại!' });
+    if (error.includes('expired')) {
+      return t('common.errors.sessionExpired', { defaultValue: 'Your session has expired. Please sign in again.' });
     }
-    if (lower.includes('hết hạn') || lower.includes('expired')) {
-      return t('common.errors.sessionExpired', { defaultValue: 'Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.' });
-    }
-    return rawError || t('common.errors.defaultError', { defaultValue: 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.' });
+    return rawError || t('common.errors.defaultError', { defaultValue: 'Sign-in failed. Please try again.' });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
     setErrorMessage(null);
 
-    const errors: { email?: string; password?: string } = {};
-    const trimmedEmail = email.trim();
+    const nextErrors: { email?: string; password?: string } = {};
+    const normalizedEmail = email.trim().toLowerCase();
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    const phoneRegex = /^(0[3|5|7|8|9])[0-9]{8}$/;
 
-    // 1. Kiểm tra Email/SĐT
-    if (!trimmedEmail) {
-      errors.email = t('common.errors.emailRequired', { defaultValue: 'Vui lòng nhập email hoặc số điện thoại.' });
-    } else if (!emailRegex.test(trimmedEmail) && !phoneRegex.test(trimmedEmail)) {
-      errors.email = t('common.errors.invalidEmailFormat', { defaultValue: 'Email hoặc số điện thoại không đúng định dạng.' });
+    if (!normalizedEmail) {
+      nextErrors.email = t('common.errors.emailRequired', { defaultValue: 'Please enter your email address.' });
+    } else if (!emailRegex.test(normalizedEmail)) {
+      nextErrors.email = t('common.errors.invalidEmailFormat', { defaultValue: 'Please enter a valid email address.' });
     }
 
-    // 2. Kiểm tra Mật khẩu
     if (!password) {
-      errors.password = t('common.errors.passwordRequired', { defaultValue: 'Vui lòng nhập mật khẩu.' });
+      nextErrors.password = t('common.errors.passwordRequired', { defaultValue: 'Please enter your password.' });
     } else if (password.length < 8 || password.length > 72) {
-      errors.password = t('common.errors.passwordLength', { defaultValue: 'Mật khẩu phải có độ dài từ 8 đến 72 ký tự.' });
+      nextErrors.password = t('common.errors.passwordLength', { defaultValue: 'Password must be between 8 and 72 characters.' });
     }
 
-    if (Object.keys(errors).length > 0) {
-      setFieldErrors(errors);
+    if (Object.keys(nextErrors).length > 0) {
+      setFieldErrors(nextErrors);
       return;
     }
+
     setFieldErrors({});
-
     setIsLoading(true);
-
     try {
-      await login({
-        email: trimmedEmail.toLowerCase(),
-        password,
-        rememberMe,
-      });
-
+      await login({ email: normalizedEmail, password, rememberMe });
       onClose();
       navigate('/Home');
-    } catch (err: any) {
-      const errorMsg = getLocalizedErrorMessage(err.message || '');
-      setErrorMessage(errorMsg);
+    } catch (error) {
+      setErrorMessage(localizeError(getApiErrorMessage(error)));
     } finally {
       setIsLoading(false);
     }
@@ -128,82 +160,46 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
     setIsGoogleLoading(true);
 
     try {
-      const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-
-      if (googleClientId && !googleClientId.startsWith('YOUR_GOOGLE_CLIENT_ID')) {
-        const redirectUri = window.location.origin;
-        const scope = 'openid email profile';
-        const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(
-          googleClientId
-        )}&redirect_uri=${encodeURIComponent(
-          redirectUri
-        )}&response_type=code&scope=${encodeURIComponent(
-          scope
-        )}&access_type=offline&prompt=select_account`;
-
-        const width = 500;
-        const height = 600;
-        const left = window.screenX + (window.outerWidth - width) / 2;
-        const top = window.screenY + (window.outerHeight - height) / 2;
-        const popup = window.open(
-          authUrl,
-          'google_oauth',
-          `width=${width},height=${height},left=${left},top=${top}`
-        );
-
-        if (!popup) {
-          throw new Error(t('common.errors.popupBlocked', { defaultValue: 'Không thể mở popup Google. Vui lòng cho phép mở popup trên trình duyệt.' }));
-        }
-
-        const checkPopup = setInterval(async () => {
-          try {
-            if (!popup || popup.closed) {
-              clearInterval(checkPopup);
-              setIsGoogleLoading(false);
-              return;
-            }
-
-            if (popup.location.href.includes('code=')) {
-              const urlParams = new URLSearchParams(popup.location.search);
-              const code = urlParams.get('code');
-              popup.close();
-              clearInterval(checkPopup);
-
-              if (code) {
-                await loginWithGoogle(code, redirectUri);
-                onClose();
-                navigate('/Home');
-              }
-            }
-          } catch {
-            // Bỏ qua Cross-Origin khi popup đang ở Google
-          }
-        }, 500);
-      } else {
-        // Nhập địa chỉ Gmail để đăng nhập chính xác tài khoản của bạn:
-        const inputGmail = window.prompt(
-          t('common.errors.promptGmail', { defaultValue: 'Nhập địa chỉ Gmail của bạn để tiếp tục đăng nhập với Google:' }),
-          ''
-        );
-
-        if (!inputGmail || !inputGmail.trim()) {
-          setIsGoogleLoading(false);
-          return;
-        }
-
-        const normalizedGmail = inputGmail.trim().toLowerCase();
-        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-        if (!emailRegex.test(normalizedGmail)) {
-          throw new Error(t('common.errors.invalidEmailFormat', { defaultValue: 'Email không đúng định dạng. Vui lòng kiểm tra lại.' }));
-        }
-
-        await loginWithGoogle(normalizedGmail);
-        onClose();
-        navigate('/Home');
+      const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim();
+      if (!googleClientId || googleClientId.startsWith('YOUR_GOOGLE_CLIENT_ID')) {
+        throw new Error('Google sign-in is not configured for this site.');
       }
-    } catch (err: any) {
-      const errorMsg = getLocalizedErrorMessage(err.message || t('common.errors.googleLoginFailed', { defaultValue: 'Đăng nhập bằng Google thất bại.' }));
-      setErrorMessage(errorMsg);
+
+      const redirectUri = window.location.origin;
+      const stateBytes = crypto.getRandomValues(new Uint8Array(24));
+      const oauthState = Array.from(stateBytes, (value) => value.toString(16).padStart(2, '0')).join('');
+      const authorizationUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+      authorizationUrl.search = new URLSearchParams({
+        client_id: googleClientId,
+        redirect_uri: redirectUri,
+        response_type: 'code',
+        scope: 'openid email profile',
+        access_type: 'offline',
+        prompt: 'select_account',
+        state: oauthState,
+      }).toString();
+
+      const width = 500;
+      const height = 600;
+      const left = window.screenX + (window.outerWidth - width) / 2;
+      const top = window.screenY + (window.outerHeight - height) / 2;
+      const popup = window.open(
+        authorizationUrl.toString(),
+        'google_oauth',
+        `width=${width},height=${height},left=${left},top=${top}`,
+      );
+
+      if (!popup) {
+        throw new Error(t('common.errors.popupBlocked', { defaultValue: 'Unable to open the Google sign-in window. Please allow popups and try again.' }));
+      }
+
+      const code = await waitForGoogleAuthorizationCode(popup, oauthState);
+      await loginWithGoogle(code, redirectUri);
+      onClose();
+      navigate('/Home');
+    } catch (error) {
+      const fallback = t('common.errors.googleLoginFailed', { defaultValue: 'Google sign-in failed. Please try again.' });
+      setErrorMessage(localizeError(getApiErrorMessage(error, fallback)));
     } finally {
       setIsGoogleLoading(false);
     }
@@ -212,65 +208,57 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
   return (
     <AnimatePresence>
       <div
-        className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-hidden"
-        onClick={(e) => {
-          if (e.target === e.currentTarget) onClose();
+        className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden p-4"
+        onClick={(event) => {
+          if (event.target === event.currentTarget) onClose();
         }}
       >
-        {/* Backdrop Overlay */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="absolute inset-0 bg-slate-950/70 backdrop-blur-sm cursor-pointer"
+          className="absolute inset-0 cursor-pointer bg-slate-950/70 backdrop-blur-sm"
         />
-
-        {/* Modal Popup Card */}
         <motion.div
           layout
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           transition={{ type: 'spring', duration: 0.3 }}
-          onClick={(e) => e.stopPropagation()}
-          className="relative w-full max-w-md max-h-[90vh] overflow-y-auto bg-secondary-bg border border-custom-border p-8 rounded-3xl shadow-2xl z-10 font-sans text-primary-text"
+          onClick={(event) => event.stopPropagation()}
+          className="relative z-10 max-h-[90vh] w-full max-w-md overflow-y-auto rounded-3xl border border-custom-border bg-secondary-bg p-8 font-sans text-primary-text shadow-2xl"
         >
-          {/* Close Button */}
           <button
             onClick={onClose}
-            className="absolute top-5 right-5 text-secondary-text hover:text-primary-text p-1.5 rounded-full hover:bg-primary-bg transition-colors cursor-pointer"
+            className="absolute right-5 top-5 cursor-pointer rounded-full p-1.5 text-secondary-text transition-colors hover:bg-primary-bg hover:text-primary-text"
             aria-label="Close"
           >
             <X size={20} />
           </button>
 
-          {/* Modal Header */}
-          <div className="text-center space-y-2 mb-6">
-            <div className="w-12 h-12 rounded-2xl bg-accent/15 text-accent flex items-center justify-center mx-auto mb-3">
+          <div className="mb-6 space-y-2 text-center">
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-accent/15 text-accent">
               <ShieldCheck size={28} />
             </div>
             <h2 className="text-2xl font-bold tracking-tight text-primary-text">
-              {t('common.login', { defaultValue: 'Đăng Nhập' })}
+              {t('common.login', { defaultValue: 'Sign in' })}
             </h2>
             <p className="text-xs text-secondary-text">
-              {t('common.loginDesc', { defaultValue: 'Nhập thông tin tài khoản của bạn để tiếp tục.' })}
+              {t('common.loginDesc', { defaultValue: 'Enter your account details to continue.' })}
             </p>
           </div>
 
-          {/* Form */}
           <form onSubmit={handleSubmit} noValidate className="space-y-4">
             <AnimatePresence>
               {errorMessage && (
                 <motion.div
-                  layout
                   initial={{ opacity: 0, height: 0, scale: 0.96 }}
                   animate={{ opacity: 1, height: 'auto', scale: 1 }}
                   exit={{ opacity: 0, height: 0, scale: 0.96 }}
-                  transition={{ duration: 0.25, ease: 'easeOut' }}
                   className="overflow-hidden"
                 >
-                  <div className="flex items-center gap-2.5 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-xs mb-1">
+                  <div className="mb-1 flex items-center gap-2.5 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-500">
                     <AlertCircle size={16} className="shrink-0" />
                     <span className="flex-1 leading-snug">{errorMessage}</span>
                   </div>
@@ -278,7 +266,6 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
               )}
             </AnimatePresence>
 
-            {/* Email Input */}
             <Input
               label={t('common.email', { defaultValue: 'Email' })}
               leftIcon={<Mail size={18} />}
@@ -287,113 +274,91 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
               autoComplete="email"
               maxLength={254}
               value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: undefined }));
+              onChange={(event) => {
+                setEmail(event.target.value);
+                if (fieldErrors.email) setFieldErrors((previous) => ({ ...previous, email: undefined }));
               }}
               error={fieldErrors.email}
             />
 
-            {/* Password Input */}
             <PasswordInput
-              label={t('common.password', { defaultValue: 'Mật Khẩu' })}
+              label={t('common.password', { defaultValue: 'Password' })}
               leftIcon={<Lock size={18} />}
               name="password"
               autoComplete="current-password"
               maxLength={72}
               value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                if (fieldErrors.password) setFieldErrors((prev) => ({ ...prev, password: undefined }));
+              onChange={(event) => {
+                setPassword(event.target.value);
+                if (fieldErrors.password) setFieldErrors((previous) => ({ ...previous, password: undefined }));
               }}
               error={fieldErrors.password}
             />
 
-            {/* Remember Me */}
-            <div className="flex items-center justify-between pt-1">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="rounded border-custom-border text-accent focus:ring-accent accent-accent cursor-pointer"
-                />
-                <span className="text-xs text-secondary-text">
-                  {t('common.rememberMe', { defaultValue: 'Nhớ mật khẩu' })}
-                </span>
-              </label>
-            </div>
+            <label className="flex cursor-pointer items-center gap-2 pt-1">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(event) => setRememberMe(event.target.checked)}
+                className="cursor-pointer rounded border-custom-border text-accent accent-accent focus:ring-accent"
+              />
+              <span className="text-xs text-secondary-text">
+                {t('common.rememberMe', { defaultValue: 'Remember my email' })}
+              </span>
+            </label>
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={isLoading || isGoogleLoading}
-              className="w-full py-3.5 px-4 bg-accent hover:opacity-90 text-primary-bg font-semibold text-sm rounded-xl transition-all shadow-lg cursor-pointer disabled:opacity-50 mt-2"
+              className="mt-2 w-full cursor-pointer rounded-xl bg-accent px-4 py-3.5 text-sm font-semibold text-primary-bg shadow-lg transition-all hover:opacity-90 disabled:opacity-50"
             >
-              {isLoading ? (
-                <span>{t('common.loading', { defaultValue: 'Đang xử lý...' })}</span>
+              {isLoading ? t('common.loading', { defaultValue: 'Working...' }) : t('common.login', { defaultValue: 'Sign in' })}
+            </button>
+
+            <div className="relative flex items-center py-2">
+              <div className="flex-grow border-t border-custom-border/60" />
+              <span className="mx-4 flex-shrink text-xs font-medium tracking-wide text-secondary-text/80">
+                {t('common.orLoginWith', { defaultValue: 'or sign in with' })}
+              </span>
+              <div className="flex-grow border-t border-custom-border/60" />
+            </div>
+
+            <button
+              type="button"
+              onClick={handleGoogleLogin}
+              disabled={isLoading || isGoogleLoading}
+              title={t('common.loginWithGoogle', { defaultValue: 'Sign in with Google' })}
+              className="group flex w-full cursor-pointer items-center justify-center gap-3 rounded-xl border border-custom-border bg-primary-bg/80 px-4 py-3 text-sm font-medium text-primary-text shadow-sm transition-all duration-200 hover:border-accent/40 hover:bg-primary-bg hover:shadow-md disabled:opacity-50"
+            >
+              {isGoogleLoading ? (
+                <span>{t('common.loading', { defaultValue: 'Connecting to Google...' })}</span>
               ) : (
-                <span>{t('common.login', { defaultValue: 'Đăng Nhập' })}</span>
+                <>
+                  <svg className="h-5 w-5 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+                  </svg>
+                  <span className="text-xs font-semibold tracking-wide transition-colors group-hover:text-accent">
+                    {t('common.loginWithGoogle', { defaultValue: 'Sign in with Google' })}
+                  </span>
+                </>
               )}
             </button>
 
-            {/* Divider Line */}
-            <div className="relative flex py-2 items-center">
-              <div className="flex-grow border-t border-custom-border/60"></div>
-              <span className="flex-shrink mx-4 text-xs font-medium text-secondary-text/80 tracking-wide">
-                {t('common.orLoginWith', { defaultValue: 'hoặc đăng nhập bằng' })}
-              </span>
-              <div className="flex-grow border-t border-custom-border/60"></div>
-            </div>
-
-            {/* Google Login Button */}
-            <div className="flex items-center justify-center">
-              <button
-                type="button"
-                onClick={handleGoogleLogin}
-                disabled={isLoading || isGoogleLoading}
-                title={t('common.loginWithGoogle', { defaultValue: 'Đăng nhập với Google' })}
-                className="w-full py-3 px-4 rounded-xl border border-custom-border bg-primary-bg/80 hover:bg-primary-bg hover:border-accent/40 text-primary-text font-medium text-sm transition-all duration-200 flex items-center justify-center gap-3 shadow-sm hover:shadow-md cursor-pointer disabled:opacity-50 group"
-              >
-                {isGoogleLoading ? (
-                  <span>{t('common.loading', { defaultValue: 'Đang kết nối Google...' })}</span>
-                ) : (
-                  <>
-                    <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
-                      <path
-                        fill="#4285F4"
-                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                      />
-                      <path
-                        fill="#34A853"
-                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                      />
-                      <path
-                        fill="#FBBC05"
-                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-                      />
-                      <path
-                        fill="#EA4335"
-                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-                      />
-                    </svg>
-                    <span className="text-xs font-semibold tracking-wide group-hover:text-accent transition-colors">
-                      {t('common.loginWithGoogle', { defaultValue: 'Đăng nhập với Google' })}
-                    </span>
-                  </>
-                )}
-              </button>
-            </div>
-
-            {/* Register Link */}
-            <p className="text-center text-xs text-secondary-text pt-1">
-              {t('common.noAccount', { defaultValue: 'Chưa có tài khoản?' })}{' '}
+            <p className="pt-1 text-center text-xs text-secondary-text">
+              {t('common.noAccount', { defaultValue: 'Do not have an account?' })}{' '}
               <a
                 href="/Register"
-                className="text-accent hover:underline font-semibold cursor-pointer"
-                onClick={(e) => { e.preventDefault(); onClose(); navigate('/Register'); }}
+                className="cursor-pointer font-semibold text-accent hover:underline"
+                onClick={(event) => {
+                  event.preventDefault();
+                  onClose();
+                  navigate('/Register');
+                }}
               >
-                {t('common.register', { defaultValue: 'Đăng ký ngay' })}
+                {t('common.register', { defaultValue: 'Register now' })}
               </a>
             </p>
           </form>

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/shared/hooks/useLanguage';
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { authService } from '@/features/auth/services/authService';
+import { getApiErrorMessage } from '@/shared/api/apiClient';
 import { Input, PasswordInput } from '@/shared/components/ui';
 import {
   X, Mail, Shield, LogOut, ArrowLeftRight, CheckCircle2,
@@ -14,7 +15,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 interface UserProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSwitchAccount: () => void;
+  onSwitchAccount: () => void | Promise<void>;
 }
 
 export const UserProfileModal: React.FC<UserProfileModalProps> = ({
@@ -126,17 +127,25 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
           } else {
              setDateOfBirth('');
           }
-        } catch (err) {
-           console.error(err);
+        } catch (error) {
+           console.error('Unable to load profile information.', error);
+           setErrorMessage('Unable to load profile information. Please try again.');
         } finally {
           setIsFetchingInfo(false);
         }
       };
-      fetchInfo();
+      void fetchInfo();
     }
-  }, [isOpen, user?.email, user?.avatar, user?.name]);
+  }, [isOpen, user]);
 
   if (!isOpen || !user) return null;
+
+  const hasLocalLogin = user.loginProviders?.local ?? user.authProvider !== 1;
+  const hasGoogleLogin = user.loginProviders?.google ?? user.authProvider === 1;
+  const loginMethod = [
+    hasLocalLogin ? 'Email & Password' : null,
+    hasGoogleLogin ? 'Google OAuth 2.0' : null,
+  ].filter(Boolean).join(' + ');
 
   // ───────────────────────────────────────────────────────────────────────────
   // Avatar Handlers
@@ -173,8 +182,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
         setCurrentSrc(freshUrl);
       }
       setSuccessMessage(t('common.userProfile.msgUploadAvatarSuccess', { defaultValue: 'Cập nhật ảnh đại diện thành công!' }));
-    } catch (err: any) {
-      setErrorMessage(err?.message || t('common.userProfile.msgUploadAvatarError', { defaultValue: 'Lỗi khi tải ảnh đại diện lên.' }));
+    } catch (err: unknown) {
+      setErrorMessage(getApiErrorMessage(err, t('common.userProfile.msgUploadAvatarError', { defaultValue: 'Lỗi khi tải ảnh đại diện lên.' })));
     } finally {
       setIsUploading(false);
     }
@@ -191,8 +200,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
       setCurrentSrc(null);
       setImgError(false);
       setSuccessMessage(t('common.userProfile.msgDeleteAvatarSuccess', { defaultValue: 'Đã xóa ảnh đại diện thành công.' }));
-    } catch (err: any) {
-      setErrorMessage(err?.message || t('common.userProfile.msgDeleteAvatarError', { defaultValue: 'Lỗi khi xóa ảnh đại diện.' }));
+    } catch (err: unknown) {
+      setErrorMessage(getApiErrorMessage(err, t('common.userProfile.msgDeleteAvatarError', { defaultValue: 'Lỗi khi xóa ảnh đại diện.' })));
     } finally {
       setIsUploading(false);
     }
@@ -265,8 +274,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
       authService.setStoredName(trimmedFullName);
       setSuccessMessage(t('common.userProfile.msgProfileSuccess', { defaultValue: 'Cập nhật hồ sơ thành công!' }));
       setIsEditingProfile(false);
-    } catch (err: any) {
-      setErrorMessage(err?.message || 'Lỗi khi cập nhật hồ sơ.');
+    } catch (err: unknown) {
+      setErrorMessage(getApiErrorMessage(err, 'Lỗi khi cập nhật hồ sơ.'));
     } finally {
       setIsSavingProfile(false);
     }
@@ -351,8 +360,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
-    } catch (err: any) {
-      setErrorMessage(err?.message || t('common.userProfile.msgPassError', { defaultValue: 'Không thể đổi mật khẩu. Vui lòng thử lại.' }));
+    } catch (err: unknown) {
+      setErrorMessage(getApiErrorMessage(err, t('common.userProfile.msgPassError', { defaultValue: 'Không thể đổi mật khẩu. Vui lòng thử lại.' })));
     } finally {
       setIsChangingPassword(false);
     }
@@ -719,7 +728,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     <ShieldCheck size={14} className="text-accent" />
                     <span>{t('common.userProfile.loginMethod', { defaultValue: 'Phương thức đăng nhập:' })}</span>
                   </span>
-                  <span className="font-semibold text-accent">
+                  <span className="font-semibold text-accent text-[0px]" aria-label={loginMethod}>
+                    <span className="text-xs">{loginMethod}</span>
                     {user.authProvider === 1 ? 'Google OAuth 2.0' : t('common.userProfile.authLocal', { defaultValue: 'Email & Mật khẩu (Local)' })}
                   </span>
                 </div>
@@ -745,7 +755,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               transition={{ duration: 0.2 }}
               className="space-y-4"
             >
-              {user.authProvider === 1 ? (
+              {!hasLocalLogin ? (
                 // Google Account Info
                 <div className="p-5 bg-primary-bg/60 border border-custom-border rounded-2xl text-center space-y-3">
                   <div className="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center mx-auto">
@@ -879,9 +889,9 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
           <div className="mt-6 pt-5 border-t border-custom-border/60 flex items-center gap-3">
             <button
               type="button"
-              onClick={() => {
+              onClick={async () => {
                 onClose();
-                onSwitchAccount();
+                await onSwitchAccount();
               }}
               className="flex-1 py-2.5 px-3 rounded-xl border border-custom-border text-primary-text hover:bg-primary-bg font-semibold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
@@ -891,8 +901,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
             <button
               type="button"
-              onClick={() => {
-                logout();
+              onClick={async () => {
+                await logout();
                 onClose();
                 navigate('/');
               }}

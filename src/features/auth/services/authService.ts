@@ -1,669 +1,267 @@
+import { API_BASE_URL, apiClient } from '@/shared/api/apiClient';
+
+export type UserRole = 'ADMIN' | 'USER';
+
 export interface LoginRequest {
   email: string;
   password: string;
   rememberMe: boolean;
 }
 
-export interface LoginResponse {
-  message: string;
-  email?: string;
-  role?: string;
-  avatarUrl?: string;
+export interface AuthenticatedUser {
+  id: number;
+  email: string;
+  fullName?: string | null;
+  name?: string | null;
+  phoneNumber?: string | null;
+  gender?: string | null;
+  dateOfBirth?: string | null;
+  avatarUrl?: string | null;
   authProvider?: number;
-  accessToken: string;
-  refreshToken: string;
+  loginProviders?: {
+    local: boolean;
+    google: boolean;
+  };
+  role: UserRole;
+  isActive: boolean;
+}
+
+/**
+ * The API returns token fields for non-browser clients as part of the shared
+ * contract. The web app intentionally never reads or stores them; HttpOnly
+ * cookies are the only browser credential mechanism.
+ */
+export interface LoginResponse {
+  success: boolean;
+  message: string;
+  user: AuthenticatedUser;
+  accessToken?: string;
+  refreshToken?: string;
+  accessTokenExpiresIn?: number;
+  refreshTokenExpiresIn?: number;
 }
 
 export interface RegisterRequest {
   fullName: string;
   phoneNumber: string;
   gender: string;
-  dateOfBirth: string; // yyyy-MM-dd
+  dateOfBirth: string;
   email: string;
   password: string;
   confirmPassword: string;
 }
 
 export interface RegisterResponse {
+  success?: boolean;
   message: string;
   email: string;
 }
 
-export interface UserInfoResponse {
+export type UserInfoResponse = AuthenticatedUser;
+
+interface MessageResponse {
+  success?: boolean;
   message: string;
-  id?: string;
-  email: string;
-  name?: string;
-  fullName?: string;
-  phoneNumber?: string;
-  gender?: string;
-  dateOfBirth?: string;
-  avatarUrl?: string;
-  authProvider?: number;
-  authProviderName?: string;
-  role?: string;
-  isActive?: boolean;
-  verifiedAt?: string;
-  isAuthenticated: boolean;
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+interface ProfileResponse extends MessageResponse {
+  user?: AuthenticatedUser;
+}
+
+const LEGACY_AUTH_STORAGE_KEYS = [
+  'accessToken',
+  'accessExpiresAt',
+  'refreshToken',
+  'refreshExpiresAt',
+  'userEmail',
+  'userAvatar',
+  'userAuthProvider',
+  'userRole',
+  'userDisplayName',
+  'rememberedPassword',
+] as const;
+
+let activeEmail: string | undefined;
+
+function clearLegacyAuthStorage(): void {
+  LEGACY_AUTH_STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
+}
+
+function saveRemembered(email: string, rememberMe: boolean): void {
+  // Always delete the old reversible password value when an existing browser
+  // upgrades to this version of the app.
+  localStorage.removeItem('rememberedPassword');
+
+  if (rememberMe) {
+    localStorage.setItem('rememberMe', 'true');
+    localStorage.setItem('rememberedEmail', email.trim().toLowerCase());
+    return;
+  }
+
+  localStorage.removeItem('rememberMe');
+  localStorage.removeItem('rememberedEmail');
+}
+
+function setActiveUser(user: AuthenticatedUser | null): void {
+  activeEmail = user?.email;
+}
 
 export const authService = {
-  /**
-   * Gọi API đăng nhập đến C# Backend (/api/login)
-   */
+  /** Removes credentials left by pre-cookie versions before checking /api/me. */
+  prepareSessionCheck(): void {
+    clearLegacyAuthStorage();
+  },
+
   async login(data: LoginRequest): Promise<LoginResponse> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include', // Cho phép gửi và nhận HTTP-only cookies từ Backend
-        body: JSON.stringify(data),
-      });
+    const response = await apiClient.post<LoginResponse>(
+      '/api/login',
+      {
+        email: data.email,
+        password: data.password,
+        rememberMe: data.rememberMe,
+      },
+      { skipAuthRefresh: true },
+    );
 
-      const responseData = await response.json().catch(() => null);
-
-      if (!response.ok) {
-        if (response.status === 502 || response.status === 503 || response.status === 504) {
-          throw new Error(
-            'Không thể kết nối đến Backend C# (Mã lỗi: 502 Bad Gateway). Vui lòng kiểm tra và khởi chạy Backend tại http://localhost:5274!'
-          );
-        }
-
-        if (responseData) {
-          if (responseData.message) {
-            throw new Error(responseData.message);
-          }
-          // Xử lý ModelState validation errors nếu có
-          if (responseData.errors) {
-            const firstErrorKey = Object.keys(responseData.errors)[0];
-            const firstErrorMessage = responseData.errors[firstErrorKey]?.[0];
-            if (firstErrorMessage) {
-              throw new Error(firstErrorMessage);
-            }
-          }
-        }
-        throw new Error(`Đăng nhập thất bại (Mã lỗi: ${response.status})`);
-      }
-
-      // Lưu trữ token vào localStorage để sử dụng cho các request sau
-      if (responseData?.accessToken) {
-        localStorage.setItem('accessToken', responseData.accessToken);
-        localStorage.setItem('accessExpiresAt', (Date.now() + 30 * 1000).toString());
-      }
-      if (responseData?.refreshToken) {
-        localStorage.setItem('refreshToken', responseData.refreshToken);
-        localStorage.setItem('refreshExpiresAt', (Date.now() + 120 * 1000).toString());
-      }
-      localStorage.setItem('userAuthProvider', '0');
-      // Lưu role thực từ database (ADMIN hoặc USER)
-      localStorage.setItem('userRole', responseData?.role ?? 'USER');
-
-      // Lưu avatar nếu có từ DB
-      if (responseData?.avatarUrl) {
-        localStorage.setItem('userAvatar', responseData.avatarUrl);
-      } else {
-        localStorage.removeItem('userAvatar');
-      }
-
-      // Xử lý Ghi nhớ mật khẩu / email
-      if (data.rememberMe) {
-        this.saveRemembered(data.email, data.password);
-      } else {
-        this.clearRemembered();
-      }
-      localStorage.setItem('userEmail', data.email);
-
-      console.log(
-        `%c[AUTH] 🔑 [${new Date().toLocaleTimeString()}] Đăng nhập thành công! Cấp mới: Access Token (30s) + Refresh Token (2m)`,
-        'color: #10b981; font-weight: bold;'
-      );
-
-      window.dispatchEvent(new CustomEvent('auth:refreshed'));
-
-      return responseData as LoginResponse;
-    } catch (error: any) {
-      if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
-        throw new Error(
-          'Không thể kết nối đến Backend C# (ASP.NET Core). Vui lòng kiểm tra Backend đã chạy ở http://localhost:5274 chưa!'
-        );
-      }
-      throw error;
-    }
+    saveRemembered(data.email, data.rememberMe);
+    setActiveUser(response.user);
+    apiClient.markSessionActive();
+    return response;
   },
 
-  /**
-   * Gọi API đăng ký tài khoản mới đến C# Backend (/api/auth/register)
-   */
   async register(data: RegisterRequest): Promise<RegisterResponse> {
+    return apiClient.post<RegisterResponse>('/api/auth/register', data, {
+      skipAuthRefresh: true,
+    });
+  },
+
+  /** Web Google OAuth uses a verified authorization code, never an email fallback. */
+  async loginWithGoogle(code: string, redirectUri: string): Promise<LoginResponse> {
+    if (!code.trim()) {
+      throw new Error('Google did not return an authorization code.');
+    }
+
+    const response = await apiClient.post<LoginResponse>(
+      '/api/auth/google',
+      { code, redirectUri },
+      { skipAuthRefresh: true },
+    );
+
+    setActiveUser(response.user);
+    apiClient.markSessionActive();
+    return response;
+  },
+
+  /** /api/me is the server-side source of truth after a page reload. */
+  async getUserInfo(): Promise<UserInfoResponse> {
+    const user = await apiClient.get<UserInfoResponse>('/api/me');
+    setActiveUser(user);
+    apiClient.markSessionActive();
+    return user;
+  },
+
+  async logout(): Promise<void> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(data),
-      });
-
-      const responseData = await response.json().catch(() => null);
-
-      if (!response.ok) {
-        if (response.status === 502 || response.status === 503 || response.status === 504) {
-          throw new Error(
-            'Không thể kết nối đến Backend C# (Mã lỗi: 502). Vui lòng kiểm tra Backend đã chạy chưa!'
-          );
-        }
-        if (responseData?.message) {
-          throw new Error(responseData.message);
-        }
-        if (responseData?.errors) {
-          const firstKey = Object.keys(responseData.errors)[0];
-          const firstMsg = responseData.errors[firstKey]?.[0];
-          if (firstMsg) throw new Error(firstMsg);
-        }
-        throw new Error(`Đăng ký thất bại (Mã lỗi: ${response.status})`);
-      }
-
-      return responseData as RegisterResponse;
-    } catch (error: any) {
-      if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
-        throw new Error(
-          'Không thể kết nối đến Backend C# (ASP.NET Core). Vui lòng kiểm tra Backend đã chạy ở http://localhost:5274 chưa!'
-        );
-      }
-      throw error;
+      await apiClient.logoutSession();
+    } catch (error) {
+      // The server may be unreachable, but the browser must still leave its
+      // local authenticated UI state. HttpOnly cookies will be cleared by the
+      // next successful logout response or expire naturally.
+      console.warn('Unable to complete server logout.', error);
+    } finally {
+      setActiveUser(null);
+      clearLegacyAuthStorage();
+      apiClient.clearSessionState();
     }
   },
 
-  /**
-   * Đăng nhập với Google OAuth 2.0 (Gửi Authorization Code lên Backend)
-   */
-  async loginWithGoogle(code: string, redirectUri?: string): Promise<LoginResponse> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/google`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          code,
-          redirectUri: redirectUri || window.location.origin,
-        }),
-      });
-
-      const responseData = await response.json().catch(() => null);
-
-      if (!response.ok) {
-        if (responseData && responseData.message) {
-          throw new Error(responseData.message);
-        }
-        throw new Error(`Đăng nhập Google thất bại (Mã lỗi: ${response.status})`);
-      }
-
-      // Lưu trữ token và email vào localStorage
-      if (responseData?.accessToken) {
-        localStorage.setItem('accessToken', responseData.accessToken);
-        localStorage.setItem('accessExpiresAt', (Date.now() + 30 * 1000).toString());
-      }
-      if (responseData?.refreshToken) {
-        localStorage.setItem('refreshToken', responseData.refreshToken);
-        localStorage.setItem('refreshExpiresAt', (Date.now() + 120 * 1000).toString());
-      }
-      if (responseData?.email) {
-        localStorage.setItem('userEmail', responseData.email);
-      } else if (code.includes('@')) {
-        localStorage.setItem('userEmail', code.trim().toLowerCase());
-      }
-      if (responseData?.avatarUrl) {
-        localStorage.setItem('userAvatar', responseData.avatarUrl);
-      } else {
-        localStorage.removeItem('userAvatar');
-      }
-      localStorage.setItem('userAuthProvider', '1');
-      // Lưu role thực từ database (ADMIN hoặc USER)
-      localStorage.setItem('userRole', responseData?.role ?? 'USER');
-
-      console.log(
-        `%c[AUTH] 🌐 [${new Date().toLocaleTimeString()}] Đăng nhập Google (${responseData?.email || code}) thành công! Cấp mới: Access Token (30s) + Refresh Token (2m)`,
-        'color: #10b981; font-weight: bold;'
-      );
-
-      window.dispatchEvent(new CustomEvent('auth:refreshed'));
-
-      return responseData as LoginResponse;
-    } catch (error: any) {
-      if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
-        throw new Error(
-          'Không thể kết nối đến Backend C# (ASP.NET Core). Vui lòng kiểm tra Backend đã chạy ở http://localhost:5274 chưa!'
-        );
-      }
-      throw error;
-    }
+  clearSessionState(): void {
+    setActiveUser(null);
+    clearLegacyAuthStorage();
+    apiClient.clearSessionState();
   },
 
-  /**
-   * Lưu thông tin đăng nhập khi chọn "Ghi nhớ mật khẩu"
-   */
-  saveRemembered(email: string, password: string): void {
-    localStorage.setItem('rememberMe', 'true');
-    localStorage.setItem('rememberedEmail', email);
-    try {
-      localStorage.setItem('rememberedPassword', btoa(password));
-    } catch {
-      localStorage.setItem('rememberedPassword', password);
-    }
+  saveRemembered(email: string): void {
+    saveRemembered(email, true);
   },
 
-  /**
-   * Xóa thông tin đã lưu khi bỏ chọn "Ghi nhớ mật khẩu"
-   */
   clearRemembered(): void {
     localStorage.removeItem('rememberMe');
     localStorage.removeItem('rememberedEmail');
     localStorage.removeItem('rememberedPassword');
   },
 
-  /**
-   * Lấy thông tin tài khoản đã ghi nhớ
-   */
-  getRemembered(): { rememberMe: boolean; email: string; password: string } {
-    const isRemembered = localStorage.getItem('rememberMe') === 'true';
-    if (!isRemembered) {
-      return { rememberMe: false, email: '', password: '' };
-    }
-    const email = localStorage.getItem('rememberedEmail') || '';
-    let password = '';
-    const storedPass = localStorage.getItem('rememberedPassword');
-    if (storedPass) {
-      try {
-        password = atob(storedPass);
-      } catch {
-        password = storedPass;
-      }
-    }
-    return { rememberMe: true, email, password };
-  },
-
-  /**
-   * Gọi API lấy thông tin người dùng (/api/me)
-   */
-  async getUserInfo(): Promise<UserInfoResponse> {
-    const response = await this.fetchWithAuth(`${API_BASE_URL}/api/me`, {
-      method: 'GET',
-    });
-
-    if (!response.ok) {
-      throw new Error('Chưa đăng nhập hoặc phiên làm việc đã hết hạn.');
-    }
-
-    return response.json();
-  },
-
-  /**
-   * Gọi API làm mới token (/api/refresh-token)
-   * Rotate Token: Cấp mới Access Token (30s) + Refresh Token (2 phút mới)
-   */
-  async refreshToken(): Promise<{ accessToken: string; refreshToken: string }> {
-    const accessToken = this.getAccessToken();
-    const refreshToken = this.getRefreshToken();
-
-    const response = await fetch(`${API_BASE_URL}/api/refresh-token`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-      },
-      credentials: 'include',
-      body: JSON.stringify({
-        accessToken,
-        refreshToken,
-      }),
-    });
-
-    const data = await response.json().catch(() => null);
-
-    if (!response.ok) {
-      console.log(
-        `%c[AUTH] 🔴 [${new Date().toLocaleTimeString()}] Refresh Token (> 2m không thao tác) đã hết hạn -> Tự động LOGOUT & yêu cầu đăng nhập lại!`,
-        'color: #ef4444; font-weight: bold;'
-      );
-      this.logout();
-      window.dispatchEvent(new CustomEvent('auth:expired'));
-      throw new Error(data?.message || 'Refresh Token đã hết hạn (2 phút). Vui lòng đăng nhập lại.');
-    }
-
-    if (data?.accessToken) {
-      localStorage.setItem('accessToken', data.accessToken);
-      localStorage.setItem('accessExpiresAt', (Date.now() + 30 * 1000).toString());
-    }
-    if (data?.refreshToken) {
-      localStorage.setItem('refreshToken', data.refreshToken);
-      localStorage.setItem('refreshExpiresAt', (Date.now() + 120 * 1000).toString());
-    }
-
-    console.log(
-      `%c[AUTH] 🟢 [${new Date().toLocaleTimeString()}] Rotate Token thành công -> Đã cấp cặp mới: Access Token (30s) + Refresh Token (2 phút mới)!`,
-      'color: #10b981; font-weight: bold;'
-    );
-
-    window.dispatchEvent(new CustomEvent('auth:refreshed'));
-
-    return data;
-  },
-
-  /**
-   * Kiểm tra xem Access Token còn hạn không
-   */
-  isAccessTokenValid(): boolean {
-    const expiresAt = Number(localStorage.getItem('accessExpiresAt')) || 0;
-    return Date.now() < expiresAt;
-  },
-
-  /**
-   * Kiểm tra xem Refresh Token còn hạn không
-   */
-  isRefreshTokenValid(): boolean {
-    const expiresAt = Number(localStorage.getItem('refreshExpiresAt')) || 0;
-    return Date.now() < expiresAt;
-  },
-
-  /**
-   * Lấy số giây còn lại của Access Token
-   */
-  getAccessRemainingSeconds(): number {
-    const expiresAt = Number(localStorage.getItem('accessExpiresAt')) || 0;
-    return Math.max(0, Math.round((expiresAt - Date.now()) / 1000));
-  },
-
-  /**
-   * Lấy số giây còn lại của Refresh Token
-   */
-  getRefreshRemainingSeconds(): number {
-    const expiresAt = Number(localStorage.getItem('refreshExpiresAt')) || 0;
-    return Math.max(0, Math.round((expiresAt - Date.now()) / 1000));
-  },
-
-  /**
-   * Xử lý kiểm tra Token khi User có thao tác trên trang (Click, phím, chuyển trang...)
-   */
-  async handleUserActivity(): Promise<void> {
-    if (!this.isAuthenticated()) return;
-
-    const accessRem = this.getAccessRemainingSeconds();
-    const refreshRem = this.getRefreshRemainingSeconds();
-
-    // 1. Kiểm tra Access Token: Còn hạn không?
-    if (this.isAccessTokenValid()) {
-      console.log(
-        `%c[AUTH] 🟢 [${new Date().toLocaleTimeString()}] User thao tác -> Access Token CÒN HẠN (còn ${accessRem}s | Refresh: ${refreshRem}s) -> Tiếp tục sử dụng`,
-        'color: #10b981;'
-      );
-      return;
-    }
-
-    // 2. Access Token ĐÃ HẾT HẠN -> Kiểm tra Refresh Token
-    console.log(
-      `%c[AUTH] ⚠️ [${new Date().toLocaleTimeString()}] User thao tác -> Access Token ĐÃ HẾT HẠN! Kiểm tra Refresh Token...`,
-      'color: #f59e0b; font-weight: bold;'
-    );
-
-    if (this.isRefreshTokenValid()) {
-      // Refresh Token CÒN HẠN -> Rotate Token
-      console.log(
-        `%c[AUTH] 🔄 [${new Date().toLocaleTimeString()}] Refresh Token CÒN HẠN (còn ${refreshRem}s) -> Đang gửi yêu cầu Rotate Token...`,
-        'color: #06b6d4; font-weight: bold;'
-      );
-      try {
-        await this.refreshToken();
-      } catch (err) {
-        console.warn('Lỗi khi rotate token:', err);
-      }
-    } else {
-      // Refresh Token ĐÃ HẾT HẠN -> Logout
-      console.log(
-        `%c[AUTH] 🔴 [${new Date().toLocaleTimeString()}] Refresh Token ĐÃ HẾT HẠN (> 2 phút không thao tác) -> Tự động LOGOUT!`,
-        'color: #ef4444; font-weight: bold;'
-      );
-      this.logout();
-      window.dispatchEvent(new CustomEvent('auth:expired'));
-    }
-  },
-
-  /**
-   * Wrapper gọi API tự động đính kèm Access Token và Refresh Token khi gặp lỗi 401
-   */
-  async fetchWithAuth(url: string, options: RequestInit = {}): Promise<Response> {
-    let token = this.getAccessToken();
-
-    const headers = new Headers(options.headers || {});
-    // Không tự động set Content-Type: application/json nếu body là FormData (để browser tự generate boundary)
-    if (!(options.body instanceof FormData) && !headers.has('Content-Type')) {
-      headers.set('Content-Type', 'application/json');
-    }
-    if (token) {
-      headers.set('Authorization', `Bearer ${token}`);
-    }
-
-    let response = await fetch(url, {
-      ...options,
-      headers,
-      credentials: 'include',
-    });
-
-    // Nếu Access Token hết hạn (401), tự động dùng Refresh Token để lấy token mới và gọi lại
-    if (response.status === 401 && this.getRefreshToken()) {
-      try {
-        const refreshed = await this.refreshToken();
-        if (refreshed?.accessToken) {
-          headers.set('Authorization', `Bearer ${refreshed.accessToken}`);
-          // Thử lại request ban đầu với token mới
-          response = await fetch(url, {
-            ...options,
-            headers,
-            credentials: 'include',
-          });
-        }
-      } catch {
-        // Refresh token hết hạn -> đã logout trong refreshToken()
-      }
-    }
-
-    return response;
-  },
-
-  /**
-   * Đăng xuất và xóa token trực tiếp ở Client
-   */
-  logout(): void {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('accessExpiresAt');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('refreshExpiresAt');
-    localStorage.removeItem('userEmail');
-    localStorage.removeItem('userAvatar');
-    localStorage.removeItem('userAuthProvider');
-    localStorage.removeItem('userRole');
-  },
-
-  getAccessToken(): string | null {
-    return localStorage.getItem('accessToken');
-  },
-
-  getRefreshToken(): string | null {
-    return localStorage.getItem('refreshToken');
-  },
-
-  getStoredEmail(): string | null {
-    return localStorage.getItem('userEmail');
-  },
-
-  getStoredAvatar(): string | null {
-    const av = localStorage.getItem('userAvatar');
-    if (!av || av === 'none' || av === 'null' || av === 'undefined') return null;
-    return av;
-  },
-
-  getStoredAuthProvider(): number {
-    return Number(localStorage.getItem('userAuthProvider')) || 0;
-  },
-
-  getStoredRole(): string {
-    return localStorage.getItem('userRole') ?? 'USER';
+  getRemembered(): { rememberMe: boolean; email: string } {
+    // Clean up a legacy field even if the user has not logged in again yet.
+    localStorage.removeItem('rememberedPassword');
+    const rememberMe = localStorage.getItem('rememberMe') === 'true';
+    return {
+      rememberMe,
+      email: rememberMe ? (localStorage.getItem('rememberedEmail') ?? '') : '',
+    };
   },
 
   getRememberedEmail(): string | null {
-    return this.getRemembered().email;
+    const remembered = this.getRemembered();
+    return remembered.email || null;
   },
 
-  isAuthenticated(): boolean {
-    return !!this.getAccessToken();
-  },
-
-  /**
-   * Chuyển đổi định dạng URL Google Drive hoặc link cục bộ thành URL xem ảnh trực tiếp
-   */
   getDisplayAvatarUrl(url?: string | null, email?: string, timestamp?: number): string | null {
     if (!url || url === 'none' || url === 'null' || url === 'undefined') return null;
 
-    // 1. Nếu là ảnh avatar từ Google OAuth Profile (lh3.googleusercontent.com) -> tải trực tiếp
-    if (url.startsWith('https://lh3.googleusercontent.com') || url.startsWith('http://lh3.googleusercontent.com')) {
-      return url;
-    }
-
-    // 2. Nếu là URL Google Drive (chứa file/d/ hoặc drive.google.com) hoặc relative endpoint
-    // -> route qua Backend API stream (/api/avatar/{email}) để tránh lỗi 403 Forbidden do quyền riêng tư của Google Drive
-    const targetEmail = email || this.getStoredEmail();
+    const targetEmail = email ?? activeEmail;
     if (targetEmail && (url.includes('drive.google.com') || url.startsWith('/api/avatar') || url.includes('/api/avatar/'))) {
-      const ts = timestamp || Date.now();
-      return `${API_BASE_URL}/api/avatar/${encodeURIComponent(targetEmail)}?t=${ts}`;
+      const cacheBuster = timestamp ?? Date.now();
+      return apiClient.url(`/api/avatar/${encodeURIComponent(targetEmail)}?t=${cacheBuster}`);
     }
 
-    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('blob:') || url.startsWith('data:')) {
-      return url;
-    }
-
-    return `${API_BASE_URL}${url}`;
+    if (/^(https?:|blob:|data:)/i.test(url)) return url;
+    return apiClient.url(url);
   },
 
-  /**
-   * Lấy URL ảnh đại diện từ Backend API
-   */
   getAvatarUrl(email?: string, timestamp?: number): string {
-    const targetEmail = email || this.getStoredEmail();
+    const targetEmail = email ?? activeEmail;
     if (!targetEmail) return '';
-    const ts = timestamp ? `?t=${timestamp}` : '';
-    return `${API_BASE_URL}/api/avatar/${encodeURIComponent(targetEmail)}${ts}`;
+    const cacheBuster = timestamp ? `?t=${timestamp}` : '';
+    return apiClient.url(`/api/avatar/${encodeURIComponent(targetEmail)}${cacheBuster}`);
   },
 
-  /**
-   * Tải ảnh đại diện mới lên Google Drive (Multipart Form Data) - Không giới hạn số lần
-   */
   async uploadAvatar(file: File): Promise<{ message: string; avatarUrl: string }> {
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await this.fetchWithAuth(`${API_BASE_URL}/api/avatar/upload`, {
-      method: 'POST',
-      body: formData,
-    });
+    const response = await apiClient.post<{ message: string; avatarUrl: string }>(
+      '/api/avatar/upload',
+      formData,
+    );
 
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data?.message || 'Không thể upload ảnh đại diện.');
-    }
-
-    // Cập nhật timestamp vào userAvatar để trigger re-render
-    const timestamp = Date.now();
-    const freshAvatarUrl = data.avatarUrl;
-    localStorage.setItem('userAvatar', freshAvatarUrl);
-    window.dispatchEvent(new CustomEvent('auth:avatarUpdated', { 
-      detail: { 
-        avatarUrl: freshAvatarUrl,
-        timestamp 
-      } 
+    window.dispatchEvent(new CustomEvent('auth:avatarUpdated', {
+      detail: { avatarUrl: response.avatarUrl, timestamp: Date.now() },
     }));
-
-    return data;
+    return response;
   },
 
-  /**
-   * Xóa ảnh đại diện khỏi Google Drive
-   */
-  async deleteAvatar(): Promise<{ message: string }> {
-    const response = await this.fetchWithAuth(`${API_BASE_URL}/api/avatar`, {
-      method: 'DELETE',
-    });
-
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data?.message || 'Không thể xóa ảnh đại diện.');
-    }
-
-    localStorage.setItem('userAvatar', 'none');
-    window.dispatchEvent(new CustomEvent('auth:avatarUpdated', { detail: { avatarUrl: 'none' } }));
-
-    return data;
+  async deleteAvatar(): Promise<MessageResponse> {
+    const response = await apiClient.delete<MessageResponse>('/api/avatar');
+    window.dispatchEvent(new CustomEvent('auth:avatarUpdated', {
+      detail: { avatarUrl: null },
+    }));
+    return response;
   },
 
-  /**
-   * Cập nhật thông tin hồ sơ
-   */
-  async updateProfile(data: { fullName: string; phoneNumber: string; gender: string; dateOfBirth: string }): Promise<{ message: string }> {
-    const response = await this.fetchWithAuth(`${API_BASE_URL}/api/me/profile`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-
-    const responseData = await response.json();
-    if (!response.ok) {
-      if (responseData.errors) {
-        const firstKey = Object.keys(responseData.errors)[0];
-        const firstMsg = responseData.errors[firstKey]?.[0];
-        if (firstMsg) throw new Error(firstMsg);
-      }
-      throw new Error(responseData?.message || 'Không thể cập nhật hồ sơ.');
-    }
-
-    return responseData;
+  async updateProfile(data: { fullName: string; phoneNumber: string; gender: string; dateOfBirth: string }): Promise<ProfileResponse> {
+    return apiClient.put<ProfileResponse>('/api/me/profile', data);
   },
 
-  /**
-   * Đổi mật khẩu tài khoản Local
-   */
-  async changePassword(data: { currentPassword: string; newPassword: string; confirmPassword: string }): Promise<{ message: string }> {
-    const response = await this.fetchWithAuth(`${API_BASE_URL}/api/auth/change-password`, {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-
-    const responseData = await response.json();
-    if (!response.ok) {
-      if (responseData.errors) {
-        const firstKey = Object.keys(responseData.errors)[0];
-        const firstMsg = responseData.errors[firstKey]?.[0];
-        if (firstMsg) throw new Error(firstMsg);
-      }
-      throw new Error(responseData?.message || 'Không thể đổi mật khẩu.');
-    }
-
-    return responseData;
+  async changePassword(data: { currentPassword: string; newPassword: string; confirmPassword: string }): Promise<MessageResponse> {
+    return apiClient.post<MessageResponse>('/api/auth/change-password', data);
   },
 
-  /**
-   * Lưu tên hiển thị (Display Name) vào Client Storage
-   */
   setStoredName(name: string): void {
-    localStorage.setItem('userDisplayName', name);
+    // This is intentionally an in-memory UI update. Profile identity is read
+    // from /api/me on every fresh app load rather than from localStorage.
     window.dispatchEvent(new CustomEvent('auth:nameUpdated', { detail: { name } }));
-  },
-
-  getStoredName(): string | null {
-    return localStorage.getItem('userDisplayName');
   },
 };
 
+export { API_BASE_URL };

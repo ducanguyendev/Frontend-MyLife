@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 interface UserMenuProps {
   onOpenProfile: () => void;
-  onSwitchAccount: () => void;
+  onSwitchAccount: () => void | Promise<void>;
 }
 
 export const UserMenu: React.FC<UserMenuProps> = ({ onOpenProfile, onSwitchAccount }) => {
@@ -44,9 +44,10 @@ export const UserMenu: React.FC<UserMenuProps> = ({ onOpenProfile, onSwitchAccou
   const [menuAvatarSrc, setMenuAvatarSrc] = useState<string | null>(null);
 
   useEffect(() => {
-    const updateAvatar = (e?: any) => {
-      const av = e?.detail?.avatarUrl ?? user?.avatar;
-      const ts = e?.detail?.timestamp ?? Date.now();
+    const updateAvatar = (event?: Event) => {
+      const detail = (event as CustomEvent<{ avatarUrl?: string | null; timestamp?: number }> | undefined)?.detail;
+      const av = detail?.avatarUrl ?? user?.avatar;
+      const ts = detail?.timestamp ?? Date.now();
       if (av && av !== 'none') {
         setMenuAvatarSrc(authService.getDisplayAvatarUrl(av, user?.email, ts));
         setImgError(false);
@@ -74,14 +75,14 @@ export const UserMenu: React.FC<UserMenuProps> = ({ onOpenProfile, onSwitchAccou
     onOpenProfile();
   };
 
-  const handleSwitchClick = () => {
+  const handleSwitchClick = async () => {
     setIsOpen(false);
-    onSwitchAccount();
+    await onSwitchAccount();
   };
 
-  const handleLogoutClick = () => {
+  const handleLogoutClick = async () => {
     setIsOpen(false);
-    logout();
+    await logout();
     navigate('/');
   };
 
