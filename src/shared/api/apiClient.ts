@@ -2,6 +2,7 @@ export type ApiValidationErrors = Record<string, string[] | string>;
 
 export interface ApiErrorPayload {
   success?: boolean;
+  code?: string;
   message?: string;
   title?: string;
   errors?: ApiValidationErrors;

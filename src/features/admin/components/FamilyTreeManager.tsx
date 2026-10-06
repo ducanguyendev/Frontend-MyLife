@@ -5,6 +5,7 @@ import {
 import { useLanguage } from "@/shared/hooks/useLanguage";
 import { Button } from "@/shared/components/ui";
 import { apiClient } from "@/shared/api/apiClient";
+import { featureSuccessKeys, getFeatureErrorKey } from '../services/featureMessages';
 import {
   type FamilyMember,
   type FamilyTreeManagerProps,
@@ -60,10 +61,10 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
         console.log("Fetched members:", json.data);
         setMembers(json.data || []);
       } else {
-        showToast(t("admin.error_connect", { defaultValue: "Lỗi kết nối đến Backend!" }), false);
+        showToast(t(getFeatureErrorKey(await res.json().catch(() => null), 'member_load', res.status)), false);
       }
-    } catch {
-      showToast(t("admin.error_connect", { defaultValue: "Lỗi kết nối đến Backend!" }), false);
+    } catch (failure) {
+      showToast(t(getFeatureErrorKey(failure, 'member_load')), false);
     } finally {
       setLoading(false);
     }
@@ -148,25 +149,18 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
         { method: isUpdate ? "PUT" : "POST", body: payload },
       );
 
-      const data = await res.json();
       if (res.ok) {
         showToast(
-          isUpdate
-            ? t("admin.success", { defaultValue: "Cập nhật thành công!" })
-            : t("admin.success", { defaultValue: "Thêm thành công!" }),
+          t(isUpdate ? featureSuccessKeys.memberUpdate : featureSuccessKeys.memberCreate),
           true
         );
         fetchMembers();
         handleCloseModal();
       } else {
-        const errorMsg =
-          data.message ||
-          (data.errors && Object.values(data.errors).flat().join(", ")) ||
-          t("admin.action_failed", { defaultValue: "Có lỗi xảy ra" });
-        showToast(errorMsg, false);
+        showToast(t(getFeatureErrorKey(await res.json().catch(() => null), 'member_save', res.status)), false);
       }
-    } catch {
-      showToast(t("admin.error_connect", { defaultValue: "Lỗi kết nối khi lưu thông tin!" }), false);
+    } catch (failure) {
+      showToast(t(getFeatureErrorKey(failure, 'member_save')), false);
     } finally {
       setIsSaving(false);
     }
@@ -178,21 +172,18 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
 
     try {
       const res = await apiClient.requestRaw(`/api/family-tree/${memberToDelete.id}`, { method: "DELETE" });
-      const data = await res.json();
-
       if (res.ok) {
         showToast(
-          data.message ||
-            t("admin.delete_success", { defaultValue: `Đã xóa thành viên ${memberToDelete.fullName}` }),
+          t(featureSuccessKeys.memberDelete, { name: memberToDelete.fullName }),
           true
         );
         setMembers((prev) => prev.filter((m) => m.id !== memberToDelete.id));
         setMemberToDelete(null);
       } else {
-        showToast(data.message || t("admin.delete_failed", { defaultValue: "Không thể xóa thành viên." }), false);
+        showToast(t(getFeatureErrorKey(await res.json().catch(() => null), 'member_delete', res.status)), false);
       }
-    } catch {
-      showToast(t("admin.error_connect", { defaultValue: "Lỗi kết nối khi xóa thành viên!" }), false);
+    } catch (failure) {
+      showToast(t(getFeatureErrorKey(failure, 'member_delete')), false);
     } finally {
       setIsDeleting(false);
     }

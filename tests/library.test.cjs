@@ -13,11 +13,11 @@ function setup(failure) {
   const { outputText } = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } });
   const exports = {};
   new vm.Script(outputText).runInNewContext({ exports, require: () => ({ apiClient }), FormData });
-  return { libraryService: exports.libraryService, calls, categories: exports.LIBRARY_CATEGORIES };
+  return { libraryService: exports.libraryService, calls };
 }
 
 test('Library service reuses apiClient and existing album/photo routes', async () => {
-  const { libraryService, calls, categories } = setup();
+  const { libraryService, calls } = setup();
   const signal = new AbortController().signal;
   await libraryService.getAlbums(signal);
   await libraryService.getAlbum(15, signal);
@@ -32,7 +32,11 @@ test('Library service reuses apiClient and existing album/photo routes', async (
     ['put', '/api/library/photos/101'], ['delete', '/api/library/photos/101'],
   ]);
   assert.equal(calls[0].args[1].signal, signal);
-  assert.equal([...categories].join(','), 'photos,decrees,events,temple');
+  await libraryService.getCategories(signal); await libraryService.createCategory('Du lịch'); await libraryService.deleteCategory(9);
+  assert.deepEqual(calls.slice(-3).map(call => [call.method, call.args[0]]), [
+    ['get', '/api/library/categories'], ['post', '/api/library/categories'], ['delete', '/api/library/categories/9'],
+  ]);
+  assert.equal(calls.at(-3).args[1].signal, signal); assert.equal(calls.at(-2).args[1].name, 'Du lịch');
 });
 
 test('batch upload sends files and common metadata together, with no per-photo update step', async () => {

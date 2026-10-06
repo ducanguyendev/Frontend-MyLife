@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { CheckCircle, XCircle, AlertTriangle, Info } from 'lucide-react';
+import { useLanguage } from '../hooks/useLanguage';
 
 export type NotificationType = 'success' | 'error' | 'warning' | 'info';
 
@@ -25,6 +26,7 @@ export const useNotification = () => {
 };
 
 export const NotificationProvider = ({ children }: { children: ReactNode }) => {
+  const { t } = useLanguage();
   const [notification, setNotification] = useState<NotificationOptions | null>(null);
 
   const showNotification = (options: NotificationOptions) => {
@@ -78,7 +80,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
                 onClick={() => setNotification(null)}
                 className="mt-6 px-6 py-2 bg-primary-bg hover:bg-custom-border text-secondary-text hover:text-primary-text rounded-xl font-medium border border-custom-border transition-colors w-full"
               >
-                Đóng
+                {t('admin.close')}
               </button>
             </motion.div>
           </div>

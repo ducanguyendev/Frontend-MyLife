@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { XCircle, ExternalLink, Pencil, Trash2 } from "lucide-react";
 import { useLanguage } from '@/shared/hooks/useLanguage';
 import { type LibraryPhoto } from "./types";
+import { LibraryImage, libraryOriginalUrl } from './LibraryImage';
 
 interface PhotoLightboxModalProps {
   photo: LibraryPhoto | null;
@@ -59,8 +60,8 @@ export const PhotoLightboxModal: React.FC<PhotoLightboxModalProps> = ({
           role="dialog" aria-modal="true" aria-label={photo.title}
         >
           <div className="relative aspect-video max-h-[55vh] shrink-0 bg-black overflow-hidden flex items-center justify-center">
-            <img
-              src={photo.url}
+            <LibraryImage
+              url={photo.url} driveFileId={photo.driveFileId}
               alt={photo.title}
               className="max-h-full max-w-full object-contain"
             />
@@ -84,7 +85,7 @@ export const PhotoLightboxModal: React.FC<PhotoLightboxModalProps> = ({
               <span className="min-w-0 break-words">{photo.author}</span>
               <button
                 onClick={() => {
-                  window.open(photo.url, "_blank", "noopener,noreferrer");
+                  window.open(libraryOriginalUrl(photo.url, photo.driveFileId), "_blank", "noopener,noreferrer");
                 }}
                 className="px-4 py-2 rounded-xl bg-accent text-primary-bg font-bold flex items-center gap-2 hover:opacity-90 transition-opacity cursor-pointer text-xs"
               >

@@ -9,6 +9,8 @@
     "lint": "eslint .",
     "test:avatar": "node --test tests/avatar.test.cjs",
     "test:library": "node --test tests/library.test.cjs",
+    "test:library-ui": "node --test tests/library-ui.test.cjs",
+    "test:i18n": "node --test tests/feature-i18n.test.cjs",
     "preview": "vite preview"
   },
   "dependencies": {

@@ -177,9 +177,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
       e.preventDefault();
       setErrors((prev) => ({
         ...prev,
-        fullName: t("common.registerPage.errors.nameSpecialChars", {
-          defaultValue: "Họ và tên không được chứa số hoặc ký tự đặc biệt.",
-        }),
+        fullName: "common.registerPage.errors.nameSpecialChars",
       }));
     }
   };
@@ -190,9 +188,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
     if (!/^[\p{L}\s]*$/u.test(val)) {
       setErrors((prev) => ({
         ...prev,
-        fullName: t("common.registerPage.errors.nameSpecialChars", {
-          defaultValue: "Họ và tên không được chứa số hoặc ký tự đặc biệt.",
-        }),
+        fullName: "common.registerPage.errors.nameSpecialChars",
       }));
       const cleaned = val.replace(/[^\p{L}\s]/gu, "").slice(0, 50);
       onChange({ ...editingMember, fullName: cleaned });
@@ -209,9 +205,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
       e.preventDefault();
       setErrors((prev) => ({
         ...prev,
-        fullName: t("common.registerPage.errors.nameSpecialChars", {
-          defaultValue: "Họ và tên không được chứa số hoặc ký tự đặc biệt.",
-        }),
+        fullName: "common.registerPage.errors.nameSpecialChars",
       }));
       const cleaned = pasteData.replace(/[^\p{L}\s]/gu, "");
       onChange({ ...editingMember, fullName: ((editingMember.fullName || "") + cleaned).slice(0, 50) });
@@ -225,9 +219,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
       e.preventDefault();
       setErrors((prev) => ({
         ...prev,
-        phoneNumber: t("common.registerPage.errors.phoneDigitsOnly", {
-          defaultValue: "Số điện thoại chỉ được chứa các chữ số (0-9).",
-        }),
+        phoneNumber: "common.registerPage.errors.phoneDigitsOnly",
       }));
     }
   };
@@ -238,9 +230,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
     if (/[^0-9]/.test(val)) {
       setErrors((prev) => ({
         ...prev,
-        phoneNumber: t("common.registerPage.errors.phoneDigitsOnly", {
-          defaultValue: "Số điện thoại chỉ được chứa các chữ số (0-9).",
-        }),
+        phoneNumber: "common.registerPage.errors.phoneDigitsOnly",
       }));
       const cleaned = val.replace(/[^0-9]/g, "").slice(0, 10);
       onChange({ ...editingMember, phoneNumber: cleaned });
@@ -257,9 +247,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
       e.preventDefault();
       setErrors((prev) => ({
         ...prev,
-        phoneNumber: t("common.registerPage.errors.phoneDigitsOnly", {
-          defaultValue: "Số điện thoại chỉ được chứa các chữ số (0-9).",
-        }),
+        phoneNumber: "common.registerPage.errors.phoneDigitsOnly",
       }));
       const cleaned = pasteData.replace(/[^0-9]/g, "").slice(0, 10);
       onChange({ ...editingMember, phoneNumber: ((editingMember.phoneNumber || "") + cleaned).slice(0, 10) });
@@ -275,42 +263,35 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
     // 1. Họ và tên (Bắt buộc, 2-50 ký tự, không chứa số hoặc ký tự đặc biệt)
     const trimmedName = (editingMember.fullName || "").trim();
     if (!trimmedName) {
-      newErrors.fullName = t("common.registerPage.errors.nameRequired", {
-        defaultValue: "Vui lòng nhập họ và tên.",
-      });
+      newErrors.fullName = "common.registerPage.errors.nameRequired";
       if (!sectionToOpen) sectionToOpen = "basic";
     } else if (trimmedName.length < 2 || trimmedName.length > 50) {
-      newErrors.fullName = t("common.registerPage.errors.nameLength", {
-        defaultValue: "Họ và tên phải có độ dài từ 2 đến 50 ký tự.",
-      });
+      newErrors.fullName = "common.registerPage.errors.nameLength";
       if (!sectionToOpen) sectionToOpen = "basic";
     } else if (!/^[\p{L}\s]+$/u.test(trimmedName)) {
-      newErrors.fullName = t("common.registerPage.errors.nameSpecialChars", {
-        defaultValue: "Họ và tên không được chứa số hoặc ký tự đặc biệt.",
-      });
+      newErrors.fullName = "common.registerPage.errors.nameSpecialChars";
       if (!sectionToOpen) sectionToOpen = "basic";
     }
 
     // 2. Vai trò trong tộc (Bắt buộc, 2-50 ký tự)
     const trimmedRole = (editingMember.role || "").trim();
     if (!trimmedRole) {
-      newErrors.role = t("admin.error_role_required", {
-        defaultValue: "Vai trò không được để trống.",
-      });
+      newErrors.role = "admin.error_role_required";
       if (!sectionToOpen) sectionToOpen = "basic";
     } else if (trimmedRole.length < 2 || trimmedRole.length > 50) {
-      newErrors.role = t("admin.error_role_length", {
-        defaultValue: "Vai trò phải có độ dài từ 2 đến 50 ký tự.",
-      });
+      newErrors.role = "admin.error_role_length";
       if (!sectionToOpen) sectionToOpen = "basic";
+    }
+
+    if (!Number.isInteger(editingMember.generation) || Number(editingMember.generation) < 1) {
+      newErrors.generation = 'admin.error_generation';
+      if (!sectionToOpen) sectionToOpen = 'basic';
     }
 
     // 3. Số điện thoại (Nếu nhập thì phải đúng 10 số bắt đầu bằng 03, 05, 07, 08, 09)
     const phone = (editingMember.phoneNumber || "").trim().replace(/\s+/g, "");
     if (phone && !/^(0[3|5|7|8|9])[0-9]{8}$/.test(phone)) {
-      newErrors.phoneNumber = t("common.registerPage.errors.phoneInvalid", {
-        defaultValue: "Số điện thoại không hợp lệ (10 chữ số bắt đầu bằng 03, 05, 07, 08, 09).",
-      });
+      newErrors.phoneNumber = "common.registerPage.errors.phoneInvalid";
       if (!sectionToOpen) sectionToOpen = "contact";
     }
 
@@ -318,7 +299,14 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
     const rawDob = (editingMember.dateOfBirth || "").trim();
     if (rawDob) {
       const formatted = rawDob.includes("-") ? formatBackendToDob(rawDob) : rawDob;
-      const dobResult = validateDob(formatted, 0, 200);
+      const dobResult = validateDob(formatted, 0, 200, {
+        required: 'common.registerPage.dobValidation.required', format: 'common.registerPage.dobValidation.format',
+        invalid: 'common.registerPage.dobValidation.invalid', invalidMonth: 'common.registerPage.dobValidation.invalidMonth',
+        invalidDay: 'common.registerPage.dobValidation.invalidDay', futureDate: 'common.registerPage.dobValidation.futureDate',
+        dayNotExist: () => 'common.registerPage.dobValidation.invalid',
+        minAge: () => 'common.registerPage.dobValidation.invalid',
+        maxAge: () => 'common.registerPage.dobValidation.invalid',
+      });
       if (!dobResult.valid) {
         newErrors.dateOfBirth = dobResult.error;
         if (!sectionToOpen) sectionToOpen = "basic";
@@ -328,18 +316,14 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
     // 5. Facebook URL
     const fb = (editingMember.facebookUrl || "").trim();
     if (fb && !/^https?:\/\/(www\.)?facebook\.com\/.+/i.test(fb) && !fb.startsWith("https://")) {
-      newErrors.facebookUrl = t("admin.error_invalid_url", {
-        defaultValue: "Đường dẫn Facebook không hợp lệ (ví dụ: https://facebook.com/...).",
-      });
+      newErrors.facebookUrl = "admin.error_facebook_url";
       if (!sectionToOpen) sectionToOpen = "contact";
     }
 
     // 6. Link ảnh Avatar
     const avatar = (editingMember.avatarUrl || "").trim();
     if (avatar && !/^https?:\/\/.+/i.test(avatar) && !avatar.startsWith("/")) {
-      newErrors.avatarUrl = t("admin.error_invalid_url", {
-        defaultValue: "Đường dẫn ảnh đại diện không hợp lệ (ví dụ: https://...).",
-      });
+      newErrors.avatarUrl = "admin.error_avatar_url";
       if (!sectionToOpen) sectionToOpen = "bio";
     }
 
@@ -433,7 +417,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                     maxLength={50}
                     label={t("admin.field_fullname", { defaultValue: "Họ và tên *" })}
                     value={editingMember.fullName || ""}
-                    error={errors.fullName}
+                    error={errors.fullName ? t(errors.fullName) : undefined}
                     onKeyDown={handleFullNameKeyDown}
                     onChange={handleFullNameChange}
                     onPaste={handleFullNamePaste}
@@ -445,7 +429,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                     label={t("admin.field_generation", { defaultValue: "Thế hệ (Đời thứ) *" })}
                     value={editingMember.generation ?? 1}
                     includeEmptyOption={false}
-                    error={errors.generation}
+                    error={errors.generation ? t(errors.generation) : undefined}
                     onChange={(e) => {
                       onChange({ ...editingMember, generation: parseInt(e.target.value) || 1 });
                       if (errors.generation) setErrors((prev) => ({ ...prev, generation: undefined }));
@@ -463,7 +447,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                     required
                     label={t("admin.field_role", { defaultValue: "Vai trò *" })}
                     value={editingMember.role || ""}
-                    error={errors.role}
+                    error={errors.role ? t(errors.role) : undefined}
                     onChange={(e) => {
                       onChange({ ...editingMember, role: e.target.value });
                       if (errors.role) setErrors((prev) => ({ ...prev, role: undefined }));
@@ -493,7 +477,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                             : editingMember.dateOfBirth
                           : ""
                       }
-                      error={errors.dateOfBirth}
+                      error={errors.dateOfBirth ? t(errors.dateOfBirth) : undefined}
                       onChange={(e) => {
                         const raw = e.target.value;
                         const backend = formatDobToBackend(raw);
@@ -757,7 +741,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                     maxLength={10}
                     label={t("admin.field_phone", { defaultValue: "Số điện thoại" })}
                     value={editingMember.phoneNumber || ""}
-                    error={errors.phoneNumber}
+                    error={errors.phoneNumber ? t(errors.phoneNumber) : undefined}
                     onKeyDown={handlePhoneKeyDown}
                     onChange={handlePhoneChange}
                     onPaste={handlePhonePaste}
@@ -768,7 +752,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                     label={t("admin.field_facebook", { defaultValue: "Facebook URL" })}
                     placeholder="https://facebook.com/..."
                     value={editingMember.facebookUrl || ""}
-                    error={errors.facebookUrl}
+                    error={errors.facebookUrl ? t(errors.facebookUrl) : undefined}
                     onChange={(e) => {
                       onChange({ ...editingMember, facebookUrl: e.target.value });
                       if (errors.facebookUrl) setErrors((prev) => ({ ...prev, facebookUrl: undefined }));
@@ -830,7 +814,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                     label={t("admin.field_avatar", { defaultValue: "Link Ảnh Đại Diện" })}
                     placeholder="https://..."
                     value={editingMember.avatarUrl || ""}
-                    error={errors.avatarUrl}
+                    error={errors.avatarUrl ? t(errors.avatarUrl) : undefined}
                     onChange={(e) => {
                       onChange({ ...editingMember, avatarUrl: e.target.value });
                       if (errors.avatarUrl) setErrors((prev) => ({ ...prev, avatarUrl: undefined }));

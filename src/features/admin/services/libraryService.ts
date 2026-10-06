@@ -1,11 +1,10 @@
 import { apiClient } from '@/shared/api/apiClient';
 
-export const LIBRARY_CATEGORIES = ['photos', 'decrees', 'events', 'temple'] as const;
-export type LibraryCategory = typeof LIBRARY_CATEGORIES[number];
+export interface LibraryCategory { id: number; name: string; slug: string; isDefault: boolean }
 
 export interface LibraryPhotoMetadata {
   title?: string | null;
-  category: LibraryCategory;
+  category: string;
   displayDate?: string | null;
   description?: string | null;
   author?: string | null;
@@ -13,6 +12,7 @@ export interface LibraryPhotoMetadata {
 
 export interface LibraryPhotoDto extends LibraryPhotoMetadata {
   id: number;
+  driveFileId: string;
   url: string;
   fileName: string;
   contentType: string;
@@ -37,6 +37,9 @@ export interface LibraryAlbumDetail extends LibraryAlbum { photos: LibraryPhotoD
 export interface AlbumMetadata { name: string; description?: string | null }
 
 export const libraryService = {
+  getCategories: (signal?: AbortSignal) => apiClient.get<LibraryCategory[]>('/api/library/categories', { signal }),
+  createCategory: (name: string) => apiClient.post<LibraryCategory>('/api/library/categories', { name }),
+  deleteCategory: (id: number) => apiClient.delete<void>(`/api/library/categories/${id}`),
   getAlbums: (signal?: AbortSignal) => apiClient.get<LibraryAlbum[]>('/api/library/albums', { signal }),
   getAlbum: (id: number, signal?: AbortSignal) => apiClient.get<LibraryAlbumDetail>(`/api/library/albums/${id}`, { signal }),
   createAlbum: (metadata: AlbumMetadata) => apiClient.post<LibraryAlbum>('/api/library/albums', metadata),
