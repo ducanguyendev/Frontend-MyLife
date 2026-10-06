@@ -1,4 +1,5 @@
 import { API_BASE_URL, apiClient } from '@/shared/api/apiClient';
+import { compressAvatarImage } from '@/shared/utils/compressAvatarImage';
 
 export type UserRole = 'ADMIN' | 'USER';
 
@@ -82,6 +83,12 @@ const LEGACY_AUTH_STORAGE_KEYS = [
 ] as const;
 
 let activeEmail: string | undefined;
+let lastAvatarTimestamp = 0;
+
+function nextAvatarTimestamp(timestamp = Date.now()): number {
+  lastAvatarTimestamp = Math.max(timestamp, lastAvatarTimestamp + 1);
+  return lastAvatarTimestamp;
+}
 
 function clearLegacyAuthStorage(): void {
   LEGACY_AUTH_STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
@@ -211,11 +218,19 @@ export const authService = {
 
     const targetEmail = email ?? activeEmail;
     if (targetEmail && (url.includes('drive.google.com') || url.startsWith('/api/avatar') || url.includes('/api/avatar/'))) {
-      const cacheBuster = timestamp ?? Date.now();
+      const cacheBuster = nextAvatarTimestamp(timestamp);
       return apiClient.url(`/api/avatar/${encodeURIComponent(targetEmail)}?t=${cacheBuster}`);
     }
 
-    if (/^(https?:|blob:|data:)/i.test(url)) return url;
+    if (/^https?:/i.test(url)) {
+      const displayUrl = new URL(url);
+      // Preserve an already-versioned auth avatar across ordinary rerenders.
+      // A fresh server URL after login/reload always receives a new version.
+      if (timestamp === undefined && displayUrl.searchParams.has('t')) return url;
+      displayUrl.searchParams.set('t', String(nextAvatarTimestamp(timestamp)));
+      return displayUrl.toString();
+    }
+    if (/^(blob:|data:)/i.test(url)) return url;
     return apiClient.url(url);
   },
 
@@ -227,22 +242,32 @@ export const authService = {
   },
 
   async uploadAvatar(file: File): Promise<{ message: string; avatarUrl: string }> {
+    const uploadFile = await compressAvatarImage(file);
+    if (uploadFile.size > 5 * 1024 * 1024) {
+      throw new Error('The image must not exceed 5 MB after compression.');
+    }
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', uploadFile);
 
-    const response = await apiClient.post<{ message: string; avatarUrl: string }>(
+    const response = await apiClient.post<{ success?: boolean; message: string; avatarUrl: string }>(
       '/api/avatar/upload',
       formData,
     );
 
+    if (response?.success === false || !response?.avatarUrl?.trim()) {
+      throw new Error(response?.message || 'Unable to store the avatar. Please try again.');
+    }
+    const freshAvatarUrl = this.getDisplayAvatarUrl(response.avatarUrl, activeEmail, Date.now());
+    if (!freshAvatarUrl) throw new Error('Avatar storage returned an invalid image URL.');
     window.dispatchEvent(new CustomEvent('auth:avatarUpdated', {
-      detail: { avatarUrl: response.avatarUrl, timestamp: Date.now() },
+      detail: { avatarUrl: freshAvatarUrl },
     }));
-    return response;
+    return { ...response, avatarUrl: freshAvatarUrl };
   },
 
   async deleteAvatar(): Promise<MessageResponse> {
     const response = await apiClient.delete<MessageResponse>('/api/avatar');
+    if (response?.success === false) throw new Error(response.message || 'Unable to delete the avatar.');
     window.dispatchEvent(new CustomEvent('auth:avatarUpdated', {
       detail: { avatarUrl: null },
     }));

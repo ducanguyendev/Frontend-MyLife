@@ -42,7 +42,7 @@ function toContextUser(user: AuthenticatedUser): User {
     email: user.email,
     name: user.fullName?.trim() || user.name?.trim() || user.email.split('@')[0],
     role: user.role === 'ADMIN' ? 'ADMIN' : 'USER',
-    avatar: user.avatarUrl ?? undefined,
+    avatar: authService.getDisplayAvatarUrl(user.avatarUrl, user.email, Date.now()) ?? undefined,
     authProvider: user.authProvider,
     loginProviders: user.loginProviders,
   };

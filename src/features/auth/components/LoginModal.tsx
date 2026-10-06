@@ -271,7 +271,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
               leftIcon={<Mail size={18} />}
               type="email"
               name="email"
-              autoComplete="email"
+              autoComplete="username"
               maxLength={254}
               value={email}
               onChange={(event) => {

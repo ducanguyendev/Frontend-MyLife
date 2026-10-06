@@ -32,6 +32,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
   // Avatar Upload States
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const uploadInProgressRef = useRef(false);
+  const openedProfileUserRef = useRef<number | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [imgError, setImgError] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -99,7 +101,15 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
   // Sync state on open
   useEffect(() => {
+    if (!isOpen) {
+      openedProfileUserRef.current = null;
+      return;
+    }
+    // Avatar events change the user object while the modal is still open.
+    // They must not clear upload feedback or reset the active tab/profile form.
+    if (user && openedProfileUserRef.current === user.id) return;
     if (isOpen && user) {
+      openedProfileUserRef.current = user.id;
       setImgError(false);
       setPreviewUrl(null);
       setCurrentSrc(user.avatar && user.avatar !== 'none' ? authService.getDisplayAvatarUrl(user.avatar, user.email, Date.now()) : null);
@@ -154,6 +164,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     const file = e.target.files?.[0];
     if (!file) return;
     e.target.value = '';
+    if (uploadInProgressRef.current) return;
 
     // Validate size (< 5MB)
     if (file.size > 5 * 1024 * 1024) {
@@ -170,21 +181,26 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
       return;
     }
 
+    uploadInProgressRef.current = true;
+    const previousAvatarUrl = currentSrc;
     setIsUploading(true);
     setErrorMessage(null);
     setSuccessMessage(null);
     try {
       const res = await authService.uploadAvatar(file);
       setImgError(false);
-      if (res?.avatarUrl) {
-        const freshUrl = authService.getDisplayAvatarUrl(res.avatarUrl, user.email, Date.now());
-        setPreviewUrl(freshUrl);
-        setCurrentSrc(freshUrl);
-      }
+      if (!res?.avatarUrl) throw new Error('Avatar storage returned no image URL.');
+      setPreviewUrl(res.avatarUrl);
+      setCurrentSrc(res.avatarUrl);
       setSuccessMessage(t('common.userProfile.msgUploadAvatarSuccess', { defaultValue: 'Cập nhật ảnh đại diện thành công!' }));
     } catch (err: unknown) {
+      setPreviewUrl(previousAvatarUrl);
+      setCurrentSrc(previousAvatarUrl);
+      setSuccessMessage(null);
       setErrorMessage(getApiErrorMessage(err, t('common.userProfile.msgUploadAvatarError', { defaultValue: 'Lỗi khi tải ảnh đại diện lên.' })));
     } finally {
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      uploadInProgressRef.current = false;
       setIsUploading(false);
     }
   };
@@ -453,6 +469,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 ref={fileInputRef}
                 type="file"
                 accept="image/jpeg,image/png,image/webp,image/gif"
+                disabled={isUploading}
                 onChange={handleFileChange}
                 className="hidden"
               />
