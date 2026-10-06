@@ -1,75 +1,83 @@
-import React, { useState } from "react";
-import { BookOpen, Plus, Eye } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { BookOpen, Plus, Eye, Pencil, Trash2, Loader2 } from "lucide-react";
 import { useLanguage } from "@/shared/hooks/useLanguage";
-import { Button } from "@/shared/components/ui";
+import { Button, Modal } from "@/shared/components/ui";
+import { getApiErrorMessage } from '@/shared/api/apiClient';
+import { libraryService, type LibraryAlbum, type LibraryPhotoMetadata } from '../../services/libraryService';
 import { type LibraryPhoto } from "./types";
 import { PhotoLightboxModal } from "./PhotoLightboxModal";
-
-const libraryPhotos: LibraryPhoto[] = [
-  {
-    id: "lib-1",
-    title: "Nhà thờ tổ Họ Nguyễn (Tiên Điền)",
-    category: "temple",
-    year: "Khởi dựng 1820",
-    url: "https://images.unsplash.com/photo-1548013146-72479768bada?q=80&w=800&auto=format&fit=crop",
-    desc: "Toàn cảnh khuôn viên Từ đường tiền nhân, nơi phụng thờ các bậc tiền bối và sinh hoạt gia tộc.",
-    author: "Ban liên lạc dòng họ Nguyễn",
-  },
-  {
-    id: "lib-2",
-    title: "Sắc phong Triều Nguyễn niên hiệu Tự Đức",
-    category: "decrees",
-    year: "Năm 1858",
-    url: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?q=80&w=800&auto=format&fit=crop",
-    desc: "Bản sao chiếu sắc phong công đức danh nhân tiền bối đỗ đạt cử nhân và phụng sự triều đình.",
-    author: "Lưu trữ tại Viện Hán Nôm",
-  },
-  {
-    id: "lib-3",
-    title: "Họp mặt Đại gia đình Xuân Giáp Thìn",
-    category: "events",
-    year: "Tháng 02/2024",
-    url: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=800&auto=format&fit=crop",
-    desc: "Con cháu nội ngoại 4 thế hệ sum vầy chúc thọ các cụ cao niên và trao học bổng khuyến học.",
-    author: "Nguyễn Văn Dũng chụp",
-  },
-  {
-    id: "lib-4",
-    title: "Khu Lăng mộ Tổ tiền nhân tại Hà Tĩnh",
-    category: "temple",
-    year: "Trùng tu 2018",
-    url: "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?q=80&w=800&auto=format&fit=crop",
-    desc: "Phần mộ tổ phụ được con cháu các chi phái đóng góp tôn tạo khang trang, tôn nghiêm.",
-    author: "Hội đồng gia tộc",
-  },
-  {
-    id: "lib-5",
-    title: "Ảnh tư liệu cụ Trưởng chi Nguyễn Văn Minh",
-    category: "photos",
-    year: "Năm 1945",
-    url: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=800&auto=format&fit=crop",
-    desc: "Chân dung cụ cố chụp trong thời kỳ kháng chiến cứu quốc, người có công mở rộng sản nghiệp gia đình.",
-    author: "Tư liệu gia đình chi 1",
-  },
-  {
-    id: "lib-6",
-    title: "Trao quỹ khuyến học cho con cháu thủ khoa",
-    category: "events",
-    year: "Mùa thu 2025",
-    url: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=800&auto=format&fit=crop",
-    desc: "Vinh danh 12 cháu đạt giải quốc gia và đỗ các trường đại học top đầu trong năm học vừa qua.",
-    author: "Ban Khuyến học dòng họ",
-  },
-];
+import { LibraryAlbumModal } from './LibraryAlbumModal';
+import { LibraryUploadModal } from './LibraryUploadModal';
+import { LibraryPhotoEditModal } from './LibraryPhotoEditModal';
+import { libraryFieldClass } from './LibraryPhotoFormFields';
 
 interface LibraryTabProps {
-  onUploadDoc: () => void;
+  showToast: (text: string, ok: boolean) => void;
 }
 
-export const LibraryTab: React.FC<LibraryTabProps> = ({ onUploadDoc }) => {
+export const LibraryTab: React.FC<LibraryTabProps> = ({ showToast }) => {
   const { t } = useLanguage();
   const [libraryCategory, setLibraryCategory] = useState<string>("all");
   const [previewPhoto, setPreviewPhoto] = useState<LibraryPhoto | null>(null);
+  const [albums, setAlbums] = useState<LibraryAlbum[]>([]);
+  const [libraryPhotos, setLibraryPhotos] = useState<LibraryPhoto[]>([]);
+  const [selectedAlbum, setSelectedAlbum] = useState<number | 'all'>('all');
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [albumDialog, setAlbumDialog] = useState<'create' | LibraryAlbum | null>(null);
+  const [uploadOpen, setUploadOpen] = useState(false);
+  const [editingPhoto, setEditingPhoto] = useState<LibraryPhoto | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ kind: 'album' | 'photo'; id: number; name: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    setIsLoading(true); setError(null); setLibraryPhotos([]);
+    const load = async () => {
+      try {
+        const currentAlbums = await libraryService.getAlbums(controller.signal);
+        if (controller.signal.aborted) return;
+        setAlbums(currentAlbums);
+        const wanted = selectedAlbum === 'all' ? currentAlbums : currentAlbums.filter(album => album.id === selectedAlbum);
+        const details = await Promise.all(wanted.map(album => libraryService.getAlbum(album.id, controller.signal)));
+        if (controller.signal.aborted) return;
+        const photos: LibraryPhoto[] = details.flatMap(album => album.photos.map(photo => ({
+          id: photo.id, albumId: album.id, title: photo.title?.trim() || photo.fileName,
+          category: photo.category, year: photo.displayDate ?? '', url: photo.url,
+          desc: photo.description ?? photo.caption ?? '', author: photo.author ?? '',
+        })));
+        setLibraryPhotos(photos);
+        setPreviewPhoto(previous => previous ? photos.find(photo => photo.id === previous.id) ?? null : null);
+      } catch (failure) {
+        if (!controller.signal.aborted) { setError(getApiErrorMessage(failure)); setPreviewPhoto(null); }
+      } finally { if (!controller.signal.aborted) setIsLoading(false); }
+    };
+    void load();
+    return () => controller.abort();
+  }, [selectedAlbum, refreshKey]);
+
+  const activeAlbum = albums.find(album => album.id === selectedAlbum);
+  const refresh = () => setRefreshKey(value => value + 1);
+  const requestDelete = (target: NonNullable<typeof deleteTarget>) => {
+    setPreviewPhoto(null); setDeleteError(null); setDeleteTarget(target);
+  };
+  const confirmDelete = async () => {
+    if (!deleteTarget || isDeleting) return;
+    setIsDeleting(true); setDeleteError(null);
+    try {
+      if (deleteTarget.kind === 'photo') await libraryService.deletePhoto(deleteTarget.id);
+      else { await libraryService.deleteAlbum(deleteTarget.id); setSelectedAlbum('all'); }
+      setDeleteTarget(null); refresh(); showToast(t('admin.library_ui.deleted'), true);
+    } catch (failure) { setDeleteError(getApiErrorMessage(failure)); }
+    finally { setIsDeleting(false); }
+  };
+  const savePhoto = async (metadata: LibraryPhotoMetadata) => {
+    if (!editingPhoto) return;
+    await libraryService.updatePhoto(editingPhoto.id, metadata);
+    setEditingPhoto(null); refresh(); showToast(t('admin.library_ui.saved'), true);
+  };
 
   const categories = [
     { id: "all", label: t("admin.all_categories", { defaultValue: "Tất cả tư liệu" }) },
@@ -96,17 +104,34 @@ export const LibraryTab: React.FC<LibraryTabProps> = ({ onUploadDoc }) => {
             {t("admin.library_desc", { defaultValue: "Nơi lưu giữ gia phả cổ, sắc phong, văn tự và tư liệu lịch sử dòng họ." })}
           </p>
         </div>
+        <div className="flex flex-wrap gap-2">
+        <Button variant="secondary" leftIcon={<Plus size={16} />} onClick={() => setAlbumDialog('create')}>
+          {t('admin.library_ui.create_album')}
+        </Button>
         <Button
           variant="primary"
           leftIcon={<Plus size={16} />}
-          onClick={onUploadDoc}
+          disabled={isLoading || albums.length === 0}
+          onClick={() => setUploadOpen(true)}
         >
-          {t("admin.upload_doc", { defaultValue: "Tải lên tư liệu" })}
+          {t('admin.library_ui.upload')}
         </Button>
+        </div>
       </div>
 
       {/* Category Filters */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1">
+      <div className="flex flex-wrap items-center gap-2 pb-1">
+        <select aria-label={t('admin.library_ui.album_filter')} className={`${libraryFieldClass} !w-auto max-w-full min-w-44`}
+          value={selectedAlbum} disabled={isLoading} onChange={event => setSelectedAlbum(event.target.value === 'all' ? 'all' : Number(event.target.value))}>
+          <option value="all">{t('admin.library_ui.all_albums')}</option>
+          {albums.map(album => <option key={album.id} value={album.id}>{album.name}</option>)}
+        </select>
+        {activeAlbum && <>
+          <button className="p-2 text-secondary-text hover:text-accent cursor-pointer" title={t('admin.library_ui.edit_album')}
+            aria-label={t('admin.library_ui.edit_album')} onClick={() => setAlbumDialog(activeAlbum)}><Pencil size={16} /></button>
+          <button className="p-2 text-secondary-text hover:text-error cursor-pointer" title={t('admin.library_ui.delete_album')}
+            aria-label={t('admin.library_ui.delete_album')} onClick={() => requestDelete({ kind: 'album', id: activeAlbum.id, name: activeAlbum.name })}><Trash2 size={16} /></button>
+        </>}
         {categories.map((cat) => (
           <button
             key={cat.id}
@@ -123,6 +148,13 @@ export const LibraryTab: React.FC<LibraryTabProps> = ({ onUploadDoc }) => {
       </div>
 
       {/* Gallery Grid */}
+      {isLoading && <div role="status" className="flex items-center justify-center gap-2 py-12 text-secondary-text"><Loader2 className="animate-spin" size={20} />{t('admin.library_ui.loading')}</div>}
+      {!isLoading && error && <div role="alert" className="p-6 text-center rounded-2xl border border-custom-border bg-secondary-bg space-y-3">
+        <p className="text-error">{error}</p><Button variant="secondary" onClick={refresh}>{t('admin.library_ui.retry')}</Button>
+      </div>}
+      {!isLoading && !error && filteredPhotos.length === 0 && <p className="py-12 text-center text-secondary-text">
+        {t(libraryPhotos.length === 0 ? 'admin.library_ui.empty' : 'admin.library_ui.no_matches')}
+      </p>}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredPhotos.map((photo) => (
           <div
@@ -141,9 +173,9 @@ export const LibraryTab: React.FC<LibraryTabProps> = ({ onUploadDoc }) => {
                   <Eye size={14} /> Nhấn để phóng to
                 </span>
               </div>
-              <span className="absolute top-3 right-3 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md text-white font-bold text-[10px] border border-white/10">
+              {photo.year && <span className="absolute top-3 right-3 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md text-white font-bold text-[10px] border border-white/10">
                 {photo.year}
-              </span>
+              </span>}
             </div>
             <div className="p-5 flex-1 flex flex-col justify-between">
               <div>
@@ -169,7 +201,28 @@ export const LibraryTab: React.FC<LibraryTabProps> = ({ onUploadDoc }) => {
       <PhotoLightboxModal
         photo={previewPhoto}
         onClose={() => setPreviewPhoto(null)}
+        onEdit={photo => { setPreviewPhoto(null); setEditingPhoto(photo); }}
+        onDelete={photo => requestDelete({ kind: 'photo', id: photo.id, name: photo.title })}
       />
+      {albumDialog && <LibraryAlbumModal album={albumDialog === 'create' ? undefined : albumDialog}
+        onClose={() => setAlbumDialog(null)} onSubmit={async metadata => {
+          const album = albumDialog === 'create' ? await libraryService.createAlbum(metadata) : await libraryService.updateAlbum(albumDialog.id, metadata);
+          setAlbumDialog(null); setSelectedAlbum(album.id); refresh(); showToast(t('admin.library_ui.saved'), true);
+        }} />}
+      {uploadOpen && <LibraryUploadModal albums={albums} initialAlbumId={selectedAlbum === 'all' ? undefined : selectedAlbum}
+        initialCategory={libraryCategory === 'all' ? 'photos' : libraryCategory as LibraryPhotoMetadata['category']}
+        onClose={() => setUploadOpen(false)} onSubmit={async (albumId, files, metadata) => {
+          await libraryService.uploadPhotos(albumId, files, metadata);
+          setUploadOpen(false); setSelectedAlbum(albumId); setLibraryCategory(metadata.category); refresh(); showToast(t('admin.library_ui.uploaded'), true);
+        }} />}
+      {editingPhoto && <LibraryPhotoEditModal photo={editingPhoto} onClose={() => setEditingPhoto(null)} onSubmit={savePhoto} />}
+      <Modal isOpen={deleteTarget !== null} title={t('admin.library_ui.confirm_delete')} onClose={() => { if (!isDeleting) setDeleteTarget(null); }}
+        closeOnBackdropClick={!isDeleting} closeOnEsc={!isDeleting} maxWidth="sm">
+        <p className="text-sm text-secondary-text break-words">{deleteTarget?.kind === 'album' ? t('admin.library_ui.delete_album_hint') : t('admin.library_ui.delete_photo_hint')} <strong>{deleteTarget?.name}</strong></p>
+        {deleteError && <p role="alert" className="mt-3 text-sm text-error">{deleteError}</p>}
+        <div className="flex justify-end gap-3 mt-6"><Button variant="secondary" disabled={isDeleting} onClick={() => setDeleteTarget(null)}>{t('admin.library_ui.cancel')}</Button>
+          <Button variant="danger" isLoading={isDeleting} onClick={() => void confirmDelete()}>{t('admin.library_ui.delete')}</Button></div>
+      </Modal>
     </div>
   );
 };

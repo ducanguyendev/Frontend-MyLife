@@ -1,5 +1,19 @@
 {
   "success": "Success",
+  "library_ui": {
+    "create_album": "+ Create album", "edit_album": "Edit album", "delete_album": "Delete album",
+    "upload": "Upload documents / photos", "upload_hint": "Select up to 20 JPG, PNG, WebP or GIF images, up to 5 MB each. Metadata applies to every selected image.",
+    "field_album_name": "Album name *", "field_album": "Album *", "field_images": "Images *", "field_title": "Title",
+    "field_category": "Category", "field_date": "Display date / Year", "field_description": "Description", "field_author": "Author / Source",
+    "all_albums": "All albums", "album_filter": "Filter by album", "choose_album": "Select an album",
+    "name_required": "Please enter an album name.", "album_required": "Please select an album.", "file_count": "Select 1 to 20 images.",
+    "file_invalid": "Images must be non-empty JPG, PNG, WebP or GIF files, up to 5 MB each.",
+    "loading": "Loading library…", "empty": "There are no documents in the library yet.", "no_matches": "No documents match these filters.",
+    "retry": "Retry", "cancel": "Cancel", "close": "Close", "save": "Save", "saved": "Changes saved.", "uploaded": "Photos uploaded to the library.",
+    "upload_failed": "Unable to upload photos. Please try again.", "save_failed": "Unable to save. Please try again.",
+    "edit_photo": "Edit photo details", "delete": "Delete", "deleted": "Deleted successfully.", "confirm_delete": "Confirm deletion",
+    "delete_album_hint": "Delete this album and all its photos:", "delete_photo_hint": "Delete this photo from the library:", "open_original": "Open original image"
+  },
   "failed": "Failed",
   "registered": "Registered",
   "error_connect": "Connection error to Backend!",

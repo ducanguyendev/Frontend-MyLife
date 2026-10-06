@@ -364,7 +364,7 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
       ) : activeTab === "anniversaries" ? (
         <AnniversaryTab />
       ) : activeTab === "library" ? (
-        <LibraryTab onUploadDoc={() => showToast(t("admin.upload_doc", { defaultValue: "Tải lên tư liệu" }), true)} />
+        <LibraryTab showToast={showToast} />
       ) : (
         <FamilyMapTab onShowMapDetail={() => showToast(t("admin.map_title", { defaultValue: "Bản đồ phân bố hậu duệ" }), true)} />
       )}

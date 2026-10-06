@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "test:avatar": "node --test tests/avatar.test.cjs",
+    "test:library": "node --test tests/library.test.cjs",
     "preview": "vite preview"
   },
   "dependencies": {

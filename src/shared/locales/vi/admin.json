@@ -1,5 +1,19 @@
 {
   "success": "Thành công",
+  "library_ui": {
+    "create_album": "+ Tạo album", "edit_album": "Sửa album", "delete_album": "Xóa album",
+    "upload": "Tải lên tư liệu / ảnh", "upload_hint": "Chọn tối đa 20 ảnh; JPG, PNG, WebP hoặc GIF, tối đa 5 MB mỗi ảnh. Metadata áp dụng chung cho các ảnh được chọn.",
+    "field_album_name": "Tên album *", "field_album": "Album *", "field_images": "Ảnh *", "field_title": "Tiêu đề",
+    "field_category": "Danh mục", "field_date": "Ngày / Năm hiển thị", "field_description": "Mô tả", "field_author": "Tác giả / Nguồn",
+    "all_albums": "Tất cả album", "album_filter": "Lọc theo album", "choose_album": "Chọn album",
+    "name_required": "Vui lòng nhập tên album.", "album_required": "Vui lòng chọn album.", "file_count": "Chọn từ 1 đến 20 ảnh.",
+    "file_invalid": "Ảnh phải là JPG, PNG, WebP hoặc GIF, không rỗng và tối đa 5 MB mỗi ảnh.",
+    "loading": "Đang tải thư viện…", "empty": "Chưa có tư liệu nào trong thư viện.", "no_matches": "Không có tư liệu phù hợp với bộ lọc.",
+    "retry": "Thử lại", "cancel": "Hủy", "close": "Đóng", "save": "Lưu", "saved": "Đã lưu thay đổi.", "uploaded": "Đã tải ảnh lên thư viện.",
+    "upload_failed": "Không thể tải ảnh lên. Vui lòng thử lại.", "save_failed": "Không thể lưu. Vui lòng thử lại.",
+    "edit_photo": "Sửa thông tin ảnh", "delete": "Xóa", "deleted": "Đã xóa thành công.", "confirm_delete": "Xác nhận xóa",
+    "delete_album_hint": "Xóa album và tất cả ảnh bên trong:", "delete_photo_hint": "Xóa ảnh khỏi thư viện:", "open_original": "Mở ảnh gốc"
+  },
   "failed": "Thất bại",
   "registered": "Đăng ký",
   "error_connect": "Lỗi kết nối đến Backend!",

@@ -51,9 +51,10 @@ export interface AnniversaryItem {
 }
 
 export interface LibraryPhoto {
-  id: string;
+  id: number;
+  albumId: number;
   title: string;
-  category: string;
+  category: import('../../services/libraryService').LibraryCategory;
   year: string;
   url: string;
   desc: string;
