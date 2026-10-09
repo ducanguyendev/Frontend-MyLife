@@ -1,4 +1,8 @@
 {
+  "dialog": "Dialog",
+  "try_again": "Try again",
+  "render_error": "Something went wrong while displaying this page.",
+  "rate_limited": "Too many requests. Please try again later.",
   "loading": "Loading...",
   "search": "Search...",
   "errorTitle": "Error 404",

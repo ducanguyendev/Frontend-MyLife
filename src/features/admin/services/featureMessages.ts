@@ -4,10 +4,11 @@ export const featureSuccessKeys = {
   memberCreate: 'admin.member_create_success', memberUpdate: 'admin.member_update_success', memberDelete: 'admin.member_delete_success',
   albumCreate: 'admin.library_ui.album_created', albumUpdate: 'admin.library_ui.album_updated', albumDelete: 'admin.library_ui.album_deleted',
   photoUpload: 'admin.library_ui.photo_uploaded', photoUpdate: 'admin.library_ui.photo_updated', photoDelete: 'admin.library_ui.photo_deleted',
-  categoryCreate: 'admin.library_ui.category_created', categoryDelete: 'admin.library_ui.category_deleted',
+  categoryCreate: 'admin.library_ui.category_created', categoryUpdate: 'admin.library_ui.category_updated', categoryDelete: 'admin.library_ui.category_deleted',
 } as const;
 
 const errorCodes: Record<string, string> = {
+  RATE_LIMITED: 'common.rate_limited',
   FAMILY_MEMBER_NOT_FOUND: 'admin.member_errors.not_found', FAMILY_RELATED_MEMBER_NOT_FOUND: 'admin.member_errors.related_not_found',
   FAMILY_SELF_RELATION: 'admin.member_errors.self_relation', FAMILY_PARENTS_MUST_DIFFER: 'admin.member_errors.parents_differ',
   FAMILY_SPOUSE_IN_USE: 'admin.member_errors.spouse_in_use', FAMILY_RELATIONSHIP_INVALID: 'admin.member_errors.relationship_invalid',
@@ -17,6 +18,7 @@ const errorCodes: Record<string, string> = {
   LIBRARY_IMAGE_SIZE_INVALID: 'admin.library_ui.file_size', LIBRARY_FILE_COUNT_INVALID: 'admin.library_ui.file_count',
   LIBRARY_METADATA_INVALID: 'admin.library_ui.metadata_invalid', LIBRARY_VALIDATION_FAILED: 'admin.library_ui.validation',
   LIBRARY_ALBUM_UNAVAILABLE: 'admin.library_ui.album_unavailable', LIBRARY_CLEANUP_FAILED: 'admin.library_ui.cleanup_failed',
+  LIBRARY_CATEGORY_CANNOT_EDIT: 'admin.library_ui.category_cannot_edit',
   LIBRARY_CATEGORY_IN_USE: 'admin.library_ui.category_in_use', LIBRARY_CATEGORY_CANNOT_DELETE: 'admin.library_ui.category_cannot_delete',
   LIBRARY_CATEGORY_NOT_FOUND: 'admin.library_ui.category_not_found', LIBRARY_CATEGORY_INVALID: 'admin.library_ui.category_invalid',
   AUTH_SESSION_INVALID: 'admin.notifications.session_expired', REQUEST_CONFLICT: 'admin.notifications.conflict',
@@ -41,6 +43,7 @@ export function getFeatureErrorKey(error: unknown, action: FeatureAction, respon
   if (status === 401) return 'admin.notifications.session_expired';
   if (status === 403) return 'admin.notifications.forbidden';
   if (status === 409) return 'admin.notifications.conflict';
+  if (status === 429) return 'common.rate_limited';
   if (status === 413) return 'admin.library_ui.request_too_large';
   if (status === 404) return action.startsWith('member') ? 'admin.member_errors.not_found'
     : action.startsWith('photo') ? 'admin.library_ui.photo_not_found' : 'admin.library_ui.album_not_found';

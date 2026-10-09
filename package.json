@@ -11,7 +11,9 @@
     "test:library": "node --test tests/library.test.cjs",
     "test:library-ui": "node --test tests/library-ui.test.cjs",
     "test:i18n": "node --test tests/feature-i18n.test.cjs",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:roles": "node --test tests/family-role.test.cjs",
+    "test:optimization": "node --test tests/optimization.test.cjs"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",

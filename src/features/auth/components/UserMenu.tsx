@@ -13,7 +13,7 @@ interface UserMenuProps {
 
 export const UserMenu: React.FC<UserMenuProps> = ({ onOpenProfile, onSwitchAccount }) => {
   const { t } = useLanguage();
-  const { user, isAdmin, logout } = useAuth();
+  const { user, isAdmin, isUser, logout } = useAuth();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [imgError, setImgError] = useState(false);
@@ -189,7 +189,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ onOpenProfile, onSwitchAccou
                 </button>
               )}
 
-              <button
+              {isUser && (<button
                 onClick={() => {
                   setIsOpen(false);
                   navigate('/FamilyTree');
@@ -198,7 +198,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ onOpenProfile, onSwitchAccou
               >
                 <Network size={15} className="text-secondary-text" />
                 <span>{t('admin.family_tree', { defaultValue: 'Quản lý Gia phả' })}</span>
-              </button>
+              </button>)}
 
               <button
                 onClick={handleProfileClick}

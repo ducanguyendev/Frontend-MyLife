@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AlertCircle, Lock, Mail, ShieldCheck, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { getApiErrorMessage } from '@/shared/api/apiClient';
+import { getApiErrorMessage, isRateLimitError } from '@/shared/api/apiClient';
 import { Input, PasswordInput } from '@/shared/components/ui';
 import { useLanguage } from '@/shared/hooks/useLanguage';
 import { useAuth } from '../context/AuthContext';
@@ -149,7 +149,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
       onClose();
       navigate('/Home');
     } catch (error) {
-      setErrorMessage(localizeError(getApiErrorMessage(error)));
+      setErrorMessage(isRateLimitError(error) ? t('common.rate_limited') : localizeError(getApiErrorMessage(error)));
     } finally {
       setIsLoading(false);
     }
@@ -199,7 +199,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
       navigate('/Home');
     } catch (error) {
       const fallback = t('common.errors.googleLoginFailed', { defaultValue: 'Google sign-in failed. Please try again.' });
-      setErrorMessage(localizeError(getApiErrorMessage(error, fallback)));
+      setErrorMessage(isRateLimitError(error) ? t('common.rate_limited') : localizeError(getApiErrorMessage(error, fallback)));
     } finally {
       setIsGoogleLoading(false);
     }

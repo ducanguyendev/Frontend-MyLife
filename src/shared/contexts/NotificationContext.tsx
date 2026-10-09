@@ -65,6 +65,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
               onClick={() => setNotification(null)}
             />
             <motion.div
+              role="alertdialog" aria-modal="true" aria-describedby="notification-message"
               layout
               initial={{ opacity: 0, scale: 0.8, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -72,7 +73,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
               className="relative w-full max-w-sm bg-secondary-bg border border-custom-border p-6 rounded-2xl shadow-2xl z-10 flex flex-col items-center text-center"
             >
               {getIcon(notification.type || 'info')}
-              <p className="text-primary-text font-semibold text-lg">
+              <p id="notification-message" className="text-primary-text font-semibold text-lg">
                 {notification.message}
               </p>
               

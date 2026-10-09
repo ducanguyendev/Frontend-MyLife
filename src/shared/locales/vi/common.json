@@ -1,4 +1,8 @@
 {
+  "dialog": "Hộp thoại",
+  "try_again": "Thử lại",
+  "render_error": "Đã xảy ra lỗi khi hiển thị trang.",
+  "rate_limited": "Bạn thao tác quá nhanh. Vui lòng thử lại sau.",
   "loading": "Đang tải...",
   "search": "Tìm kiếm...",
   "errorTitle": "Lỗi 404",

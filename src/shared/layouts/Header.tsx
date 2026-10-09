@@ -21,7 +21,7 @@ const NAV_LINKS = [
 
 export const Header: React.FC = () => {
   const { t } = useLanguage();
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, isUser, user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
@@ -263,7 +263,7 @@ export const Header: React.FC = () => {
 
                 {isAuthenticated && (
                   <div className="pt-2 flex flex-col gap-2">
-                    <button
+                    {isUser && (<button
                       onClick={() => {
                         setIsMobileMenuOpen(false);
                         navigate('/FamilyTree');
@@ -272,7 +272,7 @@ export const Header: React.FC = () => {
                     >
                       <Network size={18} />
                       <span>{t('admin.family_tree', { defaultValue: 'Quản lý Gia phả' })}</span>
-                    </button>
+                    </button>)}
                     <button
                       onClick={() => {
                         setIsMobileMenuOpen(false);

@@ -42,6 +42,8 @@ export const MemberCard: React.FC<MemberCardProps> = ({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: i * 0.03 }}
+      role="group" tabIndex={0} aria-label={t("admin.view_detail") + ": " + m.fullName}
+      onKeyDown={event => { if (event.target === event.currentTarget && (event.key === "Enter" || event.key === " ")) { event.preventDefault(); onView(m); } }}
       onClick={() => onView(m)}
       className={`bg-secondary-bg border rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-300 relative group flex flex-col h-full cursor-pointer ${genColors.border}`}
     >
@@ -50,7 +52,7 @@ export const MemberCard: React.FC<MemberCardProps> = ({
         <button
           onClick={onToggleDropdown}
           className="p-1.5 rounded-full text-secondary-text hover:text-primary-text hover:bg-primary-bg transition-colors cursor-pointer"
-          aria-label="Actions"
+          aria-label={t("admin.member_actions")}
         >
           <MoreVertical size={16} />
         </button>
@@ -105,7 +107,7 @@ export const MemberCard: React.FC<MemberCardProps> = ({
       </div>
 
       <div className="flex items-start gap-4 mb-4">
-        <img
+        <img loading="lazy" decoding="async"
           src={getMemberAvatar(m)}
           alt={formatName(m.fullName)}
           className="w-14 h-14 rounded-xl object-cover border border-custom-border shrink-0"

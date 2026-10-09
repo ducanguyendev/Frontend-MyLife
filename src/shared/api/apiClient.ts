@@ -295,3 +295,9 @@ export function getApiErrorMessage(error: unknown, fallback = 'Something went wr
   if (error instanceof Error) return error.message || fallback;
   return fallback;
 }
+
+export function isRateLimitError(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false;
+  const failure = error as { status?: number; payload?: { code?: string }; code?: string };
+  return failure.status === 429 || (failure.payload?.code ?? failure.code) === 'RATE_LIMITED';
+}

@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { Routes, Route, useNavigate } from 'react-router-dom';
-import { AnimatePresence } from 'framer-motion';
+import { useState, useEffect, lazy, Suspense } from 'react';
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '@/features/auth/context/AuthContext';
 import { CustomCursor } from '@/shared/components/CustomCursor';
 import { ScrollProgressBar } from '@/shared/components/ScrollProgressBar';
 import { LoadingScreen } from '@/shared/components/LoadingScreen';
@@ -13,14 +13,15 @@ import { Projects } from '@/features/portfolio/pages/Projects';
 import { Experience } from '@/features/portfolio/pages/Experience';
 import { Stats } from '@/features/portfolio/pages/Stats';
 import { Contact } from '@/features/portfolio/pages/Contact';
-import { Register } from '@/features/auth/pages/Register';
-import { AdminDashboard } from '@/features/admin/pages/AdminDashboard';
-import { FamilyTreePage } from '@/features/family-tree/pages/FamilyTreePage';
+const Register = lazy(() => import('@/features/auth/pages/Register').then(module => ({ default: module.Register })));
+const AdminDashboard = lazy(() => import('@/features/admin/pages/AdminDashboard').then(module => ({ default: module.AdminDashboard })));
+const FamilyTreePage = lazy(() => import('@/features/family-tree/pages/FamilyTreePage').then(module => ({ default: module.FamilyTreePage })));
 import { Forbidden } from '@/features/portfolio/pages/Forbidden';
 import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute';
 import { useLanguage } from '@/shared/hooks/useLanguage';
 import { NotificationProvider } from '@/shared/contexts/NotificationContext';
 import { SessionExpiredModal } from '@/features/auth/components/SessionExpiredModal';
+import { ErrorBoundary } from '@/shared/components/ErrorBoundary';
 import { LoginModal } from '@/features/auth/components/LoginModal';
 
 function MainPortfolio() {
@@ -52,20 +53,12 @@ function MainPortfolio() {
 
 function App() {
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(true);
+  const location = useLocation();
+  const { isLoading } = useAuth();
   const { language, t } = useLanguage();
 
   const [isSessionExpiredOpen, setIsSessionExpiredOpen] = useState(false);
   const [isGlobalLoginOpen, setIsGlobalLoginOpen] = useState(false);
-
-  useEffect(() => {
-    // Simulate loading screen
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1200);
-
-    return () => clearTimeout(timer);
-  }, []);
 
   // Lắng nghe sự kiện hết hạn token trên toàn hệ thống
   useEffect(() => {
@@ -103,12 +96,12 @@ function App() {
 
   return (
     <NotificationProvider>
-      <AnimatePresence mode="wait">
-        {isLoading && <LoadingScreen key="loader" />}
-      </AnimatePresence>
+      {isLoading && <LoadingScreen />}
 
       {!isLoading && (
         <>
+          <ErrorBoundary key={location.pathname}>
+          <Suspense fallback={<LoadingScreen />}>
           <Routes>
             <Route path="/" element={<MainPortfolio />} />
             <Route path="/home" element={<MainPortfolio />} />
@@ -118,7 +111,7 @@ function App() {
             <Route
               path="/FamilyTree"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute requiredRole="USER">
                   <FamilyTreePage />
                 </ProtectedRoute>
               }
@@ -126,7 +119,7 @@ function App() {
             <Route
               path="/family-tree"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute requiredRole="USER">
                   <FamilyTreePage />
                 </ProtectedRoute>
               }
@@ -134,7 +127,7 @@ function App() {
             <Route
               path="/Home/FamilyTree"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute requiredRole="USER">
                   <FamilyTreePage />
                 </ProtectedRoute>
               }
@@ -142,7 +135,7 @@ function App() {
             <Route
               path="/home/family-tree"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute requiredRole="USER">
                   <FamilyTreePage />
                 </ProtectedRoute>
               }
@@ -166,6 +159,8 @@ function App() {
             <Route path="/403" element={<Forbidden />} />
             <Route path="*" element={<MainPortfolio />} />
           </Routes>
+          </Suspense>
+          </ErrorBoundary>
 
           {/* Hộp thoại thông báo hết hạn phiên làm việc - bắt buộc bấm Xác nhận */}
           <SessionExpiredModal

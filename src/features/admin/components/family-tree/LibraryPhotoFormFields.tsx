@@ -1,5 +1,6 @@
 import type { InputHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes } from 'react';
 import { useLanguage } from '@/shared/hooks/useLanguage';
+import { Select } from '@/shared/components/ui';
 import { type LibraryPhotoMetadata, type LibraryCategory } from '../../services/libraryService';
 
 // Library-only floating labels and matching text/select sizing.
@@ -10,7 +11,7 @@ export function LibraryTextField({ label, ...props }: InputHTMLAttributes<HTMLIn
   return <label className="relative block min-h-[56px]"><span className={labelClass}>{label}</span><input {...props} className={libraryFieldClass} /></label>;
 }
 export function LibrarySelectField({ label, children, ...props }: SelectHTMLAttributes<HTMLSelectElement> & { label: string }) {
-  return <label className="relative block min-h-[56px]"><span className={labelClass}>{label}</span><select {...props} className={libraryFieldClass}>{children}</select></label>;
+  return <Select label={label} {...props} className="border-0">{children}</Select>;
 }
 export function LibraryTextArea({ label, ...props }: TextareaHTMLAttributes<HTMLTextAreaElement> & { label: string }) {
   return <label className="relative block"><span className={labelClass}>{label}</span><textarea {...props} className={`${libraryFieldClass} min-h-28 pb-3`} /></label>;

@@ -24,6 +24,7 @@ export interface AuthenticatedUser {
     google: boolean;
   };
   role: UserRole;
+  roles?: UserRole[];
   isActive: boolean;
 }
 

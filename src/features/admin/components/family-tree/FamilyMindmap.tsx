@@ -1,3 +1,4 @@
+import { useReducedMotion } from 'framer-motion';
 import React, { useCallback, useEffect, useState } from "react";
 import {
   ReactFlow,
@@ -69,6 +70,7 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = "TB") => 
 
 const FamilyMindmapInner: React.FC<FamilyMindmapProps> = ({ members, onView, onEdit, onDelete }) => {
   const { t } = useLanguage();
+  const reduceMotion = useReducedMotion();
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [layoutDirection, setLayoutDirection] = useState("TB");
@@ -93,7 +95,7 @@ const FamilyMindmapInner: React.FC<FamilyMindmapProps> = ({ members, onView, onE
           source: m.fatherId.toString(),
           target: m.id.toString(),
           type: "smoothstep",
-          animated: true,
+          animated: !reduceMotion,
           style: { stroke: "#D4AF37", strokeWidth: 1.5 },
         });
       }
@@ -103,7 +105,7 @@ const FamilyMindmapInner: React.FC<FamilyMindmapProps> = ({ members, onView, onE
           source: m.motherId.toString(),
           target: m.id.toString(),
           type: "smoothstep",
-          animated: true,
+          animated: !reduceMotion,
           style: { stroke: "#D4AF37", strokeWidth: 1.5 },
         });
       }
@@ -113,7 +115,7 @@ const FamilyMindmapInner: React.FC<FamilyMindmapProps> = ({ members, onView, onE
 
     setNodes(layoutedNodes);
     setEdges(layoutedEdges);
-  }, [members, onView, onEdit, onDelete, layoutDirection, setNodes, setEdges]);
+  }, [members, onView, onEdit, onDelete, layoutDirection, reduceMotion, setNodes, setEdges]);
 
   useEffect(() => {
     buildGraph();
@@ -159,7 +161,8 @@ const FamilyMindmapInner: React.FC<FamilyMindmapProps> = ({ members, onView, onE
            <button 
              onClick={() => setLayoutDirection(prev => prev === "TB" ? "LR" : "TB")}
              className="flex items-center gap-2 px-3 py-2 bg-secondary-bg border border-custom-border rounded-lg text-xs text-primary-text font-bold hover:bg-accent hover:text-primary-bg transition-colors shadow-sm cursor-pointer"
-             title={layoutDirection === "TB" ? "Đổi sang chiều ngang" : "Đổi sang chiều dọc"}
+             aria-label={t(layoutDirection === "TB" ? "admin.layout_horizontal" : "admin.layout_vertical")}
+             title={t(layoutDirection === "TB" ? "admin.layout_horizontal" : "admin.layout_vertical")}
            >
              <GitMerge className="w-4 h-4" />
              <span className="hidden sm:inline">
@@ -170,7 +173,7 @@ const FamilyMindmapInner: React.FC<FamilyMindmapProps> = ({ members, onView, onE
            <button 
              onClick={onDownload}
              className="flex items-center gap-2 px-3 py-2 bg-accent border border-accent rounded-lg text-xs text-primary-bg font-bold hover:bg-yellow-500 transition-colors shadow-sm cursor-pointer"
-             title="Tải ảnh PNG"
+             aria-label={t("admin.export_png")} title={t("admin.export_png")}
            >
              <Download className="w-4 h-4" />
              <span className="hidden sm:inline">PNG</span>

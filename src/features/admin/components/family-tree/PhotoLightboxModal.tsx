@@ -60,7 +60,7 @@ export const PhotoLightboxModal: React.FC<PhotoLightboxModalProps> = ({
           role="dialog" aria-modal="true" aria-label={photo.title}
         >
           <div className="relative aspect-video max-h-[55vh] shrink-0 bg-black overflow-hidden flex items-center justify-center">
-            <LibraryImage
+            <LibraryImage photoId={photo.id} variant="lightbox"
               url={photo.url} driveFileId={photo.driveFileId}
               alt={photo.title}
               className="max-h-full max-w-full object-contain"

@@ -12,6 +12,7 @@ export interface User {
   email: string;
   name: string;
   role: UserRole;
+  roles: UserRole[];
   avatar?: string;
   authProvider?: number;
   loginProviders?: AuthenticatedUser['loginProviders'];
@@ -21,6 +22,7 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
+  isUser: boolean;
   isLoading: boolean;
   login: (credentials: LoginRequest) => Promise<LoginResponse>;
   loginWithGoogle: (code: string, redirectUri: string) => Promise<LoginResponse>;
@@ -41,7 +43,8 @@ function toContextUser(user: AuthenticatedUser): User {
     id: user.id,
     email: user.email,
     name: user.fullName?.trim() || user.name?.trim() || user.email.split('@')[0],
-    role: user.role === 'ADMIN' ? 'ADMIN' : 'USER',
+    role: user.role,
+    roles: [user.role],
     avatar: authService.getDisplayAvatarUrl(user.avatarUrl, user.email, Date.now()) ?? undefined,
     authProvider: user.authProvider,
     loginProviders: user.loginProviders,
@@ -134,6 +137,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const isAuthenticated = user !== null;
   const isAdmin = user?.role === 'ADMIN';
+  const isUser = user?.role === 'USER';
 
   return (
     <AuthContext.Provider
@@ -141,6 +145,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user,
         isAuthenticated,
         isAdmin,
+        isUser,
         isLoading,
         login,
         loginWithGoogle,

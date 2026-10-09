@@ -67,3 +67,24 @@ those Drive IDs, checks gallery/reload/lightbox/original links, and trashes the
 test album in finally. It intercepts application API responses and does not
 write the application DB. Run only when authorized to create test files in Drive.
 `Dog.webp` in this check is a small test fixture, not the user's original asset.
+
+## User-only FamilyTree and category rename
+
+Run `npm.cmd run test:roles` for actual AuthProvider/route guard, desktop menu,
+mobile web menu and exclusive ADMIN/USER role regressions. `test:i18n` exercises category
+create/rename/delete callbacks in both locales, active-default action hiding,
+stable selected slug after rename, and reset to all after delete.
+`test:library-ui` verifies edit-mode prefill, Save, trim and blank validation.
+
+The mocked browser harness uses a USER session and also checks Admin-only
+redirect/menu hiding with no FamilyTree/Library API calls. It covers category
+PUT and validates its name-only body. Set `BROWSER_EXECUTABLE` to an installed
+Chromium executable when Edge cannot launch. In a restricted test environment,
+`LIBRARY_UI_NO_SANDBOX=1` enables the optional test-only Chromium launch flag;
+normal browser runs keep the sandbox enabled. Screenshots remain in temp.
+
+## Web optimization
+
+After `npm.cmd run build`, run `npm.cmd run test:optimization`. Eight tests cover four-field accent-insensitive search and generation AND, error/retry versus empty, aborted response cancellation, keyboard tabs, generic tree label, thumbnail/lightbox variants, coarse-pointer/reduced-motion cursor gating, real auth loading and the production manifest import closure. The manifest proves Home does not eagerly import heavy FamilyTree/Admin/Mindmap chunks.
+
+The browser harness also checks thumbnail w640/lazy/async, dialog title/focus, deliberate localized ErrorBoundary throw and successful retry in VI/EN, and reduced-motion/touch cursor suppression. The boundary fixture is test-only and omitted from production routes. All API traffic remains mocked.

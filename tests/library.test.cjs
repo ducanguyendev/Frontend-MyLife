@@ -61,3 +61,15 @@ test('API failure propagates without fallback images or false success', async ()
   await assert.rejects(() => libraryService.updatePhoto(1, { category: 'photos' }), /Storage unavailable/);
   await assert.rejects(() => libraryService.deletePhoto(1), /Storage unavailable/);
 });
+
+
+test('category rename sends only name to PUT and propagates coded failures', async () => {
+  const { libraryService, calls } = setup();
+  await libraryService.updateCategory(5, 'Du lịch gia đình');
+  assert.equal(calls[0].method, 'put');
+  assert.equal(calls[0].args[0], '/api/library/categories/5');
+  assert.deepEqual(Object.keys(calls[0].args[1]), ['name']);
+  assert.equal(calls[0].args[1].name, 'Du lịch gia đình');
+  const error = { status: 409, payload: { code: 'LIBRARY_CATEGORY_CANNOT_EDIT' } };
+  await assert.rejects(() => setup(error).libraryService.updateCategory(1, 'Default'), failure => failure === error);
+});

@@ -13,6 +13,7 @@ export default defineConfig({
       '@shared': path.resolve(__dirname, './src/shared'),
     },
   },
+  build: { manifest: true },
   server: {
     port: 7000,
     strictPort: true,

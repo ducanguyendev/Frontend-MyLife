@@ -12,6 +12,7 @@ import { authService } from "@/features/auth/services/authService";
 import { useTheme } from "@/shared/context/ThemeContext";
 import { useLanguage } from "@/shared/hooks/useLanguage";
 import { LanguageSwitcher } from "@/shared/components/LanguageSwitcher";
+import { Select } from "@/shared/components/ui";
 import { useNotification } from "@/shared/contexts/NotificationContext";
 import { apiClient, getApiErrorMessage } from "@/shared/api/apiClient";
 
@@ -224,7 +225,8 @@ export const AdminDashboard: React.FC = () => {
       }
     } catch (error) {
       console.warn("Unable to delete user.", getApiErrorMessage(error));
-      showToast(t("admin.error_connect", { defaultValue: "Lỗi kết nối khi xóa người dùng!" }), false);
+      const failure = error as { payload?: { code?: string } };
+      showToast(t(failure.payload?.code === "USER_HAS_FAMILY_MEMBERS" ? "admin.user_has_family_members" : "admin.error_connect"), false);
     } finally {
       setIsDeleting(false);
     }
@@ -405,16 +407,17 @@ export const AdminDashboard: React.FC = () => {
                       <span className="text-primary-text font-semibold text-sm truncate">{u.email}</span>
                     </div>
                     <div className="col-span-2 hidden md:flex items-center">
-                      <select
+                      <Select
                         value={u.role}
                         disabled={roleUpdating === u.id || user?.id === u.id}
                         onChange={(event) => void handleRoleChange(u, event.target.value as AdminUser['role'])}
-                        className="rounded-full border border-custom-border bg-secondary-bg px-2 py-0.5 text-[10px] font-bold tracking-wider text-primary-text uppercase disabled:cursor-not-allowed disabled:opacity-60"
+                        containerClassName="!w-auto"
+                        className="!py-0 !pl-3 !pr-8 !h-7 !text-[10px] !rounded-full uppercase font-bold tracking-wider"
                         aria-label={`Change role for ${u.email}`}
                       >
                         <option value="USER">User</option>
                         <option value="ADMIN">Admin</option>
-                      </select>
+                      </Select>
                     </div>
                     <div className="col-span-2 hidden md:flex items-center text-secondary-text text-xs font-medium gap-1.5">
                       {u.authProvider === 1 ? <Globe size={14} className="text-blue-500" /> : <Mail size={14} />}

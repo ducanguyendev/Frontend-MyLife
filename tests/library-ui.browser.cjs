@@ -14,6 +14,7 @@ async function main() {
   let nextAlbum = 3;
   let nextPhoto = 100;
   let mode = 'normal';
+  let authRoles = ['USER'];
   let deleteFails = false;
   const categories = ['photos', 'decrees', 'events', 'temple'].map((slug, index) => ({ id: index + 1, name: slug, slug, isDefault: true }));
   const errors = [];
@@ -28,6 +29,7 @@ async function main() {
   albums[0].photos = [photo(1, 'Ảnh gia đình API', 'photos'), photo(2, 'Họp mặt API', 'events')];
   const dto = album => ({ ...album, photoCount: album.photos.length, coverPhotoUrl: null });
   const browser = await puppeteer.launch({ headless: true,
+    args: process.env.LIBRARY_UI_NO_SANDBOX === '1' ? ['--no-sandbox'] : [],
     executablePath: process.env.BROWSER_EXECUTABLE || 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe' });
   let page;
   try {
@@ -75,7 +77,7 @@ async function main() {
       if (method === 'OPTIONS') return request.respond({ status: 204, headers });
       calls.push({ method, path, contentType: request.headers()['content-type'], ajax: request.headers()['x-requested-with'] });
       const respond = (body, status = 200) => request.respond({ status, headers, contentType: 'application/json', body: status === 204 ? undefined : JSON.stringify(body) });
-      if (path === '/api/me') return respond({ id: 1, email: 'library-ui@example.com', name: 'Library UI', role: 'ADMIN', isActive: true, avatarUrl: null });
+      if (path === '/api/me') return respond({ id: 1, email: 'library-ui@example.com', name: 'Library UI', role: authRoles.includes('ADMIN') ? 'ADMIN' : 'USER', roles: authRoles, isActive: true, avatarUrl: null });
       if (path === '/api/family-tree' || path.startsWith('/api/family-tree/')) return respond({ success: true, data: [] });
       if (path === '/api/library/categories' && method === 'GET') return respond(categories);
       if (path === '/api/library/categories' && method === 'POST') {
@@ -83,6 +85,12 @@ async function main() {
         categories.push(category); return respond(category, 201);
       }
       const categoryMatch = path.match(/^\/api\/library\/categories\/(\d+)$/);
+      if (categoryMatch && method === 'PUT') {
+        const category = categories.find(category => category.id === Number(categoryMatch[1]));
+        const body = JSON.parse(raw); assert.deepEqual(Object.keys(body), ['name']);
+        if (category.isDefault) return respond({ code: 'LIBRARY_CATEGORY_CANNOT_EDIT' }, 409);
+        category.name = body.name; return respond(category);
+      }
       if (categoryMatch && method === 'DELETE') {
         const category = categories.find(category => category.id === Number(categoryMatch[1]));
         if (albums.some(album => album.photos.some(photo => photo.category === category.slug)))
@@ -144,13 +152,14 @@ async function main() {
     await page.goto(process.env.LIBRARY_UI_TEST_URL || 'http://127.0.0.1:7001/FamilyTree', { waitUntil: 'networkidle0' });
     await openLibrary(); await waitText('Ảnh gia đình API');
     assert.equal(await page.$('button[aria-label="Xóa danh mục"]'), null);
+    assert.equal(await page.$('button[aria-label="Sửa danh mục"]'), null);
     // Real browser image error events: first URL fails, thumbnail succeeds.
     albums[0].photos[0].url = 'http://127.0.0.1:7001/test-primary-image';
     albums[0].photos[0].driveFileId = 'test-drive-id';
     albums[0].photos.push(photo(3, 'Ảnh không tải được', 'photos', { url: 'http://127.0.0.1:7001/test-primary-image', driveFileId: 'missing-id' }));
     await page.reload({ waitUntil: 'networkidle0' }); await openLibrary(); await waitText('Ảnh gia đình API');
     await page.waitForFunction(() => document.querySelector('img[alt="Ảnh gia đình API"]')?.naturalWidth > 0);
-    assert.ok(await page.$('img[src*="thumbnail?id=test-drive-id"]'));
+    assert.ok(await page.$('img[src*="thumbnail?id=test-drive-id"][src*="w640"][loading="lazy"][decoding="async"]'));
     await waitText('Không thể tải ảnh');
     await click('Ảnh gia đình API', 'h4'); await page.waitForSelector('[role="dialog"]');
     await page.waitForFunction(() => document.querySelector('[role="dialog"] img')?.naturalWidth > 0);
@@ -177,6 +186,19 @@ async function main() {
     await fill('[role="dialog"] input', 'Du lịch'); await click('Tạo', '[role="dialog"] button');
     await page.waitForFunction(() => !document.querySelector('[role="dialog"]')); await dismissNotification();
     await click('Du lịch');
+    await click('Sửa danh mục', 'button[aria-label]'); await page.waitForSelector('[role="dialog"] input');
+    assert.equal(await page.$eval('[role="dialog"] input', input => input.value), 'Du lịch');
+    assert.equal(await page.$eval('[role="dialog"]', dialog => dialog.getAttribute('aria-modal')), 'true');
+    assert.ok(await page.$eval('[role="dialog"]', dialog => document.getElementById(dialog.getAttribute('aria-labelledby'))?.textContent.includes('Sửa danh mục')));
+    await page.focus('[role="dialog"] input');
+    assert.equal(await page.$eval('[role="dialog"]', dialog => dialog.contains(document.activeElement)), true);
+    await fill('[role="dialog"] input', '   '); await click('Lưu', '[role="dialog"] button');
+    await waitText('Vui lòng nhập tên danh mục.');
+    assert.equal(calls.filter(call => call.method === 'PUT' && call.path.startsWith('/api/library/categories')).length, 0);
+    await fill('[role="dialog"] input', 'Du lịch gia đình'); await click('Lưu', '[role="dialog"] button');
+    await page.waitForFunction(() => !document.querySelector('[role="dialog"]')); await dismissNotification();
+    assert.equal(categories.find(category => category.slug === 'du-lich').name, 'Du lịch gia đình');
+    assert.ok(await page.evaluate(() => [...document.querySelectorAll('button')].find(button => button.textContent.trim() === 'Du lịch gia đình')?.className.includes('bg-accent')));
     await click('Tải lên tư liệu / ảnh'); await page.waitForSelector('[role="dialog"] input[type="file"]');
     const paths = [0, 2, 1].map((index, order) => {
       const extension = ['jpg', 'png', 'webp'][order];
@@ -259,17 +281,50 @@ async function main() {
     await click('Xóa', '[role="dialog"] button');
     await page.waitForFunction(() => !document.querySelector('[role="dialog"]')); await dismissNotification();
     assert.equal(albums.some(album => album.id === 3), false);
-    await click('Du lịch'); await click('Xóa danh mục', 'button[aria-label]'); await click('Xóa', '[role="dialog"] button');
+    await click('Du lịch gia đình'); await click('Xóa danh mục', 'button[aria-label]'); await click('Xóa', '[role="dialog"] button');
     await page.waitForFunction(() => !document.querySelector('[role="dialog"]')); await dismissNotification();
     assert.equal(categories.some(category => category.slug === 'du-lich'), false);
     mode = 'error'; await page.reload({ waitUntil: 'networkidle0' }); await openLibrary(); await waitText('Không thể tải thư viện. Vui lòng thử lại.');
     assert.equal(await page.evaluate(() => document.body.innerText.includes('Lỗi API kiểm thử')), false);
     assert.equal(await page.$$eval('img[src*="unsplash"]', images => images.length), 0);
     mode = 'empty'; await click('Thử lại'); await waitText('Chưa có tư liệu nào trong thư viện.');
+    authRoles = ['ADMIN']; const roleCallStart = calls.length;
+    await page.goto('http://127.0.0.1:7001/FamilyTree', { waitUntil: 'networkidle0' });
+    await page.waitForFunction(() => location.pathname === '/Home/Admin');
+    assert.ok(!calls.slice(roleCallStart).some(call => call.path.startsWith('/api/family-tree') || call.path.startsWith('/api/library')));
+    await page.goto('http://127.0.0.1:7001/Home', { waitUntil: 'networkidle0' });
+    await page.waitForSelector('button[aria-label="User profile menu"]');
+    await page.click('button[aria-label="User profile menu"]');
+    assert.equal(await page.evaluate(() => document.body.innerText.includes('Quản lý Gia phả')), false);
+    await page.setViewport({ width: 390, height: 844 });
+    await page.click('button[aria-label="Toggle menu"]');
+    assert.equal(await page.evaluate(() => document.body.innerText.includes('Quản lý Gia phả')), false);
+    assert.deepEqual(errors, []);
+    for (const language of ['vi', 'en']) {
+      await page.evaluate(async language => {
+        const { mountBoundaryFixture } = await import('/tests/error-boundary-harness.tsx');
+        const element = document.createElement('div'); element.dataset.boundaryTest = 'true';
+        Object.assign(element.style, { position: 'fixed', inset: '0', zIndex: '10000', overflow: 'auto', background: 'white' });
+        document.body.append(element);
+        window.__boundaryFixture = await mountBoundaryFixture(element, language);
+      }, language);
+      await page.waitForSelector('[data-boundary-test] [role="alert"]');
+      const message = await page.$eval('[data-boundary-test]', element => element.textContent);
+      assert.ok(message.includes(language === 'vi' ? 'Đã xảy ra lỗi khi hiển thị trang.' : 'Something went wrong while displaying this page.'));
+      assert.equal(message.includes('Deliberate boundary regression'), false);
+      await page.evaluate(() => window.__boundaryFixture.recover());
+      await page.click('[data-boundary-test] button');
+      await page.waitForFunction(() => document.querySelector('[data-boundary-test]')?.textContent.includes('Boundary recovered'));
+      await page.evaluate(() => { window.__boundaryFixture.cleanup(); document.querySelector('[data-boundary-test]').remove(); });
+    }
+    await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
+    await page.setViewport({ width: 390, height: 844, isMobile: true, hasTouch: true });
+    await page.goto('http://127.0.0.1:7001/Home', { waitUntil: 'networkidle0' });
+    assert.equal(await page.$$eval('[data-custom-cursor]', cursors => cursors.length), 0);
     assert.deepEqual(errors, []);
     console.log(JSON.stringify({ passed: true, checks: ['gallery API data', 'category/album filters', 'lightbox metadata', 'album create/edit/delete',
       'multipart upload', 'preview cleanup/remove/JPG/PNG/WebP/GIF', 'equal field dimensions', 'primary/thumbnail/placeholder/reload/original',
-      'dynamic category create/preselect/filter/delete/in-use', 'photo edit', 'delete failure/retry', 'empty/error states', 'mobile/dark screenshots'], artifacts }));
+      'dynamic category create/edit/stable-slug/filter/delete/in-use', 'Admin-only route/menu/API isolation', 'photo edit', 'delete failure/retry', 'empty/error states', 'mobile/dark screenshots', 'dialog title/focus semantics', 'localized ErrorBoundary throw/recovery', 'reduced-motion/coarse-pointer cursor'], artifacts }));
   } catch (error) {
     if (page) {
       await page.screenshot({ path: join(artifacts, 'failure.png'), fullPage: true });

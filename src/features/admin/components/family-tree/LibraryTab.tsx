@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { BookOpen, Plus, Eye, Pencil, Trash2, Loader2 } from "lucide-react";
 import { useLanguage } from "@/shared/hooks/useLanguage";
-import { Button, Modal } from "@/shared/components/ui";
+import { Button, Modal, Select } from "@/shared/components/ui";
 import { featureSuccessKeys, getFeatureErrorKey } from '../../services/featureMessages';
 import { libraryService, type LibraryAlbum, type LibraryPhotoMetadata, type LibraryCategory } from '../../services/libraryService';
 import { type LibraryPhoto } from "./types";
@@ -24,7 +24,7 @@ export const LibraryTab: React.FC<LibraryTabProps> = ({ showToast }) => {
   const [albums, setAlbums] = useState<LibraryAlbum[]>([]);
   const [categories, setCategories] = useState<LibraryCategory[]>([]);
   const [categoryLoading, setCategoryLoading] = useState(true);
-  const [categoryDialog, setCategoryDialog] = useState(false);
+  const [categoryDialog, setCategoryDialog] = useState<'create' | LibraryCategory | null>(null);
   const [libraryPhotos, setLibraryPhotos] = useState<LibraryPhoto[]>([]);
   const [selectedAlbum, setSelectedAlbum] = useState<number | 'all'>('all');
   const [isLoading, setIsLoading] = useState(true);
@@ -39,7 +39,7 @@ export const LibraryTab: React.FC<LibraryTabProps> = ({ showToast }) => {
 
   useEffect(() => {
     const controller = new AbortController();
-    setIsLoading(true); setCategoryLoading(true); setError(null); setLibraryPhotos([]);
+    setIsLoading(true); setCategoryLoading(true); setError(null);
     const load = async () => {
       try {
         const [currentAlbums, currentCategories] = await Promise.all([
@@ -131,24 +131,31 @@ export const LibraryTab: React.FC<LibraryTabProps> = ({ showToast }) => {
 
       {/* Category Filters */}
       <div className="flex flex-wrap items-center gap-2 pb-1">
-        <select aria-label={t('admin.library_ui.album_filter')} className={`${libraryFieldClass} !w-auto max-w-full min-w-44`}
+        <Select aria-label={t('admin.library_ui.album_filter')}
+          containerClassName="!w-auto"
+          className={`${libraryFieldClass} max-w-full min-w-44 !py-0 !pl-4 !pr-10 border-0`}
           value={selectedAlbum} disabled={isLoading} onChange={event => setSelectedAlbum(event.target.value === 'all' ? 'all' : Number(event.target.value))}>
           <option value="all">{t('admin.library_ui.all_albums')}</option>
           {albums.map(album => <option key={album.id} value={album.id}>{album.name}</option>)}
-        </select>
+        </Select>
         {activeAlbum && <>
           <button className="p-2 text-secondary-text hover:text-accent cursor-pointer" title={t('admin.library_ui.edit_album')}
             aria-label={t('admin.library_ui.edit_album')} onClick={() => setAlbumDialog(activeAlbum)}><Pencil size={16} /></button>
           <button className="p-2 text-secondary-text hover:text-error cursor-pointer" title={t('admin.library_ui.delete_album')}
             aria-label={t('admin.library_ui.delete_album')} onClick={() => requestDelete({ kind: 'album', id: activeAlbum.id, name: activeAlbum.name })}><Trash2 size={16} /></button>
         </>}
-        <Button variant="secondary" leftIcon={<Plus size={16} />} onClick={() => setCategoryDialog(true)}>{t('admin.library_ui.create_category')}</Button>
-        {activeCategory && !activeCategory.isDefault && <button aria-label={t('admin.library_ui.delete_category')}
+        <Button variant="secondary" leftIcon={<Plus size={16} />} onClick={() => setCategoryDialog('create')}>{t('admin.library_ui.create_category')}</Button>
+        {activeCategory && !activeCategory.isDefault && <>
+          <button aria-label={t('admin.library_ui.edit_category')} title={t('admin.library_ui.edit_category')}
+            className="p-2 text-secondary-text hover:text-accent cursor-pointer"
+            onClick={() => setCategoryDialog(activeCategory)}><Pencil size={16} /></button>
+          <button aria-label={t('admin.library_ui.delete_category')}
           title={t('admin.library_ui.delete_category')} className="p-2 text-secondary-text hover:text-error cursor-pointer"
-          onClick={() => requestDelete({ kind: 'category', id: activeCategory.id, name: activeCategory.name, slug: activeCategory.slug })}><Trash2 size={16} /></button>}
+          onClick={() => requestDelete({ kind: 'category', id: activeCategory.id, name: activeCategory.name, slug: activeCategory.slug })}><Trash2 size={16} /></button></>}
         {categoryFilters.map((cat) => (
           <button
             key={cat.id}
+            aria-pressed={libraryCategory === cat.slug}
             onClick={() => setLibraryCategory(cat.slug)}
             className={`px-4 py-2 rounded-full text-xs font-bold transition-all border cursor-pointer shrink-0 ${
               libraryCategory === cat.slug
@@ -169,17 +176,19 @@ export const LibraryTab: React.FC<LibraryTabProps> = ({ showToast }) => {
       {!isLoading && !error && filteredPhotos.length === 0 && <p className="py-12 text-center text-secondary-text">
         {t(libraryPhotos.length === 0 ? 'admin.library_ui.empty' : 'admin.library_ui.no_matches')}
       </p>}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div style={{ display: isLoading || error ? "none" : undefined }} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredPhotos.map((photo) => (
           <div
             key={photo.id}
+            role="button" tabIndex={0} aria-label={t("admin.view_detail") + ": " + photo.title}
+            onKeyDown={event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setPreviewPhoto(photo); } }}
             onClick={() => setPreviewPhoto(photo)}
             className="bg-secondary-bg border border-custom-border rounded-2xl overflow-hidden shadow-sm hover:shadow-md hover:border-accent/40 transition-all duration-300 flex flex-col group cursor-pointer"
           >
             <div className="relative aspect-video overflow-hidden bg-black/10">
-              <LibraryImage
+              <LibraryImage photoId={photo.id} variant="thumbnail"
                 url={photo.url} driveFileId={photo.driveFileId}
-                alt={photo.title}
+                alt={photo.title || t('admin.library_ui.photo_alt')}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
@@ -212,22 +221,26 @@ export const LibraryTab: React.FC<LibraryTabProps> = ({ showToast }) => {
       </div>
 
       {/* Lightbox Modal */}
-      <PhotoLightboxModal
+      {previewPhoto && <PhotoLightboxModal key={previewPhoto.id}
         photo={previewPhoto}
         onClose={() => setPreviewPhoto(null)}
         onEdit={photo => { setPreviewPhoto(null); setEditingPhoto(photo); }}
         onDelete={photo => requestDelete({ kind: 'photo', id: photo.id, name: photo.title })}
-      />
+      />}
       {albumDialog && <LibraryAlbumModal album={albumDialog === 'create' ? undefined : albumDialog}
         onClose={() => setAlbumDialog(null)} onSubmit={async metadata => {
           const album = albumDialog === 'create' ? await libraryService.createAlbum(metadata) : await libraryService.updateAlbum(albumDialog.id, metadata);
           setAlbumDialog(null); setSelectedAlbum(album.id); refresh(); showToast(t(albumDialog === 'create' ? featureSuccessKeys.albumCreate : featureSuccessKeys.albumUpdate), true);
         }} />}
-      {categoryDialog && <LibraryCategoryModal onClose={() => setCategoryDialog(false)} onSubmit={async name => {
-        const category = await libraryService.createCategory(name);
-        setCategories(current => [...current, category]); setLibraryCategory(category.slug); setCategoryDialog(false); refresh();
-        showToast(t(featureSuccessKeys.categoryCreate), true);
-      }} />}
+      {categoryDialog && <LibraryCategoryModal category={categoryDialog === 'create' ? undefined : categoryDialog}
+        onClose={() => setCategoryDialog(null)} onSubmit={async name => {
+          const isCreate = categoryDialog === 'create';
+          const category = isCreate ? await libraryService.createCategory(name) : await libraryService.updateCategory(categoryDialog.id, name);
+          setCategories(current => isCreate ? [...current, category] : current.map(item => item.id === category.id ? category : item));
+          if (isCreate) setLibraryCategory(category.slug);
+          setCategoryDialog(null);
+          showToast(t(isCreate ? featureSuccessKeys.categoryCreate : featureSuccessKeys.categoryUpdate), true);
+        }} />}
       {uploadOpen && <LibraryUploadModal albums={albums} categories={categories} initialAlbumId={selectedAlbum === 'all' ? undefined : selectedAlbum}
         initialCategory={libraryCategory === 'all' ? categories.find(category => category.slug === 'photos')?.slug ?? categories[0]?.slug ?? '' : libraryCategory}
         onClose={() => setUploadOpen(false)} onSubmit={async (albumId, files, metadata) => {

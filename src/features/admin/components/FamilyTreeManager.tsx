@@ -1,15 +1,14 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, lazy, Suspense } from "react";
 import {
   Plus, Loader2, Search, LayoutGrid, List, Users, CalendarDays, BookOpen, Globe, Network
 } from "lucide-react";
 import { useLanguage } from "@/shared/hooks/useLanguage";
-import { Button } from "@/shared/components/ui";
+import { Button, Select } from "@/shared/components/ui";
 import { apiClient } from "@/shared/api/apiClient";
 import { featureSuccessKeys, getFeatureErrorKey } from '../services/featureMessages';
 import {
   type FamilyMember,
   type FamilyTreeManagerProps,
-  removeVietnameseTones,
   MemberCard,
   MemberListItem,
   MemberDetailModal,
@@ -18,14 +17,17 @@ import {
   AnniversaryTab,
   LibraryTab,
   FamilyMapTab,
-  FamilyMindmap,
 } from "./family-tree";
+
+import { filterFamilyMembers } from './family-tree/memberSearch';
+const FamilyMindmap = lazy(() => import('./family-tree/FamilyMindmap').then(module => ({ default: module.FamilyMindmap })));
 
 export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast }) => {
   const { t } = useLanguage();
 
   const [members, setMembers] = useState<FamilyMember[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
 
   // Close dropdown when clicking outside
@@ -52,42 +54,32 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
   const [memberToView, setMemberToView] = useState<FamilyMember | null>(null);
 
   // Fetch API
-  const fetchMembers = useCallback(async () => {
-    setLoading(true);
+  const fetchMembers = useCallback(async (signal?: AbortSignal) => {
+    setLoading(true); setLoadError(null);
     try {
-      const res = await apiClient.requestRaw("/api/family-tree");
+      const res = await apiClient.requestRaw("/api/family-tree", { signal });
+      if (signal?.aborted) return;
       if (res.ok) {
         const json = await res.json();
-        console.log("Fetched members:", json.data);
-        setMembers(json.data || []);
+        if (!signal?.aborted) setMembers(json.data || []);
       } else {
-        showToast(t(getFeatureErrorKey(await res.json().catch(() => null), 'member_load', res.status)), false);
+        const error = await res.json().catch(() => null);
+        if (!signal?.aborted) setLoadError(getFeatureErrorKey(error, 'member_load', res.status));
       }
     } catch (failure) {
-      showToast(t(getFeatureErrorKey(failure, 'member_load')), false);
+      if (!signal?.aborted) setLoadError(getFeatureErrorKey(failure, 'member_load'));
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) setLoading(false);
     }
-  }, [showToast, t]);
+  }, []);
 
   useEffect(() => {
-    fetchMembers();
+    const controller = new AbortController();
+    void fetchMembers(controller.signal);
+    return () => controller.abort();
   }, [fetchMembers]);
 
-  // Filtered members
-  const filteredMembers = useMemo(() => {
-    const q = searchQuery.toLowerCase().trim();
-    return members.filter((m) => {
-      if (!q) {
-        return generationFilter === "all" || m.generation.toString() === generationFilter;
-      }
-      const rawMatch = m.fullName.toLowerCase().includes(q);
-      const noToneMatch = removeVietnameseTones(m.fullName).toLowerCase().includes(removeVietnameseTones(q));
-      const matchSearch = rawMatch || noToneMatch;
-      const matchGen = generationFilter === "all" || m.generation.toString() === generationFilter;
-      return matchSearch && matchGen;
-    });
-  }, [members, searchQuery, generationFilter]);
+  const filteredMembers = useMemo(() => filterFamilyMembers(members, searchQuery, generationFilter), [members, searchQuery, generationFilter]);
 
   const generations = useMemo(() => {
     const gens = new Set(members.map((m) => m.generation));
@@ -205,7 +197,7 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
             <h2 className="text-2xl font-black tracking-wide text-primary-text flex items-center gap-3">
               <span>{t("admin.family_tree_title", { defaultValue: "CÂY GIA PHẢ DÒNG TỘC" })}</span>
               <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-accent/20 text-accent border border-accent/30 uppercase">
-                Dòng họ Nguyễn
+                {t("admin.my_family_tree")}
               </span>
             </h2>
             <p className="text-secondary-text text-xs mt-1">
@@ -217,6 +209,7 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
             <Button
               variant="primary"
               className="!p-3 !rounded-full aspect-square"
+              aria-label={t("admin.add_member")}
               title={t("admin.add_member", { defaultValue: "Thêm Thành Viên" })}
               onClick={() => handleOpenModal()}
             >
@@ -226,10 +219,19 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex items-center gap-2 mt-6 overflow-x-auto pb-1">
+        <div role="tablist" aria-label={t("admin.family_tree")} className="flex items-center gap-2 mt-6 overflow-x-auto pb-1">
           {tabs.map((tab) => (
             <button
               key={tab.id}
+              tabIndex={activeTab === tab.id ? 0 : -1}
+              onKeyDown={event => {
+                if (!['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(event.key)) return;
+                event.preventDefault();
+                const position = tabs.findIndex(item => item.id === activeTab);
+                const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (position + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+                setActiveTab(tabs[next].id); document.getElementById('family-tab-' + tabs[next].id)?.focus();
+              }}
+              role="tab" aria-selected={activeTab === tab.id} id={"family-tab-" + tab.id} aria-controls={"family-panel-" + tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all border cursor-pointer ${
                 activeTab === tab.id
@@ -245,6 +247,7 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
       </div>
 
       {/* Main Tab Content */}
+      <div role="tabpanel" id={"family-panel-" + activeTab} aria-labelledby={"family-tab-" + activeTab}>
       {activeTab === "members" ? (
         <div className="flex-1 flex flex-col min-h-0">
           {/* Toolbar */}
@@ -253,6 +256,7 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary-text" size={16} />
               <input
                 type="text"
+                aria-label={t("admin.search_member")}
                 placeholder={t("admin.search_member", { defaultValue: "Tìm kiếm thành viên..." })}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -261,10 +265,12 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              <select
+              <Select
+                aria-label={t("admin.all_generations")}
                 value={generationFilter}
                 onChange={(e) => setGenerationFilter(e.target.value)}
-                className="px-4 py-2 bg-secondary-bg rounded-xl border border-custom-border text-primary-text text-sm focus:outline-none focus:border-accent shadow-sm cursor-pointer font-medium"
+                containerClassName="!w-auto"
+                className="!py-0 !pl-4 !pr-10 !h-10 border-0"
               >
                 <option value="all">{t("admin.all_generations", { defaultValue: "Tất cả các đời" })}</option>
                 {generations.map((g) => (
@@ -272,11 +278,12 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
                     {t("admin.generation", { defaultValue: "Đời thứ" })} {g}
                   </option>
                 ))}
-              </select>
+              </Select>
 
               {/* View Toggle */}
               <div className="flex items-center bg-secondary-bg p-1 rounded-xl border border-custom-border shadow-sm">
                 <button
+                  aria-label={t("admin.view_grid")} aria-pressed={viewMode === "grid"}
                   onClick={() => setViewMode("grid")}
                   className={`p-1.5 rounded-lg transition-colors cursor-pointer ${viewMode === "grid" ? "bg-accent text-primary-bg" : "text-secondary-text hover:text-primary-text"}`}
                   title={t("admin.view_grid", { defaultValue: "Lưới" })}
@@ -284,6 +291,7 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
                   <LayoutGrid size={16} />
                 </button>
                 <button
+                  aria-label={t("admin.view_list")} aria-pressed={viewMode === "list"}
                   onClick={() => setViewMode("list")}
                   className={`p-1.5 rounded-lg transition-colors cursor-pointer ${viewMode === "list" ? "bg-accent text-primary-bg" : "text-secondary-text hover:text-primary-text"}`}
                   title={t("admin.view_list", { defaultValue: "Danh sách" })}
@@ -291,6 +299,7 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
                   <List size={16} />
                 </button>
                 <button
+                  aria-label={t("admin.view_mindmap")} aria-pressed={viewMode === "mindmap"}
                   onClick={() => setViewMode("mindmap")}
                   className={`p-1.5 rounded-lg transition-colors cursor-pointer ${viewMode === "mindmap" ? "bg-accent text-primary-bg" : "text-secondary-text hover:text-primary-text"}`}
                   title={t("admin.view_mindmap", { defaultValue: "Sơ đồ phả hệ" })}
@@ -304,9 +313,15 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
           {/* Members List/Grid Area */}
           <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
             {loading ? (
-              <div className="flex items-center justify-center h-48">
+              <div role="status" aria-label={t("admin.library_ui.loading")} className="flex items-center justify-center h-48">
                 <Loader2 size={32} className="animate-spin text-accent" />
               </div>
+            ) : loadError ? (
+              <div role="alert" className="py-12 text-center space-y-3"><p className="text-error">{t(loadError)}</p>
+                <Button variant="secondary" onClick={() => void fetchMembers()}>{t('admin.library_ui.retry')}</Button></div>
+            ) : members.length === 0 ? (
+              <div className="py-12 text-center space-y-3 text-secondary-text"><p>{t('admin.tree_empty')}</p><p>{t('admin.tree_empty_hint')}</p>
+                <Button onClick={() => handleOpenModal()}>{t('admin.add_member')}</Button></div>
             ) : filteredMembers.length === 0 ? (
               <div className="flex items-center justify-center h-48 text-secondary-text text-sm">
                 {t("admin.no_members", { defaultValue: "Không tìm thấy thành viên nào." })}
@@ -343,12 +358,14 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
                 ))}
               </div>
             ) : (
+              <Suspense fallback={<div role="status">{t("admin.library_ui.loading")}</div>}>
               <FamilyMindmap 
                 members={filteredMembers}
                 onView={setMemberToView}
                 onEdit={handleOpenModal}
                 onDelete={setMemberToDelete}
               />
+              </Suspense>
             )}
           </div>
         </div>
@@ -360,6 +377,7 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
         <FamilyMapTab onShowMapDetail={() => showToast(t("admin.map_title", { defaultValue: "Bản đồ phân bố hậu duệ" }), true)} />
       )}
 
+      </div>
       {/* Modals */}
       <MemberDetailModal
         member={memberToView}

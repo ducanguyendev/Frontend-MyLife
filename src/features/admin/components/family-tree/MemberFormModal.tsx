@@ -57,11 +57,13 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
     { id: 5, name: "Đời 5", title: "Thế hệ thứ năm" },
   ]);
 
-  // Collapsible accordion state (chỉ mở 1 mục tại 1 thời điểm)
-  const [openSection, setOpenSection] = useState<string>("basic");
+  // Collapsible accordion state
+  const [openSections, setOpenSections] = useState<string[]>(["basic"]);
 
   const toggleSection = (section: string) => {
-    setOpenSection((prev) => (prev === section ? "" : section));
+    setOpenSections((prev) =>
+      prev.includes(section) ? prev.filter((s) => s !== section) : [...prev, section]
+    );
   };
 
   // Fetch generations from backend database
@@ -330,7 +332,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       if (sectionToOpen) {
-        setOpenSection(sectionToOpen);
+        setOpenSections((prev) => prev.includes(sectionToOpen) ? prev : [...prev, sectionToOpen]);
       }
       return;
     }
@@ -381,6 +383,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
         <div className="border border-custom-border/70 rounded-xl bg-secondary-bg/30 overflow-hidden transition-all">
           <button
             type="button"
+            aria-expanded={openSections.includes("basic")}
             onClick={() => toggleSection("basic")}
             className="w-full flex items-center justify-between p-3.5 hover:bg-secondary-bg/60 transition-colors text-left cursor-pointer"
           >
@@ -395,13 +398,13 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
             <ChevronDown
               size={16}
               className={`text-secondary-text transition-transform duration-200 ${
-                openSection === "basic" ? "rotate-180" : ""
+                openSections.includes("basic") ? "rotate-180" : ""
               }`}
             />
           </button>
 
           <AnimatePresence initial={false}>
-            {openSection === "basic" && (
+            {openSections.includes("basic") && (
               <motion.div
                 key="basic-section"
                 initial={{ height: 0, opacity: 0 }}
@@ -498,6 +501,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
         <div className="border border-custom-border/70 rounded-xl bg-secondary-bg/30 overflow-hidden transition-all">
           <button
             type="button"
+            aria-expanded={openSections.includes("relations")}
             onClick={() => toggleSection("relations")}
             className="w-full flex items-center justify-between p-3.5 hover:bg-secondary-bg/60 transition-colors text-left cursor-pointer"
           >
@@ -512,13 +516,13 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
             <ChevronDown
               size={16}
               className={`text-secondary-text transition-transform duration-200 ${
-                openSection === "relations" ? "rotate-180" : ""
+                openSections.includes("relations") ? "rotate-180" : ""
               }`}
             />
           </button>
 
           <AnimatePresence initial={false}>
-            {openSection === "relations" && (
+            {openSections.includes("relations") && (
               <motion.div
                 key="relations-section"
                 initial={{ height: 0, opacity: 0 }}
@@ -588,7 +592,6 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                             key={child.id}
                             className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-secondary-bg text-primary-text text-xs border border-custom-border shadow-xs"
                           >
-                            <span className="w-2 h-2 rounded-full bg-accent" />
                             <span className="font-medium">{formatName(child.fullName)}</span>
                             <span className="text-[10px] text-secondary-text px-1 py-0.5 rounded bg-primary-bg">
                               {t("admin.generation", { defaultValue: "Đời" })} {child.generation}
@@ -598,6 +601,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                               onClick={() => handleRemoveChild(child.id)}
                               className="text-secondary-text hover:text-red-500 hover:bg-red-500/10 rounded-full p-0.5 transition-colors cursor-pointer"
                               title={t("admin.remove", { defaultValue: "Bỏ chọn" })}
+                              aria-label={t("admin.remove", { defaultValue: "Bỏ chọn" })}
                             >
                               <X size={13} />
                             </button>
@@ -650,7 +654,6 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                             key={sibling.id}
                             className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-secondary-bg text-primary-text text-xs border border-custom-border shadow-xs"
                           >
-                            <span className="w-2 h-2 rounded-full bg-accent" />
                             <span className="font-medium">{formatName(sibling.fullName)}</span>
                             <span className="text-[10px] text-secondary-text px-1 py-0.5 rounded bg-primary-bg">
                               {t("admin.generation", { defaultValue: "Đời" })} {sibling.generation}
@@ -660,6 +663,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                               onClick={() => handleRemoveSibling(sibling.id)}
                               className="text-secondary-text hover:text-red-500 hover:bg-red-500/10 rounded-full p-0.5 transition-colors cursor-pointer"
                               title={t("admin.remove", { defaultValue: "Bỏ chọn" })}
+                              aria-label={t("admin.remove", { defaultValue: "Bỏ chọn" })}
                             >
                               <X size={13} />
                             </button>
@@ -704,6 +708,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
         <div className="border border-custom-border/70 rounded-xl bg-secondary-bg/30 overflow-hidden transition-all">
           <button
             type="button"
+            aria-expanded={openSections.includes("contact")}
             onClick={() => toggleSection("contact")}
             className="w-full flex items-center justify-between p-3.5 hover:bg-secondary-bg/60 transition-colors text-left cursor-pointer"
           >
@@ -718,13 +723,13 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
             <ChevronDown
               size={16}
               className={`text-secondary-text transition-transform duration-200 ${
-                openSection === "contact" ? "rotate-180" : ""
+                openSections.includes("contact") ? "rotate-180" : ""
               }`}
             />
           </button>
 
           <AnimatePresence initial={false}>
-            {openSection === "contact" && (
+            {openSections.includes("contact") && (
               <motion.div
                 key="contact-section"
                 initial={{ height: 0, opacity: 0 }}
@@ -779,6 +784,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
         <div className="border border-custom-border/70 rounded-xl bg-secondary-bg/30 overflow-hidden transition-all">
           <button
             type="button"
+            aria-expanded={openSections.includes("bio")}
             onClick={() => toggleSection("bio")}
             className="w-full flex items-center justify-between p-3.5 hover:bg-secondary-bg/60 transition-colors text-left cursor-pointer"
           >
@@ -793,13 +799,13 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
             <ChevronDown
               size={16}
               className={`text-secondary-text transition-transform duration-200 ${
-                openSection === "bio" ? "rotate-180" : ""
+                openSections.includes("bio") ? "rotate-180" : ""
               }`}
             />
           </button>
 
           <AnimatePresence initial={false}>
-            {openSection === "bio" && (
+            {openSections.includes("bio") && (
               <motion.div
                 key="bio-section"
                 initial={{ height: 0, opacity: 0 }}

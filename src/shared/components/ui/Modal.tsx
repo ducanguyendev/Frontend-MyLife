@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLanguage } from '@/shared/hooks/useLanguage';
 import { X } from 'lucide-react';
 
 export type ModalMaxWidth = 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full';
@@ -44,6 +45,29 @@ export const Modal: React.FC<ModalProps> = ({
   backdropClassName = 'bg-black/60 backdrop-blur-xs',
 }) => {
   const [mounted, setMounted] = useState(false);
+  const titleId = useId();
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const { t } = useLanguage();
+  useEffect(() => {
+    if (!isOpen || !mounted) return;
+    const previous = document.activeElement as HTMLElement | null;
+    const dialog = dialogRef.current;
+    const selector = 'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex="0"]';
+    // Focus once on opening; never steal focus from a user already interacting.
+    if (dialog && !dialog.contains(document.activeElement)) {
+      (dialog.querySelector<HTMLElement>('input:not([disabled]), select:not([disabled]), textarea:not([disabled])') ?? dialog.querySelector<HTMLElement>(selector) ?? dialog).focus();
+    }
+    const keepFocus = (event: KeyboardEvent) => {
+      if (event.key !== 'Tab' || !dialog?.contains(document.activeElement)) return;
+      const controls = Array.from(dialog.querySelectorAll<HTMLElement>(selector)).filter(el => el.getClientRects().length > 0);
+      const first = controls[0]; const last = controls.at(-1);
+      if (!first) { event.preventDefault(); dialog.focus(); }
+      else if (event.shiftKey && (document.activeElement === first || document.activeElement === dialog)) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    window.addEventListener('keydown', keepFocus);
+    return () => { window.removeEventListener('keydown', keepFocus); if (previous?.isConnected) previous.focus(); };
+  }, [isOpen, mounted]);
 
   useEffect(() => {
     setMounted(true);
@@ -112,7 +136,8 @@ export const Modal: React.FC<ModalProps> = ({
             onClick={(e) => e.stopPropagation()}
             className={`relative w-full ${maxWidthMap[maxWidth]} flex flex-col min-h-0 bg-secondary-bg border border-custom-border rounded-2xl sm:rounded-3xl shadow-2xl z-10 overflow-hidden ${className}`}
             style={{ maxHeight: 'min(85vh, 720px)' }}
-            role="dialog"
+            ref={dialogRef} tabIndex={-1}
+            role="dialog" aria-labelledby={title ? titleId : undefined} aria-label={title ? undefined : t('common.dialog')}
             aria-modal="true"
           >
             {/* Header */}
@@ -120,7 +145,7 @@ export const Modal: React.FC<ModalProps> = ({
               <div className="shrink-0 flex items-center justify-between px-6 py-4 sm:py-5 border-b border-custom-border bg-secondary-bg z-10">
                 <div className="pr-4">
                   {title && (
-                    <h3 className="text-lg sm:text-xl font-bold text-primary-text leading-snug">
+                    <h3 id={titleId} className="text-lg sm:text-xl font-bold text-primary-text leading-snug">
                       {title}
                     </h3>
                   )}
@@ -136,7 +161,7 @@ export const Modal: React.FC<ModalProps> = ({
                     type="button"
                     onClick={onClose}
                     className="p-2 rounded-xl text-secondary-text hover:text-primary-text hover:bg-custom-border/50 transition-colors cursor-pointer"
-                    aria-label="Close modal"
+                    aria-label={t('admin.close')}
                   >
                     <X size={20} />
                   </button>

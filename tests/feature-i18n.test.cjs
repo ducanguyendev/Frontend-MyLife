@@ -18,6 +18,7 @@ function load(path, mocks = {}) {
   return exports;
 }
 const messages = load('src/features/admin/services/featureMessages.ts');
+const searchHelpers = load('src/features/admin/components/family-tree/memberSearch.ts', { './types': load('src/features/admin/components/family-tree/types.ts') });
 async function translator(locale) {
   const i18n = i18next.createInstance();
   const resources = Object.fromEntries(['vi', 'en'].map(language => [language, { translation: {
@@ -35,6 +36,7 @@ function harness() {
       if (!(position in states)) states[position] = typeof initial === 'function' ? initial() : initial;
       return [states[position], next => { states[position] = typeof next === 'function' ? next(states[position]) : next; }];
     },
+    lazy: () => 'FamilyMindmap', Suspense: 'Suspense',
     useEffect: effect => { effects.push(effect); }, useCallback: callback => callback, useMemo: callback => callback(), forwardRef: callback => callback,
   };
   const jsx = (type, props) => ({ type, props });
@@ -68,6 +70,7 @@ async function familySetup(locale, response = { success: true, message: 'Family 
     react: { ...hooks.hooks, default: hooks.hooks }, 'react/jsx-runtime': { jsx: hooks.jsx, jsxs: hooks.jsx },
     'lucide-react': new Proxy({}, { get: (_, key) => key }), '@/shared/hooks/useLanguage': { useLanguage: () => ({ t, language: i18n.language }) },
     '@/shared/components/ui': { Button: 'Button' }, '@/shared/api/apiClient': { apiClient }, '../services/featureMessages': messages,
+    './family-tree/memberSearch': searchHelpers,
     './family-tree': { ...Object.fromEntries(stubNames.map(name => [name, name])), removeVietnameseTones: name => name },
   });
   const render = () => hooks.render(FamilyTreeManager, { showToast: (text, ok) => toasts.push({ text, ok }) });
@@ -106,9 +109,11 @@ test('actual FamilyTree error code translates; raw backend message is never show
 for (const locale of ['vi', 'en']) {
   test(`${locale}: actual Library callbacks localize album/photo CRUD and upload success`, async () => {
     const i18n = await translator(locale); const t = i18n.t.bind(i18n); const h = harness(); const toasts = [];
-    const album = { id: 1, name: 'Family', photos: [] }; const photo = { id: 15, albumId: 1, title: 'Photo', category: 'photos' };
+    const photo = { id: 15, albumId: 1, title: 'Photo', category: 'photos', fileName: 'photo.webp', url: 'primary', driveFileId: 'fixture-id' };
+    const album = { id: 1, name: 'Family', photos: [photo] };
     const libraryService = { getCategories: async () => [{ id: 1, name: 'Photos', slug: 'photos', isDefault: true }],
-      createCategory: async () => ({ id: 5, name: 'Du lịch', slug: 'du-lich', isDefault: false }), deleteCategory: async () => {},
+      createCategory: async () => ({ id: 5, name: 'Du lịch', slug: 'du-lich', isDefault: false }),
+      updateCategory: async (id, name) => ({ id, name, slug: 'du-lich', isDefault: false }), deleteCategory: async () => {},
       getAlbums: async () => [album], getAlbum: async () => album,
       createAlbum: async () => album, updateAlbum: async () => album, deleteAlbum: async () => {},
       uploadPhotos: async () => [], updatePhoto: async () => {}, deletePhoto: async () => {} };
@@ -124,6 +129,8 @@ for (const locale of ['vi', 'en']) {
     });
     const render = () => h.render(LibraryTab, { showToast: text => toasts.push(text) });
     render(); await h.mount();
+    find(render(), 'button', props => props.children === 'Photos').onClick();
+    assert.ok(!nodes(render()).some(node => node.props?.['aria-label'] === t('admin.library_ui.edit_category') || node.props?.['aria-label'] === t('admin.library_ui.delete_category')));
     find(render(), 'Button', props => props.children === t('admin.library_ui.create_album')).onClick();
     await find(render(), 'AlbumModal').onSubmit({ name: 'Family' });
     assert.equal(toasts.at(-1), t('admin.library_ui.album_created'));
@@ -133,8 +140,11 @@ for (const locale of ['vi', 'en']) {
     find(render(), 'Button', props => props.children === t('admin.library_ui.upload')).onClick();
     await find(render(), 'UploadModal').onSubmit(1, [], { category: 'photos' });
     assert.equal(toasts.at(-1), t('admin.library_ui.photo_uploaded'));
+    assert.ok(!nodes(render()).some(node => node.type === 'Lightbox'));
+    find(render(), 'div', props => props.role === 'button').onClick();
     find(render(), 'Lightbox').onEdit(photo); await find(render(), 'PhotoModal').onSubmit({ category: 'photos' });
     assert.equal(toasts.at(-1), t('admin.library_ui.photo_updated'));
+    find(render(), 'div', props => props.role === 'button').onClick();
     find(render(), 'Lightbox').onDelete(photo);
     find(render(), 'Button', props => props.variant === 'danger').onClick(); await flush();
     assert.equal(toasts.at(-1), t('admin.library_ui.photo_deleted'));
@@ -144,9 +154,20 @@ for (const locale of ['vi', 'en']) {
     find(render(), 'Button', props => props.children === t('admin.library_ui.create_category')).onClick();
     await find(render(), 'CategoryModal').onSubmit('Du lịch');
     assert.equal(toasts.at(-1), t('admin.library_ui.category_created'));
+    find(render(), 'button', props => props['aria-label'] === t('admin.library_ui.edit_category')).onClick();
+    assert.equal(find(render(), 'CategoryModal').category.name, 'Du lịch');
+    await find(render(), 'CategoryModal').onSubmit('Du lịch gia đình');
+    assert.equal(toasts.at(-1), t('admin.library_ui.category_updated'));
+    const selectedChip = find(render(), 'button', props => props.children === 'Du lịch gia đình');
+    assert.ok(selectedChip.className.includes('bg-accent'));
+    find(render(), 'Button', props => props.children === t('admin.library_ui.upload')).onClick();
+    assert.equal(find(render(), 'UploadModal').initialCategory, 'du-lich');
+    find(render(), 'UploadModal').onClose();
     find(render(), 'button', props => props['aria-label'] === t('admin.library_ui.delete_category')).onClick();
     find(render(), 'Button', props => props.variant === 'danger').onClick(); await flush();
     assert.equal(toasts.at(-1), t('admin.library_ui.category_deleted'));
+    assert.ok(!nodes(render()).some(node => node.props?.['aria-label'] === t('admin.library_ui.edit_category') || node.props?.['aria-label'] === t('admin.library_ui.delete_category')));
+    assert.ok(find(render(), 'button', props => props.children === t('admin.all_categories')).className.includes('bg-accent'));
   });
 }
 
@@ -162,6 +183,11 @@ test('all success/error/validation keys including category translations exist in
 test('known codes, old status-only responses and unknown errors never expose raw English', async () => {
   const i18n = await translator('vi');
   for (const [error, action, expected] of [
+    [{ status: 429, payload: { code: 'RATE_LIMITED', message: 'Raw English' } }, 'photo_upload', 'common.rate_limited'],
+    [{ payload: { code: 'LIBRARY_CATEGORY_CANNOT_EDIT', message: 'Default categories cannot be edited.' }, status: 409 }, 'category_save', 'admin.library_ui.category_cannot_edit'],
+    [{ payload: { code: 'LIBRARY_CATEGORY_CANNOT_DELETE' }, status: 409 }, 'category_delete', 'admin.library_ui.category_cannot_delete'],
+    [{ payload: { code: 'LIBRARY_CATEGORY_NOT_FOUND' }, status: 404 }, 'category_save', 'admin.library_ui.category_not_found'],
+    [{ payload: { code: 'LIBRARY_CATEGORY_INVALID' }, status: 400 }, 'category_save', 'admin.library_ui.category_invalid'],
     [{ payload: { code: 'LIBRARY_CATEGORY_IN_USE', message: 'English raw' }, status: 400 }, 'album_delete', 'admin.library_ui.category_in_use'],
     [{ payload: { code: 'LIBRARY_INVALID_IMAGE' }, status: 400 }, 'photo_upload', 'admin.library_ui.file_invalid'],
     [{ status: 0, message: 'Failed to fetch' }, 'member_load', 'admin.notifications.connection_failed'],

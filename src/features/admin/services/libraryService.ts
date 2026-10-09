@@ -39,6 +39,7 @@ export interface AlbumMetadata { name: string; description?: string | null }
 export const libraryService = {
   getCategories: (signal?: AbortSignal) => apiClient.get<LibraryCategory[]>('/api/library/categories', { signal }),
   createCategory: (name: string) => apiClient.post<LibraryCategory>('/api/library/categories', { name }),
+  updateCategory: (id: number, name: string) => apiClient.put<LibraryCategory>(`/api/library/categories/${id}`, { name }),
   deleteCategory: (id: number) => apiClient.delete<void>(`/api/library/categories/${id}`),
   getAlbums: (signal?: AbortSignal) => apiClient.get<LibraryAlbum[]>('/api/library/albums', { signal }),
   getAlbum: (id: number, signal?: AbortSignal) => apiClient.get<LibraryAlbumDetail>(`/api/library/albums/${id}`, { signal }),

@@ -28,11 +28,13 @@ export const MemberListItem: React.FC<MemberListItemProps> = ({
 
   return (
     <div
+      role="group" tabIndex={0} aria-label={t("admin.view_detail") + ": " + m.fullName}
+      onKeyDown={event => { if (event.target === event.currentTarget && (event.key === "Enter" || event.key === " ")) { event.preventDefault(); onView(m); } }}
       onClick={() => onView(m)}
       className={`bg-secondary-bg border rounded-xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:shadow-md transition-all cursor-pointer shadow-sm ${genColors.border}`}
     >
       <div className="flex items-center gap-4 min-w-[240px]">
-        <img
+        <img loading="lazy" decoding="async"
           src={getMemberAvatar(m)}
           alt={formatName(m.fullName)}
           className="w-12 h-12 rounded-xl object-cover border border-custom-border shrink-0"
@@ -84,21 +86,21 @@ export const MemberListItem: React.FC<MemberListItemProps> = ({
         <button
           onClick={() => onView(m)}
           className="p-2 rounded-lg text-secondary-text hover:text-accent hover:bg-primary-bg transition-colors cursor-pointer"
-          title={t("admin.view_detail", { defaultValue: "Xem chi tiết" })}
+          title={t("admin.view_detail", { defaultValue: "Xem chi tiết" })} aria-label={t("admin.view_detail", { defaultValue: "Xem chi tiết" })}
         >
           <Eye size={16} />
         </button>
         <button
           onClick={() => onEdit(m)}
           className="p-2 rounded-lg text-secondary-text hover:text-blue-400 hover:bg-primary-bg transition-colors cursor-pointer"
-          title={t("admin.edit", { defaultValue: "Chỉnh sửa" })}
+          title={t("admin.edit", { defaultValue: "Chỉnh sửa" })} aria-label={t("admin.edit", { defaultValue: "Chỉnh sửa" })}
         >
           <Edit2 size={16} />
         </button>
         <button
           onClick={() => onDelete(m)}
           className="p-2 rounded-lg text-secondary-text hover:text-error hover:bg-error/10 transition-colors cursor-pointer"
-          title={t("admin.delete", { defaultValue: "Xóa" })}
+          title={t("admin.delete", { defaultValue: "Xóa" })} aria-label={t("admin.delete", { defaultValue: "Xóa" })}
         >
           <Trash2 size={16} />
         </button>

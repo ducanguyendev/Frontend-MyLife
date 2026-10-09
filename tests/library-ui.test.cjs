@@ -15,7 +15,7 @@ function load(file, mocks, globals = {}) {
   const exports = {};
   new vm.Script(outputText, { filename: file }).runInNewContext({ exports, require: name => {
     assert.ok(name in mocks, `Unexpected import ${name}`); return mocks[name];
-  }, Intl, ...globals });
+  }, Intl, URL, ...globals });
   return exports;
 }
 async function setup() {
@@ -24,12 +24,17 @@ async function setup() {
     admin: JSON.parse(readFileSync(join(__dirname, `../src/shared/locales/${lang}/admin.json`), 'utf8')),
   } }]));
   await i18n.init({ lng: 'vi', fallbackLng: false, resources });
-  const state = []; const effects = []; let cursor = 0; let pending = [];
+  const state = []; const memos = []; const effects = []; let cursor = 0; let pending = [];
   const hooks = {
     useState(initial) {
       const index = cursor++;
       if (!(index in state)) state[index] = typeof initial === 'function' ? initial() : initial;
       return [state[index], next => { state[index] = typeof next === 'function' ? next(state[index]) : next; }];
+    },
+    useMemo(callback, deps) {
+      const index = cursor++;
+      if (!memos[index] || deps.some((dep, position) => !Object.is(dep, memos[index].deps[position]))) memos[index] = { deps, value: callback() };
+      return memos[index].value;
     },
     useRef(initial) { const index = cursor++; return state[index] ??= { current: initial }; },
     useEffect(callback, deps) {
@@ -184,4 +189,91 @@ test('image tries primary then unique Drive thumbnail once, ignores stale errors
   assert.notEqual(images.LibraryImage({ url: 'https://example.com/new' }).key, wrapper.key);
   assert.equal(images.libraryOriginalUrl('legacy', 'drive-id'), 'https://drive.google.com/file/d/drive-id/view');
   assert.equal(images.libraryOriginalUrl('legacy', ''), 'legacy');
+});
+
+
+test('category edit reuses modal with initial name, Save, custom validation and trimmed request', async () => {
+  for (const locale of ['vi', 'en']) {
+    const h = await setup(); await h.i18n.changeLanguage(locale); let saved; let closed = 0;
+    const Component = load('LibraryCategoryModal.tsx', h.mocks).LibraryCategoryModal;
+    const render = () => h.render(Component, { category: categories[1], onSubmit: async name => { saved = name; }, onClose: () => closed++ });
+    let tree = render();
+    assert.equal(find(tree, 'Modal').title, h.i18n.t('admin.library_ui.edit_category'));
+    assert.equal(find(tree, h.fields.LibraryTextField).value, 'Du lịch');
+    assert.equal(find(tree, 'Button', props => props.type === 'submit').children, h.i18n.t('admin.library_ui.save'));
+    assert.equal(find(tree, 'form').noValidate, true);
+    find(tree, h.fields.LibraryTextField).onChange({ target: { value: '   ' } });
+    await find(render(), 'form').onSubmit(event);
+    assert.equal(saved, undefined); assert.equal(closed, 0);
+    assert.equal(find(render(), 'p', props => props.role === 'alert').children, h.i18n.t('admin.library_ui.category_name_required'));
+    find(render(), h.fields.LibraryTextField).onChange({ target: { value: ' Du lịch gia đình ' } });
+    await find(render(), 'form').onSubmit(event);
+    assert.equal(saved, 'Du lịch gia đình');
+  }
+});
+
+test('image success and repeated parent renders keep one stable candidate and photo identity', async () => {
+  const h = await setup(); const images = load('LibraryImage.tsx', h.mocks);
+  const photo = { photoId: 1, url: 'https://example.com/success.webp', driveFileId: 'success-id', variant: 'thumbnail', alt: 'Photo' };
+  const wrapper = h.render(images.LibraryImage, photo);
+  const first = h.render(wrapper.type, wrapper.props);
+  assert.equal(first.type, 'img'); assert.equal(first.key, undefined);
+  assert.equal(first.props.src, photo.url); assert.equal(first.props.loading, 'lazy'); assert.equal(first.props.decoding, 'async');
+  for (let index = 0; index < 30; index++) {
+    const rerender = h.render(images.LibraryImage, { ...photo, alt: 'Updated caption', className: 'new-class' });
+    assert.equal(rerender.key, wrapper.key); assert.equal(rerender.props.candidates, wrapper.props.candidates);
+    assert.equal(h.render(rerender.type, rerender.props).props.src, photo.url);
+    assert.ok(!rerender.props.candidates.some(url => url.includes('w1600')));
+  }
+});
+
+test('fallback and exhausted state survive repeated parent renders; only genuine identity changes reset the boundary', async () => {
+  const h = await setup(); const images = load('LibraryImage.tsx', h.mocks);
+  const photo = { photoId: 1, url: 'https://example.com/failure.webp', driveFileId: 'failed-id', variant: 'thumbnail', alt: 'Photo' };
+  const wrapper = h.render(images.LibraryImage, photo);
+  const render = () => {
+    const next = h.render(images.LibraryImage, { ...photo, className: 'rerender' });
+    assert.equal(next.key, wrapper.key);
+    return h.render(next.type, next.props);
+  };
+  const primary = render(); primary.props.onError();
+  for (let index = 0; index < 30; index++) assert.equal(render().props.src, 'https://drive.google.com/thumbnail?id=failed-id&sz=w640');
+  const fallback = render(); primary.props.onError();
+  assert.equal(render().props.src, fallback.props.src);
+  fallback.props.onError();
+  for (let index = 0; index < 30; index++) {
+    primary.props.onError(); fallback.props.onError();
+    const result = render(); assert.equal(result.type, 'div'); assert.equal(nodes(result).filter(node => node.type === 'img').length, 0);
+  }
+  for (const update of [{ photoId: 2 }, { driveFileId: 'other-id' }, { url: 'https://example.com/new.webp' }, { variant: 'lightbox' }])
+    assert.notEqual(h.render(images.LibraryImage, { ...photo, ...update }).key, wrapper.key);
+});
+
+test('equivalent stored Drive thumbnails collapse to one canonical candidate per variant', async () => {
+  const h = await setup(); const images = load('LibraryImage.tsx', h.mocks);
+  for (const primary of [
+    'https://drive.google.com/thumbnail?sz=w1600&id=drive-id',
+    'https://drive.google.com/thumbnail?id=drive-id&sz=w640',
+    'https://drive.google.com/thumbnail?authuser=0&sz=w320&id=drive-id#ignored',
+  ]) {
+    assert.deepEqual(Array.from(images.libraryImageCandidates(primary, 'drive-id', 'thumbnail')), ['https://drive.google.com/thumbnail?id=drive-id&sz=w640']);
+    assert.deepEqual(Array.from(images.libraryImageCandidates(primary, 'drive-id', 'lightbox')), ['https://drive.google.com/thumbnail?id=drive-id&sz=w1600']);
+  }
+  assert.equal(images.libraryImageCandidates('https://lh3.googleusercontent.com/d/drive-id=w1600', 'drive-id', 'thumbnail')[0], 'https://lh3.googleusercontent.com/d/drive-id=w640');
+  assert.equal(images.libraryImageCandidates('https://lh3.googleusercontent.com/d/drive-id=w1600?authuser=0', 'drive-id', 'thumbnail')[0], 'https://lh3.googleusercontent.com/d/drive-id=w640?authuser=0');
+});
+
+test('closed lightbox renders no image; an open lightbox renders one high-resolution image for the photo', async () => {
+  const h = await setup();
+  h.mocks['react-dom'] = { createPortal: tree => tree };
+  h.mocks['framer-motion'] = { motion: { div: 'motion.div' }, AnimatePresence: 'AnimatePresence' };
+  h.mocks['./LibraryImage'] = { LibraryImage: 'LibraryImage', libraryOriginalUrl: url => url };
+  const document = { body: { style: {} }, documentElement: { style: {} } };
+  const window = { addEventListener() {}, removeEventListener() {} };
+  const { PhotoLightboxModal } = load('PhotoLightboxModal.tsx', h.mocks, { document, window });
+  assert.equal(h.render(PhotoLightboxModal, { photo: null, onClose() {} }), null);
+  const tree = h.render(PhotoLightboxModal, { photo: { id: 7, title: 'WebP', url: 'primary', driveFileId: 'drive-id' }, onClose() {} });
+  const images = nodes(tree).filter(node => node.type === 'LibraryImage');
+  assert.equal(images.length, 1); assert.equal(images[0].props.variant, 'lightbox'); assert.equal(images[0].props.photoId, 7);
+  assert.equal(h.render(PhotoLightboxModal, { photo: null, onClose() {} }), null);
 });

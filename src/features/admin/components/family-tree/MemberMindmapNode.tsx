@@ -37,7 +37,7 @@ export const MemberMindmapNode: React.FC<{ data: NodeData }> = ({ data }) => {
       
       {/* Dropdown Menu */}
       <div className="absolute top-2 right-2 z-50">
-        <button
+        <button aria-label={t("admin.member_actions")} aria-expanded={isDropdownOpen}
           onClick={(e) => {
             e.stopPropagation();
             setIsDropdownOpen(!isDropdownOpen);
@@ -87,7 +87,7 @@ export const MemberMindmapNode: React.FC<{ data: NodeData }> = ({ data }) => {
       </div>
 
       <div className="flex items-center gap-3" onClick={() => onView(m)}>
-        <img
+        <img loading="lazy" decoding="async"
           src={getMemberAvatar(m)}
           alt={formatName(m.fullName)}
           className="w-12 h-12 rounded-full object-cover border-[1.5px] border-[#D4AF37]/70 shrink-0 pointer-events-none"
