@@ -16,7 +16,10 @@ async function main() {
   let mode = 'normal';
   let authRoles = ['USER'];
   let deleteFails = false;
-  const categories = ['photos', 'decrees', 'events', 'temple'].map((slug, index) => ({ id: index + 1, name: slug, slug, isDefault: true }));
+  const categories = [
+    { id: 1, name: 'Hoạt hình', slug: 'hoat-hinh', isDefault: false },
+    { id: 2, name: 'Họp mặt dòng tộc', slug: 'hop-mat', isDefault: false },
+  ];
   const errors = [];
   const calls = [];
   const albums = [
@@ -26,7 +29,7 @@ async function main() {
   const photo = (id, title, category, extra = {}) => ({ id, title, category, displayDate: '2026', description: 'Mô tả thật từ API',
     caption: 'Mô tả thật từ API', author: 'Nguồn gia đình', fileName: 'original.jpg', contentType: 'image/jpeg', fileSize: 767,
     sortOrder: 0, takenAt: null, createdAt: now, url: image, driveFileId: '', ...extra });
-  albums[0].photos = [photo(1, 'Ảnh gia đình API', 'photos'), photo(2, 'Họp mặt API', 'events')];
+  albums[0].photos = [photo(1, 'Ảnh gia đình API', 'photos'), photo(2, 'Họp mặt API', 'hop-mat')];
   const dto = album => ({ ...album, photoCount: album.photos.length, coverPhotoUrl: null });
   const browser = await puppeteer.launch({ headless: true,
     args: process.env.LIBRARY_UI_NO_SANDBOX === '1' ? ['--no-sandbox'] : [],
@@ -171,7 +174,7 @@ async function main() {
     await click('Họp mặt API', 'h4'); await page.waitForSelector('[role="dialog"]');
     await waitText('Mô tả thật từ API'); await waitText('Nguồn gia đình');
     await page.keyboard.press('Escape');
-    await click('Tất cả tư liệu');
+    await click('Xem tất cả');
     await page.select('select[aria-label="Lọc theo album"]', '2'); await waitText('Chưa có tư liệu nào trong thư viện.');
     await click('Tạo album'); await page.waitForSelector('[role="dialog"] input');
     assert.ok(!(await page.$eval('[role="dialog"]', dialog => dialog.innerText)).includes('Tên album *'));

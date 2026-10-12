@@ -47,8 +47,9 @@ export const LibraryTab: React.FC<LibraryTabProps> = ({ showToast }) => {
         ]);
         if (controller.signal.aborted) return;
         setAlbums(currentAlbums);
-        setCategories(currentCategories); setCategoryLoading(false);
-        setLibraryCategory(current => current === 'all' || currentCategories.some(category => category.slug === current) ? current : 'all');
+        const userCategories = currentCategories.filter(category => !category.isDefault && category.slug !== 'all');
+        setCategories(userCategories); setCategoryLoading(false);
+        setLibraryCategory(current => current === 'all' || userCategories.some(category => category.slug === current) ? current : 'all');
         const wanted = selectedAlbum === 'all' ? currentAlbums : currentAlbums.filter(album => album.id === selectedAlbum);
         const details = await Promise.all(wanted.map(album => libraryService.getAlbum(album.id, controller.signal)));
         if (controller.signal.aborted) return;
@@ -95,7 +96,7 @@ export const LibraryTab: React.FC<LibraryTabProps> = ({ showToast }) => {
   };
 
   const categoryFilters = [{ id: 'all', slug: 'all', label: t('admin.all_categories') },
-    ...categories.map(category => ({ id: category.id, slug: category.slug, label: libraryCategoryLabel(category, t) }))];
+    ...categories.map(category => ({ id: category.id, slug: category.slug, label: libraryCategoryLabel(category) }))];
 
   const filteredPhotos = libraryPhotos.filter(
     (photo) => libraryCategory === "all" || photo.category === libraryCategory
@@ -114,18 +115,26 @@ export const LibraryTab: React.FC<LibraryTabProps> = ({ showToast }) => {
             {t("admin.library_desc", { defaultValue: "Nơi lưu giữ gia phả cổ, sắc phong, văn tự và tư liệu lịch sử dòng họ." })}
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-        <Button variant="secondary" leftIcon={<Plus size={16} />} onClick={() => setAlbumDialog('create')}>
-          {t('admin.library_ui.create_album')}
-        </Button>
-        <Button
-          variant="primary"
-          leftIcon={<Plus size={16} />}
-          disabled={isLoading || categoryLoading || albums.length === 0 || categories.length === 0}
-          onClick={() => setUploadOpen(true)}
-        >
-          {t('admin.library_ui.upload')}
-        </Button>
+        <div className="flex flex-wrap items-center justify-start md:justify-end gap-2">
+          <Button variant="secondary" leftIcon={<Plus size={16} />} onClick={() => setCategoryDialog('create')}>
+            {t('admin.library_ui.create_category')}
+          </Button>
+          <Button variant="secondary" leftIcon={<Plus size={16} />} onClick={() => setAlbumDialog('create')}>
+            {t('admin.library_ui.create_album')}
+          </Button>
+          <Button
+            variant="primary"
+            leftIcon={<Plus size={16} />}
+            disabled={isLoading || categoryLoading || albums.length === 0 || categories.length === 0}
+            onClick={() => setUploadOpen(true)}
+          >
+            {t('admin.library_ui.upload')}
+          </Button>
+          {!categoryLoading && categories.length === 0 && (
+            <p role="status" className="basis-full text-xs text-secondary-text md:text-right">
+              {t('admin.library_ui.create_category_first')}
+            </p>
+          )}
         </div>
       </div>
 
@@ -144,7 +153,6 @@ export const LibraryTab: React.FC<LibraryTabProps> = ({ showToast }) => {
           <button className="p-2 text-secondary-text hover:text-error cursor-pointer" title={t('admin.library_ui.delete_album')}
             aria-label={t('admin.library_ui.delete_album')} onClick={() => requestDelete({ kind: 'album', id: activeAlbum.id, name: activeAlbum.name })}><Trash2 size={16} /></button>
         </>}
-        <Button variant="secondary" leftIcon={<Plus size={16} />} onClick={() => setCategoryDialog('create')}>{t('admin.library_ui.create_category')}</Button>
         {activeCategory && !activeCategory.isDefault && <>
           <button aria-label={t('admin.library_ui.edit_category')} title={t('admin.library_ui.edit_category')}
             className="p-2 text-secondary-text hover:text-accent cursor-pointer"
@@ -242,7 +250,7 @@ export const LibraryTab: React.FC<LibraryTabProps> = ({ showToast }) => {
           showToast(t(isCreate ? featureSuccessKeys.categoryCreate : featureSuccessKeys.categoryUpdate), true);
         }} />}
       {uploadOpen && <LibraryUploadModal albums={albums} categories={categories} initialAlbumId={selectedAlbum === 'all' ? undefined : selectedAlbum}
-        initialCategory={libraryCategory === 'all' ? categories.find(category => category.slug === 'photos')?.slug ?? categories[0]?.slug ?? '' : libraryCategory}
+        initialCategory={libraryCategory === 'all' ? categories[0]?.slug ?? '' : libraryCategory}
         onClose={() => setUploadOpen(false)} onSubmit={async (albumId, files, metadata) => {
           await libraryService.uploadPhotos(albumId, files, metadata);
           setUploadOpen(false); setSelectedAlbum(albumId); setLibraryCategory(metadata.category); refresh(); showToast(t(featureSuccessKeys.photoUpload), true);

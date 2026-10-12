@@ -57,14 +57,14 @@ export const FamilyTreePage: React.FC = () => {
         </div>
 
         {/* Right: Actions & User */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-3">
           <ThemeSwitch />
 
           <LanguageSwitcher />
 
           <button
             onClick={() => navigate('/Home')}
-            className="w-8 h-8 flex items-center justify-center rounded-full bg-secondary-bg/50 hover:bg-secondary-bg border border-custom-border text-secondary-text hover:text-primary-text transition-colors cursor-pointer"
+            className="w-11 h-11 flex items-center justify-center rounded-full bg-secondary-bg/50 hover:bg-secondary-bg border border-custom-border text-secondary-text hover:text-primary-text transition-colors cursor-pointer"
             title="Home"
           >
             <Home size={14} />

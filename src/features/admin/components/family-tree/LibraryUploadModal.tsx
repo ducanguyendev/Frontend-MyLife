@@ -14,7 +14,7 @@ export function LibraryUploadModal({ albums, categories, initialAlbumId, initial
   const [albumId, setAlbumId] = useState(initialAlbumId ? String(initialAlbumId) : '');
   const [files, setFiles] = useState<File[]>([]);
   const [metadata, setMetadata] = useState<LibraryPhotoMetadata>({ category: categories.some(c => c.slug === initialCategory)
-    ? initialCategory : categories.find(c => c.slug === 'photos')?.slug ?? categories[0]?.slug ?? '' });
+    ? initialCategory : categories[0]?.slug ?? '' });
   const [previews, setPreviews] = useState<{ file: File; previewUrl: string }[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,6 +28,7 @@ export function LibraryUploadModal({ albums, categories, initialAlbumId, initial
     event.preventDefault();
     if (isUploading) return;
     if (!albumId || !albums.some(album => album.id === Number(albumId))) { setError('admin.library_ui.album_required'); return; }
+    if (categories.length === 0) { setError('admin.library_ui.create_category_first'); return; }
     if (!categories.some(category => category.slug === metadata.category)) { setError('admin.library_ui.category_required'); return; }
     const dateError = libraryDisplayDateError(metadata.displayDate ?? '');
     if (dateError) { setError(dateError); return; }
@@ -43,6 +44,7 @@ export function LibraryUploadModal({ albums, categories, initialAlbumId, initial
   return <Modal isOpen onClose={() => { if (!isUploading) onClose(); }} title={t('admin.library_ui.upload')}
     description={t('admin.library_ui.upload_hint')} maxWidth="lg" closeOnBackdropClick={!isUploading} closeOnEsc={!isUploading}>
     <form onSubmit={submit} noValidate className="space-y-4">
+      {categories.length === 0 && <p role="status" className="text-sm text-secondary-text">{t('admin.library_ui.create_category_first')}</p>}
       <LibrarySelectField label={t('admin.library_ui.field_album')} value={albumId} disabled={isUploading} onChange={e => setAlbumId(e.target.value)}>
           <option value="">{t('admin.library_ui.choose_album')}</option>
           {albums.map(album => <option key={album.id} value={album.id}>{album.name}</option>)}
@@ -66,7 +68,7 @@ export function LibraryUploadModal({ albums, categories, initialAlbumId, initial
       {error && <p role="alert" className="text-sm text-error">{t(error)}</p>}
       <div className="flex justify-end gap-3 pt-2">
         <Button type="button" variant="secondary" disabled={isUploading} onClick={onClose}>{t('admin.library_ui.cancel')}</Button>
-        <Button type="submit" isLoading={isUploading}>{t('admin.library_ui.upload')}</Button>
+        <Button type="submit" isLoading={isUploading} disabled={categories.length === 0}>{t('admin.library_ui.upload')}</Button>
       </div>
     </form>
   </Modal>;

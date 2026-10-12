@@ -24,7 +24,7 @@ test('Library service reuses apiClient and existing album/photo routes', async (
   await libraryService.createAlbum({ name: 'Family' });
   await libraryService.updateAlbum(15, { name: 'Renamed' });
   await libraryService.deleteAlbum(15);
-  await libraryService.updatePhoto(101, { category: 'temple', description: 'Caption' });
+  await libraryService.updatePhoto(101, { category: 'hoat-hinh', description: 'Caption' });
   await libraryService.deletePhoto(101);
   assert.deepEqual(calls.map(call => [call.method, call.args[0]]), [
     ['get', '/api/library/albums'], ['get', '/api/library/albums/15'], ['post', '/api/library/albums'],
@@ -42,13 +42,13 @@ test('Library service reuses apiClient and existing album/photo routes', async (
 test('batch upload sends files and common metadata together, with no per-photo update step', async () => {
   const { libraryService, calls } = setup();
   const files = [new File(['A'], 'A.jpg', { type: 'image/jpeg' }), new File(['B'], 'B.webp', { type: 'image/webp' })];
-  await libraryService.uploadPhotos(15, files, { title: ' Family ', category: 'events', displayDate: '09/10/2020', description: 'Description', author: 'Source' });
+  await libraryService.uploadPhotos(15, files, { title: ' Family ', category: 'hoat-hinh', displayDate: '09/10/2020', description: 'Description', author: 'Source' });
   assert.equal(calls.length, 1);
   assert.equal(calls[0].args[0], '/api/library/albums/15/photos');
   const form = calls[0].args[1];
   assert.equal(form.getAll('files').length, 2);
   assert.equal(form.get('title'), 'Family');
-  assert.equal(form.get('category'), 'events');
+  assert.equal(form.get('category'), 'hoat-hinh');
   assert.equal(form.get('displayDate'), '09/10/2020');
   assert.equal(form.get('description'), 'Description');
   assert.equal(form.get('author'), 'Source');
@@ -57,9 +57,18 @@ test('batch upload sends files and common metadata together, with no per-photo u
 test('API failure propagates without fallback images or false success', async () => {
   const { libraryService } = setup(new Error('Storage unavailable'));
   await assert.rejects(() => libraryService.getAlbums(), /Storage unavailable/);
-  await assert.rejects(() => libraryService.uploadPhotos(1, [], { category: 'photos' }), /Storage unavailable/);
-  await assert.rejects(() => libraryService.updatePhoto(1, { category: 'photos' }), /Storage unavailable/);
+  await assert.rejects(() => libraryService.uploadPhotos(1, [], { category: 'hoat-hinh' }), /Storage unavailable/);
+  await assert.rejects(() => libraryService.updatePhoto(1, { category: 'hoat-hinh' }), /Storage unavailable/);
   await assert.rejects(() => libraryService.deletePhoto(1), /Storage unavailable/);
+});
+
+test('virtual all and empty categories never reach Library photo endpoints', async () => {
+  const { libraryService, calls } = setup();
+  await assert.rejects(() => libraryService.uploadPhotos(1, [], { category: 'all' }), /user-created Library category/);
+  await assert.rejects(() => libraryService.uploadPhotos(1, [], { category: '' }), /user-created Library category/);
+  await assert.rejects(() => libraryService.updatePhoto(2, { category: 'all' }), /user-created Library category/);
+  await assert.rejects(() => libraryService.updatePhoto(2, { category: '' }), /user-created Library category/);
+  assert.equal(calls.length, 0);
 });
 
 

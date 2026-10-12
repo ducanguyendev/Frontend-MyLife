@@ -62,7 +62,7 @@ async function main() {
         if (request.method() === 'OPTIONS') return request.respond({ status: 204, headers: cors });
         let body = [];
         if (url.pathname === '/api/me') body = { id: 1, email: 'fixture@example.com', name: 'Fixture', role: 'USER', roles: ['USER'], isActive: true };
-        if (url.pathname === '/api/library/categories') body = [{ id: 1, name: 'photos', slug: 'photos', isDefault: true }];
+        if (url.pathname === '/api/library/categories') body = [{ id: 1, name: 'Hoạt hình', slug: 'hoat-hinh', isDefault: false }];
         if (url.pathname === '/api/library/albums') body = [{ id: 1, name: 'Fixture album', description: '', photoCount: 1, createdAt: now, updatedAt: now }];
         if (url.pathname === '/api/library/albums/1') body = { id: 1, name: 'Fixture album', photos: [photoDto()] };
         if (url.pathname === '/api/library/photos/99') { title = JSON.parse(request.postData()).title; body = photoDto(); }

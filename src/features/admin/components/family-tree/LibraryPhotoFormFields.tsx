@@ -25,8 +25,8 @@ export function LibrarySelectField({ label, children, ...props }: SelectHTMLAttr
 export function LibraryTextArea({ label, ...props }: TextareaHTMLAttributes<HTMLTextAreaElement> & { label: string }) {
   return <label className="relative block"><span className={labelClass}>{label}</span><textarea {...props} className={`${libraryFieldClass} min-h-28 pb-3`} /></label>;
 }
-export function libraryCategoryLabel(category: LibraryCategory, t: (key: string) => string) {
-  return category.isDefault ? t(`admin.cat_${category.slug}`) : category.name;
+export function libraryCategoryLabel(category: LibraryCategory) {
+  return category.name;
 }
 
 export function LibraryPhotoFormFields({ value, onChange, disabled, categories }: {
@@ -39,8 +39,10 @@ export function LibraryPhotoFormFields({ value, onChange, disabled, categories }
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
       <LibrarySelectField label={t('admin.library_ui.field_category')} value={value.category} disabled={disabled}
         onChange={e => onChange({ ...value, category: e.target.value })}>
-        {!categories.some(category => category.slug === value.category) && <option value="">{t('admin.library_ui.choose_category')}</option>}
-        {categories.map(category => <option key={category.id} value={category.slug}>{libraryCategoryLabel(category, t)}</option>)}
+        {!categories.some(category => category.slug === value.category) && (value.category
+          ? <option value={value.category} disabled>{t('admin.library_ui.legacy_category', { category: value.category })}</option>
+          : <option value="">{t('admin.library_ui.choose_category')}</option>)}
+        {categories.map(category => <option key={category.id} value={category.slug}>{libraryCategoryLabel(category)}</option>)}
       </LibrarySelectField>
       <DateInput label={t('admin.library_ui.field_date')} value={value.displayDate ?? ''} disabled={disabled}
         placeholder="DD/MM/YYYY" onValueChange={displayDate => onChange({ ...value, displayDate })} />

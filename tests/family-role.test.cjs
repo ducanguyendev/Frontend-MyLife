@@ -45,6 +45,7 @@ for (const roles of [['ADMIN'], ['USER']]) {
       '@/shared/hooks/useLanguage': { useLanguage: () => ({ t: key => key }) }, '../hooks/useLanguage': { useLanguage: () => ({ t: key => key }) },
       '../services/authService': { authService: {} }, '../context/ThemeContext': { useTheme: () => ({ theme: 'light', toggleTheme() {} }) },
       '../components/LanguageSwitcher': { LanguageSwitcher: 'LanguageSwitcher' },
+      '../components': { ThemeSwitch: 'ThemeSwitch' },
       '@/features/auth/components/LoginModal': { LoginModal: 'Login' }, '@/features/auth/components/UserMenu': { UserMenu: 'UserMenu' },
       '@/features/profile/components/UserProfileModal': { UserProfileModal: 'Profile' },
     };

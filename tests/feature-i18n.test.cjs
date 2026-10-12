@@ -135,9 +135,9 @@ test('actual FamilyTree error code translates; raw backend message is never show
 for (const locale of ['vi', 'en']) {
   test(`${locale}: actual Library callbacks localize album/photo CRUD and upload success`, async () => {
     const i18n = await translator(locale); const t = i18n.t.bind(i18n); const h = harness(); const toasts = [];
-    const photo = { id: 15, albumId: 1, title: 'Photo', category: 'photos', fileName: 'photo.webp', url: 'primary', driveFileId: 'fixture-id' };
+    const photo = { id: 15, albumId: 1, title: 'Photo', category: 'hoat-hinh', fileName: 'photo.webp', url: 'primary', driveFileId: 'fixture-id' };
     const album = { id: 1, name: 'Family', photos: [photo] };
-    const libraryService = { getCategories: async () => [{ id: 1, name: 'Photos', slug: 'photos', isDefault: true }],
+    const libraryService = { getCategories: async () => [{ id: 1, name: 'Hoạt hình', slug: 'hoat-hinh', isDefault: false }],
       createCategory: async () => ({ id: 5, name: 'Du lịch', slug: 'du-lich', isDefault: false }),
       updateCategory: async (id, name) => ({ id, name, slug: 'du-lich', isDefault: false }), deleteCategory: async () => {},
       getAlbums: async () => [album], getAlbum: async () => album,
@@ -155,8 +155,8 @@ for (const locale of ['vi', 'en']) {
     });
     const render = () => h.render(LibraryTab, { showToast: text => toasts.push(text) });
     render(); await h.mount();
-    find(render(), 'button', props => props.children === 'Photos').onClick();
-    assert.ok(!nodes(render()).some(node => node.props?.['aria-label'] === t('admin.library_ui.edit_category') || node.props?.['aria-label'] === t('admin.library_ui.delete_category')));
+    find(render(), 'button', props => props.children === 'Hoạt hình').onClick();
+    assert.ok(nodes(render()).some(node => node.props?.['aria-label'] === t('admin.library_ui.edit_category')));
     find(render(), 'Button', props => props.children === t('admin.library_ui.create_album')).onClick();
     await find(render(), 'AlbumModal').onSubmit({ name: 'Family' });
     assert.equal(toasts.at(-1), t('admin.library_ui.album_created'));
@@ -164,11 +164,11 @@ for (const locale of ['vi', 'en']) {
     await find(render(), 'AlbumModal').onSubmit({ name: 'Renamed' });
     assert.equal(toasts.at(-1), t('admin.library_ui.album_updated'));
     find(render(), 'Button', props => props.children === t('admin.library_ui.upload')).onClick();
-    await find(render(), 'UploadModal').onSubmit(1, [], { category: 'photos' });
+    await find(render(), 'UploadModal').onSubmit(1, [], { category: 'hoat-hinh' });
     assert.equal(toasts.at(-1), t('admin.library_ui.photo_uploaded'));
     assert.ok(!nodes(render()).some(node => node.type === 'Lightbox'));
     find(render(), 'div', props => props.role === 'button').onClick();
-    find(render(), 'Lightbox').onEdit(photo); await find(render(), 'PhotoModal').onSubmit({ category: 'photos' });
+    find(render(), 'Lightbox').onEdit(photo); await find(render(), 'PhotoModal').onSubmit({ category: 'hoat-hinh' });
     assert.equal(toasts.at(-1), t('admin.library_ui.photo_updated'));
     find(render(), 'div', props => props.role === 'button').onClick();
     find(render(), 'Lightbox').onDelete(photo);
