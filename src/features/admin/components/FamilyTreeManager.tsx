@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback, useMemo, lazy, Suspense } from "react";
 import {
-  Plus, Loader2, Search, LayoutGrid, List, Users, CalendarDays, BookOpen, Globe, Network
+  Plus, Loader2, LayoutGrid, List, Users, CalendarDays, BookOpen, Globe, Network
 } from "lucide-react";
 import { useLanguage } from "@/shared/hooks/useLanguage";
 import { Button, Select } from "@/shared/components/ui";
+import { SearchBar } from "@/shared/components/SearchBar";
 import { apiClient } from "@/shared/api/apiClient";
 import { featureSuccessKeys, getFeatureErrorKey } from '../services/featureMessages';
 import {
@@ -286,17 +287,13 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
         <div className="flex-1 flex flex-col min-h-0">
           {/* Toolbar */}
           <div className="p-6 pb-2 flex flex-col lg:flex-row items-center justify-between gap-4">
-            <div className="relative w-full lg:w-80">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary-text" size={16} />
-              <input
-                type="text"
-                aria-label={t("admin.search_member")}
-                placeholder={t("admin.search_member", { defaultValue: "Tìm kiếm thành viên..." })}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-secondary-bg rounded-xl border border-custom-border text-primary-text text-sm focus:outline-none focus:border-accent shadow-sm"
-              />
-            </div>
+            <SearchBar
+              className="w-full lg:w-80"
+              ariaLabel={t("admin.search_member")}
+              placeholder={t("admin.search_member", { defaultValue: "Tìm kiếm thành viên..." })}
+              value={searchQuery}
+              onChange={setSearchQuery}
+            />
 
             <div className="flex flex-wrap items-center gap-3">
               <Select
@@ -404,11 +401,11 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
           </div>
         </div>
       ) : activeTab === "anniversaries" ? (
-        <AnniversaryTab />
+        <AnniversaryTab showToast={showToast} members={members} />
       ) : activeTab === "library" ? (
         <LibraryTab showToast={showToast} />
       ) : (
-        <FamilyMapTab onShowMapDetail={() => showToast(t("admin.map_title", { defaultValue: "Bản đồ phân bố hậu duệ" }), true)} />
+        <FamilyMapTab />
       )}
 
       </div>

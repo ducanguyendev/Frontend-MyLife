@@ -1,0 +1,9 @@
+.family-distribution-map .leaflet-popup-content-wrapper,
+.family-distribution-map .leaflet-popup-tip {
+  background: var(--secondary-bg);
+  color: var(--primary-text);
+}
+
+.family-distribution-map .leaflet-popup-content {
+  margin: 12px 14px;
+}

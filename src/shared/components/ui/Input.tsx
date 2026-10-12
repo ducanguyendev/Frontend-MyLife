@@ -8,6 +8,7 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
   containerClassName?: string;
+  density?: 'default' | 'compact';
 }
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
@@ -20,6 +21,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       rightIcon,
       className = '',
       containerClassName = '',
+      density = 'default',
       disabled,
       id,
       value,
@@ -65,7 +67,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         <div
           className={`
             relative w-full rounded-2xl border transition-all duration-200 bg-primary-bg
-            min-h-[56px] flex items-center
+            ${density === 'compact' ? 'min-h-[44px]' : 'min-h-[56px]'} flex items-center
             ${disabled ? 'opacity-50 cursor-not-allowed bg-secondary-bg/30' : ''}
             ${
               error
@@ -92,10 +94,10 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             onChange={handleChange}
             onFocus={handleFocus}
             onBlur={handleBlur}
-            placeholder={isFloating ? placeholder : ''}
+            placeholder={label ? (isFloating ? placeholder : '') : placeholder}
             className={`
               w-full h-full bg-transparent text-primary-text text-sm font-medium
-              pt-5 pb-1.5 ${leftPadClass} ${rightIcon ? 'pr-11' : 'pr-4'}
+              ${density === 'compact' ? 'py-2' : 'pt-5 pb-1.5'} ${leftPadClass} ${rightIcon ? 'pr-11' : 'pr-4'}
               outline-none transition-colors
               placeholder:text-secondary-text/40
               disabled:cursor-not-allowed

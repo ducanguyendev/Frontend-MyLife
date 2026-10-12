@@ -4,8 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Users, LogIn, LogOut, Lock, Unlock,
   RefreshCw, Home, LayoutDashboard, Globe, Mail,
-  CheckCircle, AlertCircle, Clock, Trash2, AlertTriangle, Loader2,
-  Search
+  CheckCircle, AlertCircle, Clock, Trash2, AlertTriangle, Loader2
 } from "lucide-react";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { authService } from "@/features/auth/services/authService";
@@ -13,6 +12,7 @@ import { useLanguage } from "@/shared/hooks/useLanguage";
 import { LanguageSwitcher } from "@/shared/components/LanguageSwitcher";
 import { ThemeSwitch } from "@/shared/components";
 import { Select } from "@/shared/components/ui";
+import { SearchBar } from "@/shared/components/SearchBar";
 import { useNotification } from "@/shared/contexts/NotificationContext";
 import { apiClient, getApiErrorMessage } from "@/shared/api/apiClient";
 import { useBodyScrollLock } from "@/shared/hooks/useBodyScrollLock";
@@ -123,6 +123,7 @@ export const AdminDashboard: React.FC = () => {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [logs, setLogs] = useState<LoginLog[]>([]);
   const [activeTab, setActiveTab] = useState<"dashboard" | "users" | "logs">("dashboard");
+  const [adminSearch, setAdminSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const { showNotification } = useNotification();
   const [toggling, setToggling] = useState<number | null>(null);
@@ -302,14 +303,8 @@ export const AdminDashboard: React.FC = () => {
 
         {/* Right: Actions */}
         <div className="flex items-center gap-3 shrink-0">
-          <div className="relative hidden xl:block">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary-text" size={14} />
-            <input 
-              type="text" 
-              placeholder={t("common.search", { defaultValue: "Search..." })}
-              className="pl-9 pr-4 py-1.5 bg-secondary-bg/50 rounded-full border border-custom-border text-primary-text text-sm focus:outline-none focus:border-primary-text focus:ring-1 focus:ring-primary-text/20 w-48 transition-all hover:w-56 placeholder:text-secondary-text/50"
-            />
-          </div>
+          <SearchBar className="hidden xl:block w-48" ariaLabel={t("common.search", { defaultValue: "Search..." })}
+            placeholder={t("common.search", { defaultValue: "Search..." })} value={adminSearch} onChange={setAdminSearch} />
           
           <button onClick={fetchAll} className="w-8 h-8 flex items-center justify-center rounded-full bg-secondary-bg/50 hover:bg-secondary-bg border border-custom-border text-secondary-text hover:text-primary-text transition-colors cursor-pointer" title="Refresh">
             <RefreshCw size={14} className={loading ? "animate-spin" : ""} />

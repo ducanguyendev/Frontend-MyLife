@@ -39,19 +39,6 @@ export interface FamilyTreeManagerProps {
   showToast: (text: string, ok: boolean) => void;
 }
 
-export interface AnniversaryItem {
-  id: string;
-  title: string;
-  relation: string;
-  lunarDate: string;
-  solarDate: string;
-  daysLeft: string;
-  place: string;
-  host: string;
-  notes: string;
-  badgeColor: string;
-}
-
 export interface LibraryPhoto {
   id: number;
   albumId: number;

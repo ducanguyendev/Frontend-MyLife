@@ -66,7 +66,9 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
     const currentLabel = options
       ? options.find(option => String(option.value) === String(currentValue))?.label
       : currentChild?.props.children;
-    const isFloating = isFocused || (currentValue !== undefined && currentValue !== null && String(currentValue).length > 0);
+    // An explicit empty-value option can act as a placeholder (for example,
+    // “No linked member”). Float the label when it has visible selected text.
+    const isFloating = isFocused || (currentValue !== undefined && currentValue !== null && String(currentValue).length > 0) || Boolean(currentLabel);
 
     return (
       <div className={`w-full flex flex-col ${containerClassName}`}>
