@@ -1,64 +1,424 @@
-# Frontend - MyLife Portfolio
+# MyLife Frontend
 
-Ứng dụng Portfolio & CV cá nhân tương tác cao được xây dựng bằng React 19, TypeScript, Tailwind CSS v4, Framer Motion và Vite. Nằm trong dự án tổng thể **MYLIFE**, phần Frontend mang phong cách **Tech-Noir tối giản**, cung cấp trải nghiệm mượt mà với nhiều tính năng và hiệu ứng ấn tượng.
+Frontend của hệ thống **MyLife**, được xây dựng bằng React, TypeScript, Vite và Tailwind CSS.
 
----
+Frontend cung cấp các chức năng:
 
-## ✨ Tính năng nổi bật
-
-* **Landing Page / Portfolio:**
-  * Thanh điều hướng thông minh (ẩn/hiện tự động, chuyển đổi ngôn ngữ đa quốc gia).
-  * **Hero & About:** Giới thiệu bản thân, ảnh đại diện, chức danh.
-  * **Stats & Skills:** Hiển thị số liệu trực quan và bộ kỹ năng hiện đại.
-  * **Projects & Experience:** Trình bày dự án & kinh nghiệm dạng timeline chuyên nghiệp.
-  * Form liên hệ trực tiếp.
-  * **UI/UX đặc biệt:** Custom Cursor (con trỏ chuột tùy chỉnh), Scroll Progress Bar, Loading Screen đậm chất Tech-Noir.
-* **Xác thực & Phiên (Auth):**
-  * Giao diện Đăng nhập / Đăng ký dạng Modal popup mượt mà và Trang độc lập.
-  * Hỗ trợ xác thực với **Google OAuth 2.0**.
-  * Quản lý phiên thông minh: Bắt sự kiện `auth:expired` để hiển thị Modal hết hạn phiên.
-  * **Protected Routes:** Cơ chế phân quyền, chặn truy cập tài nguyên với người dùng chưa đăng nhập hoặc không đủ quyền (`403 Forbidden`).
-* **Trang Gia phả (Family Tree):**
-  * Giao diện trực quan để xem và quản lý cây phả hệ gia đình (tính năng dành riêng cho người dùng đã đăng nhập).
-* **Admin Dashboard:**
-  * Thống kê tổng quan toàn bộ hệ thống.
-  * Quản lý người dùng: Bật/tắt trạng thái hoạt động (khóa/mở khóa), xóa tài khoản.
-  * Trình xem và phân tích lịch sử hoạt động (Logs).
+- Trang Home / Portfolio
+- Đăng ký / đăng nhập
+- Google Login
+- Dark / Light Mode
+- Đa ngôn ngữ VI / EN
+- Quản lý thông tin cá nhân
+- Quản lý gia phả
+- Quản lý thành viên gia đình
+- Thư viện gia đình
+- Album và hình ảnh
+- Quản lý danh mục
+- Admin Dashboard
+- Quản lý người dùng
 
 ---
 
-## 🛠️ Công nghệ sử dụng
-- **Core:** [React 19](https://react.dev/), [TypeScript](https://www.typescriptlang.org/)
-- **Build Tool:** [Vite 8](https://vite.dev/)
-- **Styling:** [Tailwind CSS v4](https://tailwindcss.com/)
-- **Animation:** [Framer Motion](https://www.framer.com/motion/)
-- **Icons:** [Lucide React](https://lucide.dev/)
-- **i18n:** [react-i18next](https://react.i18next.com/)
+## Công nghệ sử dụng
+
+- React 19
+- TypeScript
+- Vite 8
+- Tailwind CSS 4
+- React Router
+- Framer Motion
+- i18next
+- Lucide React
+- XYFlow / Dagre
 
 ---
 
-## 🚀 Hướng dẫn khởi chạy
+# 1. Yêu cầu môi trường
 
-### 1. Cài đặt dependencies
-```bash
+Cài đặt trước:
+
+- Git
+- Node.js 20+
+- npm
+- Backend MyLife
+
+Kiểm tra:
+
+```powershell
+node --version
+npm --version
+git --version
+```
+
+---
+
+# 2. Clone project
+
+```powershell
+git clone https://github.com/ducanguyendev/Frontend-MyLife.git
+cd Frontend-MyLife
+```
+
+Nếu cần chạy branch đang phát triển:
+
+```powershell
+git checkout feature_minhduc
+```
+
+---
+
+# 3. Cài dependencies
+
+```powershell
 npm install
 ```
 
-### 2. Chạy ở môi trường Development
-```bash
+---
+
+# 4. Cấu hình Backend
+
+Frontend hiện không cần file `.env` cho môi trường development mặc định.
+
+Vite chạy tại:
+
+```text
+http://localhost:7000
+```
+
+Các request:
+
+```text
+/api/*
+```
+
+được proxy tự động tới Backend:
+
+```text
+http://localhost:5274
+```
+
+Cấu hình nằm trong:
+
+```text
+vite.config.ts
+```
+
+Ví dụ:
+
+```ts
+server: {
+  port: 7000,
+  strictPort: true,
+  proxy: {
+    '/api': {
+      target: 'http://localhost:5274',
+      changeOrigin: true,
+      secure: false,
+    },
+  },
+}
+```
+
+Vì vậy cần chạy Backend trước hoặc song song với Frontend.
+
+---
+
+# 5. Chạy Frontend
+
+```powershell
 npm run dev
 ```
-Ứng dụng sẽ chạy tại: **http://localhost:7000**
-> **Lưu ý**: Mọi request đến `/api/*` sẽ được tự động proxy sang Backend C# ASP.NET Core tại `http://localhost:5274` theo cấu hình trong `vite.config.ts`.
 
-### 3. Build cho Production
-```bash
+Sau đó mở:
+
+```text
+http://localhost:7000
+```
+
+Nếu terminal hiển thị:
+
+```text
+Local: http://localhost:7000/
+```
+
+thì Frontend đã chạy thành công.
+
+---
+
+# 6. Build production
+
+```powershell
 npm run build
 ```
-Mã nguồn sau khi build sẽ được tạo trong thư mục `dist/`.
 
-### 4. Xem trước bản build (Preview)
-```bash
+Output được tạo trong:
+
+```text
+dist/
+```
+
+Preview bản build:
+
+```powershell
 npm run preview
 ```
 
+---
+
+# 7. Kiểm tra code
+
+Lint:
+
+```powershell
+npm run lint
+```
+
+Build:
+
+```powershell
+npm run build
+```
+
+---
+
+# 8. Tests
+
+Các test hiện có:
+
+```powershell
+npm run test:avatar
+npm run test:date-input
+npm run test:member-avatar
+npm run test:library
+npm run test:library-ui
+npm run test:theme-switch
+npm run test:i18n
+npm run test:roles
+npm run test:optimization
+```
+
+Có thể chạy các test cần thiết tùy phần đang phát triển.
+
+---
+
+# 9. Cấu trúc chính
+
+```text
+src/
+├── features/
+│   ├── admin/
+│   ├── auth/
+│   ├── family-tree/
+│   ├── portfolio/
+│   └── profile/
+│
+├── shared/
+│   ├── api/
+│   ├── components/
+│   ├── context/
+│   ├── contexts/
+│   ├── hooks/
+│   ├── layouts/
+│   └── locales/
+│
+├── App.tsx
+└── main.tsx
+```
+
+---
+
+# 10. Authentication
+
+Web sử dụng session thông qua HttpOnly Cookie.
+
+Frontend gọi Backend với:
+
+```text
+credentials: include
+```
+
+Các request thay đổi dữ liệu sử dụng header:
+
+```text
+X-Requested-With: MyLife
+```
+
+Không lưu Access Token của browser trong localStorage.
+
+---
+
+# 11. Dark / Light Mode
+
+Theme được quản lý bởi:
+
+```text
+src/shared/context/ThemeContext.tsx
+```
+
+Theme hiện tại được lưu bằng:
+
+```text
+localStorage["portfolio-theme"]
+```
+
+Giá trị:
+
+```text
+light
+dark
+```
+
+Nếu chưa có giá trị lưu trước đó, ứng dụng sử dụng:
+
+```text
+prefers-color-scheme
+```
+
+của hệ điều hành.
+
+---
+
+# 12. Đa ngôn ngữ
+
+Project hỗ trợ:
+
+```text
+VI
+EN
+```
+
+Translation nằm tại:
+
+```text
+src/shared/locales/
+```
+
+---
+
+# 13. Các port mặc định
+
+| Service | URL |
+|---|---|
+| Frontend | http://localhost:7000 |
+| Backend | http://localhost:5274 |
+| Backend HTTPS | https://localhost:7274 |
+| Swagger | http://localhost:5274/swagger |
+
+---
+
+# 14. Thứ tự chạy toàn hệ thống
+
+Terminal 1:
+
+```powershell
+cd Backend-MyLife
+dotnet run
+```
+
+Terminal 2:
+
+```powershell
+cd Frontend-MyLife
+npm run dev
+```
+
+Sau đó mở:
+
+```text
+http://localhost:7000
+```
+
+---
+
+# 15. Lỗi thường gặp
+
+## Port 7000 đã được sử dụng
+
+Vite đang sử dụng:
+
+```text
+strictPort: true
+```
+
+nên nếu port 7000 bận, Frontend sẽ không tự đổi port.
+
+Kiểm tra:
+
+```powershell
+netstat -ano | findstr :7000
+```
+
+Dừng process đang chiếm port hoặc đổi cấu hình Vite.
+
+Nếu đổi Frontend port, cần cập nhật CORS bên Backend.
+
+---
+
+## API không hoạt động
+
+Kiểm tra Backend:
+
+```text
+http://localhost:5274/health/live
+```
+
+hoặc:
+
+```text
+http://localhost:5274/swagger
+```
+
+Backend phải chạy trước khi sử dụng các chức năng cần API.
+
+---
+
+## Lỗi CORS
+
+Frontend mặc định phải chạy tại:
+
+```text
+http://localhost:7000
+```
+
+Backend cũng phải cho phép origin này:
+
+```json
+"Cors": {
+  "AllowedOrigins": [
+    "http://localhost:7000"
+  ]
+}
+```
+
+---
+
+## Sau khi pull code mới bị lỗi package
+
+Chạy:
+
+```powershell
+npm install
+```
+
+Nếu vẫn lỗi:
+
+```powershell
+Remove-Item -Recurse -Force node_modules
+Remove-Item package-lock.json
+npm install
+```
+
+Chỉ xóa `package-lock.json` khi thật sự cần regenerate dependencies.
+
+---
+
+# MyLife
+
+Frontend này cần kết nối với repository Backend:
+
+```text
+Backend-MyLife
+```
+
+để sử dụng đầy đủ authentication, FamilyTree, Library và Admin APIs.
