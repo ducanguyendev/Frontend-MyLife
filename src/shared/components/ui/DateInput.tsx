@@ -73,6 +73,45 @@ export const formatBackendToDob = (isoDate: string): string => {
   return `${parts[2].padStart(2, '0')}/${parts[1].padStart(2, '0')}/${parts[0]}`;
 };
 
+export type CalendarDateError = 'required' | 'format' | 'month' | 'day' | 'calendar' | 'future';
+
+export const validateCalendarDate = (
+  value: string,
+  options: { required?: boolean; allowFuture?: boolean } = {}
+): { valid: boolean; error?: CalendarDateError; backendDate?: string; date?: Date } => {
+  const normalized = value.trim();
+  if (!normalized) return options.required ? { valid: false, error: 'required' } : { valid: true };
+  if (!/^\d{2}\/\d{2}\/\d{4}$/.test(normalized)) return { valid: false, error: 'format' };
+
+  const [dayText, monthText, yearText] = normalized.split('/');
+  const day = Number(dayText);
+  const month = Number(monthText);
+  const year = Number(yearText);
+  if (year < 1) return { valid: false, error: 'calendar' };
+  if (month < 1 || month > 12) return { valid: false, error: 'month' };
+  if (day < 1 || day > 31) return { valid: false, error: 'day' };
+
+  // setFullYear avoids JavaScript's special 1900 offset for constructor years 0–99.
+  const date = new Date(0);
+  date.setFullYear(year, month - 1, day);
+  date.setHours(0, 0, 0, 0);
+  if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
+    return { valid: false, error: 'calendar' };
+  }
+
+  if (!options.allowFuture) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (date > today) return { valid: false, error: 'future' };
+  }
+
+  return {
+    valid: true,
+    backendDate: `${yearText}-${monthText}-${dayText}`,
+    date,
+  };
+};
+
 export interface DobValidationMessages {
   required?: string;
   format?: string;

@@ -216,6 +216,7 @@ test('known codes, old status-only responses and unknown errors never expose raw
     [{ payload: { code: 'LIBRARY_CATEGORY_INVALID' }, status: 400 }, 'category_save', 'admin.library_ui.category_invalid'],
     [{ payload: { code: 'LIBRARY_CATEGORY_IN_USE', message: 'English raw' }, status: 400 }, 'album_delete', 'admin.library_ui.category_in_use'],
     [{ payload: { code: 'LIBRARY_INVALID_IMAGE' }, status: 400 }, 'photo_upload', 'admin.library_ui.file_invalid'],
+    [{ payload: { code: 'LIBRARY_INVALID_DISPLAY_DATE' }, status: 400 }, 'photo_upload', 'admin.library_ui.date_invalid'],
     [{ status: 0, message: 'Failed to fetch' }, 'member_load', 'admin.notifications.connection_failed'],
     [{ status: 404, payload: { message: 'Album not found.' } }, 'album_delete', 'admin.library_ui.album_not_found'],
     [{ status: 502, payload: { message: 'Drive delete failed.' } }, 'photo_delete', 'admin.library_ui.photo_delete_failed'],

@@ -17,6 +17,7 @@ const errorCodes: Record<string, string> = {
   LIBRARY_NOT_FOUND: 'admin.library_ui.not_found', LIBRARY_ALBUM_NOT_FOUND: 'admin.library_ui.album_not_found',
   LIBRARY_PHOTO_NOT_FOUND: 'admin.library_ui.photo_not_found', LIBRARY_INVALID_IMAGE: 'admin.library_ui.file_invalid',
   LIBRARY_IMAGE_SIZE_INVALID: 'admin.library_ui.file_size', LIBRARY_FILE_COUNT_INVALID: 'admin.library_ui.file_count',
+  LIBRARY_INVALID_DISPLAY_DATE: 'admin.library_ui.date_invalid',
   LIBRARY_METADATA_INVALID: 'admin.library_ui.metadata_invalid', LIBRARY_VALIDATION_FAILED: 'admin.library_ui.validation',
   LIBRARY_ALBUM_UNAVAILABLE: 'admin.library_ui.album_unavailable', LIBRARY_CLEANUP_FAILED: 'admin.library_ui.cleanup_failed',
   LIBRARY_CATEGORY_CANNOT_EDIT: 'admin.library_ui.category_cannot_edit',

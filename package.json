@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "test:avatar": "node --test tests/avatar.test.cjs",
+    "test:date-input": "node --test tests/date-input.test.cjs",
     "test:member-avatar": "node --test tests/member-avatar-display.test.cjs",
     "test:library": "node --test tests/library.test.cjs",
     "test:library-ui": "node --test tests/library-ui.test.cjs",

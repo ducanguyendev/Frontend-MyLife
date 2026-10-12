@@ -30,8 +30,17 @@ test('managed member avatars use the MyLife endpoint and never the stored Drive 
   const { render } = createHarness();
   const image = render({ member: member({ hasManagedAvatar: true, avatarUrl: 'https://lh3.googleusercontent.com/d/drive-id' }), className: 'avatar' });
   assert.equal(image.type, 'img');
-  assert.equal(image.props.src, 'http://localhost:5274/api/family-tree/9/avatar/image');
+  assert.equal(image.props.src, 'http://localhost:5274/api/family-tree/9/avatar/image?v=2026-10-12T10%3A00%3A00Z');
   assert.doesNotMatch(image.props.src, /googleusercontent|drive\.google/);
+});
+
+test('managed image src changes with the persisted revision without remounting', () => {
+  const { render } = createHarness();
+  const first = render({ member: member({ hasManagedAvatar: true }), className: 'avatar' });
+  const next = render({ member: member({ hasManagedAvatar: true, updatedAt: '2026-10-12T10:05:00Z' }), className: 'avatar' });
+  assert.notEqual(first.props.src, next.props.src);
+  assert.equal(next.props.src, 'http://localhost:5274/api/family-tree/9/avatar/image?v=2026-10-12T10%3A05%3A00Z');
+  assert.doesNotMatch(next.props.src, /Date\.now|Math\.random|googleusercontent|drive\.google/);
 });
 
 test('image errors switch once to a local initials placeholder without retrying', () => {
@@ -54,6 +63,20 @@ test('changing avatar identity allows one new candidate after a previous failure
   assert.equal(next.type, 'img');
 });
 
+test('pending local preview stays untouched and does not get a managed revision query', () => {
+  const { render } = createHarness();
+  const preview = render({ member: member({ hasManagedAvatar: true }), sourceOverride: 'blob:local-preview', className: 'avatar' });
+  assert.equal(preview.props.src, 'blob:local-preview');
+});
+
+test('deleted managed avatar immediately switches to the local fallback', () => {
+  const { render } = createHarness();
+  render({ member: member({ hasManagedAvatar: true }), className: 'avatar' });
+  const afterDelete = render({ member: member({ hasManagedAvatar: false, avatarUrl: null, updatedAt: '2026-10-12T10:05:00Z' }), className: 'avatar' });
+  assert.equal(afterDelete.type, 'div');
+  assert.equal(afterDelete.props.role, 'img');
+});
+
 test('legacy avatar URLs still work and a member without an avatar uses local fallback', () => {
   const { render } = createHarness();
   const legacy = render({ member: member({ avatarUrl: 'https://images.example/avatar.jpg' }), className: 'avatar' });
@@ -70,4 +93,10 @@ test('all member avatar locations use the shared display component', () => {
   }
   const form = readFileSync(join(__dirname, '../src/features/admin/components/family-tree/MemberFormModal.tsx'), 'utf8');
   assert.match(form, /sourceOverride=\{previewUrl\}/, 'pending file preview should use its local object URL');
+  const manager = readFileSync(join(__dirname, '../src/features/admin/components/FamilyTreeManager.tsx'), 'utf8');
+  assert.match(manager, /setMembers\(previous => \[\.\.\.previous\.filter\(m => m\.id !== saved\.id\), avatarMember\]\)/,
+    'successful avatar upload response must replace the current member in state');
+  assert.match(manager, /const memberToView = members\.find\(member => member\.id === memberToViewId\) \?\? null/,
+    'detail view must resolve the current member from members state instead of holding a stale object');
+  assert.doesNotMatch(manager, /window\.location\.reload|location\.reload/);
 });

@@ -42,14 +42,14 @@ test('Library service reuses apiClient and existing album/photo routes', async (
 test('batch upload sends files and common metadata together, with no per-photo update step', async () => {
   const { libraryService, calls } = setup();
   const files = [new File(['A'], 'A.jpg', { type: 'image/jpeg' }), new File(['B'], 'B.webp', { type: 'image/webp' })];
-  await libraryService.uploadPhotos(15, files, { title: ' Family ', category: 'events', displayDate: '2026', description: 'Description', author: 'Source' });
+  await libraryService.uploadPhotos(15, files, { title: ' Family ', category: 'events', displayDate: '09/10/2020', description: 'Description', author: 'Source' });
   assert.equal(calls.length, 1);
   assert.equal(calls[0].args[0], '/api/library/albums/15/photos');
   const form = calls[0].args[1];
   assert.equal(form.getAll('files').length, 2);
   assert.equal(form.get('title'), 'Family');
   assert.equal(form.get('category'), 'events');
-  assert.equal(form.get('displayDate'), '2026');
+  assert.equal(form.get('displayDate'), '09/10/2020');
   assert.equal(form.get('description'), 'Description');
   assert.equal(form.get('author'), 'Source');
 });

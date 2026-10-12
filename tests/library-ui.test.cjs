@@ -52,6 +52,13 @@ async function setup() {
     '@/shared/components/ui': { Button: 'Button', Modal: 'Modal' },
     '../../services/featureMessages': { getFeatureErrorKey: () => 'admin.library_ui.upload_failed' },
   };
+  const dateRuntime = { forwardRef: render => render, useRef: initial => ({ current: initial }) };
+  const dateHelpers = load('../../../../shared/components/ui/DateInput.tsx', {
+    react: Object.assign(dateRuntime, { default: dateRuntime }), 'react/jsx-runtime': { jsx: (type, props) => ({ type, props }), jsxs: (type, props) => ({ type, props }) },
+    'lucide-react': { Calendar: 'Calendar' }, './Input': { Input: 'Input' },
+  });
+  mocks['@/shared/components/ui'] = { Button: 'Button', Modal: 'Modal', Select: 'Select', DateInput: 'DateInput',
+    validateCalendarDate: dateHelpers.validateCalendarDate };
   const fields = load('LibraryPhotoFormFields.tsx', mocks);
   mocks['./LibraryPhotoFormFields'] = fields;
   return { i18n, fields, mocks,
@@ -149,9 +156,45 @@ test('category/date controls keep rounded sizing and dynamic custom names retain
   const text = f.LibraryTextField({ label: 'Date' });
   assert.ok(find(text, 'input').className.includes('rounded-2xl'));
   assert.ok(f.libraryFieldClass.includes('min-h-[56px]')); assert.ok(f.libraryFieldClass.includes('rounded-2xl'));
+  const fields = f.LibraryPhotoFormFields({ value: { category: 'photos' }, onChange() {}, disabled: false, categories });
+  const date = find(fields, 'DateInput');
+  assert.equal(date.label, h.i18n.t('admin.library_ui.field_date'));
+  assert.equal(date.placeholder, 'DD/MM/YYYY');
+  assert.equal(f.libraryDisplayDateError('31/02/2026'), 'admin.library_ui.date_invalid');
+  assert.equal(f.libraryDisplayDateError('31/12/9999'), 'admin.library_ui.date_future');
+  assert.equal(f.libraryDisplayDateError(''), null);
   await h.i18n.changeLanguage('en');
   assert.equal(f.libraryCategoryLabel(categories[1], h.i18n.t.bind(h.i18n)), 'Du lịch');
   assert.equal(f.libraryCategoryLabel(categories[0], h.i18n.t.bind(h.i18n)), h.i18n.t('admin.cat_photos'));
+});
+
+test('upload and photo edit both block invalid display dates before calling their handlers', async () => {
+  {
+    const h = await setup(); let requests = 0;
+    const Component = load('LibraryUploadModal.tsx', h.mocks, { URL: { createObjectURL: () => 'blob:x', revokeObjectURL() {} } }).LibraryUploadModal;
+    const render = () => h.render(Component, { albums: [{ id: 1 }], categories, initialAlbumId: 1,
+      initialCategory: 'photos', onClose() {}, onSubmit: async () => requests++ });
+    let tree = render(); find(tree, 'input').onChange({ target: { files: [file('a.jpg')], value: '' } }); tree = render();
+    const fieldProps = find(tree, h.fields.LibraryPhotoFormFields);
+    find(h.fields.LibraryPhotoFormFields(fieldProps), 'DateInput').onValueChange('31/02/2026'); tree = render();
+    await find(tree, 'form').onSubmit(event); tree = render();
+    assert.equal(requests, 0);
+    assert.equal(find(tree, 'p', props => props.role === 'alert').children, h.i18n.t('admin.library_ui.date_invalid'));
+    h.unmount();
+  }
+  {
+    const h = await setup(); let requests = 0;
+    const Component = load('LibraryPhotoEditModal.tsx', h.mocks).LibraryPhotoEditModal;
+    const render = () => h.render(Component, { photo: { id: 1, title: 'Photo', category: 'photos', year: '09/10/2020' },
+      categories, onClose() {}, onSubmit: async () => requests++ });
+    let tree = render();
+    const fieldProps = find(tree, h.fields.LibraryPhotoFormFields);
+    find(h.fields.LibraryPhotoFormFields(fieldProps), 'DateInput').onValueChange('31/12/9999'); tree = render();
+    await find(tree, 'form').onSubmit(event); tree = render();
+    assert.equal(requests, 0);
+    assert.equal(find(tree, 'p', props => props.role === 'alert').children, h.i18n.t('admin.library_ui.date_future'));
+    h.unmount();
+  }
 });
 test('upload requires an accessible album/category and falls back to the first dynamic category', async () => {
   for (const [albumId, registry, expected] of [

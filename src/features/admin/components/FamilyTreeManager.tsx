@@ -53,7 +53,9 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
 
   const [memberToDelete, setMemberToDelete] = useState<FamilyMember | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [memberToView, setMemberToView] = useState<FamilyMember | null>(null);
+  const [memberToViewId, setMemberToViewId] = useState<number | null>(null);
+  const memberToView = members.find(member => member.id === memberToViewId) ?? null;
+  const handleViewMember = (member: FamilyMember) => setMemberToViewId(member.id);
 
   // Fetch API
   const fetchMembers = useCallback(async (signal?: AbortSignal) => {
@@ -371,7 +373,7 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
                       setActiveDropdown(activeDropdown === m.id ? null : m.id);
                     }}
                     onCloseDropdown={() => setActiveDropdown(null)}
-                    onView={setMemberToView}
+                    onView={handleViewMember}
                     onEdit={handleOpenModal}
                     onDelete={setMemberToDelete}
                   />
@@ -383,7 +385,7 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
                   <MemberListItem
                     key={m.id}
                     member={m}
-                    onView={setMemberToView}
+                    onView={handleViewMember}
                     onEdit={handleOpenModal}
                     onDelete={setMemberToDelete}
                   />
@@ -393,7 +395,7 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
               <Suspense fallback={<div role="status">{t("admin.library_ui.loading")}</div>}>
               <FamilyMindmap 
                 members={filteredMembers}
-                onView={setMemberToView}
+                onView={handleViewMember}
                 onEdit={handleOpenModal}
                 onDelete={setMemberToDelete}
               />
@@ -414,9 +416,9 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
       <MemberDetailModal
         member={memberToView}
         members={members}
-        onClose={() => setMemberToView(null)}
+        onClose={() => setMemberToViewId(null)}
         onEdit={handleOpenModal}
-        onView={setMemberToView}
+        onView={handleViewMember}
       />
 
       <MemberFormModal

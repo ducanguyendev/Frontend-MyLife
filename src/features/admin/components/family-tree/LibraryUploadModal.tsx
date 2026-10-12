@@ -4,7 +4,7 @@ import { useLanguage } from '@/shared/hooks/useLanguage';
 import { Button, Modal } from '@/shared/components/ui';
 import { getFeatureErrorKey } from '../../services/featureMessages';
 import { type LibraryAlbum, type LibraryCategory, type LibraryPhotoMetadata } from '../../services/libraryService';
-import { LibraryPhotoFormFields, libraryFieldClass, LibrarySelectField } from './LibraryPhotoFormFields';
+import { LibraryPhotoFormFields, libraryDisplayDateError, libraryFieldClass, LibrarySelectField } from './LibraryPhotoFormFields';
 
 export function LibraryUploadModal({ albums, categories, initialAlbumId, initialCategory, onClose, onSubmit }: {
   albums: LibraryAlbum[]; categories: LibraryCategory[]; initialAlbumId?: number; initialCategory: string;
@@ -29,6 +29,8 @@ export function LibraryUploadModal({ albums, categories, initialAlbumId, initial
     if (isUploading) return;
     if (!albumId || !albums.some(album => album.id === Number(albumId))) { setError('admin.library_ui.album_required'); return; }
     if (!categories.some(category => category.slug === metadata.category)) { setError('admin.library_ui.category_required'); return; }
+    const dateError = libraryDisplayDateError(metadata.displayDate ?? '');
+    if (dateError) { setError(dateError); return; }
     if (files.length === 0) { setError('admin.library_ui.images_required'); return; }
     if (files.length > 20) { setError('admin.library_ui.file_count'); return; }
     if (files.some(file => file.size === 0 || file.size > 5 * 1024 * 1024)) { setError('admin.library_ui.file_size'); return; }

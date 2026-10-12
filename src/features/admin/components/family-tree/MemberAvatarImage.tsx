@@ -20,8 +20,9 @@ function initials(name: string): string {
 
 export const MemberAvatarImage: React.FC<MemberAvatarImageProps> = ({ member, alt, className, sourceOverride }) => {
   const managed = member.hasManagedAvatar === true;
+  const revision = member.updatedAt ? `?v=${encodeURIComponent(member.updatedAt)}` : "";
   const candidate = sourceOverride || (managed
-    ? apiClient.url(`/api/family-tree/${member.id}/avatar/image`)
+    ? apiClient.url(`/api/family-tree/${member.id}/avatar/image${revision}`)
     : member.avatarUrl || "");
   const identity = `${member.id}:${managed ? "managed" : member.avatarUrl ?? "none"}:${member.updatedAt}:${sourceOverride ?? ""}`;
   const [failedIdentity, setFailedIdentity] = React.useState<string | null>(null);

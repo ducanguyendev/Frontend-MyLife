@@ -4,7 +4,7 @@ import { Button, Modal } from '@/shared/components/ui';
 import { getFeatureErrorKey } from '../../services/featureMessages';
 import { type LibraryPhotoMetadata, type LibraryCategory } from '../../services/libraryService';
 import { type LibraryPhoto } from './types';
-import { LibraryPhotoFormFields } from './LibraryPhotoFormFields';
+import { LibraryPhotoFormFields, libraryDisplayDateError } from './LibraryPhotoFormFields';
 
 export function LibraryPhotoEditModal({ photo, categories, onClose, onSubmit }: {
   photo: LibraryPhoto; categories: LibraryCategory[]; onClose: () => void; onSubmit: (metadata: LibraryPhotoMetadata) => Promise<void>;
@@ -18,6 +18,8 @@ export function LibraryPhotoEditModal({ photo, categories, onClose, onSubmit }: 
     event.preventDefault();
     if (isSaving) return;
     if (!categories.some(category => category.slug === metadata.category)) { setError('admin.library_ui.category_required'); return; }
+    const dateError = libraryDisplayDateError(metadata.displayDate ?? '');
+    if (dateError) { setError(dateError); return; }
     setIsSaving(true); setError(null);
     try { await onSubmit(metadata); }
     catch (failure) { setError(getFeatureErrorKey(failure, 'photo_save')); }
@@ -25,7 +27,7 @@ export function LibraryPhotoEditModal({ photo, categories, onClose, onSubmit }: 
   };
   return <Modal isOpen onClose={() => { if (!isSaving) onClose(); }} title={t('admin.library_ui.edit_photo')} maxWidth="lg"
     closeOnBackdropClick={!isSaving} closeOnEsc={!isSaving}>
-    <form onSubmit={submit} className="space-y-4">
+    <form onSubmit={submit} noValidate className="space-y-4">
       <LibraryPhotoFormFields value={metadata} onChange={setMetadata} disabled={isSaving} categories={categories} />
       {error && <p role="alert" className="text-sm text-error">{t(error)}</p>}
       <div className="flex justify-end gap-3 pt-2">
