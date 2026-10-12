@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { getApiErrorMessage, isRateLimitError } from '@/shared/api/apiClient';
 import { Input, PasswordInput } from '@/shared/components/ui';
 import { useLanguage } from '@/shared/hooks/useLanguage';
+import { useBodyScrollLock } from '@/shared/hooks/useBodyScrollLock';
 import { useAuth } from '../context/AuthContext';
 import { authService } from '../services/authService';
 
@@ -63,6 +64,7 @@ function waitForGoogleAuthorizationCode(popup: Window, expectedState: string): P
 }
 
 export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
+  useBodyScrollLock(isOpen);
   const { t } = useLanguage();
   const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
@@ -227,7 +229,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           transition={{ type: 'spring', duration: 0.3 }}
           onClick={(event) => event.stopPropagation()}
-          className="relative z-10 max-h-[90vh] w-full max-w-md overflow-y-auto rounded-3xl border border-custom-border bg-secondary-bg p-8 font-sans text-primary-text shadow-2xl"
+          className="relative z-10 max-h-[90vh] w-full max-w-md overflow-y-auto overscroll-contain touch-pan-y rounded-3xl border border-custom-border bg-secondary-bg p-8 font-sans text-primary-text shadow-2xl"
+          style={{ WebkitOverflowScrolling: 'touch' }}
         >
           <button
             onClick={onClose}

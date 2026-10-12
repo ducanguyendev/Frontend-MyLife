@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/shared/hooks/useLanguage';
 import { X } from 'lucide-react';
+import { useBodyScrollLock } from '@/shared/hooks/useBodyScrollLock';
 
 export type ModalMaxWidth = 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full';
 
@@ -87,21 +88,7 @@ export const Modal: React.FC<ModalProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose, closeOnEsc]);
 
-  // Lock body and html scroll to guarantee outside interface never rolls
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const originalBodyOverflow = document.body.style.overflow;
-    const originalHtmlOverflow = document.documentElement.style.overflow;
-
-    document.body.style.overflow = 'hidden';
-    document.documentElement.style.overflow = 'hidden';
-
-    return () => {
-      document.body.style.overflow = originalBodyOverflow;
-      document.documentElement.style.overflow = originalHtmlOverflow;
-    };
-  }, [isOpen]);
+  useBodyScrollLock(isOpen);
 
   if (!mounted) return null;
 
@@ -170,7 +157,7 @@ export const Modal: React.FC<ModalProps> = ({
             )}
 
             {/* Body */}
-            <div className="flex-1 min-h-0 overflow-y-auto p-5 sm:p-6 custom-scrollbar overscroll-contain">
+            <div className="flex-1 min-h-0 overflow-y-auto p-5 sm:p-6 custom-scrollbar">
               {children}
             </div>
 

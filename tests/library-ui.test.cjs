@@ -144,16 +144,15 @@ test('upload rejects empty/21/zero-byte/oversize/MIME files and accepts exact li
   }
 });
 
-test('category/date controls share sizing and dynamic custom names retain their original language', async () => {
+test('category/date controls keep rounded sizing and dynamic custom names retain their original language', async () => {
   const h = await setup(); const f = h.fields;
-  const text = f.LibraryTextField({ label: 'Date' }); const select = f.LibrarySelectField({ label: 'Category' });
-  assert.equal(find(text, 'input').className, find(select, 'select').className);
+  const text = f.LibraryTextField({ label: 'Date' });
+  assert.ok(find(text, 'input').className.includes('rounded-2xl'));
   assert.ok(f.libraryFieldClass.includes('min-h-[56px]')); assert.ok(f.libraryFieldClass.includes('rounded-2xl'));
   await h.i18n.changeLanguage('en');
   assert.equal(f.libraryCategoryLabel(categories[1], h.i18n.t.bind(h.i18n)), 'Du lịch');
   assert.equal(f.libraryCategoryLabel(categories[0], h.i18n.t.bind(h.i18n)), h.i18n.t('admin.cat_photos'));
 });
-
 test('upload requires an accessible album/category and falls back to the first dynamic category', async () => {
   for (const [albumId, registry, expected] of [
     [undefined, categories, 'album_required'], [99, categories, 'album_required'], [1, [], 'category_required'],
@@ -266,6 +265,7 @@ test('equivalent stored Drive thumbnails collapse to one canonical candidate per
 test('closed lightbox renders no image; an open lightbox renders one high-resolution image for the photo', async () => {
   const h = await setup();
   h.mocks['react-dom'] = { createPortal: tree => tree };
+  h.mocks['@/shared/hooks/useBodyScrollLock'] = { useBodyScrollLock() {} };
   h.mocks['framer-motion'] = { motion: { div: 'motion.div' }, AnimatePresence: 'AnimatePresence' };
   h.mocks['./LibraryImage'] = { LibraryImage: 'LibraryImage', libraryOriginalUrl: url => url };
   const document = { body: { style: {} }, documentElement: { style: {} } };

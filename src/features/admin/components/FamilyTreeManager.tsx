@@ -48,6 +48,8 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingMember, setEditingMember] = useState<Partial<FamilyMember> | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [pendingAvatar, setPendingAvatar] = useState<File | null>(null);
+  const [removeAvatar, setRemoveAvatar] = useState(false);
 
   const [memberToDelete, setMemberToDelete] = useState<FamilyMember | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -88,6 +90,7 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
 
   // Modal handlers
   const handleOpenModal = (member?: FamilyMember) => {
+    setPendingAvatar(null); setRemoveAvatar(false);
     if (member) {
       setEditingMember({
         ...member,
@@ -109,6 +112,7 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
         motherId: undefined,
         spouseId: undefined,
         childIds: [],
+        horizontalRelations: [],
       });
     }
     setIsModalOpen(true);
@@ -117,6 +121,7 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingMember(null);
+    setPendingAvatar(null); setRemoveAvatar(false);
   };
 
   const handleSaveMember = async (e: React.FormEvent) => {
@@ -127,11 +132,16 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
     const isUpdate = !!editingMember.id;
     const payload = {
       ...editingMember,
+      avatarUrl: undefined,
       dateOfBirth: editingMember.dateOfBirth || null,
       fatherId: editingMember.fatherId || null,
       motherId: editingMember.motherId || null,
       spouseId: editingMember.spouseId || null,
       childIds: editingMember.childIds || [],
+      horizontalRelations: (editingMember.horizontalRelations || []).map(relation => ({
+        ...relation,
+        relationType: relation.relationType?.trim().toLowerCase() === 'sibling' ? 'sibling' : relation.relationType,
+      })),
       generation: Number(editingMember.generation),
     };
 
@@ -142,11 +152,33 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
       );
 
       if (res.ok) {
+        const saved = (await res.json()).data as FamilyMember;
+        setMembers(previous => [...previous.filter(m => m.id !== saved.id), saved]);
+        let avatarFailure = false;
+        if (pendingAvatar) {
+          const form = new FormData(); form.append("file", pendingAvatar);
+          try {
+            const upload = await apiClient.requestRaw(`/api/family-tree/${saved.id}/avatar`, { method: "POST", body: form });
+            if (upload.ok) {
+              const avatarMember = (await upload.json()).data as FamilyMember;
+              setMembers(previous => [...previous.filter(m => m.id !== saved.id), avatarMember]);
+            } else avatarFailure = true;
+          } catch { avatarFailure = true; }
+        } else if (isUpdate && removeAvatar) {
+          try {
+            const deletion = await apiClient.requestRaw(`/api/family-tree/${saved.id}/avatar`, { method: "DELETE" });
+            if (deletion.ok) {
+              const avatarMember = (await deletion.json()).data as FamilyMember;
+              setMembers(previous => [...previous.filter(m => m.id !== saved.id), avatarMember]);
+            } else avatarFailure = true;
+          } catch { avatarFailure = true; }
+        } else setMembers(previous => [...previous.filter(m => m.id !== saved.id), saved]);
         showToast(
           t(isUpdate ? featureSuccessKeys.memberUpdate : featureSuccessKeys.memberCreate),
           true
         );
-        fetchMembers();
+        if (avatarFailure) showToast(t("admin.member_avatar_errors.upload_failed"), false);
+        void fetchMembers();
         handleCloseModal();
       } else {
         showToast(t(getFeatureErrorKey(await res.json().catch(() => null), 'member_save', res.status)), false);
@@ -395,6 +427,11 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
         onClose={handleCloseModal}
         onChange={setEditingMember}
         onSubmit={handleSaveMember}
+        pendingAvatar={pendingAvatar}
+        onPendingAvatarChange={file => { setPendingAvatar(file); if (file) setRemoveAvatar(false); }}
+        hasAvatar={Boolean(editingMember?.hasManagedAvatar || editingMember?.avatarUrl)}
+        removeAvatar={removeAvatar}
+        onRemoveAvatarChange={setRemoveAvatar}
       />
 
       <DeleteConfirmModal

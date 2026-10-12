@@ -2,7 +2,8 @@ import React from "react";
 import { Handle, Position } from "@xyflow/react";
 import { MoreVertical, Edit2, Eye, Trash2 } from "lucide-react";
 import { useLanguage } from "@/shared/hooks/useLanguage";
-import { type FamilyMember, getMemberAvatar, removeVietnameseTones, getGenerationColors } from "./types";
+import { type FamilyMember, removeVietnameseTones, getGenerationColors } from "./types";
+import { MemberAvatarImage } from "./MemberAvatarImage";
 
 interface NodeData {
   member: FamilyMember;
@@ -87,8 +88,8 @@ export const MemberMindmapNode: React.FC<{ data: NodeData }> = ({ data }) => {
       </div>
 
       <div className="flex items-center gap-3" onClick={() => onView(m)}>
-        <img loading="lazy" decoding="async"
-          src={getMemberAvatar(m)}
+        <MemberAvatarImage
+          member={m}
           alt={formatName(m.fullName)}
           className="w-12 h-12 rounded-full object-cover border-[1.5px] border-[#D4AF37]/70 shrink-0 pointer-events-none"
         />

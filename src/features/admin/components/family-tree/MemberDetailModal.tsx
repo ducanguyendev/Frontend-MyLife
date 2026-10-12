@@ -4,7 +4,9 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/shared/hooks/useLanguage";
 import { Modal, Button, Badge } from "@/shared/components/ui";
-import { type FamilyMember, getMemberAvatar, removeVietnameseTones, getGenerationColors } from "./types";
+import { type FamilyMember, removeVietnameseTones, getGenerationColors } from "./types";
+import { MemberAvatarImage } from "./MemberAvatarImage";
+import { getSiblingDisplayLabelKey, getSiblingKind, getSiblingSeniority, isBiologicalSibling } from "./siblingRelations";
 
 const FacebookIcon = ({ size = 14, className = "" }: { size?: number; className?: string }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
@@ -44,45 +46,20 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
   );
   
   // Anh/chị/em ruột: Cùng cha hoặc cùng mẹ (khác chính mình)
-  const ruotSiblings = members.filter(
-    (m) =>
-      m.id !== member.id &&
-      ((member.fatherId && m.fatherId === member.fatherId) ||
-        (member.motherId && m.motherId === member.motherId))
-  );
+  const ruotSiblings = members.filter(m => m.id !== member.id && isBiologicalSibling(member, m));
+  const hoSiblings = members.filter(m => m.id !== member.id && getSiblingKind(member, m) === 'cousin');
+  const getSiblingLabel = (sibling: FamilyMember, kind: 'biological' | 'cousin') =>
+    t('admin.' + getSiblingDisplayLabelKey(kind, getSiblingSeniority(member, sibling)));
 
-  // Anh/chị/em họ: Dựa trên horizontalRelations (nếu có)
-  const explicitSiblingIds = (member.horizontalRelations || [])
-    .filter(r => r.relationType === "sibling")
-    .map(r => r.memberId);
-
-  const hoSiblings = members.filter(
-    (m) =>
-      m.id !== member.id &&
-      !ruotSiblings.find(s => s.id === m.id) &&
-      explicitSiblingIds.includes(m.id)
-  );
-
-  const getSiblingRole = (sibling: FamilyMember, current: FamilyMember) => {
-    if (!sibling.dateOfBirth || !current.dateOfBirth) return "";
-    const sibDate = new Date(sibling.dateOfBirth);
-    const currDate = new Date(current.dateOfBirth);
-    if (sibDate < currDate) {
-      return sibling.gender?.toLowerCase() === "nữ" ? "Chị" : "Anh";
-    } else if (sibDate > currDate) {
-      return sibling.gender?.toLowerCase() === "nữ" ? "Em gái" : "Em trai";
-    }
-    return "";
-  };
-
-  const renderMemberLink = (m: FamilyMember, rolePrefix?: string) => (
+  const renderRelationMember = (m: FamilyMember, roleLabel?: string) => (
     <button
       type="button"
       onClick={() => onView(m)}
-      className="text-accent hover:underline cursor-pointer inline-flex items-center gap-1 focus:outline-none"
+      aria-label={roleLabel ? `${roleLabel}: ${formatName(m.fullName)}` : formatName(m.fullName)}
+      className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-custom-border bg-secondary-bg px-3 py-1.5 text-left shadow-sm transition-colors hover:bg-primary-bg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
     >
-      {rolePrefix && <span className="text-secondary-text text-xs mr-1">[{rolePrefix}]</span>}
-      {formatName(m.fullName)}
+      {roleLabel && <span className="text-xs font-medium text-secondary-text">{roleLabel}</span>}
+      <span className="text-sm font-semibold text-primary-text">{formatName(m.fullName)}</span>
     </button>
   );
 
@@ -90,14 +67,10 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
     const p = [];
     if (father) p.push(father);
     if (mother) p.push(mother);
-    if (p.length === 0) return <span className="text-sm font-semibold text-primary-text">{t("admin.none", { defaultValue: "Chưa có liên kết" })}</span>;
+    if (p.length === 0) return <span className="text-sm font-semibold text-primary-text">{t("admin.none")}</span>;
     return (
       <div className="flex flex-wrap items-center gap-2">
-        {p.map((parent) => (
-          <div key={parent.id} className="bg-secondary-bg px-3 py-1.5 rounded-lg border border-custom-border flex items-center shadow-sm">
-            {renderMemberLink(parent)}
-          </div>
-        ))}
+        {p.map((parent) => renderRelationMember(parent))}
       </div>
     );
   };
@@ -132,8 +105,8 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
       <div className="space-y-6">
         {/* Profile Card Header */}
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 bg-primary-bg/60 p-5 rounded-2xl border border-custom-border">
-          <img
-            src={getMemberAvatar(member)}
+          <MemberAvatarImage
+            member={member}
             alt={formatName(member.fullName)}
             className="w-20 h-20 rounded-2xl object-cover border-2 border-accent/40 shadow-md shrink-0"
           />
@@ -206,9 +179,7 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
               </h4>
               <div className="flex flex-wrap items-center gap-2">
                 {spouse ? (
-                  <div className="bg-secondary-bg px-3 py-1.5 rounded-lg border border-custom-border flex items-center shadow-sm">
-                    {renderMemberLink(spouse)}
-                  </div>
+                  renderRelationMember(spouse)
                 ) : (
                   <span className="text-sm font-semibold text-primary-text">{t("admin.none", { defaultValue: "Chưa có liên kết" })}</span>
                 )}
@@ -224,11 +195,7 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
             <div className="flex flex-wrap items-center gap-2">
               {children.length === 0
                 ? <span className="text-sm font-semibold text-primary-text">{t("admin.none", { defaultValue: "Chưa có liên kết" })}</span>
-                : children.map((c) => (
-                    <div key={c.id} className="bg-secondary-bg px-3 py-1.5 rounded-lg border border-custom-border flex items-center shadow-sm">
-                      {renderMemberLink(c)}
-                    </div>
-                  ))
+                : children.map((c) => renderRelationMember(c))
               }
             </div>
           </div>
@@ -236,35 +203,23 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
           {/* Row 3: Siblings (Ruột) */}
           <div>
             <h4 className="text-xs font-bold text-secondary-text uppercase mb-2">
-              {t("admin.siblings_ruot", { defaultValue: "Anh / Chị / Em Ruột:" })}
+              {t("admin.siblings_biological_group")}
             </h4>
             <div className="flex flex-wrap items-center gap-2">
               {ruotSiblings.length === 0
-                ? <span className="text-sm font-semibold text-primary-text">{t("admin.none", { defaultValue: "Chưa có liên kết" })}</span>
-                : ruotSiblings.map((s) => (
-                    <div key={s.id} className="bg-secondary-bg px-3 py-1.5 rounded-lg border border-custom-border flex items-center shadow-sm">
-                      {renderMemberLink(s, getSiblingRole(s, member))}
-                    </div>
-                  ))
+                ? <span className="text-sm font-semibold text-primary-text">{t("admin.siblings_biological_empty")}</span>
+                : ruotSiblings.map((s) => renderRelationMember(s, getSiblingLabel(s, 'biological')))
               }
             </div>
           </div>
 
           {/* Row 4: Siblings (Họ) */}
-          {hoSiblings.length > 0 && (
-            <div>
-              <h4 className="text-xs font-bold text-secondary-text uppercase mb-2">
-                {t("admin.siblings_ho", { defaultValue: "Anh / Chị / Em Họ:" })}
-              </h4>
+          <div>
+              <h4 className="text-xs font-bold text-secondary-text uppercase mb-2">{t("admin.siblings_cousin_group")}</h4>
               <div className="flex flex-wrap items-center gap-2">
-                {hoSiblings.map((s) => (
-                  <div key={s.id} className="bg-secondary-bg px-3 py-1.5 rounded-lg border border-custom-border flex items-center shadow-sm">
-                    {renderMemberLink(s, getSiblingRole(s, member))}
-                  </div>
-                ))}
+                {hoSiblings.length === 0 ? <span className="text-sm font-semibold text-primary-text">{t("admin.siblings_cousin_empty")}</span> : hoSiblings.map((s) => renderRelationMember(s, getSiblingLabel(s, 'cousin')))}
               </div>
-            </div>
-          )}
+          </div>
         </div>
 
         {/* Biography */}

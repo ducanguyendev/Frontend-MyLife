@@ -15,6 +15,8 @@ export interface FamilyMember {
   facebookUrl?: string;
   instagramUrl?: string;
   avatarUrl?: string;
+  hasManagedAvatar?: boolean;
+  avatarUpdatedAt?: string;
   biography?: string;
   fatherId?: number;
   motherId?: number;
@@ -79,18 +81,6 @@ export const removeVietnameseTones = (str: string): string => {
   str = str.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g, "Y");
   str = str.replace(/Đ/g, "D");
   return str;
-};
-
-export const getMemberAvatar = (m: FamilyMember): string => {
-  if (m.avatarUrl && m.avatarUrl.startsWith("http")) {
-    return m.avatarUrl;
-  }
-  const isFemale = m.gender?.toLowerCase() === "nữ";
-  const num = Math.abs(String(m.id || m.fullName).split("").reduce((acc, char) => acc + char.charCodeAt(0), 0));
-  const femaleImgs = [5, 9, 10, 16, 20, 26, 32, 44, 47, 49];
-  const maleImgs = [11, 12, 13, 15, 33, 53, 59, 60, 68, 70];
-  const imgId = isFemale ? femaleImgs[num % femaleImgs.length] : maleImgs[num % maleImgs.length];
-  return `https://i.pravatar.cc/300?img=${imgId}`;
 };
 
 export const getGenerationColors = (generation: number) => {

@@ -5,6 +5,7 @@ import { XCircle, ExternalLink, Pencil, Trash2 } from "lucide-react";
 import { useLanguage } from '@/shared/hooks/useLanguage';
 import { type LibraryPhoto } from "./types";
 import { LibraryImage, libraryOriginalUrl } from './LibraryImage';
+import { useBodyScrollLock } from '@/shared/hooks/useBodyScrollLock';
 
 interface PhotoLightboxModalProps {
   photo: LibraryPhoto | null;
@@ -20,15 +21,12 @@ export const PhotoLightboxModal: React.FC<PhotoLightboxModalProps> = ({
   onDelete,
 }) => {
   const { t } = useLanguage();
+  useBodyScrollLock(!!photo);
   useEffect(() => {
     if (!photo) return;
-    const overflow = document.body.style.overflow;
-    const htmlOverflow = document.documentElement.style.overflow;
-    document.body.style.overflow = 'hidden';
-    document.documentElement.style.overflow = 'hidden';
     const keyDown = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose(); };
     window.addEventListener('keydown', keyDown);
-    return () => { document.body.style.overflow = overflow; document.documentElement.style.overflow = htmlOverflow; window.removeEventListener('keydown', keyDown); };
+    return () => { window.removeEventListener('keydown', keyDown); };
   }, [photo, onClose]);
   if (!photo) return null;
 
@@ -73,7 +71,7 @@ export const PhotoLightboxModal: React.FC<PhotoLightboxModalProps> = ({
               <XCircle size={24} />
             </button>
           </div>
-          <div className="p-6 bg-secondary-bg min-h-0 overflow-y-auto">
+          <div className="p-6 bg-secondary-bg min-h-0 overflow-y-auto overscroll-contain touch-pan-y" style={{ WebkitOverflowScrolling: 'touch' }}>
             <div className="flex items-center justify-between gap-4 mb-2">
               <h4 className="text-xl font-bold text-primary-text min-w-0 break-words">{photo.title}</h4>
               {photo.year && <span className="px-3 py-1 rounded-full bg-accent/10 border border-accent/20 text-accent font-bold text-xs break-words">

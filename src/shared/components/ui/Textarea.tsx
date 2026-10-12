@@ -70,6 +70,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         >
           <textarea
             ref={ref}
+            data-ui-control
             id={textareaId}
             disabled={disabled}
             value={value}

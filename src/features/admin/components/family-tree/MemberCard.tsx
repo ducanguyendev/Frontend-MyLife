@@ -5,7 +5,8 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/shared/hooks/useLanguage";
 
-import { type FamilyMember, getMemberAvatar, removeVietnameseTones, getGenerationColors } from "./types";
+import { type FamilyMember, removeVietnameseTones, getGenerationColors } from "./types";
+import { MemberAvatarImage } from "./MemberAvatarImage";
 
 interface MemberCardProps {
   member: FamilyMember;
@@ -107,8 +108,8 @@ export const MemberCard: React.FC<MemberCardProps> = ({
       </div>
 
       <div className="flex items-start gap-4 mb-4">
-        <img loading="lazy" decoding="async"
-          src={getMemberAvatar(m)}
+        <MemberAvatarImage
+          member={m}
           alt={formatName(m.fullName)}
           className="w-14 h-14 rounded-xl object-cover border border-custom-border shrink-0"
         />

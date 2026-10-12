@@ -2,7 +2,8 @@ import React from "react";
 import { Eye, Edit2, Trash2, CalendarDays, MapPin, Phone } from "lucide-react";
 import { useLanguage } from "@/shared/hooks/useLanguage";
 
-import { type FamilyMember, getMemberAvatar, removeVietnameseTones, getGenerationColors } from "./types";
+import { type FamilyMember, removeVietnameseTones, getGenerationColors } from "./types";
+import { MemberAvatarImage } from "./MemberAvatarImage";
 
 interface MemberListItemProps {
   member: FamilyMember;
@@ -34,8 +35,8 @@ export const MemberListItem: React.FC<MemberListItemProps> = ({
       className={`bg-secondary-bg border rounded-xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:shadow-md transition-all cursor-pointer shadow-sm ${genColors.border}`}
     >
       <div className="flex items-center gap-4 min-w-[240px]">
-        <img loading="lazy" decoding="async"
-          src={getMemberAvatar(m)}
+        <MemberAvatarImage
+          member={m}
           alt={formatName(m.fullName)}
           className="w-12 h-12 rounded-xl object-cover border border-custom-border shrink-0"
         />

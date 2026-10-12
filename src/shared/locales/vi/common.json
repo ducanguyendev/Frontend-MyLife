@@ -175,6 +175,12 @@
       "pastePasswordBlocked": "Không được phép dán (paste). Vui lòng tự nhập lại mật khẩu để xác nhận.",
       "registerSuccess": "Đăng ký tài khoản thành công! Đang chuyển đến trang đăng nhập...",
       "registerFailed": "Đăng ký thất bại. Vui lòng thử lại.",
+      "authPasswordMismatch": "Mật khẩu xác nhận không khớp.",
+      "authPasswordTooLong": "Mật khẩu không được vượt quá 72 byte.",
+      "authGmailRequired": "Chỉ hỗ trợ địa chỉ Gmail.",
+      "authEmailAlreadyRegistered": "Email này đã được đăng ký.",
+      "authDobInvalid": "Ngày sinh không hợp lệ.",
+      "authServiceNotInitialized": "Dịch vụ hiện chưa sẵn sàng. Vui lòng thử lại sau.",
       "checkInputs": "Vui lòng kiểm tra lại thông tin nhập."
     },
     "dobValidation": {

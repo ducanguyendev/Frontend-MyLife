@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/shared/hooks/useLanguage';
+import { useBodyScrollLock } from '@/shared/hooks/useBodyScrollLock';
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { authService } from '@/features/auth/services/authService';
 import { getApiErrorMessage } from '@/shared/api/apiClient';
@@ -25,6 +26,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 }) => {
   const { t } = useLanguage();
   const { user, isAdmin, logout } = useAuth();
+  useBodyScrollLock(isOpen && !!user);
   const navigate = useNavigate();
 
   // Tab State
@@ -412,7 +414,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
           exit={{ opacity: 0, scale: 0.96, y: 16 }}
           transition={{ type: 'spring', duration: 0.35, bounce: 0.15 }}
           onClick={(e) => e.stopPropagation()}
-          className="relative w-full max-w-lg bg-secondary-bg border border-custom-border p-6 md:p-8 rounded-3xl shadow-2xl z-10 font-sans text-primary-text max-h-[90vh] overflow-y-auto"
+          className="relative w-full max-w-lg bg-secondary-bg border border-custom-border p-6 md:p-8 rounded-3xl shadow-2xl z-10 font-sans text-primary-text max-h-[90vh] overflow-y-auto overscroll-contain touch-pan-y"
+          style={{ WebkitOverflowScrolling: 'touch' }}
         >
           {/* Close Button */}
           <button

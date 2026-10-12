@@ -175,6 +175,12 @@
       "pastePasswordBlocked": "Pasting is not allowed. Please type your confirm password manually.",
       "registerSuccess": "Account registered successfully! Redirecting to login...",
       "registerFailed": "Registration failed. Please try again.",
+      "authPasswordMismatch": "Passwords do not match.",
+      "authPasswordTooLong": "Password must not exceed 72 UTF-8 bytes.",
+      "authGmailRequired": "Only Gmail addresses are supported.",
+      "authEmailAlreadyRegistered": "Email is already registered.",
+      "authDobInvalid": "Date of birth is invalid.",
+      "authServiceNotInitialized": "The service is temporarily unavailable. Please try again later.",
       "checkInputs": "Please check your input information."
     },
     "dobValidation": {

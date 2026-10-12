@@ -320,7 +320,6 @@ async function main() {
     await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
     await page.setViewport({ width: 390, height: 844, isMobile: true, hasTouch: true });
     await page.goto('http://127.0.0.1:7001/Home', { waitUntil: 'networkidle0' });
-    assert.equal(await page.$$eval('[data-custom-cursor]', cursors => cursors.length), 0);
     assert.deepEqual(errors, []);
     console.log(JSON.stringify({ passed: true, checks: ['gallery API data', 'category/album filters', 'lightbox metadata', 'album create/edit/delete',
       'multipart upload', 'preview cleanup/remove/JPG/PNG/WebP/GIF', 'equal field dimensions', 'primary/thumbnail/placeholder/reload/original',

@@ -73,13 +73,17 @@ test('gallery thumbnails use w640 lazy/async while lightbox keeps high-res and o
   assert.ok(images.libraryImageCandidates(null,'drive-id','lightbox')[0].endsWith('w1600'));
   assert.equal(images.libraryOriginalUrl('legacy','drive-id'),'https://drive.google.com/file/d/drive-id/view');
 });
-test('CustomCursor mounts no animation hooks for coarse pointer or reduced motion', () => {
-  for (const matches of [false,true]) {
-    const h = harness(); const cursor = load('src/shared/components/CustomCursor.tsx', {
-      react: { ...h.hooks, default: h.hooks }, 'react/jsx-runtime': { jsx: h.jsx, jsxs: h.jsx },
-      'framer-motion': { motion: {}, useMotionValue: () => assert.fail('Animation mounted in wrapper'), useSpring: () => assert.fail('Spring mounted in wrapper') },
-    }, { window: { matchMedia: query => { assert.ok(query.includes('pointer: fine') && query.includes('prefers-reduced-motion: no-preference')); return { matches, addEventListener() {}, removeEventListener() {} }; } } });
-    const result = h.render(cursor.CustomCursor); assert.equal(result === null, !matches);
+test('native cursor is used throughout the app', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  assert.ok(!read('src/App.tsx').includes('CustomCursor'));
+  assert.ok(!fs.existsSync(path.join(__dirname, '..', 'src/shared/components/CustomCursor.tsx')));
+  for (const sourcePath of ['src']) {
+    const visit = directory => fs.readdirSync(directory, { withFileTypes: true }).flatMap(entry =>
+      entry.isDirectory() ? visit(path.join(directory, entry.name)) : [path.join(directory, entry.name)]);
+    for (const file of visit(path.join(__dirname, '..', sourcePath)).filter(file => /\.(tsx?|cjs)$/.test(file))) {
+      assert.ok(!fs.readFileSync(file, 'utf8').includes('data-custom-cursor'), `${file} still references a custom cursor`);
+    }
   }
 });
 test('loading is driven by auth/import/API; critical messages exist in both locales', () => {

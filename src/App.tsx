@@ -1,7 +1,6 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/features/auth/context/AuthContext';
-import { CustomCursor } from '@/shared/components/CustomCursor';
 import { ScrollProgressBar } from '@/shared/components/ScrollProgressBar';
 import { LoadingScreen } from '@/shared/components/LoadingScreen';
 import { Header } from '@/shared/layouts/Header';
@@ -28,7 +27,6 @@ function MainPortfolio() {
   return (
     <div className="flex flex-col min-h-screen bg-primary-bg font-sans overflow-x-hidden transition-colors duration-300 relative antialiased">
       {/* Global UI Extras */}
-      <CustomCursor />
       <ScrollProgressBar />
 
       {/* Sticky Navigation Header */}

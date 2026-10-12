@@ -15,6 +15,7 @@ import { LanguageSwitcher } from "@/shared/components/LanguageSwitcher";
 import { Select } from "@/shared/components/ui";
 import { useNotification } from "@/shared/contexts/NotificationContext";
 import { apiClient, getApiErrorMessage } from "@/shared/api/apiClient";
+import { useBodyScrollLock } from "@/shared/hooks/useBodyScrollLock";
 
 interface AdminStats {
   totalUsers: number;
@@ -129,6 +130,7 @@ export const AdminDashboard: React.FC = () => {
   const [roleUpdating, setRoleUpdating] = useState<number | null>(null);
 
   const [userToDelete, setUserToDelete] = useState<AdminUser | null>(null);
+  useBodyScrollLock(!!userToDelete);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const showToast = useCallback((text: string, ok: boolean) => {

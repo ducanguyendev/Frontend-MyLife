@@ -190,7 +190,8 @@
 
 
 /* Keyboard visibility and user-requested motion reduction. */
-:where(button, a, input, select, textarea, [tabindex]):focus-visible {
+:where(button, a, [tabindex]):not([data-ui-control]):focus-visible,
+:where(input, select, textarea):not([data-ui-control]):focus-visible {
   outline: 2px solid var(--color-accent, #0f62fe);
   outline-offset: 3px;
 }

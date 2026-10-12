@@ -12,6 +12,7 @@ const errorCodes: Record<string, string> = {
   FAMILY_MEMBER_NOT_FOUND: 'admin.member_errors.not_found', FAMILY_RELATED_MEMBER_NOT_FOUND: 'admin.member_errors.related_not_found',
   FAMILY_SELF_RELATION: 'admin.member_errors.self_relation', FAMILY_PARENTS_MUST_DIFFER: 'admin.member_errors.parents_differ',
   FAMILY_SPOUSE_IN_USE: 'admin.member_errors.spouse_in_use', FAMILY_RELATIONSHIP_INVALID: 'admin.member_errors.relationship_invalid',
+  FAMILY_AVATAR_INVALID: 'admin.member_avatar_errors.invalid_file', FAMILY_AVATAR_STORAGE_FAILED: 'admin.member_avatar_errors.upload_failed',
   FAMILY_RELATIONSHIP_CYCLE: 'admin.member_errors.relationship_cycle', FAMILY_VALIDATION_FAILED: 'admin.member_errors.validation',
   LIBRARY_NOT_FOUND: 'admin.library_ui.not_found', LIBRARY_ALBUM_NOT_FOUND: 'admin.library_ui.album_not_found',
   LIBRARY_PHOTO_NOT_FOUND: 'admin.library_ui.photo_not_found', LIBRARY_INVALID_IMAGE: 'admin.library_ui.file_invalid',

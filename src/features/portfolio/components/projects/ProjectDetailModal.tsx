@@ -4,6 +4,7 @@ import { X } from 'lucide-react';
 import { useLanguage } from '@/shared/hooks/useLanguage';
 import { ProjectScreenPanels } from './ProjectScreenPanels';
 import type { ProjectConfig, ProjectKey } from './types';
+import { useBodyScrollLock } from '@/shared/hooks/useBodyScrollLock';
 
 interface ProjectDetailModalProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
   projectConfig,
 }) => {
   const { t } = useLanguage();
+  useBodyScrollLock(isOpen);
 
   // Handle ESC key to close modal
   useEffect(() => {
@@ -36,18 +38,6 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
     }
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
-
-  // Prevent scroll when modal is open
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isOpen]);
 
   return (
     <AnimatePresence>
@@ -121,7 +111,7 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
             </div>
 
             {/* Scrollable Tab Panels */}
-            <div className="flex-grow overflow-y-auto p-6 md:p-10 no-scrollbar bg-[#fafafa] dark:bg-primary-bg">
+            <div className="flex-grow overflow-y-auto overscroll-contain touch-pan-y p-6 md:p-10 no-scrollbar bg-[#fafafa] dark:bg-primary-bg" style={{ WebkitOverflowScrolling: 'touch' }}>
               <AnimatePresence mode="wait">
                 <motion.div
                   key={activeTab}

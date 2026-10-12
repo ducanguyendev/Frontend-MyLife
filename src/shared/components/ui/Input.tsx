@@ -84,6 +84,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
 
           <input
             ref={ref}
+            data-ui-control
             id={inputId}
             disabled={disabled}
             value={value}

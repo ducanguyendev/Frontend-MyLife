@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { ChevronDown, Users, Phone, FileText, X } from "lucide-react";
+import { ChevronDown, Users, Phone, FileText, X, ImagePlus, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/shared/hooks/useLanguage";
 import { apiClient } from "@/shared/api/apiClient";
@@ -15,6 +15,8 @@ import {
   validateDob,
 } from "@/shared/components/ui";
 import { type FamilyMember, type Generation, removeVietnameseTones } from "./types";
+import { getSiblingDisplayLabelKey, getSiblingSeniority, isBiologicalSibling } from "./siblingRelations";
+import { MemberAvatarImage } from "./MemberAvatarImage";
 
 interface MemberFormModalProps {
   isOpen: boolean;
@@ -24,6 +26,11 @@ interface MemberFormModalProps {
   onClose: () => void;
   onChange: (updated: Partial<FamilyMember>) => void;
   onSubmit: (e: React.FormEvent) => void;
+  pendingAvatar: File | null;
+  onPendingAvatarChange: (file: File | null) => void;
+  hasAvatar: boolean;
+  removeAvatar: boolean;
+  onRemoveAvatarChange: (value: boolean) => void;
 }
 
 interface FormErrors {
@@ -44,9 +51,20 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
   onClose,
   onChange,
   onSubmit,
+  pendingAvatar,
+  onPendingAvatarChange,
+  hasAvatar,
+  removeAvatar,
+  onRemoveAvatarChange,
 }) => {
   const { t, language } = useLanguage();
   const [errors, setErrors] = useState<FormErrors>({});
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  useEffect(() => {
+    if (!pendingAvatar) { setPreviewUrl(null); return; }
+    const url = URL.createObjectURL(pendingAvatar); setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [pendingAvatar]);
 
   // Dynamic generations list loaded from database
   const [generations, setGenerations] = useState<Generation[]>([
@@ -136,26 +154,34 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
     onChange({ ...editingMember, childIds: current.filter((id) => id !== childId) });
   };
 
-  const selectedSiblings = useMemo(() => {
-    return (editingMember?.horizontalRelations || [])
-      .filter((r) => r.relationType === "sibling")
-      .map((r) => members.find((m) => m.id === r.memberId))
-      .filter(Boolean) as FamilyMember[];
-  }, [editingMember?.horizontalRelations, members]);
+  const fullSiblings = useMemo(() => members.filter(member =>
+    member.id !== editingMember?.id && !!editingMember && isBiologicalSibling(editingMember, member)
+  ), [editingMember, members]);
 
-  const availableForSiblings = availableMembers.filter(
+  const selectedCousins = useMemo(() => {
+    return (editingMember?.horizontalRelations || [])
+      .filter((r) => r.relationType?.trim().toLowerCase() === "sibling")
+      .map((r) => members.find((m) => m.id === r.memberId))
+      .filter((m): m is FamilyMember => !!m && !isBiologicalSibling(editingMember || {}, m));
+  }, [editingMember, members]);
+
+  const selectedSiblingIds = new Set(selectedCousins.map((sibling) => sibling.id));
+  const availableForSiblings = members.filter(
     (m) =>
       m.id !== editingMember?.id &&
       m.id !== editingMember?.fatherId &&
       m.id !== editingMember?.motherId &&
       m.id !== editingMember?.spouseId &&
-      !selectedSiblings.find((s) => s.id === m.id)
+      !selectedSiblingIds.has(m.id) &&
+      !isBiologicalSibling(editingMember || {}, m)
   );
 
   const handleAddSibling = (siblingId: string) => {
     if (!siblingId || !editingMember) return;
     const current = editingMember.horizontalRelations || [];
-    if (!current.find((r) => r.memberId.toString() === siblingId && r.relationType === "sibling")) {
+    const selectedMember = members.find(member => String(member.id) === siblingId);
+    if (!selectedMember || isBiologicalSibling(editingMember, selectedMember)) return;
+    if (!current.find((r) => String(r.memberId) === siblingId && r.relationType?.trim().toLowerCase() === "sibling")) {
       onChange({
         ...editingMember,
         horizontalRelations: [...current, { memberId: parseInt(siblingId), relationType: "sibling" }],
@@ -168,7 +194,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
     const current = editingMember.horizontalRelations || [];
     onChange({
       ...editingMember,
-      horizontalRelations: current.filter((r) => !(r.memberId === siblingId && r.relationType === "sibling")),
+      horizontalRelations: current.filter((r) => !(r.memberId === siblingId && r.relationType?.trim().toLowerCase() === "sibling")),
     });
   };
 
@@ -323,11 +349,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
     }
 
     // 6. Link ảnh Avatar
-    const avatar = (editingMember.avatarUrl || "").trim();
-    if (avatar && !/^https?:\/\/.+/i.test(avatar) && !avatar.startsWith("/")) {
-      newErrors.avatarUrl = "admin.error_avatar_url";
-      if (!sectionToOpen) sectionToOpen = "bio";
-    }
+    // Avatar files are validated before preview and again at the API boundary.
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -639,21 +661,39 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                   <div className="md:col-span-2 space-y-2 pt-1 border-t border-custom-border/40 mt-2">
                     <div className="flex items-center justify-between text-xs mt-2">
                       <label className="font-semibold text-secondary-text">
-                        {t("admin.field_siblings_ho", { defaultValue: "Anh / Chị / Em Họ (Liên kết tuỳ chỉnh)" })}
+                        {t("admin.siblings_biological_group")}
                       </label>
                       <span className="text-[11px] text-accent font-medium">
-                        {selectedSiblings.length} {t("admin.siblings_count", { defaultValue: "người" })}
+                        {fullSiblings.length} {t("admin.siblings_count", { defaultValue: "người" })}
                       </span>
                     </div>
 
+                    <div className="flex flex-wrap gap-2">
+                      {fullSiblings.length > 0 ? fullSiblings.map(sibling => (
+                        <span key={sibling.id} className="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-secondary-bg text-primary-text text-xs border border-custom-border">
+                          <span className="text-accent font-semibold">{t(`admin.${getSiblingDisplayLabelKey('biological', getSiblingSeniority(editingMember!, sibling))}`)}</span>
+                          <span className="font-medium">{formatName(sibling.fullName)}</span>
+                          <span className="text-secondary-text">{t("admin.generation", { defaultValue: "Đời" })} {sibling.generation}</span>
+                        </span>
+                      )) : <span className="text-xs text-secondary-text italic">{t("admin.siblings_biological_empty")}</span>}
+                    </div>
+                  </div>
+
+                  <div className="md:col-span-2 space-y-2 pt-2 border-t border-custom-border/40">
+                    <div className="flex items-center justify-between text-xs mt-2">
+                      <label className="font-semibold text-secondary-text">{t("admin.siblings_cousin_group")}</label>
+                      <span className="text-[11px] text-accent font-medium">{selectedCousins.length} {t("admin.siblings_count", { defaultValue: "người" })}</span>
+                    </div>
+
                     {/* Danh sách anh/chị/em họ đã chọn */}
-                    {selectedSiblings.length > 0 && (
+                    {selectedCousins.length > 0 && (
                       <div className="flex flex-wrap gap-2 p-2.5 rounded-xl bg-primary-bg/70 border border-custom-border/60">
-                        {selectedSiblings.map((sibling) => (
+                        {selectedCousins.map((sibling) => (
                           <span
                             key={sibling.id}
                             className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-secondary-bg text-primary-text text-xs border border-custom-border shadow-xs"
                           >
+                            <span className="text-accent font-semibold">{t(`admin.${getSiblingDisplayLabelKey('cousin', getSiblingSeniority(editingMember!, sibling))}`)}</span>
                             <span className="font-medium">{formatName(sibling.fullName)}</span>
                             <span className="text-[10px] text-secondary-text px-1 py-0.5 rounded bg-primary-bg">
                               {t("admin.generation", { defaultValue: "Đời" })} {sibling.generation}
@@ -675,7 +715,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                     {/* Dropdown thêm anh/chị/em họ */}
                     {availableForSiblings.length > 0 ? (
                       <Select
-                        label={t("admin.select_siblings_placeholder", { defaultValue: "+ Chọn thêm Anh/Chị/Em họ..." })}
+                        label={t("admin.select_cousin_sibling")}
                         value=""
                         includeEmptyOption={true}
                         onChange={(e) => {
@@ -692,7 +732,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                       </Select>
                     ) : (
                       <div className="text-xs text-secondary-text italic px-1 py-1">
-                        {t("admin.no_more_siblings_available", { defaultValue: "Đã chọn hết thành viên phù hợp." })}
+                        {t("admin.siblings_cousin_empty")}
                       </div>
                     )}
                   </div>
@@ -815,18 +855,27 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                 className="overflow-hidden"
               >
                 <div className="p-3.5 pt-1 border-t border-custom-border/40 space-y-3.5">
-                  {/* Link Avatar */}
-                  <Input
-                    label={t("admin.field_avatar", { defaultValue: "Link Ảnh Đại Diện" })}
-                    placeholder="https://..."
-                    value={editingMember.avatarUrl || ""}
-                    error={errors.avatarUrl ? t(errors.avatarUrl) : undefined}
-                    onChange={(e) => {
-                      onChange({ ...editingMember, avatarUrl: e.target.value });
-                      if (errors.avatarUrl) setErrors((prev) => ({ ...prev, avatarUrl: undefined }));
-                    }}
-                  />
-
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-primary-text">{t("admin.member_avatar_label")}</label>
+                    <div className="flex items-center gap-3">
+                      {!removeAvatar && <MemberAvatarImage member={editingMember as FamilyMember} sourceOverride={previewUrl} alt={editingMember.fullName || ""} className="h-16 w-16 rounded-xl object-cover border border-custom-border" />}
+                      <div className="flex flex-wrap gap-2">
+                        <label className="inline-flex items-center gap-2 rounded-xl border border-custom-border px-3 py-2 text-sm cursor-pointer hover:bg-primary-bg">
+                          <ImagePlus size={16} /> {t("admin.member_avatar_choose")}
+                          <input className="sr-only" type="file" accept="image/jpeg,image/png,image/webp,image/gif" disabled={isSaving} onChange={event => {
+                            const file = event.currentTarget.files?.[0]; event.currentTarget.value = ""; if (!file) return;
+                            if (!["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"].includes(file.type) || file.size <= 0 || file.size > 5 * 1024 * 1024) {
+                              onPendingAvatarChange(null); onRemoveAvatarChange(false);
+                              setErrors(prev => ({ ...prev, avatarUrl: "admin.member_avatar_errors.invalid_file" })); return;
+                            }
+                            setErrors(prev => ({ ...prev, avatarUrl: undefined })); onRemoveAvatarChange(false); onPendingAvatarChange(file);
+                          }} />
+                        </label>
+                        {(hasAvatar || pendingAvatar) && <button type="button" disabled={isSaving} onClick={() => { onPendingAvatarChange(null); onRemoveAvatarChange(hasAvatar); }} className="inline-flex items-center gap-2 rounded-xl border border-custom-border px-3 py-2 text-sm text-error"><Trash2 size={16} />{t("admin.member_avatar_remove")}</button>}
+                      </div>
+                    </div>
+                    {errors.avatarUrl && <p role="alert" className="text-xs text-error">{t(errors.avatarUrl)}</p>}
+                  </div>
                   {/* Tiểu sử */}
                   <Textarea
                     label={t("admin.field_biography", { defaultValue: "Tiểu sử & Ghi chú cuộc đời" })}

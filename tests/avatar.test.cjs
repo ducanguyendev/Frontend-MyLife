@@ -135,6 +135,7 @@ function profileSetup() {
     'react/jsx-runtime': { jsx, jsxs: jsx },
     'react-router-dom': { useNavigate: () => () => {} },
     '@/shared/hooks/useLanguage': { useLanguage: () => ({ t: (key, options) => options?.defaultValue ?? key }) },
+    '@/shared/hooks/useBodyScrollLock': { useBodyScrollLock() {} },
     '@/features/auth/context/AuthContext': { useAuth: () => ({
       user: { id: 1, email: 'user@gmail.com', name: 'User', role: 'USER' }, isAdmin: false, logout: async () => {},
     }) },

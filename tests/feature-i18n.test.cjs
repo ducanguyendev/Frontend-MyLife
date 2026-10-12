@@ -28,6 +28,31 @@ async function translator(locale) {
   await i18n.init({ lng: locale, fallbackLng: false, resources, interpolation: { escapeValue: false } });
   return i18n;
 }
+
+test('FamilyTree sibling labels resolve to human-readable text in VI and EN', async () => {
+  const vi = await translator('vi');
+  const en = await translator('en');
+  const viKeys = {
+    siblings_biological_group: 'Anh / Chị / Em ruột',
+    siblings_biological_empty: 'Không có anh/chị/em ruột',
+    sibling_cousin_younger_brother: 'Em trai họ',
+    sibling_neutral_cousin: 'Anh / Chị / Em họ',
+  };
+  const enKeys = {
+    siblings_biological_group: 'Full siblings',
+    siblings_biological_empty: 'No full siblings',
+    sibling_cousin_younger_brother: 'Younger male cousin',
+    sibling_neutral_cousin: 'Cousin',
+  };
+  for (const [key, expected] of Object.entries(viKeys)) {
+    assert.equal(vi.t(`admin.${key}`), expected);
+    assert.notEqual(vi.t(`admin.${key}`), `admin.${key}`);
+  }
+  for (const [key, expected] of Object.entries(enKeys)) {
+    assert.equal(en.t(`admin.${key}`), expected);
+    assert.notEqual(en.t(`admin.${key}`), `admin.${key}`);
+  }
+});
 function harness() {
   const states = []; const effects = []; let index = 0;
   const hooks = {
@@ -62,9 +87,8 @@ async function familySetup(locale, response = { success: true, message: 'Family 
   const calls = [];
   const apiClient = { requestRaw: async (path, options = {}) => {
     calls.push({ path, method: options.method });
-    return new Response(JSON.stringify(options.method ? response : { data: [member] }), {
-      status: response.success === false && options.method ? 404 : 200, headers: { 'Content-Type': 'application/json' },
-    });
+    const body = options.method === 'POST' && path === '/api/family-tree' ? { data: { ...member } } : options.method === 'PUT' ? { data: { ...member } } : options.method === 'DELETE' ? response : { data: [member] };
+    return new Response(JSON.stringify(body), { status: options.method === 'DELETE' && response.success === false ? 404 : 200, headers: { 'Content-Type': 'application/json' } });
   } };
   const { FamilyTreeManager } = load('src/features/admin/components/FamilyTreeManager.tsx', {
     react: { ...hooks.hooks, default: hooks.hooks }, 'react/jsx-runtime': { jsx: hooks.jsx, jsxs: hooks.jsx },
@@ -91,11 +115,13 @@ for (const locale of ['vi', 'en']) {
     const setup = await familySetup(locale, { success: true, message: 'English created/updated.' });
     find(setup.render(), 'Button', props => props.title === setup.t('admin.add_member')).onClick();
     await find(setup.render(), 'MemberFormModal').onSubmit({ preventDefault() {} });
-    assert.equal(setup.toasts.at(-1).text, setup.t('admin.member_create_success'));
+    assert.equal(setup.toasts.findLast(toast => toast.ok)?.text, setup.t('admin.member_create_success'));
     await flush();
+    setup.member.id = 15;
     find(setup.render(), 'MemberCard').onEdit(setup.member);
+    setup.member.id = 15;
     await find(setup.render(), 'MemberFormModal').onSubmit({ preventDefault() {} });
-    assert.equal(setup.toasts.at(-1).text, setup.t('admin.member_update_success'));
+    assert.equal(setup.toasts.findLast(toast => toast.ok)?.text, setup.t('admin.member_update_success'));
   });
 }
 
@@ -230,6 +256,8 @@ test('Member form validations, including birth date, follow current locale witho
     'framer-motion': { motion: new Proxy({}, { get: (_, key) => key }), AnimatePresence: 'AnimatePresence' },
     '@/shared/hooks/useLanguage': { useLanguage: () => ({ t, language: i18n.language }) },
     '@/shared/api/apiClient': { apiClient: {} }, './types': { removeVietnameseTones: value => value },
+    './MemberAvatarImage': { MemberAvatarImage: 'MemberAvatarImage' },
+    './siblingRelations': { isBiologicalSibling: () => false, getSiblingSeniority: () => 'unknown', getSiblingDisplayLabelKey: () => 'sibling_neutral_biological' },
     '@/shared/components/ui': { ...dateHelpers, ...Object.fromEntries(['Modal', 'Button', 'Input', 'Select', 'Textarea', 'DateInput'].map(name => [name, name])) },
   });
   let member = { fullName: '', generation: 1, role: 'Tổ tiên', dateOfBirth: '' };

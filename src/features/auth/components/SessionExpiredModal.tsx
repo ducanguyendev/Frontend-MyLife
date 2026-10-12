@@ -2,6 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, ShieldAlert, LogIn } from 'lucide-react';
 import { useLanguage } from '@/shared/hooks/useLanguage';
+import { useBodyScrollLock } from '@/shared/hooks/useBodyScrollLock';
 
 interface SessionExpiredModalProps {
   isOpen: boolean;
@@ -12,6 +13,7 @@ export const SessionExpiredModal: React.FC<SessionExpiredModalProps> = ({
   isOpen,
   onConfirm,
 }) => {
+  useBodyScrollLock(isOpen);
   const { t } = useLanguage();
 
   if (!isOpen) return null;
