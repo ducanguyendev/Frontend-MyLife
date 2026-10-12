@@ -49,6 +49,7 @@ async function setup() {
     react: hooks, 'react/jsx-runtime': { jsx, jsxs: jsx },
     'lucide-react': new Proxy({}, { get: (_, key) => key }),
     '@/shared/hooks/useLanguage': { useLanguage: () => ({ t: i18n.t.bind(i18n), language: i18n.language }) },
+    '@/shared/api/apiClient': { apiClient: { url: path => `http://localhost:5274${path}` } },
     '@/shared/components/ui': { Button: 'Button', Modal: 'Modal' },
     '../../services/featureMessages': { getFeatureErrorKey: () => 'admin.library_ui.upload_failed' },
   };
@@ -215,20 +216,17 @@ test('upload requires an accessible album/category and falls back to the first d
   assert.equal(find(tree, h.fields.LibraryPhotoFormFields).value.category, 'du-lich'); h.unmount();
 });
 
-test('image tries primary then unique Drive thumbnail once, ignores stale errors, then renders translated placeholder', async () => {
+test('managed Library image uses only the MyLife proxy and shows placeholder after one failed request', async () => {
   const h = await setup(); const images = load('LibraryImage.tsx', h.mocks);
-  const wrapper = images.LibraryImage({ url: 'https://example.com/image', driveFileId: 'drive-id', alt: 'Dog', className: 'object-cover' });
+  const wrapper = images.LibraryImage({ photoId: 12, url: 'https://lh3.googleusercontent.com/d/drive-id', driveFileId: 'drive-id', alt: 'Dog', className: 'object-cover' });
   const render = () => h.render(wrapper.type, wrapper.props);
-  let tree = render(); assert.equal(tree.props.src, 'https://example.com/image');
-  const firstError = tree.props.onError; firstError(); tree = render();
-  assert.equal(tree.props.src, 'https://drive.google.com/thumbnail?id=drive-id&sz=w1600');
-  firstError(); assert.equal(render().props.src, tree.props.src);
+  let tree = render(); assert.equal(tree.props.src, 'http://localhost:5274/api/library/photos/12/image');
+  assert.ok(!tree.props.src.includes('lh3.googleusercontent.com'));
+  assert.ok(!tree.props.src.includes('drive.google.com/thumbnail'));
   tree.props.onError(); tree = render(); assert.equal(tree.type, 'div'); assert.equal(tree.props.role, 'img');
   assert.equal(nodes(tree).filter(node => node.type === 'img').length, 0);
   await h.i18n.changeLanguage('en'); assert.ok(render().props['aria-label'].includes('Unable to load image'));
-  assert.equal(images.libraryImageCandidates('https://drive.google.com/thumbnail?id=drive-id&sz=w1600', 'drive-id').length, 1);
-  assert.equal(images.libraryImageCandidates(null, null).length, 0);
-  assert.notEqual(images.LibraryImage({ url: 'https://example.com/new' }).key, wrapper.key);
+  assert.notEqual(images.LibraryImage({ photoId: 13, alt: 'Next' }).key, wrapper.key);
   assert.equal(images.libraryOriginalUrl('legacy', 'drive-id'), 'https://drive.google.com/file/d/drive-id/view');
   assert.equal(images.libraryOriginalUrl('legacy', ''), 'legacy');
 });
@@ -254,22 +252,21 @@ test('category edit reuses modal with initial name, Save, custom validation and 
   }
 });
 
-test('image success and repeated parent renders keep one stable candidate and photo identity', async () => {
+test('image uses backend URL consistently across repeated renders and lazy-loads gallery thumbnails', async () => {
   const h = await setup(); const images = load('LibraryImage.tsx', h.mocks);
   const photo = { photoId: 1, url: 'https://example.com/success.webp', driveFileId: 'success-id', variant: 'thumbnail', alt: 'Photo' };
   const wrapper = h.render(images.LibraryImage, photo);
   const first = h.render(wrapper.type, wrapper.props);
   assert.equal(first.type, 'img'); assert.equal(first.key, undefined);
-  assert.equal(first.props.src, photo.url); assert.equal(first.props.loading, 'lazy'); assert.equal(first.props.decoding, 'async');
+  assert.equal(first.props.src, 'http://localhost:5274/api/library/photos/1/image'); assert.equal(first.props.loading, 'lazy'); assert.equal(first.props.decoding, 'async');
   for (let index = 0; index < 30; index++) {
     const rerender = h.render(images.LibraryImage, { ...photo, alt: 'Updated caption', className: 'new-class' });
-    assert.equal(rerender.key, wrapper.key); assert.equal(rerender.props.candidates, wrapper.props.candidates);
-    assert.equal(h.render(rerender.type, rerender.props).props.src, photo.url);
-    assert.ok(!rerender.props.candidates.some(url => url.includes('w1600')));
+    assert.equal(rerender.key, wrapper.key);
+    assert.equal(h.render(rerender.type, rerender.props).props.src, 'http://localhost:5274/api/library/photos/1/image');
   }
 });
 
-test('fallback and exhausted state survive repeated parent renders; only genuine identity changes reset the boundary', async () => {
+test('image failure has no Google fallback or retry chain', async () => {
   const h = await setup(); const images = load('LibraryImage.tsx', h.mocks);
   const photo = { photoId: 1, url: 'https://example.com/failure.webp', driveFileId: 'failed-id', variant: 'thumbnail', alt: 'Photo' };
   const wrapper = h.render(images.LibraryImage, photo);
@@ -278,31 +275,10 @@ test('fallback and exhausted state survive repeated parent renders; only genuine
     assert.equal(next.key, wrapper.key);
     return h.render(next.type, next.props);
   };
-  const primary = render(); primary.props.onError();
-  for (let index = 0; index < 30; index++) assert.equal(render().props.src, 'https://drive.google.com/thumbnail?id=failed-id&sz=w640');
-  const fallback = render(); primary.props.onError();
-  assert.equal(render().props.src, fallback.props.src);
-  fallback.props.onError();
+  const primary = render(); assert.equal(primary.props.src, 'http://localhost:5274/api/library/photos/1/image'); primary.props.onError();
   for (let index = 0; index < 30; index++) {
-    primary.props.onError(); fallback.props.onError();
     const result = render(); assert.equal(result.type, 'div'); assert.equal(nodes(result).filter(node => node.type === 'img').length, 0);
   }
-  for (const update of [{ photoId: 2 }, { driveFileId: 'other-id' }, { url: 'https://example.com/new.webp' }, { variant: 'lightbox' }])
-    assert.notEqual(h.render(images.LibraryImage, { ...photo, ...update }).key, wrapper.key);
-});
-
-test('equivalent stored Drive thumbnails collapse to one canonical candidate per variant', async () => {
-  const h = await setup(); const images = load('LibraryImage.tsx', h.mocks);
-  for (const primary of [
-    'https://drive.google.com/thumbnail?sz=w1600&id=drive-id',
-    'https://drive.google.com/thumbnail?id=drive-id&sz=w640',
-    'https://drive.google.com/thumbnail?authuser=0&sz=w320&id=drive-id#ignored',
-  ]) {
-    assert.deepEqual(Array.from(images.libraryImageCandidates(primary, 'drive-id', 'thumbnail')), ['https://drive.google.com/thumbnail?id=drive-id&sz=w640']);
-    assert.deepEqual(Array.from(images.libraryImageCandidates(primary, 'drive-id', 'lightbox')), ['https://drive.google.com/thumbnail?id=drive-id&sz=w1600']);
-  }
-  assert.equal(images.libraryImageCandidates('https://lh3.googleusercontent.com/d/drive-id=w1600', 'drive-id', 'thumbnail')[0], 'https://lh3.googleusercontent.com/d/drive-id=w640');
-  assert.equal(images.libraryImageCandidates('https://lh3.googleusercontent.com/d/drive-id=w1600?authuser=0', 'drive-id', 'thumbnail')[0], 'https://lh3.googleusercontent.com/d/drive-id=w640?authuser=0');
 });
 
 test('closed lightbox renders no image; an open lightbox renders one high-resolution image for the photo', async () => {

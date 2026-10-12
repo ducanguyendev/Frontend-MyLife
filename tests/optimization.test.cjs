@@ -63,14 +63,16 @@ test('tabs expose selected state and support keyboard navigation; surname is gen
   assert.equal(find(s.render(), n => n.props?.role === 'tab' && n.props['aria-selected']).id, 'family-tab-anniversaries');
   assert.ok(!read('src/features/admin/components/FamilyTreeManager.tsx').includes('Dòng họ Nguyễn'));
 });
-test('gallery thumbnails use w640 lazy/async while lightbox keeps high-res and original identity', () => {
+test('gallery thumbnails use the authenticated MyLife image endpoint and original opens Drive view', () => {
   const h = harness(); const images = load('src/features/admin/components/family-tree/LibraryImage.tsx', {
     react: h.hooks, 'react/jsx-runtime': { jsx: h.jsx, jsxs: h.jsx }, 'lucide-react': { ImageOff: 'ImageOff' }, '@/shared/hooks/useLanguage': { useLanguage: () => ({ t: key => key }) },
+    '@/shared/api/apiClient': { apiClient: { url: path => `http://localhost:5274${path}` } },
   }, { URL });
-  assert.deepEqual(Array.from(images.libraryImageCandidates('https://lh3.googleusercontent.com/d/drive-id','drive-id','thumbnail')), ['https://lh3.googleusercontent.com/d/drive-id=w640','https://drive.google.com/thumbnail?id=drive-id&sz=w640']);
-  const wrapper = images.LibraryImage({ url: 'https://lh3.googleusercontent.com/d/drive-id', driveFileId: 'drive-id', alt: 'Photo', variant: 'thumbnail' });
-  let image = h.render(wrapper.type, wrapper.props); assert.equal(image.props.loading, 'lazy'); assert.equal(image.props.decoding,'async'); image.props.onError(); image = h.render(wrapper.type, wrapper.props); assert.ok(image.props.src.endsWith('w640'));
-  assert.ok(images.libraryImageCandidates(null,'drive-id','lightbox')[0].endsWith('w1600'));
+  const wrapper = images.LibraryImage({ photoId: 45, url: 'https://lh3.googleusercontent.com/d/drive-id', driveFileId: 'drive-id', alt: 'Photo', variant: 'thumbnail' });
+  const image = h.render(wrapper.type, wrapper.props); assert.equal(image.props.loading, 'lazy'); assert.equal(image.props.decoding,'async');
+  assert.equal(image.props.src, 'http://localhost:5274/api/library/photos/45/image');
+  assert.ok(!image.props.src.includes('googleusercontent.com'));
+  assert.ok(!image.props.src.includes('drive.google.com/thumbnail'));
   assert.equal(images.libraryOriginalUrl('legacy','drive-id'),'https://drive.google.com/file/d/drive-id/view');
 });
 test('native cursor is used throughout the app', () => {

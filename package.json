@@ -12,6 +12,7 @@
     "test:member-avatar": "node --test tests/member-avatar-display.test.cjs",
     "test:library": "node --test tests/library.test.cjs",
     "test:library-ui": "node --test tests/library-ui.test.cjs",
+    "test:theme-switch": "node --test tests/theme-switch.test.cjs",
     "test:i18n": "node --test tests/feature-i18n.test.cjs",
     "preview": "vite preview",
     "test:roles": "node --test tests/family-role.test.cjs",

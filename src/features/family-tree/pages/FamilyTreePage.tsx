@@ -1,10 +1,10 @@
 import React, { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Home, Sun, Moon, ArrowLeft } from 'lucide-react';
+import { Home, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/features/auth/context/AuthContext';
-import { useTheme } from '@/shared/context/ThemeContext';
 import { useLanguage } from '@/shared/hooks/useLanguage';
 import { LanguageSwitcher } from '@/shared/components/LanguageSwitcher';
+import { ThemeSwitch } from '@/shared/components';
 import { useNotification } from '@/shared/contexts/NotificationContext';
 import { UserMenu } from '@/features/auth/components/UserMenu';
 import { UserProfileModal } from '@/features/profile/components/UserProfileModal';
@@ -13,7 +13,6 @@ import { FamilyTreeManager } from '@/features/admin/components/FamilyTreeManager
 export const FamilyTreePage: React.FC = () => {
   const navigate = useNavigate();
   const { logout } = useAuth();
-  const { theme, toggleTheme } = useTheme();
   const { t } = useLanguage();
   const { showNotification } = useNotification();
   const [isProfileModalOpen, setIsProfileModalOpen] = React.useState(false);
@@ -59,13 +58,7 @@ export const FamilyTreePage: React.FC = () => {
 
         {/* Right: Actions & User */}
         <div className="flex items-center gap-2.5">
-          <button
-            onClick={toggleTheme}
-            className="w-8 h-8 flex items-center justify-center rounded-full bg-secondary-bg/50 hover:bg-secondary-bg border border-custom-border text-secondary-text hover:text-primary-text transition-colors cursor-pointer"
-            title="Toggle Theme"
-          >
-            {theme === 'light' ? <Moon size={14} /> : <Sun size={14} />}
-          </button>
+          <ThemeSwitch />
 
           <LanguageSwitcher />
 

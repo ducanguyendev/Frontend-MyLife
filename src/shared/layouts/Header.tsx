@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../hooks/useLanguage';
 import { useAuth } from '@/features/auth/context/AuthContext';
-import { Menu, X, User as UserIcon, LogOut, ArrowLeftRight, Network, Sun, Moon } from 'lucide-react';
+import { Menu, X, User as UserIcon, LogOut, ArrowLeftRight, Network } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
+import { ThemeSwitch } from '../components';
 import { LoginModal } from '@/features/auth/components/LoginModal';
 import { UserMenu } from '@/features/auth/components/UserMenu';
 import { UserProfileModal } from '@/features/profile/components/UserProfileModal';
@@ -22,7 +23,7 @@ const NAV_LINKS = [
 export const Header: React.FC = () => {
   const { t } = useLanguage();
   const { isAuthenticated, isUser, user, logout } = useAuth();
-  const { theme, toggleTheme } = useTheme();
+  const { theme } = useTheme();
   const navigate = useNavigate();
 
   const [isScrolled, setIsScrolled] = useState(false);
@@ -149,13 +150,7 @@ export const Header: React.FC = () => {
 
           {/* Header Right */}
           <div className="hidden md:flex items-center gap-3 justify-end">
-            <button
-              onClick={toggleTheme}
-              className="flex items-center justify-center h-11 w-11 shrink-0 rounded-full border border-custom-border bg-secondary-bg/60 hover:bg-secondary-bg hover:border-accent transition-all cursor-pointer text-secondary-text hover:text-primary-text"
-              aria-label="Toggle theme"
-            >
-              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
+            <ThemeSwitch />
             <LanguageSwitcher />
 
             {isAuthenticated ? (
@@ -297,7 +292,8 @@ export const Header: React.FC = () => {
                   </div>
                 )}
 
-                <div className="pt-4">
+                <div className="pt-4 flex items-center justify-between gap-4">
+                  <ThemeSwitch />
                   <LanguageSwitcher isMobile />
                 </div>
               </div>

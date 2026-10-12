@@ -5,13 +5,13 @@ import {
   Users, LogIn, LogOut, Lock, Unlock,
   RefreshCw, Home, LayoutDashboard, Globe, Mail,
   CheckCircle, AlertCircle, Clock, Trash2, AlertTriangle, Loader2,
-  Search, Sun, Moon
+  Search
 } from "lucide-react";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { authService } from "@/features/auth/services/authService";
-import { useTheme } from "@/shared/context/ThemeContext";
 import { useLanguage } from "@/shared/hooks/useLanguage";
 import { LanguageSwitcher } from "@/shared/components/LanguageSwitcher";
+import { ThemeSwitch } from "@/shared/components";
 import { Select } from "@/shared/components/ui";
 import { useNotification } from "@/shared/contexts/NotificationContext";
 import { apiClient, getApiErrorMessage } from "@/shared/api/apiClient";
@@ -117,7 +117,6 @@ function UserAvatarItem({ email, avatarUrl }: { email: string; avatarUrl?: strin
 export const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const { theme, toggleTheme } = useTheme();
   const { t } = useLanguage();
 
   const [stats, setStats] = useState<AdminStats | null>(null);
@@ -316,13 +315,7 @@ export const AdminDashboard: React.FC = () => {
             <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
           </button>
           
-          <button
-            onClick={toggleTheme}
-            className="w-8 h-8 flex items-center justify-center rounded-full bg-secondary-bg/50 hover:bg-secondary-bg border border-custom-border text-secondary-text hover:text-primary-text transition-colors cursor-pointer"
-            title="Toggle Theme"
-          >
-            {theme === 'light' ? <Moon size={14} /> : <Sun size={14} />}
-          </button>
+          <ThemeSwitch />
           
           <LanguageSwitcher />
           

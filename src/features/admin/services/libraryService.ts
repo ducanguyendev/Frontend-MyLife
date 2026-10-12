@@ -29,6 +29,7 @@ export interface LibraryAlbum {
   description: string | null;
   photoCount: number;
   coverPhotoUrl: string | null;
+  coverPhotoId: number | null;
   createdAt: string;
   updatedAt: string;
 }
