@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { LibraryTab } from '@/features/admin/components/family-tree/LibraryTab';
-import { UserWorkspaceHeader } from '@/shared/layouts/UserWorkspaceHeader';
+import { MyLifeWorkspaceLayout } from '@/shared/layouts/MyLifeWorkspaceLayout';
 import { useWorkspaceToast } from '@/shared/hooks/useWorkspaceToast';
 
 export const LibraryPage: React.FC = () => {
@@ -9,18 +9,17 @@ export const LibraryPage: React.FC = () => {
   const showToast = useWorkspaceToast();
 
   return (
-    <div className="relative flex min-h-screen flex-col overflow-x-hidden bg-primary-bg font-sans text-primary-text transition-colors duration-300">
-      <UserWorkspaceHeader backTo="/mylife" />
-      <main className="mx-auto w-[96%] max-w-[1400px] flex-1 pb-12 pt-10 sm:pt-14">
-        <div className="mb-8 max-w-2xl px-1">
+    <MyLifeWorkspaceLayout backTo="/mylife" showDock contentClassName="px-3 py-3 sm:px-5 sm:py-4">
+      <div className="flex min-h-full flex-1 flex-col">
+        <div className="mb-4 max-w-2xl shrink-0 px-1">
           <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">MyLife</p>
-          <h1 className="text-3xl font-black tracking-tight text-primary-text">{t('myLife.modules.library.title')}</h1>
+          <h1 className="text-2xl font-black tracking-tight text-primary-text sm:text-3xl">{t('myLife.modules.library.title')}</h1>
           <p className="mt-2 text-sm leading-relaxed text-secondary-text">{t('myLife.modules.library.description')}</p>
         </div>
-        <div className="glass-pill min-h-[600px] overflow-hidden rounded-3xl border border-custom-border">
+        <section className="glass-pill flex min-h-[240px] flex-1 flex-col overflow-hidden rounded-3xl border border-custom-border">
           <LibraryTab showToast={showToast} />
-        </div>
-      </main>
-    </div>
+        </section>
+      </div>
+    </MyLifeWorkspaceLayout>
   );
 };

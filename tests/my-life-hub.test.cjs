@@ -8,6 +8,7 @@ const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 const app = read('src/App.tsx');
 const header = read('src/shared/layouts/Header.tsx');
 const workspaceHeader = read('src/shared/layouts/UserWorkspaceHeader.tsx');
+const workspaceLayout = read('src/shared/layouts/MyLifeWorkspaceLayout.tsx');
 const userMenu = read('src/features/auth/components/UserMenu.tsx');
 const familyTreePage = read('src/features/family-tree/pages/FamilyTreePage.tsx');
 const manager = read('src/features/admin/components/FamilyTreeManager.tsx');
@@ -62,11 +63,12 @@ test('UserMenu contains account actions but no personal module links', () => {
 test('all workspace pages share a single ArrowLeft-only header with explicit parents', () => {
   assert.match(workspaceHeader, /ArrowLeft/);
   assert.doesNotMatch(workspaceHeader, /\bHome\b|<Home/);
-  assert.match(hub, /<UserWorkspaceHeader backTo="\/Home" \/>/);
-  assert.match(familyTreePage, /<UserWorkspaceHeader backTo="\/mylife" \/>/);
+  assert.match(workspaceLayout, /<UserWorkspaceHeader backTo=\{backTo\} \/>/);
+  assert.match(hub, /<MyLifeWorkspaceLayout backTo="\/Home"/);
+  assert.match(familyTreePage, /<MyLifeWorkspaceLayout backTo="\/mylife"/);
   for (const file of ['AnniversariesPage.tsx', 'LibraryPage.tsx', 'FamilyMapPage.tsx']) {
     const page = read(`src/features/my-life/pages/${file}`);
-    assert.match(page, /<UserWorkspaceHeader backTo="\/mylife" \/>/);
+    assert.match(page, /<MyLifeWorkspaceLayout backTo="\/mylife"/);
   }
 });
 

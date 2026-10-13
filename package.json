@@ -16,6 +16,7 @@
     "test:library-ui": "node --test tests/library-ui.test.cjs",
     "test:theme-switch": "node --test tests/theme-switch.test.cjs",
     "test:my-life-hub": "node --test tests/my-life-hub.test.cjs",
+    "test:my-life-workspace": "node --test tests/my-life-workspace.test.cjs",
     "test:i18n": "node --test tests/feature-i18n.test.cjs",
     "test:mindmap": "node --test tests/family-mindmap-graph.test.cjs",
     "test:anniversary": "node --test tests/anniversary.test.cjs",

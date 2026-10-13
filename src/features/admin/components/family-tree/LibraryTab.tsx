@@ -103,7 +103,7 @@ export const LibraryTab: React.FC<LibraryTabProps> = ({ showToast }) => {
   );
 
   return (
-    <div className="flex-1 flex flex-col overflow-y-auto p-6 custom-scrollbar space-y-6">
+    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain p-6 custom-scrollbar space-y-6">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-secondary-bg border border-custom-border p-6 rounded-2xl shadow-sm">
         <div>

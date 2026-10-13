@@ -186,7 +186,7 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
   };
 
   return (
-    <div className="flex flex-col h-full bg-primary-bg">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-primary-bg">
       {/* Header Bar */}
       <div className="p-6 pb-4 border-b border-custom-border bg-secondary-bg/50 backdrop-blur-md sticky top-0 z-20">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -218,8 +218,8 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
       </div>
 
       {/* Main Tab Content */}
-      <div className="flex-1">
-        <div className="flex-1 flex flex-col min-h-0">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
           {/* Toolbar */}
           <div className="p-6 pb-2 flex flex-col lg:flex-row items-center justify-between gap-4">
             <SearchBar
@@ -277,7 +277,7 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
           </div>
 
           {/* Members List/Grid Area */}
-          <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-6 custom-scrollbar">
             {loading ? (
               <div role="status" aria-label={t("admin.library_ui.loading")} className="flex items-center justify-center h-48">
                 <Loader2 size={32} className="animate-spin text-accent" />

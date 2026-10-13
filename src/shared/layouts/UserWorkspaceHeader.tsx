@@ -26,7 +26,7 @@ export const UserWorkspaceHeader: React.FC<UserWorkspaceHeaderProps> = ({ backTo
 
   return (
     <>
-      <header className="sticky top-3 z-40 mx-auto mt-3 flex w-[96%] max-w-[1400px] items-center justify-between gap-2 rounded-2xl border border-custom-border bg-secondary-bg/90 px-2 py-2 shadow-sm backdrop-blur-md sm:gap-3 sm:px-4 md:rounded-full">
+      <header className="mx-auto flex w-[96%] max-w-[1400px] items-center justify-between gap-2 rounded-2xl border border-custom-border bg-secondary-bg/90 px-2 py-2 shadow-sm backdrop-blur-md sm:gap-3 sm:px-4 md:rounded-full">
         <div className="flex min-w-0 items-center gap-2 sm:gap-3">
           <Link
             to={backTo}

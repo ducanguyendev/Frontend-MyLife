@@ -2,6 +2,9 @@
   "title": "Không gian của tôi",
   "subtitle": "Những công cụ giúp bạn quản lý cuộc sống.",
   "greeting": "Xin chào, {{name}}",
+  "dock": {
+    "label": "Điều hướng không gian MyLife"
+  },
   "modules": {
     "title": "Các chức năng",
     "familyTree": {

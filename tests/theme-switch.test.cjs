@@ -47,7 +47,7 @@ test('shared header controls, FamilyTree controls, and centered Home navigation 
   assert.match(userMenu, /h-10 items-center/);
   assert.match(header, /justify-center gap-1 p-1 h-10/);
   assert.match(header, /px-4 h-10/);
-  assert.match(familyTree, /<UserWorkspaceHeader backTo="\/mylife" \/>/);
+  assert.match(familyTree, /<MyLifeWorkspaceLayout backTo="\/mylife"/);
   assert.match(admin, /w-10 h-10/);
 });
 

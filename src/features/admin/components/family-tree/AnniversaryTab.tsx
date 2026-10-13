@@ -84,7 +84,7 @@ export const AnniversaryTab: React.FC<Props> = ({ showToast, members }) => {
           : t('admin.anniversary_ui.banner_upcoming', { title: upcoming.title, count: upcoming.daysUntil })
         : t('admin.anniversary_ui.banner_empty');
 
-  return <div className="flex-1 flex flex-col overflow-y-auto p-4 md:p-6 custom-scrollbar space-y-6">
+  return <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain p-4 md:p-6 custom-scrollbar space-y-6">
     <section className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-5 md:p-6 shadow-sm space-y-5">
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div className="flex items-start gap-3 min-w-0">

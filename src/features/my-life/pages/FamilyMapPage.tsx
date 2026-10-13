@@ -1,22 +1,21 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { FamilyMapTab } from '@/features/admin/components/family-tree/FamilyMapTab';
-import { UserWorkspaceHeader } from '@/shared/layouts/UserWorkspaceHeader';
+import { MyLifeWorkspaceLayout } from '@/shared/layouts/MyLifeWorkspaceLayout';
 
 export const FamilyMapPage: React.FC = () => {
   const { t } = useTranslation();
 
   return (
-    <div className="relative flex min-h-screen flex-col overflow-x-hidden bg-primary-bg font-sans text-primary-text transition-colors duration-300">
-      <UserWorkspaceHeader backTo="/mylife" />
-      <main className="mx-auto w-[96%] max-w-[1400px] flex-1 pb-12 pt-10 sm:pt-14">
-        <div className="mb-8 max-w-2xl px-1">
+    <MyLifeWorkspaceLayout backTo="/mylife" showDock contentClassName="px-3 py-3 sm:px-5 sm:py-4">
+      <div className="min-h-full">
+        <div className="mb-4 max-w-2xl px-1">
           <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">MyLife</p>
-          <h1 className="text-3xl font-black tracking-tight text-primary-text">{t('myLife.modules.map.title')}</h1>
+          <h1 className="text-2xl font-black tracking-tight text-primary-text sm:text-3xl">{t('myLife.modules.map.title')}</h1>
           <p className="mt-2 text-sm leading-relaxed text-secondary-text">{t('myLife.modules.map.description')}</p>
         </div>
         <FamilyMapTab />
-      </main>
-    </div>
+      </div>
+    </MyLifeWorkspaceLayout>
   );
 };

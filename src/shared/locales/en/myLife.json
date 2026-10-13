@@ -2,6 +2,9 @@
   "title": "My Space",
   "subtitle": "Tools to help you care for everyday life.",
   "greeting": "Hello, {{name}}",
+  "dock": {
+    "label": "MyLife module navigation"
+  },
   "modules": {
     "title": "Your tools",
     "familyTree": {
