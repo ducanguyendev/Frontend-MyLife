@@ -11,6 +11,8 @@ export interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title?: React.ReactNode;
+  showTitle?: boolean;
+  ariaLabel?: string;
   description?: React.ReactNode;
   children: React.ReactNode;
   footer?: React.ReactNode;
@@ -35,6 +37,8 @@ export const Modal: React.FC<ModalProps> = ({
   isOpen,
   onClose,
   title,
+  showTitle = true,
+  ariaLabel,
   description,
   children,
   footer,
@@ -124,24 +128,16 @@ export const Modal: React.FC<ModalProps> = ({
             className={`relative w-full ${maxWidthMap[maxWidth]} flex flex-col min-h-0 bg-secondary-bg border border-custom-border rounded-2xl sm:rounded-3xl shadow-2xl z-10 overflow-hidden ${className}`}
             style={{ maxHeight: 'min(85vh, 720px)' }}
             ref={dialogRef} tabIndex={-1}
-            role="dialog" aria-labelledby={title ? titleId : undefined} aria-label={title ? undefined : t('common.dialog')}
+            role="dialog" aria-labelledby={showTitle && title ? titleId : undefined} aria-label={showTitle && title ? undefined : ariaLabel ?? t('common.dialog')}
             aria-modal="true"
           >
             {/* Header */}
-            {(title || !hideCloseButton) && (
-              <div className="shrink-0 flex items-center justify-between px-6 py-4 sm:py-5 border-b border-custom-border bg-secondary-bg z-10">
-                <div className="pr-4">
-                  {title && (
-                    <h3 id={titleId} className="text-lg sm:text-xl font-bold text-primary-text leading-snug">
-                      {title}
-                    </h3>
-                  )}
-                  {description && (
-                    <p className="text-xs text-secondary-text mt-1">
-                      {description}
-                    </p>
-                  )}
-                </div>
+            {((showTitle && (title || description)) || !hideCloseButton) && (
+              <div className={`shrink-0 flex items-center ${showTitle ? 'justify-between px-6 py-4 sm:py-5 border-b' : 'justify-end px-4 py-2'} border-custom-border bg-secondary-bg z-10`}>
+                {showTitle && <div className="pr-4">
+                  {title && <h3 id={titleId} className="text-lg sm:text-xl font-bold text-primary-text leading-snug">{title}</h3>}
+                  {description && <p className="text-xs text-secondary-text mt-1">{description}</p>}
+                </div>}
 
                 {!hideCloseButton && (
                   <button

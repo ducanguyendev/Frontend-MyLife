@@ -115,7 +115,7 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ isMobile = f
     <div className="relative inline-block text-left" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex h-11 items-center gap-2.5 pl-1 pr-3 rounded-full border border-custom-border hover:border-accent bg-secondary-bg/60 hover:bg-secondary-bg transition-all cursor-pointer group focus:outline-none"
+        className="flex h-10 items-center gap-2.5 pl-1 pr-3 rounded-full border border-custom-border hover:border-accent bg-secondary-bg/60 hover:bg-secondary-bg transition-colors cursor-pointer group focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
         aria-haspopup="true"
         aria-expanded={isOpen}
         aria-label="Select language"

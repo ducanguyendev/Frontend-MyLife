@@ -302,26 +302,26 @@ export const AdminDashboard: React.FC = () => {
         </div>
 
         {/* Right: Actions */}
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
           <SearchBar className="hidden xl:block w-48" ariaLabel={t("common.search", { defaultValue: "Search..." })}
             placeholder={t("common.search", { defaultValue: "Search..." })} value={adminSearch} onChange={setAdminSearch} />
           
-          <button onClick={fetchAll} className="w-8 h-8 flex items-center justify-center rounded-full bg-secondary-bg/50 hover:bg-secondary-bg border border-custom-border text-secondary-text hover:text-primary-text transition-colors cursor-pointer" title="Refresh">
-            <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
+          <button onClick={fetchAll} className="w-10 h-10 flex items-center justify-center rounded-full bg-secondary-bg/50 hover:bg-secondary-bg border border-custom-border text-secondary-text hover:text-primary-text transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent" title="Refresh" aria-label={t("common.refresh", { defaultValue: "Refresh" })}>
+            <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
           </button>
           
           <ThemeSwitch />
           
           <LanguageSwitcher />
           
-          <div className="h-4 w-px bg-custom-border mx-1"></div>
+          <div className="h-4 w-px bg-custom-border"></div>
           
-          <button onClick={() => navigate("/")} className="w-8 h-8 flex items-center justify-center rounded-full bg-secondary-bg/50 hover:bg-secondary-bg border border-custom-border text-secondary-text hover:text-primary-text transition-colors cursor-pointer" title="Home">
-            <Home size={14} />
+          <button onClick={() => navigate("/")} className="w-10 h-10 flex items-center justify-center rounded-full bg-secondary-bg/50 hover:bg-secondary-bg border border-custom-border text-secondary-text hover:text-primary-text transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent" title={t("navigation.home", { defaultValue: "Home" })} aria-label={t("navigation.home", { defaultValue: "Home" })}>
+            <Home size={16} />
           </button>
 
-          <button onClick={async () => { await logout(); navigate("/"); }} className="w-8 h-8 flex items-center justify-center rounded-full bg-secondary-bg/50 hover:bg-error/10 border border-custom-border hover:border-error/30 text-secondary-text hover:text-error transition-colors cursor-pointer" title="Logout">
-            <LogOut size={14} />
+          <button onClick={async () => { await logout(); navigate("/"); }} className="w-10 h-10 flex items-center justify-center rounded-full bg-secondary-bg/50 hover:bg-error/10 border border-custom-border hover:border-error/30 text-secondary-text hover:text-error transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent" title={t("navigation.logout", { defaultValue: "Logout" })} aria-label={t("navigation.logout", { defaultValue: "Logout" })}>
+            <LogOut size={16} />
           </button>
           
           <div className="flex items-center gap-2 pl-2">

@@ -91,7 +91,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ onOpenProfile, onSwitchAccou
       {/* Trigger Button: User Avatar (Trên) */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex h-11 items-center gap-2.5 pl-1 pr-3 rounded-full border border-custom-border hover:border-accent bg-secondary-bg/60 hover:bg-secondary-bg transition-all cursor-pointer group"
+        className="flex h-10 items-center gap-2.5 pl-1 pr-3 rounded-full border border-custom-border hover:border-accent bg-secondary-bg/60 hover:bg-secondary-bg transition-colors cursor-pointer group focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
         aria-haspopup="true"
         aria-label="User profile menu"
         aria-expanded={isOpen}
@@ -117,7 +117,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ onOpenProfile, onSwitchAccou
           <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-secondary-bg z-10 shadow-sm" />
         </div>
 
-        <span className="text-xs font-semibold text-primary-text max-w-[120px] truncate hidden lg:inline">
+        <span className="text-xs font-semibold text-primary-text max-w-[180px] truncate hidden lg:inline">
           {user.email}
         </span>
 

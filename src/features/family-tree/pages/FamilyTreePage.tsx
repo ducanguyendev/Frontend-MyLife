@@ -32,7 +32,7 @@ export const FamilyTreePage: React.FC = () => {
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/Home')}
-            className="w-8 h-8 rounded-full bg-secondary-bg/60 hover:bg-secondary-bg border border-custom-border text-secondary-text hover:text-primary-text flex items-center justify-center transition-colors cursor-pointer"
+            className="w-10 h-10 rounded-full bg-secondary-bg/60 hover:bg-secondary-bg border border-custom-border text-secondary-text hover:text-primary-text flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             title={t('common.back', { defaultValue: 'Quay lại' })}
           >
             <ArrowLeft size={16} />
@@ -57,17 +57,18 @@ export const FamilyTreePage: React.FC = () => {
         </div>
 
         {/* Right: Actions & User */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <ThemeSwitch />
 
           <LanguageSwitcher />
 
           <button
             onClick={() => navigate('/Home')}
-            className="w-11 h-11 flex items-center justify-center rounded-full bg-secondary-bg/50 hover:bg-secondary-bg border border-custom-border text-secondary-text hover:text-primary-text transition-colors cursor-pointer"
-            title="Home"
+            className="w-10 h-10 flex items-center justify-center rounded-full bg-secondary-bg/50 hover:bg-secondary-bg border border-custom-border text-secondary-text hover:text-primary-text transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            title={t('navigation.home', { defaultValue: 'Trang chủ' })}
+            aria-label={t('navigation.home', { defaultValue: 'Trang chủ' })}
           >
-            <Home size={14} />
+            <Home size={16} />
           </button>
 
           <div className="h-4 w-px bg-custom-border mx-1" />

@@ -1,17 +1,17 @@
 /* From Uiverse.io by Galahhad */ 
 .theme-switch {
-  --toggle-size: 17.6px;
+  --toggle-size: 16px;
   /* the size is adjusted using font-size,
      this is not transform scale,
      so you can choose any size */
-  --container-width: 5.625em;
+  --container-width: 5.25em;
   --container-height: 2.5em;
   --container-radius: 6.25em;
   /* radius 0 - minecraft mode :) */
   --container-light-bg: #3D7EAE;
   --container-night-bg: #1D1F2C;
-  --circle-container-diameter: 3.375em;
-  --sun-moon-diameter: 2.125em;
+  --circle-container-diameter: 2.5em;
+  --sun-moon-diameter: 1.5em;
   --sun-bg: #ECCA2F;
   --moon-bg: #C4C9D1;
   --spot-color: #959DB1;
@@ -31,6 +31,15 @@
   font-size: var(--toggle-size);
 }
 
+.theme-switch {
+  display: inline-flex;
+  align-items: center;
+  width: var(--container-width);
+  height: var(--container-height);
+  border-radius: var(--container-radius);
+  flex: 0 0 auto;
+}
+
 .theme-switch__container {
   width: var(--container-width);
   height: var(--container-height);
@@ -38,8 +47,9 @@
   border-radius: var(--container-radius);
   overflow: hidden;
   cursor: pointer;
-  -webkit-box-shadow: 0em -0.062em 0.062em rgba(0, 0, 0, 0.25), 0em 0.062em 0.125em rgba(255, 255, 255, 0.94);
-  box-shadow: 0em -0.062em 0.062em rgba(0, 0, 0, 0.25), 0em 0.062em 0.125em rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.16);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.16);
   -webkit-transition: var(--transition);
   -o-transition: var(--transition);
   transition: var(--transition);
@@ -57,7 +67,20 @@
 }
 
 .theme-switch__checkbox {
-  display: none;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.theme-switch__checkbox:focus-visible + .theme-switch__container {
+  outline: 2px solid var(--color-accent, #3b82f6);
+  outline-offset: 3px;
 }
 
 .theme-switch__circle-container {
@@ -183,6 +206,17 @@
 
 .theme-switch__circle-container:hover {
   left: calc(var(--circle-container-offset) + 0.187em);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-switch__container,
+  .theme-switch__circle-container,
+  .theme-switch__sun-moon-container,
+  .theme-switch__moon,
+  .theme-switch__clouds,
+  .theme-switch__stars-container {
+    transition-duration: 0.01ms;
+  }
 }
 
 .theme-switch__checkbox:checked + .theme-switch__container .theme-switch__moon {

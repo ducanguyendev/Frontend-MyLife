@@ -16,9 +16,10 @@ import {
   validateDob,
 } from "@/shared/components/ui";
 import { type FamilyMember, type Generation, removeVietnameseTones } from "./types";
-import { getSiblingDisplayLabelKey, getSiblingSeniority, isBiologicalSibling } from "./siblingRelations";
+import { getSiblingKind, isBiologicalSibling } from "./siblingRelations";
 import { MemberAvatarImage } from "./MemberAvatarImage";
 import { FamilyRelationSelect } from "./FamilyRelationSelect";
+import { FamilyMemberPicker } from "./FamilyMemberPicker";
 
 interface MemberFormModalProps {
   isOpen: boolean;
@@ -78,7 +79,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
   ]);
 
   // Collapsible accordion state
-  const [openSections, setOpenSections] = useState<string[]>(["basic"]);
+  const [openSections, setOpenSections] = useState<string[]>(["bio"]);
 
   const toggleSection = (section: string) => {
     setOpenSections((prev) =>
@@ -134,12 +135,11 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
       .filter(Boolean) as FamilyMember[];
   }, [editingMember?.childIds, members]);
 
-  const handleAddChild = (childId: string) => {
+  const handleAddChild = (childId: number) => {
     if (!childId || !editingMember) return;
     const current = editingMember.childIds || [];
-    const numId = parseInt(childId, 10);
-    if (!current.includes(numId)) {
-      onChange({ ...editingMember, childIds: [...current, numId] });
+    if (!current.includes(childId)) {
+      onChange({ ...editingMember, childIds: [...current, childId] });
     }
   };
 
@@ -156,18 +156,25 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
     onChange({ ...editingMember, childIds: current.filter((id) => id !== childId) });
   };
 
-  const fullSiblings = useMemo(() => members.filter(member =>
-    member.id !== editingMember?.id && !!editingMember && isBiologicalSibling(editingMember, member)
-  ), [editingMember, members]);
-
-  const selectedCousins = useMemo(() => {
-    return (editingMember?.horizontalRelations || [])
-      .filter((r) => r.relationType?.trim().toLowerCase() === "sibling")
-      .map((r) => members.find((m) => m.id === r.memberId))
-      .filter((m): m is FamilyMember => !!m && !isBiologicalSibling(editingMember || {}, m));
+  const siblings = useMemo(() => {
+    if (!editingMember) return [];
+    const siblingById = new Map<number, { member: FamilyMember; kind: "biological" | "cousin" }>();
+    for (const member of members) {
+      if (member.id !== editingMember.id && isBiologicalSibling(editingMember, member)) {
+        siblingById.set(member.id, { member, kind: "biological" });
+      }
+    }
+    for (const relation of editingMember.horizontalRelations || []) {
+      if (relation.relationType?.trim().toLowerCase() !== "sibling") continue;
+      const member = members.find((candidate) => candidate.id === relation.memberId);
+      if (!member || member.id === editingMember.id) continue;
+      const kind = getSiblingKind(editingMember as FamilyMember, member);
+      if (kind) siblingById.set(member.id, { member, kind });
+    }
+    return [...siblingById.values()];
   }, [editingMember, members]);
 
-  const selectedSiblingIds = new Set(selectedCousins.map((sibling) => sibling.id));
+  const selectedSiblingIds = new Set(siblings.map(({ member }) => member.id));
   const availableForSiblings = members.filter(
     (m) =>
       m.id !== editingMember?.id &&
@@ -178,15 +185,15 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
       !isBiologicalSibling(editingMember || {}, m)
   );
 
-  const handleAddSibling = (siblingId: string) => {
+  const handleAddSibling = (siblingId: number) => {
     if (!siblingId || !editingMember) return;
     const current = editingMember.horizontalRelations || [];
-    const selectedMember = members.find(member => String(member.id) === siblingId);
+    const selectedMember = members.find(member => member.id === siblingId);
     if (!selectedMember || isBiologicalSibling(editingMember, selectedMember)) return;
-    if (!current.find((r) => String(r.memberId) === siblingId && r.relationType?.trim().toLowerCase() === "sibling")) {
+    if (!current.find((r) => r.memberId === siblingId && r.relationType?.trim().toLowerCase() === "sibling")) {
       onChange({
         ...editingMember,
-        horizontalRelations: [...current, { memberId: parseInt(siblingId), relationType: "sibling" }],
+        horizontalRelations: [...current, { memberId: siblingId, relationType: "sibling" }],
       });
     }
   };
@@ -372,11 +379,10 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       maxWidth="2xl"
-      title={
-        isUpdate
-          ? t("admin.edit_member", { defaultValue: "Cập nhật thông tin thành viên" })
-          : t("admin.add_new_member", { defaultValue: "Thêm thành viên mới" })
-      }
+      showTitle={false}
+      ariaLabel={isUpdate
+        ? t("admin.edit_member", { defaultValue: "Cập nhật thông tin thành viên" })
+        : t("admin.add_new_member", { defaultValue: "Thêm thành viên mới" })}
       footer={
         <div className="flex items-center justify-end gap-3 w-full">
           <Button
@@ -402,7 +408,79 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
     >
       <form id="familyForm" onSubmit={handleFormSubmit} noValidate className="space-y-4">
         {/* ========================================================= */}
-        {/* KHỐI 1: THÔNG TIN CƠ BẢN */}
+        {/* KHỐI 1: ẢNH ĐẠI DIỆN & TIỂU SỬ */}
+        {/* ========================================================= */}
+        <div className="border border-custom-border/70 rounded-xl bg-secondary-bg/30 overflow-hidden transition-all">
+          <button
+            type="button"
+            aria-expanded={openSections.includes("bio")}
+            onClick={() => toggleSection("bio")}
+            className="w-full flex items-center justify-between p-3.5 hover:bg-secondary-bg/60 transition-colors text-left cursor-pointer"
+          >
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-accent/15 text-accent flex items-center justify-center">
+                <ImagePlus size={16} />
+              </div>
+              <span className="font-semibold text-sm text-primary-text">
+                {t("admin.section_avatar_bio", { defaultValue: "Ảnh đại diện & Tiểu sử" })}
+              </span>
+            </div>
+            <ChevronDown
+              size={16}
+              className={`text-secondary-text transition-transform duration-200 ${
+                openSections.includes("bio") ? "rotate-180" : ""
+              }`}
+            />
+          </button>
+
+          <AnimatePresence initial={false}>
+            {openSections.includes("bio") && (
+              <motion.div
+                key="bio-section"
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden"
+              >
+                <div className="p-3.5 pt-1 border-t border-custom-border/40 space-y-3.5">
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-primary-text">{t("admin.member_avatar_label")}</label>
+                    <div className="flex items-center gap-3">
+                      {!removeAvatar && <MemberAvatarImage member={editingMember as FamilyMember} sourceOverride={previewUrl} alt={editingMember.fullName || ""} className="h-16 w-16 rounded-xl object-cover border border-custom-border" />}
+                      <div className="flex flex-wrap gap-2">
+                        <label className="inline-flex items-center gap-2 rounded-xl border border-custom-border px-3 py-2 text-sm cursor-pointer hover:bg-primary-bg">
+                          <ImagePlus size={16} /> {t("admin.member_avatar_choose")}
+                          <input className="sr-only" type="file" accept="image/jpeg,image/png,image/webp,image/gif" disabled={isSaving} onChange={event => {
+                            const file = event.currentTarget.files?.[0]; event.currentTarget.value = ""; if (!file) return;
+                            if (!["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"].includes(file.type) || file.size <= 0 || file.size > 5 * 1024 * 1024) {
+                              onPendingAvatarChange(null); onRemoveAvatarChange(false);
+                              setErrors(prev => ({ ...prev, avatarUrl: "admin.member_avatar_errors.invalid_file" }));
+                              setOpenSections((prev) => prev.includes("bio") ? prev : [...prev, "bio"]);
+                              return;
+                            }
+                            setErrors(prev => ({ ...prev, avatarUrl: undefined })); onRemoveAvatarChange(false); onPendingAvatarChange(file);
+                          }} />
+                        </label>
+                        {(hasAvatar || pendingAvatar) && <button type="button" disabled={isSaving} onClick={() => { onPendingAvatarChange(null); onRemoveAvatarChange(hasAvatar); }} className="inline-flex items-center gap-2 rounded-xl border border-custom-border px-3 py-2 text-sm text-error"><Trash2 size={16} />{t("admin.member_avatar_remove")}</button>}
+                      </div>
+                    </div>
+                    {errors.avatarUrl && <p role="alert" className="text-xs text-error">{t(errors.avatarUrl)}</p>}
+                  </div>
+                  {/* Tiểu sử */}
+                  <Textarea
+                    label={t("admin.field_biography", { defaultValue: "Tiểu sử & Ghi chú cuộc đời" })}
+                    rows={3}
+                    value={editingMember.biography || ""}
+                    onChange={(e) => onChange({ ...editingMember, biography: e.target.value })}
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* KHỐI 2: THÔNG TIN CƠ BẢN */}
         {/* ========================================================= */}
         <div className="border border-custom-border/70 rounded-xl bg-secondary-bg/30 overflow-hidden transition-all">
           <button
@@ -520,7 +598,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
         </div>
 
         {/* ========================================================= */}
-        {/* KHỐI 2: ACCORDION 1 - QUAN HỆ GIA ĐÌNH & CON CÁI */}
+        {/* KHỐI 3: QUAN HỆ GIA ĐÌNH & CON CÁI */}
         {/* ========================================================= */}
         <div className="border border-custom-border/70 rounded-xl bg-secondary-bg/30 overflow-hidden transition-all">
           <button
@@ -628,109 +706,54 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                       </div>
                     )}
 
-                    {/* Dropdown thêm con */}
-                    {availableForChildren.length > 0 ? (
-                      <Select
-                        label={t("admin.select_children_placeholder", { defaultValue: "+ Chọn thêm con cái từ danh sách..." })}
-                        value={undefined}
-                        placeholder={t("admin.select_children_placeholder", { defaultValue: "+ Chọn thêm con cái từ danh sách..." })}
-                        onValueChange={(value) => {
-                          if (value) {
-                            handleAddChild(value);
-                          }
-                        }}
-                      >
-                        {availableForChildren.map((c) => (
-                          <SelectItem key={c.id} value={String(c.id)}>
-                            {formatName(c.fullName)} ({t("admin.generation", { defaultValue: "Đời" })} {c.generation}{c.gender ? ` • ${c.gender}` : ""})
-                          </SelectItem>
-                        ))}
-                      </Select>
-                    ) : (
-                      <div className="text-xs text-secondary-text italic px-1 py-1">
-                        {t("admin.no_more_children_available", { defaultValue: "Đã chọn hết thành viên phù hợp hoặc chưa có thành viên khác trong hệ thống." })}
-                      </div>
-                    )}
+                    <FamilyMemberPicker
+                      options={availableForChildren.map((member) => ({ id: member.id, fullName: formatName(member.fullName), generation: member.generation, gender: member.gender }))}
+                      generationLabel={t("admin.generation_label")}
+                      placeholder={t("admin.select_children")}
+                      ariaLabel={t("admin.select_children")}
+                      emptyMessage={t("admin.no_more_children_available")}
+                      onSelect={handleAddChild}
+                    />
                   </div>
 
-                  {/* Anh / Chị / Em họ (Sibling horizontal multi-selector) */}
-                  <div className="md:col-span-2 space-y-2 pt-1 border-t border-custom-border/40 mt-2">
-                    <div className="flex items-center justify-between text-xs mt-2">
-                      <label className="font-semibold text-secondary-text">
-                        {t("admin.siblings_biological_group")}
-                      </label>
-                      <span className="text-[11px] text-accent font-medium">
-                        {fullSiblings.length} {t("admin.siblings_count", { defaultValue: "người" })}
-                      </span>
+                  <div className="md:col-span-2 space-y-2 pt-2 border-t border-custom-border/40 mt-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <label className="font-semibold text-secondary-text">{t("admin.siblings_group")}</label>
+                      <span className="text-[11px] text-accent font-medium">{siblings.length} {t("admin.siblings_count", { defaultValue: "người" })}</span>
                     </div>
 
-                    <div className="flex flex-wrap gap-2">
-                      {fullSiblings.length > 0 ? fullSiblings.map(sibling => (
-                        <span key={sibling.id} className="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-secondary-bg text-primary-text text-xs border border-custom-border">
-                          <span className="text-accent font-semibold">{t(`admin.${getSiblingDisplayLabelKey('biological', getSiblingSeniority(editingMember!, sibling))}`)}</span>
-                          <span className="font-medium">{formatName(sibling.fullName)}</span>
-                          <span className="text-secondary-text">{t("admin.generation", { defaultValue: "Đời" })} {sibling.generation}</span>
-                        </span>
-                      )) : <span className="text-xs text-secondary-text italic">{t("admin.siblings_biological_empty")}</span>}
-                    </div>
-                  </div>
-
-                  <div className="md:col-span-2 space-y-2 pt-2 border-t border-custom-border/40">
-                    <div className="flex items-center justify-between text-xs mt-2">
-                      <label className="font-semibold text-secondary-text">{t("admin.siblings_cousin_group")}</label>
-                      <span className="text-[11px] text-accent font-medium">{selectedCousins.length} {t("admin.siblings_count", { defaultValue: "người" })}</span>
-                    </div>
-
-                    {/* Danh sách anh/chị/em họ đã chọn */}
-                    {selectedCousins.length > 0 && (
+                    {siblings.length > 0 && (
                       <div className="flex flex-wrap gap-2 p-2.5 rounded-xl bg-primary-bg/70 border border-custom-border/60">
-                        {selectedCousins.map((sibling) => (
-                          <span
-                            key={sibling.id}
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-secondary-bg text-primary-text text-xs border border-custom-border shadow-xs"
-                          >
-                            <span className="text-accent font-semibold">{t(`admin.${getSiblingDisplayLabelKey('cousin', getSiblingSeniority(editingMember!, sibling))}`)}</span>
+                        {siblings.map(({ member: sibling, kind }) => (
+                          <span key={sibling.id} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-secondary-bg text-primary-text text-xs border border-custom-border shadow-xs">
                             <span className="font-medium">{formatName(sibling.fullName)}</span>
                             <span className="text-[10px] text-secondary-text px-1 py-0.5 rounded bg-primary-bg">
-                              {t("admin.generation", { defaultValue: "Đời" })} {sibling.generation}
+                              {t("admin.generation_label")} {sibling.generation}
                             </span>
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveSibling(sibling.id)}
-                              className="text-secondary-text hover:text-red-500 hover:bg-red-500/10 rounded-full p-0.5 transition-colors cursor-pointer"
-                              title={t("admin.remove", { defaultValue: "Bỏ chọn" })}
-                              aria-label={t("admin.remove", { defaultValue: "Bỏ chọn" })}
-                            >
-                              <X size={13} />
-                            </button>
+                            {kind === "cousin" && (
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveSibling(sibling.id)}
+                                className="text-secondary-text hover:text-red-500 hover:bg-red-500/10 rounded-full p-0.5 transition-colors cursor-pointer"
+                                title={t("admin.remove", { defaultValue: "Bỏ chọn" })}
+                                aria-label={`${t("admin.remove", { defaultValue: "Bỏ chọn" })}: ${formatName(sibling.fullName)}`}
+                              >
+                                <X size={13} />
+                              </button>
+                            )}
                           </span>
                         ))}
                       </div>
                     )}
 
-                    {/* Dropdown thêm anh/chị/em họ */}
-                    {availableForSiblings.length > 0 ? (
-                      <Select
-                        label={t("admin.select_cousin_sibling")}
-                        value={undefined}
-                        placeholder={t("admin.select_cousin_sibling")}
-                        onValueChange={(value) => {
-                          if (value) {
-                            handleAddSibling(value);
-                          }
-                        }}
-                      >
-                        {availableForSiblings.map((c) => (
-                          <SelectItem key={c.id} value={String(c.id)}>
-                            {formatName(c.fullName)} ({t("admin.generation", { defaultValue: "Đời" })} {c.generation}{c.gender ? ` • ${c.gender}` : ""})
-                          </SelectItem>
-                        ))}
-                      </Select>
-                    ) : (
-                      <div className="text-xs text-secondary-text italic px-1 py-1">
-                        {t("admin.siblings_cousin_empty")}
-                      </div>
-                    )}
+                    <FamilyMemberPicker
+                      options={availableForSiblings.map((member) => ({ id: member.id, fullName: formatName(member.fullName), generation: member.generation, gender: member.gender }))}
+                      generationLabel={t("admin.generation_label")}
+                      placeholder={t("admin.select_sibling")}
+                      ariaLabel={t("admin.select_sibling")}
+                      emptyMessage={t("admin.no_more_siblings_available")}
+                      onSelect={handleAddSibling}
+                    />
                   </div>
                 </div>
               </motion.div>
@@ -739,7 +762,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
         </div>
 
         {/* ========================================================= */}
-        {/* KHỐI 3: ACCORDION 2 - THÔNG TIN LIÊN HỆ & NƠI Ở */}
+        {/* KHỐI 4: THÔNG TIN LIÊN HỆ & NƠI Ở */}
         {/* ========================================================= */}
         <div className="border border-custom-border/70 rounded-xl bg-secondary-bg/30 overflow-hidden transition-all">
           <button
@@ -815,75 +838,6 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
         </div>
 
         {/* ========================================================= */}
-        {/* KHỐI 4: ACCORDION 3 - ẢNH ĐẠI DIỆN & TIỂU SỬ */}
-        {/* ========================================================= */}
-        <div className="border border-custom-border/70 rounded-xl bg-secondary-bg/30 overflow-hidden transition-all">
-          <button
-            type="button"
-            aria-expanded={openSections.includes("bio")}
-            onClick={() => toggleSection("bio")}
-            className="w-full flex items-center justify-between p-3.5 hover:bg-secondary-bg/60 transition-colors text-left cursor-pointer"
-          >
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-accent/15 text-accent flex items-center justify-center">
-                <FileText size={16} />
-              </div>
-              <span className="font-semibold text-sm text-primary-text">
-                {t("admin.section_avatar_bio", { defaultValue: "Ảnh đại diện & Tiểu sử" })}
-              </span>
-            </div>
-            <ChevronDown
-              size={16}
-              className={`text-secondary-text transition-transform duration-200 ${
-                openSections.includes("bio") ? "rotate-180" : ""
-              }`}
-            />
-          </button>
-
-          <AnimatePresence initial={false}>
-            {openSections.includes("bio") && (
-              <motion.div
-                key="bio-section"
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="overflow-hidden"
-              >
-                <div className="p-3.5 pt-1 border-t border-custom-border/40 space-y-3.5">
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium text-primary-text">{t("admin.member_avatar_label")}</label>
-                    <div className="flex items-center gap-3">
-                      {!removeAvatar && <MemberAvatarImage member={editingMember as FamilyMember} sourceOverride={previewUrl} alt={editingMember.fullName || ""} className="h-16 w-16 rounded-xl object-cover border border-custom-border" />}
-                      <div className="flex flex-wrap gap-2">
-                        <label className="inline-flex items-center gap-2 rounded-xl border border-custom-border px-3 py-2 text-sm cursor-pointer hover:bg-primary-bg">
-                          <ImagePlus size={16} /> {t("admin.member_avatar_choose")}
-                          <input className="sr-only" type="file" accept="image/jpeg,image/png,image/webp,image/gif" disabled={isSaving} onChange={event => {
-                            const file = event.currentTarget.files?.[0]; event.currentTarget.value = ""; if (!file) return;
-                            if (!["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"].includes(file.type) || file.size <= 0 || file.size > 5 * 1024 * 1024) {
-                              onPendingAvatarChange(null); onRemoveAvatarChange(false);
-                              setErrors(prev => ({ ...prev, avatarUrl: "admin.member_avatar_errors.invalid_file" })); return;
-                            }
-                            setErrors(prev => ({ ...prev, avatarUrl: undefined })); onRemoveAvatarChange(false); onPendingAvatarChange(file);
-                          }} />
-                        </label>
-                        {(hasAvatar || pendingAvatar) && <button type="button" disabled={isSaving} onClick={() => { onPendingAvatarChange(null); onRemoveAvatarChange(hasAvatar); }} className="inline-flex items-center gap-2 rounded-xl border border-custom-border px-3 py-2 text-sm text-error"><Trash2 size={16} />{t("admin.member_avatar_remove")}</button>}
-                      </div>
-                    </div>
-                    {errors.avatarUrl && <p role="alert" className="text-xs text-error">{t(errors.avatarUrl)}</p>}
-                  </div>
-                  {/* Tiểu sử */}
-                  <Textarea
-                    label={t("admin.field_biography", { defaultValue: "Tiểu sử & Ghi chú cuộc đời" })}
-                    rows={3}
-                    value={editingMember.biography || ""}
-                    onChange={(e) => onChange({ ...editingMember, biography: e.target.value })}
-                  />
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
       </form>
     </Modal>
   );

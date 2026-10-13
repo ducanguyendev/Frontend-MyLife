@@ -120,7 +120,7 @@ export const Header: React.FC = () => {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className={`hidden xl:flex items-center justify-center gap-2 p-1.5 h-11 rounded-full border transition-colors ${
+          <nav className={`hidden xl:flex items-center justify-center gap-1 p-1 h-10 rounded-full border transition-colors ${
             isScrolled ? 'bg-gray-50/50 dark:bg-primary-bg/50 border-gray-200 dark:border-custom-border' : 'glass-pill'
           }`}>
         {NAV_LINKS.map((link) => (
@@ -128,7 +128,7 @@ export const Header: React.FC = () => {
                 key={link.id}
                 href={`#${link.id}`}
                 onClick={(e) => handleNavClick(e, link.id)}
-                className={`px-5 h-full flex items-center justify-center rounded-full text-sm whitespace-nowrap font-medium transition-all duration-300 relative z-10 ${
+                className={`px-4 h-full flex items-center justify-center rounded-full text-sm whitespace-nowrap font-medium transition-all duration-300 relative z-10 ${
                   activeSection === link.id
                     ? (isScrolled ? 'text-white dark:text-[#111111]' : 'text-[#111111] dark:text-white')
                     : (isScrolled ? 'text-gray-500 dark:text-white/70 hover:text-[#111111] dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10' : 'text-white/70 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-white/10 dark:hover:bg-white/10')
@@ -149,7 +149,7 @@ export const Header: React.FC = () => {
           </nav>
 
           {/* Header Right */}
-          <div className="hidden md:flex items-center gap-3 justify-end">
+          <div className="hidden md:flex items-center gap-2 justify-end">
             <ThemeSwitch />
             <LanguageSwitcher />
 
@@ -161,10 +161,10 @@ export const Header: React.FC = () => {
             ) : (
               <button
                 onClick={() => setIsLoginModalOpen(true)}
-                className={`px-6 h-11 flex items-center justify-center text-sm font-bold rounded-full transition-transform whitespace-nowrap cursor-pointer ${
+                className={`px-4 h-10 flex items-center justify-center text-sm font-bold rounded-full transition-colors whitespace-nowrap cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${
                   isScrolled 
-                    ? 'bg-[#111111] dark:bg-white text-white dark:text-black hover:scale-105' 
-                    : 'bg-white dark:bg-[#111111] text-black dark:text-white hover:scale-105 shadow-[0_0_15px_rgba(255,255,255,0.4)] dark:shadow-[0_0_15px_rgba(0,0,0,0.4)]'
+                    ? 'bg-[#111111] dark:bg-white text-white dark:text-black'
+                    : 'bg-white dark:bg-[#111111] text-black dark:text-white shadow-sm'
                 }`}
               >
                 {t('navigation.login')}
@@ -177,7 +177,7 @@ export const Header: React.FC = () => {
             {isAuthenticated ? (
               <button
                 onClick={() => setIsProfileModalOpen(true)}
-                className="w-8 h-8 rounded-full overflow-hidden cursor-pointer flex items-center justify-center border border-custom-border"
+                className="w-10 h-10 rounded-full overflow-hidden cursor-pointer flex items-center justify-center border border-custom-border focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                 aria-label="Profile"
               >
                 {user?.avatar ? (

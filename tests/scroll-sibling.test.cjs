@@ -88,32 +88,40 @@ test('confirmed sibling examples classify half siblings, cousins and missing-DOB
   assert.equal(s.getSiblingDisplayLabelKey('cousin', s.getSiblingSeniority(duc, hoangMinh)), 'sibling_neutral_cousin');
 });
 
-test('modal and custom overlays share scroll locks; Select portals, repositions and cleans up', () => {
+test('modal and custom overlays share scroll locks; Select and action picker portal and reposition', () => {
   const modal = fs.readFileSync(path.join(root, 'src/shared/components/ui/Modal.tsx'), 'utf8');
   const photo = fs.readFileSync(path.join(root, 'src/features/admin/components/family-tree/PhotoLightboxModal.tsx'), 'utf8');
   const project = fs.readFileSync(path.join(root, 'src/features/portfolio/components/projects/ProjectDetailModal.tsx'), 'utf8');
   const select = fs.readFileSync(path.join(root, 'src/shared/components/ui/Select.tsx'), 'utf8');
+  const picker = fs.readFileSync(path.join(root, 'src/features/admin/components/family-tree/FamilyMemberPicker.tsx'), 'utf8');
   assert.ok(modal.includes('useBodyScrollLock(isOpen)'));
   assert.ok(photo.includes('useBodyScrollLock(!!photo)'));
   assert.ok(project.includes('useBodyScrollLock(isOpen)'));
-  assert.match(select, /<select[\s\S]*?absolute inset-0 z-10 h-full w-full/);
-  assert.doesNotMatch(select, /createPortal|role="listbox"|getBoundingClientRect/);
+  assert.ok(select.includes('SelectPrimitive.Portal'));
+  assert.ok(select.includes('position="popper"'));
+  assert.ok(picker.includes('createPortal('));
+  assert.ok(picker.includes('getBoundingClientRect()'));
   assert.ok(modal.includes('flex-1 min-h-0 overflow-y-auto'));
 });
 
-test('FamilyTree form derives full siblings and keeps cousin links explicit', () => {
+test('FamilyTree form unifies inferred and explicit siblings; details retain separate relation groups', () => {
   const form = fs.readFileSync(path.join(root, 'src/features/admin/components/family-tree/MemberFormModal.tsx'), 'utf8');
   const manager = fs.readFileSync(path.join(root, 'src/features/admin/components/FamilyTreeManager.tsx'), 'utf8');
   const detail = fs.readFileSync(path.join(root, 'src/features/admin/components/family-tree/MemberDetailModal.tsx'), 'utf8');
-  assert.ok(form.includes('isBiologicalSibling(editingMember, member)'));
-  assert.ok(form.includes('!isBiologicalSibling(editingMember || {}, m)'));
-  assert.ok(form.includes('siblings_biological_group') && form.includes('siblings_cousin_group'));
+  assert.ok(form.includes('getSiblingKind(editingMember as FamilyMember, member)'));
+  assert.ok(form.includes('!selectedSiblingIds.has(m.id)'));
+  assert.ok(form.includes('siblings_group') && form.includes('select_sibling'));
+  assert.equal((form.match(/<FamilyMemberPicker/g) || []).length, 2);
+  assert.ok(form.includes('kind === "cousin"'));
+  assert.doesNotMatch(form, /siblings_biological_group|siblings_cousin_group/);
   assert.ok(manager.includes('horizontalRelations: []'));
   assert.ok(manager.includes("relation.relationType?.trim().toLowerCase() === 'sibling' ? 'sibling'"));
   assert.ok(detail.includes("getSiblingKind(member, m) === 'cousin'"));
   for (const locale of ['vi', 'en']) {
     const admin = JSON.parse(fs.readFileSync(path.join(root, `src/shared/locales/${locale}/admin.json`), 'utf8'));
-    assert.ok(admin.siblings_biological_group && admin.siblings_cousin_group && admin.select_cousin_sibling);
+    assert.ok(admin.siblings_biological_group && admin.siblings_cousin_group && admin.siblings_group && admin.select_sibling);
+    assert.equal(Object.hasOwn(admin, 'select_cousin_sibling'), false);
+    assert.equal(Object.hasOwn(admin, 'select_children_placeholder'), false);
     assert.ok(admin.sibling_biological_older_brother && admin.sibling_cousin_younger_sister);
   }
 });
