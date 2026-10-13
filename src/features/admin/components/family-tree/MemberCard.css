@@ -195,6 +195,22 @@
   padding: 0.35rem 0;
 }
 
+.family-flip-card__menu {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-3px) scale(0.96);
+  transform-origin: top right;
+  transition: opacity 200ms ease, transform 200ms ease, visibility 0s;
+}
+
+.family-flip-card__menu--visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+}
+
 @media (hover: hover) {
   .family-flip-card__scene:hover .family-flip-card__glow {
     opacity: 1;
@@ -203,7 +219,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .family-flip-card__inner,
-  .family-flip-card__glow {
+  .family-flip-card__glow,
+  .family-flip-card__menu {
     transition-duration: 0.01ms !important;
   }
 }

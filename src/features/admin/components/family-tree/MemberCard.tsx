@@ -36,10 +36,12 @@ export const MemberCard: React.FC<MemberCardProps> = ({
   const { t, language } = useLanguage();
   const [isFlipped, setIsFlipped] = React.useState(false);
   const [isPointerHovering, setIsPointerHovering] = React.useState(false);
+  const [isBackSettled, setIsBackSettled] = React.useState(false);
   const hoverEnterTimerRef = React.useRef<number | null>(null);
   const hoverLeaveTimerRef = React.useRef<number | null>(null);
   const viewButtonRef = React.useRef<HTMLButtonElement>(null);
-  const isPreviewVisible = isFlipped || isPointerHovering;
+  const isPreviewVisible = isFlipped || isPointerHovering || isDropdownOpen;
+  const isActionMenuVisible = (isBackSettled && isPreviewVisible) || isDropdownOpen;
 
   const clearHoverTimers = React.useCallback(() => {
     if (hoverEnterTimerRef.current !== null) {
@@ -77,7 +79,13 @@ export const MemberCard: React.FC<MemberCardProps> = ({
     hoverLeaveTimerRef.current = window.setTimeout(() => {
       hoverLeaveTimerRef.current = null;
       setIsPointerHovering(false);
+      if (!isFlipped) setIsBackSettled(false);
     }, HOVER_LEAVE_DELAY_MS);
+  };
+
+  const handleFlipTransitionEnd = (event: React.TransitionEvent<HTMLDivElement>) => {
+    if (event.target !== event.currentTarget || event.propertyName !== "transform") return;
+    setIsBackSettled(isPreviewVisible);
   };
 
   React.useEffect(() => clearHoverTimers, [clearHoverTimers]);
@@ -102,6 +110,7 @@ export const MemberCard: React.FC<MemberCardProps> = ({
     clearHoverTimers();
     setIsFlipped(false);
     setIsPointerHovering(false);
+    setIsBackSettled(false);
   };
 
   return (
@@ -112,12 +121,13 @@ export const MemberCard: React.FC<MemberCardProps> = ({
       className={`family-flip-card relative h-full min-h-[248px] ${isDropdownOpen ? "z-40" : "z-0"}`}
       data-flipped={isPreviewVisible}
       aria-label={`${t("admin.view_detail")}: ${formatName(m.fullName)}`}
+      onPointerEnter={event => { if (event.pointerType === "mouse") scheduleHoverEnter(); }}
+      onPointerLeave={event => { if (event.pointerType === "mouse") scheduleHoverLeave(); }}
     >
       <div className="family-flip-card__scene">
         <div
           className="family-flip-card__inner"
-          onPointerEnter={event => { if (event.pointerType === "mouse") scheduleHoverEnter(); }}
-          onPointerLeave={event => { if (event.pointerType === "mouse") scheduleHoverLeave(); }}
+          onTransitionEnd={handleFlipTransitionEnd}
         >
           <section className={`family-flip-card__face family-flip-card__front bg-secondary-bg border ${genColors.border}`} aria-label={t("admin.member_card_front", { defaultValue: "Thông tin tóm tắt" })} aria-hidden={isPreviewVisible} inert={isPreviewVisible}>
             <div className="family-flip-card__glow" aria-hidden="true" />
@@ -180,10 +190,15 @@ export const MemberCard: React.FC<MemberCardProps> = ({
         </div>
       </div>
 
-      <div className="family-flip-card__menu absolute right-3 top-3 z-30">
+      <div
+        className={`family-flip-card__menu absolute right-3 top-3 z-30${isActionMenuVisible ? " family-flip-card__menu--visible" : ""}`}
+        aria-hidden={!isActionMenuVisible}
+        inert={!isActionMenuVisible}
+      >
         <button
           type="button"
           onClick={onToggleDropdown}
+          disabled={!isActionMenuVisible}
           className="rounded-full border border-custom-border bg-secondary-bg/90 p-2 text-secondary-text shadow-sm transition-colors hover:text-primary-text hover:bg-primary-bg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           aria-label={t("admin.member_actions_for", { name: formatName(m.fullName) })}
           aria-haspopup="menu"

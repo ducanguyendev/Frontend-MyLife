@@ -45,8 +45,20 @@ test('preview supports touch and keyboard, keeps edit/delete menu outside the 3D
   assert.match(card, /viewButtonRef\.current\?\.focus\(\)/);
   assert.match(card, /inert=\{!isPreviewVisible\}/);
   assert.match(card, /family-flip-card__menu absolute/);
+  assert.match(card, /const \[isBackSettled, setIsBackSettled\] = React\.useState\(false\)/);
+  assert.match(card, /onTransitionEnd=\{handleFlipTransitionEnd\}/);
+  assert.match(card, /event\.target !== event\.currentTarget \|\| event\.propertyName !== "transform"/);
+  assert.match(card, /setIsBackSettled\(isPreviewVisible\)/);
+  assert.match(card, /isFlipped \|\| isPointerHovering \|\| isDropdownOpen/);
+  assert.match(card, /\(isBackSettled && isPreviewVisible\) \|\| isDropdownOpen/);
+  assert.match(card, /aria-hidden=\{!isActionMenuVisible\}/);
+  assert.match(card, /inert=\{!isActionMenuVisible\}/);
+  assert.match(card, /disabled=\{!isActionMenuVisible\}/);
   assert.match(card, /onEdit\(m\)/);
   assert.match(card, /onDelete\(m\)/);
+  assert.match(card, /onCloseDropdown\(\); onView\(m\)/);
+  assert.match(card, /onCloseDropdown\(\); onEdit\(m\)/);
+  assert.match(card, /onCloseDropdown\(\); onDelete\(m\)/);
   assert.match(manager, /members=\{members\}/);
 });
 
@@ -58,7 +70,11 @@ test('flip styles are namespaced, motion-aware, and contain no repeated decorati
   assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);
   assert.match(css, /transition:\s*transform 700ms cubic-bezier\(0\.22, 0\.61, 0\.36, 1\)/);
   assert.match(css, /transition:\s*opacity 450ms ease/);
+  assert.match(css, /transition:\s*opacity 200ms ease, transform 200ms ease, visibility 0s/);
+  assert.match(css, /\.family-flip-card__menu--visible\s*\{[\s\S]*?visibility: visible;[\s\S]*?pointer-events: auto/);
+  assert.match(css, /\.family-flip-card__menu\s*\{[\s\S]*?visibility: hidden;[\s\S]*?pointer-events: none/);
   assert.match(css, /transition-duration:\s*0\.01ms !important/);
+  assert.match(css, /\.family-flip-card__inner,[\s\S]*?\.family-flip-card__menu\s*\{\s*transition-duration: 0\.01ms !important/);
   assert.match(card, /transition=\{\{ duration: 0\.15 \}\}/);
   assert.doesNotMatch(`${card}\n${css}`, /id=/);
   assert.doesNotMatch(css, /\.card\b|\.front\b|\.back\b|\.title\b|\.content\b|@keyframes rotation_481/);
