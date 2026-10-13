@@ -7,6 +7,9 @@ import { type FamilyMember, removeVietnameseTones, getGenerationColors } from ".
 import { MemberAvatarImage } from "./MemberAvatarImage";
 import "./MemberCard.css";
 
+const HOVER_ENTER_DELAY_MS = 200;
+const HOVER_LEAVE_DELAY_MS = 100;
+
 interface MemberCardProps {
   member: FamilyMember;
   members: FamilyMember[];
@@ -33,8 +36,51 @@ export const MemberCard: React.FC<MemberCardProps> = ({
   const { t, language } = useLanguage();
   const [isFlipped, setIsFlipped] = React.useState(false);
   const [isPointerHovering, setIsPointerHovering] = React.useState(false);
+  const hoverEnterTimerRef = React.useRef<number | null>(null);
+  const hoverLeaveTimerRef = React.useRef<number | null>(null);
   const viewButtonRef = React.useRef<HTMLButtonElement>(null);
   const isPreviewVisible = isFlipped || isPointerHovering;
+
+  const clearHoverTimers = React.useCallback(() => {
+    if (hoverEnterTimerRef.current !== null) {
+      window.clearTimeout(hoverEnterTimerRef.current);
+      hoverEnterTimerRef.current = null;
+    }
+    if (hoverLeaveTimerRef.current !== null) {
+      window.clearTimeout(hoverLeaveTimerRef.current);
+      hoverLeaveTimerRef.current = null;
+    }
+  }, []);
+
+  const scheduleHoverEnter = () => {
+    if (hoverLeaveTimerRef.current !== null) {
+      window.clearTimeout(hoverLeaveTimerRef.current);
+      hoverLeaveTimerRef.current = null;
+    }
+    if (hoverEnterTimerRef.current !== null) {
+      window.clearTimeout(hoverEnterTimerRef.current);
+    }
+    hoverEnterTimerRef.current = window.setTimeout(() => {
+      hoverEnterTimerRef.current = null;
+      setIsPointerHovering(true);
+    }, HOVER_ENTER_DELAY_MS);
+  };
+
+  const scheduleHoverLeave = () => {
+    if (hoverEnterTimerRef.current !== null) {
+      window.clearTimeout(hoverEnterTimerRef.current);
+      hoverEnterTimerRef.current = null;
+    }
+    if (hoverLeaveTimerRef.current !== null) {
+      window.clearTimeout(hoverLeaveTimerRef.current);
+    }
+    hoverLeaveTimerRef.current = window.setTimeout(() => {
+      hoverLeaveTimerRef.current = null;
+      setIsPointerHovering(false);
+    }, HOVER_LEAVE_DELAY_MS);
+  };
+
+  React.useEffect(() => clearHoverTimers, [clearHoverTimers]);
 
   const formatName = (name: string) => !name ? "" : language === "en" ? removeVietnameseTones(name) : name;
   const genColors = getGenerationColors(m.generation);
@@ -47,8 +93,15 @@ export const MemberCard: React.FC<MemberCardProps> = ({
   const role = t(`admin.role_${m.role?.toLowerCase() || "member"}`, { defaultValue: m.role || t("admin.role_member") });
 
   const flipToBack = () => {
+    clearHoverTimers();
     setIsFlipped(true);
     requestAnimationFrame(() => viewButtonRef.current?.focus());
+  };
+
+  const flipToFront = () => {
+    clearHoverTimers();
+    setIsFlipped(false);
+    setIsPointerHovering(false);
   };
 
   return (
@@ -63,8 +116,8 @@ export const MemberCard: React.FC<MemberCardProps> = ({
       <div className="family-flip-card__scene">
         <div
           className="family-flip-card__inner"
-          onPointerEnter={event => { if (event.pointerType === "mouse") setIsPointerHovering(true); }}
-          onPointerLeave={event => { if (event.pointerType === "mouse") setIsPointerHovering(false); }}
+          onPointerEnter={event => { if (event.pointerType === "mouse") scheduleHoverEnter(); }}
+          onPointerLeave={event => { if (event.pointerType === "mouse") scheduleHoverLeave(); }}
         >
           <section className={`family-flip-card__face family-flip-card__front bg-secondary-bg border ${genColors.border}`} aria-label={t("admin.member_card_front", { defaultValue: "Thông tin tóm tắt" })} aria-hidden={isPreviewVisible} inert={isPreviewVisible}>
             <div className="family-flip-card__glow" aria-hidden="true" />
@@ -116,7 +169,7 @@ export const MemberCard: React.FC<MemberCardProps> = ({
               </div>
             </dl>
             <div className="family-flip-card__back-actions">
-              <button type="button" onClick={() => setIsFlipped(false)} className="family-flip-card__flip-trigger text-secondary-text focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">
+              <button type="button" onClick={flipToFront} className="family-flip-card__flip-trigger text-secondary-text focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">
                 <ArrowLeft size={14} aria-hidden="true" /> {t("admin.flip_back", { defaultValue: "Lật lại" })}
               </button>
               <button ref={viewButtonRef} type="button" onClick={() => onView(m)} className="family-flip-card__view text-accent focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">

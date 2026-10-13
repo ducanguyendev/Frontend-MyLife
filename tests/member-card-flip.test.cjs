@@ -27,9 +27,21 @@ test('preview back uses real birth, spouse, child, and address data and opens th
 
 test('preview supports touch and keyboard, keeps edit/delete menu outside the 3D scene', () => {
   assert.match(card, /React\.useState\(false\)/);
-  assert.match(card, /onPointerEnter=\{event => \{ if \(event\.pointerType === "mouse"\)/);
-  assert.match(card, /onPointerLeave=\{event => \{ if \(event\.pointerType === "mouse"\)/);
+  assert.match(card, /onPointerEnter=\{event => \{ if \(event\.pointerType === "mouse"\) scheduleHoverEnter\(\); \}\}/);
+  assert.match(card, /onPointerLeave=\{event => \{ if \(event\.pointerType === "mouse"\) scheduleHoverLeave\(\); \}\}/);
+  assert.match(card, /const HOVER_ENTER_DELAY_MS = 200/);
+  assert.match(card, /const HOVER_LEAVE_DELAY_MS = 100/);
+  assert.match(card, /window\.setTimeout\([\s\S]*?HOVER_ENTER_DELAY_MS\)/);
+  assert.match(card, /window\.setTimeout\([\s\S]*?HOVER_LEAVE_DELAY_MS\)/);
+  assert.match(card, /hoverEnterTimerRef = React\.useRef<number \| null>\(null\)/);
+  assert.match(card, /hoverLeaveTimerRef = React\.useRef<number \| null>\(null\)/);
+  assert.match(card, /React\.useEffect\(\(\) => clearHoverTimers, \[clearHoverTimers\]\)/);
+  assert.match(card, /window\.clearTimeout\(hoverEnterTimerRef\.current\)/);
+  assert.match(card, /window\.clearTimeout\(hoverLeaveTimerRef\.current\)/);
   assert.match(card, /onClick=\{flipToBack\}/);
+  assert.match(card, /const flipToBack = \(\) => \{[\s\S]*?setIsFlipped\(true\)/);
+  assert.match(card, /onClick=\{flipToFront\}/);
+  assert.match(card, /const flipToFront = \(\) => \{[\s\S]*?setIsFlipped\(false\)[\s\S]*?setIsPointerHovering\(false\)/);
   assert.match(card, /viewButtonRef\.current\?\.focus\(\)/);
   assert.match(card, /inert=\{!isPreviewVisible\}/);
   assert.match(card, /family-flip-card__menu absolute/);
@@ -44,6 +56,10 @@ test('flip styles are namespaced, motion-aware, and contain no repeated decorati
   assert.match(css, /backface-visibility:\s*hidden/);
   assert.match(css, /rotateY\(180deg\)/);
   assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);
+  assert.match(css, /transition:\s*transform 700ms cubic-bezier\(0\.22, 0\.61, 0\.36, 1\)/);
+  assert.match(css, /transition:\s*opacity 450ms ease/);
+  assert.match(css, /transition-duration:\s*0\.01ms !important/);
+  assert.match(card, /transition=\{\{ duration: 0\.15 \}\}/);
   assert.doesNotMatch(`${card}\n${css}`, /id=/);
   assert.doesNotMatch(css, /\.card\b|\.front\b|\.back\b|\.title\b|\.content\b|@keyframes rotation_481/);
 });
