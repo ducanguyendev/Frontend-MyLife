@@ -33,12 +33,17 @@ const flush = () => new Promise(resolve => setImmediate(resolve));
 function familySetup(request) {
   const h = harness(); const toast = [];
   const names = ['MemberCard','MemberTable','MemberDetailModal','MemberFormModal','DeleteConfirmModal','AnniversaryTab','LibraryTab','FamilyMapTab'];
+  const apiClient = { requestRaw: request };
+  const familyMembersHook = load('src/features/admin/components/family-tree/useFamilyMembers.ts', {
+    react: h.hooks, '@/shared/api/apiClient': { apiClient }, '../../services/featureMessages': messages,
+  });
   const { FamilyTreeManager } = load('src/features/admin/components/FamilyTreeManager.tsx', {
     react: { ...h.hooks, default: h.hooks }, 'react/jsx-runtime': { jsx: h.jsx, jsxs: h.jsx }, 'lucide-react': new Proxy({}, { get: (_, key) => key }),
     '@/shared/hooks/useLanguage': { useLanguage: () => ({ t: key => key }) }, '@/shared/components/ui': { Button: 'Button' },
     '@/shared/components/SearchBar': { SearchBar: 'SearchBar' },
-    '@/shared/api/apiClient': { apiClient: { requestRaw: request } }, '../services/featureMessages': messages,
+    '@/shared/api/apiClient': { apiClient }, '../services/featureMessages': messages,
     './family-tree/memberSearch': search, './family-tree': Object.fromEntries(names.map(name => [name,name])),
+    './family-tree/useFamilyMembers': familyMembersHook,
   }, { document: { addEventListener() {}, removeEventListener() {}, getElementById: () => ({ focus() {} }) } });
   const render = () => h.render(FamilyTreeManager, { showToast: value => toast.push(value) }); render(); h.mount(); return { h, render, toast };
 }
@@ -57,14 +62,16 @@ test('initial FamilyTree fetch carries AbortSignal and cancellation ignores a la
   release(new Response(JSON.stringify({ data: [fixture] }))); await flush();
   assert.ok(!nodes(s.render()).some(n => n.type === 'MemberCard')); assert.deepEqual(s.toast, []);
 });
-test('tabs expose selected state and support keyboard navigation; surname is generic', async () => {
+test('member view controls retain grid/table/mindmap and family module tabs are removed', async () => {
   const s = familySetup(async () => new Response(JSON.stringify({ data: [fixture] }))); await flush();
-  const tab = find(s.render(), n => n.props?.role === 'tab' && n.props['aria-selected']); assert.equal(tab.id, 'family-tab-members');
-  tab.onKeyDown({ key: 'ArrowRight', preventDefault() {} });
-  assert.equal(find(s.render(), n => n.props?.role === 'tab' && n.props['aria-selected']).id, 'family-tab-anniversaries');
-  assert.ok(!read('src/features/admin/components/FamilyTreeManager.tsx').includes('Dòng họ Nguyễn'));
-});
-test('gallery thumbnails use the authenticated MyLife image endpoint and original opens Drive view', () => {
+  const initial = s.render();
+  assert.ok(nodes(initial).some(node => node.type === 'MemberCard'));
+  assert.ok(!nodes(initial).some(node => node.props?.role === 'tablist' || node.props?.role === 'tab'));
+  find(initial, n => n.type === 'button' && n.props?.['aria-label'] === 'admin.view_table').onClick();
+  assert.ok(nodes(s.render()).some(node => node.type === 'MemberTable'));
+  find(s.render(), n => n.type === 'button' && n.props?.['aria-label'] === 'admin.view_mindmap').onClick();
+  assert.ok(nodes(s.render()).some(node => node.type === 'Mindmap'));
+});test('gallery thumbnails use the authenticated MyLife image endpoint and original opens Drive view', () => {
   const h = harness(); const images = load('src/features/admin/components/family-tree/LibraryImage.tsx', {
     react: h.hooks, 'react/jsx-runtime': { jsx: h.jsx, jsxs: h.jsx }, 'lucide-react': { ImageOff: 'ImageOff' }, '@/shared/hooks/useLanguage': { useLanguage: () => ({ t: key => key }) },
     '@/shared/api/apiClient': { apiClient: { url: path => `http://localhost:5274${path}` } },

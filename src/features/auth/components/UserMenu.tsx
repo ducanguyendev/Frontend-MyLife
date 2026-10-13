@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/shared/hooks/useLanguage';
 import { useAuth } from '../context/AuthContext';
 import { authService } from '../services/authService';
-import { User, LogOut, ArrowLeftRight, ChevronDown, Shield, LayoutDashboard, Network } from 'lucide-react';
+import { User, LogOut, ArrowLeftRight, ChevronDown, Shield, LayoutDashboard } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface UserMenuProps {
@@ -13,7 +13,7 @@ interface UserMenuProps {
 
 export const UserMenu: React.FC<UserMenuProps> = ({ onOpenProfile, onSwitchAccount }) => {
   const { t } = useLanguage();
-  const { user, isAdmin, isUser, logout } = useAuth();
+  const { user, isAdmin, logout } = useAuth();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [imgError, setImgError] = useState(false);
@@ -189,16 +189,6 @@ export const UserMenu: React.FC<UserMenuProps> = ({ onOpenProfile, onSwitchAccou
                 </button>
               )}
 
-              {isUser && (<button
-                onClick={() => {
-                  setIsOpen(false);
-                  navigate('/FamilyTree');
-                }}
-                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-primary-text hover:bg-primary-bg transition-colors cursor-pointer"
-              >
-                <Network size={15} className="text-secondary-text" />
-                <span>{t('admin.family_tree', { defaultValue: 'Quản lý Gia phả' })}</span>
-              </button>)}
 
               <button
                 onClick={handleProfileClick}

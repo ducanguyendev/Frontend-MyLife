@@ -1,15 +1,15 @@
 import React from "react";
 import {
-  CalendarDays, MapPin, Phone, ExternalLink, BookOpen, Edit2
+  CalendarDays, MapPin, Phone, ExternalLink, BookOpen, Edit2, X, UsersRound,
 } from "lucide-react";
 import { useLanguage } from "@/shared/hooks/useLanguage";
-import { Modal, Button, Badge } from "@/shared/components/ui";
+import { Modal } from "@/shared/components/ui";
 import { type FamilyMember, removeVietnameseTones, getGenerationColors } from "./types";
 import { MemberAvatarImage } from "./MemberAvatarImage";
 import { getSiblingDisplayLabelKey, getSiblingKind, getSiblingSeniority, isBiologicalSibling } from "./siblingRelations";
 
-const FacebookIcon = ({ size = 14, className = "" }: { size?: number; className?: string }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+const FacebookIcon: React.FC<{ size?: number; className?: string }> = ({ size = 13, className = "" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
     <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
   </svg>
 );
@@ -22,218 +22,163 @@ interface MemberDetailModalProps {
   onView: (member: FamilyMember) => void;
 }
 
-export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
-  member,
-  members,
-  onClose,
-  onEdit,
-  onView,
-}) => {
+const SectionTitle: React.FC<{ icon: React.ReactNode; children: React.ReactNode }> = ({ icon, children }) => (
+  <h4 className="mb-2 flex items-center gap-2 text-sm font-semibold text-primary-text">
+    <span className="text-accent">{icon}</span>{children}
+  </h4>
+);
+
+export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({ member, members, onClose, onEdit, onView }) => {
   const { t, language } = useLanguage();
 
   if (!member) return null;
 
-  const formatName = (name: string) => {
-    if (!name) return "";
-    return language === "en" ? removeVietnameseTones(name) : name;
-  };
-
+  const formatName = (name: string) => !name ? "" : language === "en" ? removeVietnameseTones(name) : name;
+  const empty = t("admin.profile_no_information", { defaultValue: "Chưa có thông tin" });
+  const dateLocale = language === "en" ? "en-GB" : "vi-VN";
   const father = members.find((m) => m.id === member.fatherId);
   const mother = members.find((m) => m.id === member.motherId);
   const spouse = members.find((m) => m.id === member.spouseId);
   const children = members.filter(
     (m) => m.fatherId === member.id || m.motherId === member.id || member.childIds?.includes(m.id)
   );
-  
-  // Anh/chị/em ruột: Cùng cha hoặc cùng mẹ (khác chính mình)
+
+  // Keep the existing biological-sibling and cousin classification unchanged.
   const ruotSiblings = members.filter(m => m.id !== member.id && isBiologicalSibling(member, m));
   const hoSiblings = members.filter(m => m.id !== member.id && getSiblingKind(member, m) === 'cousin');
   const getSiblingLabel = (sibling: FamilyMember, kind: 'biological' | 'cousin') =>
     t('admin.' + getSiblingDisplayLabelKey(kind, getSiblingSeniority(member, sibling)));
 
-  const renderRelationMember = (m: FamilyMember, roleLabel?: string) => (
+  const renderRelationMember = (related: FamilyMember, roleLabel?: string) => (
     <button
+      key={`${roleLabel ?? "relation"}-${related.id}`}
       type="button"
-      onClick={() => onView(m)}
-      aria-label={roleLabel ? `${roleLabel}: ${formatName(m.fullName)}` : formatName(m.fullName)}
-      className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-custom-border bg-secondary-bg px-3 py-1.5 text-left shadow-sm transition-colors hover:bg-primary-bg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+      onClick={() => onView(related)}
+      aria-label={roleLabel ? `${roleLabel}: ${formatName(related.fullName)}` : formatName(related.fullName)}
+      className="inline-flex min-h-8 max-w-full cursor-pointer items-center gap-1.5 rounded-lg border border-custom-border bg-secondary-bg px-2.5 py-1 text-left transition-colors hover:border-accent/40 hover:bg-primary-bg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
     >
-      {roleLabel && <span className="text-xs font-medium text-secondary-text">{roleLabel}</span>}
-      <span className="text-sm font-semibold text-primary-text">{formatName(m.fullName)}</span>
+      <span className="max-w-full truncate text-xs font-semibold text-primary-text">{formatName(related.fullName)}</span>
+      {roleLabel && <span className="shrink-0 text-[10px] text-secondary-text">{roleLabel}</span>}
     </button>
   );
 
-  const renderParents = () => {
-    const p = [];
-    if (father) p.push(father);
-    if (mother) p.push(mother);
-    if (p.length === 0) return <span className="text-sm font-semibold text-primary-text">{t("admin.none")}</span>;
-    return (
-      <div className="flex flex-wrap items-center gap-2">
-        {p.map((parent) => renderRelationMember(parent))}
-      </div>
-    );
-  };
+  const renderRelationGroup = (label: string, related: FamilyMember[], emptyLabel = t("admin.none")) => (
+    <div className="grid grid-cols-[7.25rem_minmax(0,1fr)] items-start gap-2 border-b border-custom-border/60 py-2 last:border-0">
+      <dt className="pt-1 text-[10px] font-bold uppercase tracking-wide text-secondary-text">{label}</dt>
+      <dd className="m-0 flex min-w-0 flex-wrap gap-1.5">
+        {related.length ? related.map((item) => renderRelationMember(item)) : <span className="pt-1 text-xs text-secondary-text">{emptyLabel}</span>}
+      </dd>
+    </div>
+  );
+
+  const role = t(`admin.role_${member.role?.toLowerCase() || "member"}`, { defaultValue: member.role || t("admin.role_member") });
+  const gender = t(`admin.gender_${member.gender?.toLowerCase() || "unknown"}`, { defaultValue: member.gender || t("admin.gender_unknown") });
+  const generationColors = getGenerationColors(member.generation);
 
   return (
     <Modal
       isOpen={!!member}
       onClose={onClose}
-      maxWidth="2xl"
-      title={t("admin.member_detail_title", { defaultValue: "Hồ Sơ Thành Viên Dòng Họ" })}
-      footer={
-        <div className="flex items-center justify-end gap-3 w-full">
-          <Button
-            variant="secondary"
-            onClick={onClose}
-          >
-            {t("admin.close", { defaultValue: "Đóng" })}
-          </Button>
-          <Button
-            variant="primary"
-            leftIcon={<Edit2 size={16} />}
-            onClick={() => {
-              onClose();
-              onEdit(member);
-            }}
-          >
-            {t("admin.edit_info", { defaultValue: "Chỉnh Sửa Thông Tin" })}
-          </Button>
-        </div>
-      }
+      maxWidth="full"
+      showTitle={false}
+      hideCloseButton
+      ariaLabel={formatName(member.fullName) || t("admin.member_profile")}
+      className="!max-h-[calc(100vh-24px)] sm:!max-h-[calc(100vh-40px)]"
     >
-      <div className="space-y-6">
-        {/* Profile Card Header */}
-        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 bg-primary-bg/60 p-5 rounded-2xl border border-custom-border">
+      <div className="space-y-4">
+        <header className="flex min-w-0 items-start gap-3 border-b border-custom-border pb-4 sm:items-center sm:gap-4">
           <MemberAvatarImage
             member={member}
             alt={formatName(member.fullName)}
-            className="w-20 h-20 rounded-2xl object-cover border-2 border-accent/40 shadow-md shrink-0"
+            className="h-[72px] w-[72px] shrink-0 rounded-2xl border border-accent/30 object-cover sm:h-20 sm:w-20"
           />
-          <div className="flex-1 text-center sm:text-left">
-            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-1.5">
-              <span
-                className={`text-xs font-bold px-2.5 py-1 rounded-lg border ${getGenerationColors(member.generation).bg} ${getGenerationColors(member.generation).text} ${getGenerationColors(member.generation).border}`}
-              >
-                {t("admin.generation", { defaultValue: "Đời thứ" })} {member.generation}
-              </span>
-              <Badge variant="outline">
-                {t(`admin.gender_${member.gender?.toLowerCase() || "unknown"}`, { defaultValue: member.gender || "Không rõ" })}
-              </Badge>
-              <span className="text-xs text-secondary-text font-medium">
-                • {t(`admin.role_${member.role?.toLowerCase() || "member"}`, { defaultValue: member.role || "Thành viên" })}
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              <h2 className="max-w-full truncate text-xl font-bold leading-tight text-primary-text sm:text-2xl" title={formatName(member.fullName)}>
+                {formatName(member.fullName)}
+              </h2>
+              <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${generationColors.bg} ${generationColors.text} ${generationColors.border}`}>
+                {t("admin.generation", { defaultValue: "Đời" })} {member.generation}
               </span>
             </div>
-            <h3 className="text-2xl font-bold text-primary-text mb-2">
-              {formatName(member.fullName)}
-            </h3>
-
-            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 pt-1">
-              {member.dateOfBirth && (
-                <div className="flex items-center gap-1.5 text-xs text-secondary-text bg-secondary-bg px-3 py-1.5 rounded-xl border border-custom-border">
-                  <CalendarDays size={14} className="text-accent" />
-                  <span>{new Date(member.dateOfBirth).toLocaleDateString("vi-VN")}</span>
-                </div>
-              )}
-              {member.address && (
-                <div className="flex items-center gap-1.5 text-xs text-secondary-text bg-secondary-bg px-3 py-1.5 rounded-xl border border-custom-border">
-                  <MapPin size={14} className="text-amber-500" />
-                  <span>{member.address}</span>
-                </div>
-              )}
-              {member.phoneNumber && (
-                <div className="flex items-center gap-1.5 text-xs text-secondary-text bg-secondary-bg px-3 py-1.5 rounded-xl border border-custom-border">
-                  <Phone size={14} className="text-blue-500" />
-                  <a href={`tel:${member.phoneNumber}`} className="text-primary-text font-medium hover:underline">
-                    {member.phoneNumber}
-                  </a>
-                </div>
-              )}
-              {member.facebookUrl && (
-                <div className="flex items-center gap-1.5 text-xs text-secondary-text bg-secondary-bg px-3 py-1.5 rounded-xl border border-custom-border">
-                  <FacebookIcon className="text-blue-600" />
-                  <a href={member.facebookUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500 font-medium hover:underline flex items-center gap-1">
-                    Facebook <ExternalLink size={10} />
-                  </a>
-                </div>
-              )}
+            <p className="mt-1 truncate text-xs text-secondary-text" title={`${gender} · ${role}`}>
+              {gender} <span aria-hidden="true">·</span> {role}
+            </p>
+            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-secondary-text">
+              {member.dateOfBirth && <span className="inline-flex items-center gap-1.5"><CalendarDays size={13} className="text-accent" />{new Date(member.dateOfBirth).toLocaleDateString(dateLocale)}</span>}
+              {member.address && <span className="inline-flex min-w-0 max-w-full items-center gap-1.5"><MapPin size={13} className="shrink-0 text-accent" /><span className="line-clamp-1 break-all">{member.address}</span></span>}
             </div>
+          </div>
+          <div className="flex shrink-0 items-center gap-1">
+            <button
+              type="button"
+              onClick={() => { onClose(); onEdit(member); }}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-custom-border bg-secondary-bg px-2.5 py-2 text-xs font-semibold text-primary-text transition-colors hover:border-accent/50 hover:bg-primary-bg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent sm:px-3"
+            >
+              <Edit2 size={14} aria-hidden="true" /><span className="hidden sm:inline">{t("admin.edit_info", { defaultValue: "Chỉnh sửa" })}</span><span className="sm:hidden">{t("admin.edit", { defaultValue: "Sửa" })}</span>
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label={t("admin.close", { defaultValue: "Đóng" })}
+              className="rounded-xl p-2 text-secondary-text transition-colors hover:bg-primary-bg hover:text-primary-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            >
+              <X size={19} />
+            </button>
+          </div>
+        </header>
+
+        <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)]">
+          <section className="min-w-0 rounded-2xl border border-custom-border bg-primary-bg/45 p-3.5 sm:p-4">
+            <SectionTitle icon={<UsersRound size={16} />}>{t("admin.profile_family", { defaultValue: "Gia đình" })}</SectionTitle>
+            <dl className="m-0">
+              {renderRelationGroup(t("admin.parents", { defaultValue: "Cha / Mẹ" }).replace(/[:：]$/, ""), [father, mother].filter((m): m is FamilyMember => Boolean(m)))}
+              {renderRelationGroup(t("admin.field_spouse", { defaultValue: "Vợ/Chồng" }), spouse ? [spouse] : [])}
+              {renderRelationGroup(t("admin.children", { defaultValue: "Con cái" }).replace(/ liên kết:$/, ""), children)}
+              <div className="grid grid-cols-[7.25rem_minmax(0,1fr)] items-start gap-2 border-b border-custom-border/60 py-2 last:border-0">
+                <dt className="pt-1 text-[10px] font-bold uppercase tracking-wide text-secondary-text">{t("admin.siblings_biological_group")}</dt>
+                <dd className="m-0 flex min-w-0 flex-wrap gap-1.5">
+                  {ruotSiblings.length ? ruotSiblings.map(s => renderRelationMember(s, getSiblingLabel(s, 'biological'))) : <span className="pt-1 text-xs text-secondary-text">{t("admin.siblings_biological_empty")}</span>}
+                </dd>
+              </div>
+              <div className="grid grid-cols-[7.25rem_minmax(0,1fr)] items-start gap-2 py-2">
+                <dt className="pt-1 text-[10px] font-bold uppercase tracking-wide text-secondary-text">{t("admin.siblings_cousin_group")}</dt>
+                <dd className="m-0 flex min-w-0 flex-wrap gap-1.5">
+                  {hoSiblings.length ? hoSiblings.map(s => renderRelationMember(s, getSiblingLabel(s, 'cousin'))) : <span className="pt-1 text-xs text-secondary-text">{t("admin.siblings_cousin_empty")}</span>}
+                </dd>
+              </div>
+            </dl>
+          </section>
+
+          <div className="min-w-0 space-y-4">
+            <section className="rounded-2xl border border-custom-border bg-primary-bg/45 p-3.5 sm:p-4">
+              <SectionTitle icon={<BookOpen size={16} />}>{t("admin.biography", { defaultValue: "Tiểu sử & Cuộc đời" })}</SectionTitle>
+              {member.biography?.trim()
+                ? <p className="m-0 whitespace-pre-wrap break-words text-sm leading-relaxed text-secondary-text">{member.biography}</p>
+                : <p className="m-0 text-xs text-secondary-text">{empty}</p>}
+            </section>
+
+            <section className="rounded-2xl border border-custom-border bg-primary-bg/45 p-3.5 sm:p-4">
+              <SectionTitle icon={<Phone size={15} />}>{t("admin.profile_contact", { defaultValue: "Liên hệ" })}</SectionTitle>
+              <dl className="m-0 space-y-2">
+                <div className="grid grid-cols-[6.75rem_minmax(0,1fr)] items-start gap-2">
+                  <dt className="text-xs text-secondary-text">{t("admin.field_phone", { defaultValue: "Điện thoại" })}</dt>
+                  <dd className="m-0 break-words text-xs text-primary-text">{member.phoneNumber ? <a href={`tel:${member.phoneNumber}`} className="hover:text-accent hover:underline">{member.phoneNumber}</a> : empty}</dd>
+                </div>
+                <div className="grid grid-cols-[6.75rem_minmax(0,1fr)] items-start gap-2">
+                  <dt className="text-xs text-secondary-text">Facebook</dt>
+                  <dd className="m-0 min-w-0 text-xs text-primary-text">{member.facebookUrl
+                    ? <a href={member.facebookUrl} target="_blank" rel="noopener noreferrer" className="inline-flex max-w-full items-center gap-1 text-accent hover:underline"><FacebookIcon className="shrink-0" /><span className="truncate">{member.facebookUrl}</span><ExternalLink size={11} className="shrink-0" /></a>
+                    : empty}</dd>
+                </div>
+                <div className="grid grid-cols-[6.75rem_minmax(0,1fr)] items-start gap-2">
+                  <dt className="text-xs text-secondary-text">{t("admin.field_address", { defaultValue: "Địa chỉ" })}</dt>
+                  <dd className="m-0 break-words text-xs text-primary-text">{member.address || empty}</dd>
+                </div>
+              </dl>
+            </section>
           </div>
         </div>
-
-        {/* Family Relations - Stacked Layout */}
-        <div className="flex flex-col gap-5 bg-primary-bg/70 p-5 rounded-2xl border border-custom-border">
-          {/* Row 1: Parents & Spouse */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <h4 className="text-xs font-bold text-secondary-text uppercase mb-1.5">
-                {t("admin.parents", { defaultValue: "Cha / Mẹ:" })}
-              </h4>
-              <div className="text-sm text-primary-text font-semibold">
-                {renderParents()}
-              </div>
-            </div>
-            <div>
-              <h4 className="text-xs font-bold text-secondary-text uppercase mb-1.5">
-                {t("admin.field_spouse", { defaultValue: "Vợ / Chồng:" })}
-              </h4>
-              <div className="flex flex-wrap items-center gap-2">
-                {spouse ? (
-                  renderRelationMember(spouse)
-                ) : (
-                  <span className="text-sm font-semibold text-primary-text">{t("admin.none", { defaultValue: "Chưa có liên kết" })}</span>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Row 2: Children */}
-          <div>
-            <h4 className="text-xs font-bold text-secondary-text uppercase mb-2">
-              {t("admin.children", { defaultValue: "Con cái:" })}
-            </h4>
-            <div className="flex flex-wrap items-center gap-2">
-              {children.length === 0
-                ? <span className="text-sm font-semibold text-primary-text">{t("admin.none", { defaultValue: "Chưa có liên kết" })}</span>
-                : children.map((c) => renderRelationMember(c))
-              }
-            </div>
-          </div>
-
-          {/* Row 3: Siblings (Ruột) */}
-          <div>
-            <h4 className="text-xs font-bold text-secondary-text uppercase mb-2">
-              {t("admin.siblings_biological_group")}
-            </h4>
-            <div className="flex flex-wrap items-center gap-2">
-              {ruotSiblings.length === 0
-                ? <span className="text-sm font-semibold text-primary-text">{t("admin.siblings_biological_empty")}</span>
-                : ruotSiblings.map((s) => renderRelationMember(s, getSiblingLabel(s, 'biological')))
-              }
-            </div>
-          </div>
-
-          {/* Row 4: Siblings (Họ) */}
-          <div>
-              <h4 className="text-xs font-bold text-secondary-text uppercase mb-2">{t("admin.siblings_cousin_group")}</h4>
-              <div className="flex flex-wrap items-center gap-2">
-                {hoSiblings.length === 0 ? <span className="text-sm font-semibold text-primary-text">{t("admin.siblings_cousin_empty")}</span> : hoSiblings.map((s) => renderRelationMember(s, getSiblingLabel(s, 'cousin')))}
-              </div>
-          </div>
-        </div>
-
-        {/* Biography */}
-        {member.biography && (
-          <div>
-            <h4 className="text-sm font-bold text-accent flex items-center gap-2 mb-2">
-              <BookOpen size={16} />
-              {t("admin.biography", { defaultValue: "Tiểu sử & Cuộc đời" })}
-            </h4>
-            <div className="bg-primary-bg/70 p-4 rounded-2xl border border-custom-border text-xs text-secondary-text leading-relaxed italic">
-              "{member.biography}"
-            </div>
-          </div>
-        )}
       </div>
     </Modal>
   );

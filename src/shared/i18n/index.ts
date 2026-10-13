@@ -23,6 +23,8 @@ import commonVi from '../locales/vi/common.json';
 import commonEn from '../locales/en/common.json';
 import adminVi from '../locales/vi/admin.json';
 import adminEn from '../locales/en/admin.json';
+import myLifeVi from '../locales/vi/myLife.json';
+import myLifeEn from '../locales/en/myLife.json';
 
 const resources = {
   vi: {
@@ -37,6 +39,7 @@ const resources = {
       footer: footerVi,
       common: commonVi,
       admin: adminVi,
+      myLife: myLifeVi,
     }
   },
   en: {
@@ -51,6 +54,7 @@ const resources = {
       footer: footerEn,
       common: commonEn,
       admin: adminEn,
+      myLife: myLifeEn,
     }
   },
 };

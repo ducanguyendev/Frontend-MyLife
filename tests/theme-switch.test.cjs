@@ -47,7 +47,7 @@ test('shared header controls, FamilyTree controls, and centered Home navigation 
   assert.match(userMenu, /h-10 items-center/);
   assert.match(header, /justify-center gap-1 p-1 h-10/);
   assert.match(header, /px-4 h-10/);
-  assert.match(familyTree, /w-10 h-10.*aria-label=/s);
+  assert.match(familyTree, /<UserWorkspaceHeader backTo="\/mylife" \/>/);
   assert.match(admin, /w-10 h-10/);
 });
 
@@ -55,11 +55,12 @@ test('Header, Admin, FamilyTree and mobile drawer share ThemeSwitch', () => {
   const header = read('src/shared/layouts/Header.tsx');
   const admin = read('src/features/admin/pages/AdminDashboard.tsx');
   const familyTree = read('src/features/family-tree/pages/FamilyTreePage.tsx');
+  const workspaceHeader = read('src/shared/layouts/UserWorkspaceHeader.tsx');
 
   assert.equal((header.match(/<ThemeSwitch\s*\/>/g) || []).length, 2);
   assert.match(admin, /<ThemeSwitch\s*\/>/);
-  assert.match(familyTree, /<ThemeSwitch\s*\/>/);
-  assert.doesNotMatch(`${header}\n${admin}\n${familyTree}`, /toggleTheme|<Sun\b|<Moon\b|Toggle Theme/i);
+  assert.match(workspaceHeader, /<ThemeSwitch\s*\/>/);
+  assert.doesNotMatch(`${header}\n${admin}\n${familyTree}\n${workspaceHeader}`, /toggleTheme|<Sun\b|<Moon\b|Toggle Theme/i);
 });
 
 test('theme persistence and document dark class remain owned by ThemeContext', () => {

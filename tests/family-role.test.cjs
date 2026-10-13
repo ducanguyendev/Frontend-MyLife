@@ -35,7 +35,7 @@ const auth = roles => ({ user: { email: 'roles@example.com', role: roles.include
   isAuthenticated: true, isAdmin: roles.includes('ADMIN'), isUser: roles.includes('USER'), isLoading: false, logout() {} });
 
 for (const roles of [['ADMIN'], ['USER']]) {
-  test(roles.join('+') + ': actual guard blocks before mounting and navigation exposes FamilyTree only with USER', () => {
+  test(roles.join('+') + ': actual guard blocks before mounting and MyLife navigation is USER-only', () => {
     const h = harness(); const state = auth(roles); const navigations = [];
     const mocks = {
       react: { ...h.hooks, default: h.hooks }, 'react/jsx-runtime': { jsx: h.jsx, jsxs: h.jsx },
@@ -57,13 +57,14 @@ for (const roles of [['ADMIN'], ['USER']]) {
     find(h.render(Menu), node => node.props?.['aria-label'] === 'User profile menu').onClick();
     const menu = h.render(Menu);
     const familyButtons = nodes(menu).filter(node => node.type === 'button' && nodes(node).some(child => child.props?.children === 'admin.family_tree'));
-    assert.equal(familyButtons.length, state.isUser ? 1 : 0);
-    if (state.isUser) { familyButtons[0].props.onClick(); assert.equal(navigations.at(-1), '/FamilyTree'); }
+    assert.equal(familyButtons.length, 0);
     const headerHarness = harness(); mocks.react = { ...headerHarness.hooks, default: headerHarness.hooks };
     const Header = load('src/shared/layouts/Header.tsx', mocks).Header;
     find(headerHarness.render(Header), node => node.props?.['aria-label'] === 'Toggle menu').onClick();
     const header = headerHarness.render(Header);
-    assert.equal(nodes(header).filter(node => node.type === 'button' && nodes(node).some(child => child.props?.children === 'admin.family_tree')).length, state.isUser ? 1 : 0);
+    const myLifeLaunchers = nodes(header).filter(node => node.type === 'button' && node.props?.['aria-label'] === 'myLife.title');
+    assert.equal(myLifeLaunchers.length, state.isUser ? 2 : 0);
+    if (state.isUser) { myLifeLaunchers[0].props.onClick(); assert.equal(navigations.at(-1), '/mylife'); }
   });
 }
 
@@ -95,12 +96,15 @@ test('AuthProvider uses exclusive server business role; ADMIN never implies USER
   }
 });
 
-test('all FamilyTree aliases use USER guard and admin dashboard has no FamilyTree mount', () => {
+test('workspace canonical routes use USER guard, legacy FamilyTree paths redirect, and admin dashboard has no FamilyTree mount', () => {
   const app = readFileSync(join(__dirname, '../src/App.tsx'), 'utf8');
-  assert.equal((app.match(/<ProtectedRoute requiredRole="USER">/g) || []).length, 4);
-  for (const route of ['/FamilyTree', '/family-tree', '/Home/FamilyTree', '/home/family-tree']) {
+  assert.equal((app.match(/<ProtectedRoute requiredRole="USER">/g) || []).length, 5);
+  for (const route of ['/mylife', '/familytree', '/anniversaries', '/library', '/map']) {
     const at = app.indexOf('path="' + route + '"'); assert.ok(at >= 0);
     assert.ok(app.slice(at, app.indexOf('</ProtectedRoute>', at)).includes('requiredRole="USER"'));
+  }
+  for (const route of ['/FamilyTree', '/family-tree', '/Home/FamilyTree', '/home/family-tree']) {
+    assert.match(app, new RegExp(`path="${route.replaceAll('/', '\\/')}" element=\\{<Navigate replace to="/familytree" \\/>\\}`));
   }
   const dashboard = readFileSync(join(__dirname, '../src/features/admin/pages/AdminDashboard.tsx'), 'utf8');
   assert.ok(!/FamilyTreeManager|FamilyTree|LibraryTab/.test(dashboard));

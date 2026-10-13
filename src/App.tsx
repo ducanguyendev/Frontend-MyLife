@@ -1,5 +1,5 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
-import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { ScrollProgressBar } from '@/shared/components/ScrollProgressBar';
 import { LoadingScreen } from '@/shared/components/LoadingScreen';
@@ -15,6 +15,10 @@ import { Contact } from '@/features/portfolio/pages/Contact';
 const Register = lazy(() => import('@/features/auth/pages/Register').then(module => ({ default: module.Register })));
 const AdminDashboard = lazy(() => import('@/features/admin/pages/AdminDashboard').then(module => ({ default: module.AdminDashboard })));
 const FamilyTreePage = lazy(() => import('@/features/family-tree/pages/FamilyTreePage').then(module => ({ default: module.FamilyTreePage })));
+const MyLifeHubPage = lazy(() => import('@/features/my-life/pages/MyLifeHubPage').then(module => ({ default: module.MyLifeHubPage })));
+const AnniversariesPage = lazy(() => import('@/features/my-life/pages/AnniversariesPage').then(module => ({ default: module.AnniversariesPage })));
+const LibraryPage = lazy(() => import('@/features/my-life/pages/LibraryPage').then(module => ({ default: module.LibraryPage })));
+const FamilyMapPage = lazy(() => import('@/features/my-life/pages/FamilyMapPage').then(module => ({ default: module.FamilyMapPage })));
 import { Forbidden } from '@/features/portfolio/pages/Forbidden';
 import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute';
 import { useLanguage } from '@/shared/hooks/useLanguage';
@@ -106,38 +110,17 @@ function App() {
             <Route path="/Home" element={<MainPortfolio />} />
             <Route path="/Register" element={<Register />} />
             <Route path="/register" element={<Register />} />
-            <Route
-              path="/FamilyTree"
-              element={
-                <ProtectedRoute requiredRole="USER">
-                  <FamilyTreePage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/family-tree"
-              element={
-                <ProtectedRoute requiredRole="USER">
-                  <FamilyTreePage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/Home/FamilyTree"
-              element={
-                <ProtectedRoute requiredRole="USER">
-                  <FamilyTreePage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/home/family-tree"
-              element={
-                <ProtectedRoute requiredRole="USER">
-                  <FamilyTreePage />
-                </ProtectedRoute>
-              }
-            />
+            <Route caseSensitive path="/mylife" element={<ProtectedRoute requiredRole="USER"><MyLifeHubPage /></ProtectedRoute>} />
+            <Route caseSensitive path="/familytree" element={<ProtectedRoute requiredRole="USER"><FamilyTreePage /></ProtectedRoute>} />
+            <Route caseSensitive path="/anniversaries" element={<ProtectedRoute requiredRole="USER"><AnniversariesPage /></ProtectedRoute>} />
+            <Route caseSensitive path="/library" element={<ProtectedRoute requiredRole="USER"><LibraryPage /></ProtectedRoute>} />
+            <Route caseSensitive path="/map" element={<ProtectedRoute requiredRole="USER"><FamilyMapPage /></ProtectedRoute>} />
+            <Route caseSensitive path="/MyLife" element={<Navigate replace to="/mylife" />} />
+            <Route caseSensitive path="/Mylife" element={<Navigate replace to="/mylife" />} />
+            <Route caseSensitive path="/FamilyTree" element={<Navigate replace to="/familytree" />} />
+            <Route caseSensitive path="/family-tree" element={<Navigate replace to="/familytree" />} />
+            <Route caseSensitive path="/Home/FamilyTree" element={<Navigate replace to="/familytree" />} />
+            <Route caseSensitive path="/home/family-tree" element={<Navigate replace to="/familytree" />} />
             <Route
               path="/Home/Admin"
               element={

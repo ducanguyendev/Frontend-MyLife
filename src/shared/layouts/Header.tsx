@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../hooks/useLanguage';
 import { useAuth } from '@/features/auth/context/AuthContext';
-import { Menu, X, User as UserIcon, LogOut, ArrowLeftRight, Network } from 'lucide-react';
+import { Menu, X, User as UserIcon, LogOut, ArrowLeftRight, LayoutGrid } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
@@ -153,6 +153,18 @@ export const Header: React.FC = () => {
             <ThemeSwitch />
             <LanguageSwitcher />
 
+            {isUser && (
+              <button
+                type="button"
+                onClick={() => navigate('/mylife')}
+                className="w-10 h-10 flex items-center justify-center rounded-full bg-secondary-bg/50 hover:bg-secondary-bg border border-custom-border text-secondary-text hover:text-primary-text transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                aria-label={t('myLife.title')}
+                title={t('myLife.title')}
+              >
+                <LayoutGrid size={17} aria-hidden="true" />
+              </button>
+            )}
+
             {isAuthenticated ? (
               <UserMenu
                 onOpenProfile={() => setIsProfileModalOpen(true)}
@@ -261,12 +273,13 @@ export const Header: React.FC = () => {
                     {isUser && (<button
                       onClick={() => {
                         setIsMobileMenuOpen(false);
-                        navigate('/FamilyTree');
+                        navigate('/mylife');
                       }}
                       className="w-full flex items-center gap-3 py-2 text-sm text-white font-medium"
+                      aria-label={t('myLife.title')}
                     >
-                      <Network size={18} />
-                      <span>{t('admin.family_tree', { defaultValue: 'Quản lý Gia phả' })}</span>
+                      <LayoutGrid size={18} />
+                      <span>{t('myLife.title')}</span>
                     </button>)}
                     <button
                       onClick={() => {
@@ -317,4 +330,3 @@ export const Header: React.FC = () => {
     </>
   );
 };
-

@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback, useMemo, lazy, Suspense } from "react";
+import React, { useState, useEffect, useMemo, lazy, Suspense } from "react";
 import {
-  Plus, Loader2, LayoutGrid, Table2, Users, CalendarDays, BookOpen, Globe, Network
+  Plus, Loader2, LayoutGrid, Table2, Network
 } from "lucide-react";
 import { useLanguage } from "@/shared/hooks/useLanguage";
 import { Button, Select, SelectItem } from "@/shared/components/ui";
@@ -15,10 +15,8 @@ import {
   MemberDetailModal,
   MemberFormModal,
   DeleteConfirmModal,
-  AnniversaryTab,
-  LibraryTab,
-  FamilyMapTab,
 } from "./family-tree";
+import { useFamilyMembers } from './family-tree/useFamilyMembers';
 
 import { filterFamilyMembers } from './family-tree/memberSearch';
 const FamilyMindmap = lazy(() => import('./family-tree/FamilyMindmap').then(module => ({ default: module.FamilyMindmap })));
@@ -26,9 +24,7 @@ const FamilyMindmap = lazy(() => import('./family-tree/FamilyMindmap').then(modu
 export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast }) => {
   const { t } = useLanguage();
 
-  const [members, setMembers] = useState<FamilyMember[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null);
+  const { members, setMembers, loading, loadError, fetchMembers } = useFamilyMembers();
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
 
   // Close dropdown when clicking outside
@@ -39,8 +35,6 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
   }, [activeDropdown]);
 
   // UI State
-  type FamilyTab = "members" | "anniversaries" | "library" | "map";
-  const [activeTab, setActiveTab] = useState<FamilyTab>("members");
   const [viewMode, setViewMode] = useState<"grid" | "table" | "mindmap">("grid");
   const [searchQuery, setSearchQuery] = useState("");
   const [generationFilter, setGenerationFilter] = useState("all");
@@ -57,32 +51,6 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
   const [memberToViewId, setMemberToViewId] = useState<number | null>(null);
   const memberToView = members.find(member => member.id === memberToViewId) ?? null;
   const handleViewMember = (member: FamilyMember) => setMemberToViewId(member.id);
-
-  // Fetch API
-  const fetchMembers = useCallback(async (signal?: AbortSignal) => {
-    setLoading(true); setLoadError(null);
-    try {
-      const res = await apiClient.requestRaw("/api/family-tree", { signal });
-      if (signal?.aborted) return;
-      if (res.ok) {
-        const json = await res.json();
-        if (!signal?.aborted) setMembers(json.data || []);
-      } else {
-        const error = await res.json().catch(() => null);
-        if (!signal?.aborted) setLoadError(getFeatureErrorKey(error, 'member_load', res.status));
-      }
-    } catch (failure) {
-      if (!signal?.aborted) setLoadError(getFeatureErrorKey(failure, 'member_load'));
-    } finally {
-      if (!signal?.aborted) setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    void fetchMembers(controller.signal);
-    return () => controller.abort();
-  }, [fetchMembers]);
 
   const filteredMembers = useMemo(() => filterFamilyMembers(members, searchQuery, generationFilter), [members, searchQuery, generationFilter]);
 
@@ -217,13 +185,6 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
     }
   };
 
-  const tabs: Array<{ id: FamilyTab; label: string; icon: React.ReactNode }> = [
-    { id: "members", label: t("admin.tab_members", { defaultValue: "Danh Sách Phả Hệ" }), icon: <Users size={16} /> },
-    { id: "anniversaries", label: t("admin.tab_anniversaries", { defaultValue: "Ngày Giỗ & Kỷ Niệm" }), icon: <CalendarDays size={16} /> },
-    { id: "library", label: t("admin.tab_library", { defaultValue: "Tư Liệu & Kỷ Vật" }), icon: <BookOpen size={16} /> },
-    { id: "map", label: t("admin.tab_map", { defaultValue: "Bản Đồ Phân Bố" }), icon: <Globe size={16} /> },
-  ];
-
   return (
     <div className="flex flex-col h-full bg-primary-bg">
       {/* Header Bar */}
@@ -254,37 +215,10 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
           </div>
         </div>
 
-        {/* Tab Navigation */}
-        <div role="tablist" aria-label={t("admin.family_tree")} className="flex items-center gap-2 mt-6 overflow-x-auto pb-1">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              tabIndex={activeTab === tab.id ? 0 : -1}
-              onKeyDown={event => {
-                if (!['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(event.key)) return;
-                event.preventDefault();
-                const position = tabs.findIndex(item => item.id === activeTab);
-                const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (position + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
-                setActiveTab(tabs[next].id); document.getElementById('family-tab-' + tabs[next].id)?.focus();
-              }}
-              role="tab" aria-selected={activeTab === tab.id} id={"family-tab-" + tab.id} aria-controls={"family-panel-" + tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all border cursor-pointer ${
-                activeTab === tab.id
-                  ? "bg-accent/10 border-accent/50 text-accent shadow-sm"
-                  : "bg-secondary-bg border-custom-border text-secondary-text hover:text-primary-text hover:bg-primary-bg"
-              }`}
-            >
-              {tab.icon}
-              {tab.label}
-            </button>
-          ))}
-        </div>
       </div>
 
       {/* Main Tab Content */}
-      <div role="tabpanel" id={"family-panel-" + activeTab} aria-labelledby={"family-tab-" + activeTab}>
-      {activeTab === "members" ? (
+      <div className="flex-1">
         <div className="flex-1 flex flex-col min-h-0">
           {/* Toolbar */}
           <div className="p-6 pb-2 flex flex-col lg:flex-row items-center justify-between gap-4">
@@ -364,6 +298,7 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
                   <MemberCard
                     key={m.id}
                     member={m}
+                    members={members}
                     index={i}
                     isDropdownOpen={activeDropdown === m.id}
                     onToggleDropdown={(e) => {
@@ -396,14 +331,6 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
             )}
           </div>
         </div>
-      ) : activeTab === "anniversaries" ? (
-        <AnniversaryTab showToast={showToast} members={members} />
-      ) : activeTab === "library" ? (
-        <LibraryTab showToast={showToast} />
-      ) : (
-        <FamilyMapTab />
-      )}
-
       </div>
       {/* Modals */}
       <MemberDetailModal

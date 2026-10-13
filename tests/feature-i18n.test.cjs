@@ -103,12 +103,18 @@ async function familySetup(locale, response = { success: true, message: 'Family 
     const body = options.method === 'POST' && path === '/api/family-tree' ? { data: { ...member } } : options.method === 'PUT' ? { data: { ...member } } : options.method === 'DELETE' ? response : { data: [member, otherMember] };
     return new Response(JSON.stringify(body), { status: options.method === 'DELETE' && response.success === false ? 404 : 200, headers: { 'Content-Type': 'application/json' } });
   } };
+  const familyMembersHook = load('src/features/admin/components/family-tree/useFamilyMembers.ts', {
+    react: hooks.hooks,
+    '@/shared/api/apiClient': { apiClient },
+    '../../services/featureMessages': messages,
+  });
   const { FamilyTreeManager } = load('src/features/admin/components/FamilyTreeManager.tsx', {
     react: { ...hooks.hooks, default: hooks.hooks }, 'react/jsx-runtime': { jsx: hooks.jsx, jsxs: hooks.jsx },
     'lucide-react': new Proxy({}, { get: (_, key) => key }), '@/shared/hooks/useLanguage': { useLanguage: () => ({ t, language: i18n.language }) },
     '@/shared/components/ui': { Button: 'Button', Select: 'Select' }, '@/shared/components/SearchBar': { SearchBar: 'SearchBar' },
     '@/shared/api/apiClient': { apiClient }, '../services/featureMessages': messages,
     './family-tree/memberSearch': searchHelpers,
+    './family-tree/useFamilyMembers': familyMembersHook,
     './family-tree': { ...Object.fromEntries(stubNames.map(name => [name, name])), removeVietnameseTones: name => name },
   });
   const render = () => hooks.render(FamilyTreeManager, { showToast: (text, ok) => toasts.push({ text, ok }) });

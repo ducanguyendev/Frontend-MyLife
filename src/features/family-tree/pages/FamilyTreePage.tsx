@@ -1,107 +1,24 @@
-import React, { useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Home, ArrowLeft } from 'lucide-react';
-import { useAuth } from '@/features/auth/context/AuthContext';
+import React from 'react';
 import { useLanguage } from '@/shared/hooks/useLanguage';
-import { LanguageSwitcher } from '@/shared/components/LanguageSwitcher';
-import { ThemeSwitch } from '@/shared/components';
-import { useNotification } from '@/shared/contexts/NotificationContext';
-import { UserMenu } from '@/features/auth/components/UserMenu';
-import { UserProfileModal } from '@/features/profile/components/UserProfileModal';
+import { useWorkspaceToast } from '@/shared/hooks/useWorkspaceToast';
+import { UserWorkspaceHeader } from '@/shared/layouts/UserWorkspaceHeader';
 import { FamilyTreeManager } from '@/features/admin/components/FamilyTreeManager';
 
 export const FamilyTreePage: React.FC = () => {
-  const navigate = useNavigate();
-  const { logout } = useAuth();
   const { t } = useLanguage();
-  const { showNotification } = useNotification();
-  const [isProfileModalOpen, setIsProfileModalOpen] = React.useState(false);
-
-  const showToast = useCallback((text: string, ok: boolean) => {
-    showNotification({
-      message: text,
-      type: ok ? 'success' : 'error',
-    });
-  }, [showNotification]);
+  const showToast = useWorkspaceToast();
 
   return (
-    <div className="relative min-h-screen bg-primary-bg font-sans overflow-x-hidden transition-colors duration-300 flex flex-col">
-      {/* Floating Top Header Navigation */}
-      <header className="sticky top-4 z-40 mx-auto w-[96%] max-w-[1400px] glass-nav rounded-2xl md:rounded-full px-4 py-3 flex items-center justify-between gap-4 shadow-sm mb-6">
-        {/* Left: Back & Logo */}
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => navigate('/Home')}
-            className="w-10 h-10 rounded-full bg-secondary-bg/60 hover:bg-secondary-bg border border-custom-border text-secondary-text hover:text-primary-text flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-            title={t('common.back', { defaultValue: 'Quay lại' })}
-          >
-            <ArrowLeft size={16} />
-          </button>
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-accent text-primary-bg flex items-center justify-center font-bold text-sm shadow-md">
-              ML
-            </div>
-            <span className="font-bold tracking-tight text-primary-text text-lg hidden sm:block">
-              MyLife
-            </span>
-          </div>
-        </div>
-
-        {/* Center: Title / Breadcrumb */}
-        <div className="hidden md:flex items-center gap-2 text-xs font-semibold text-secondary-text">
-          <span className="cursor-pointer hover:text-primary-text" onClick={() => navigate('/Home')}>
-            {t('navigation.home', { defaultValue: 'Trang chủ' })}
-          </span>
-          <span>/</span>
-          <span className="text-accent">{t('admin.family_tree', { defaultValue: 'Quản lý Gia phả' })}</span>
-        </div>
-
-        {/* Right: Actions & User */}
-        <div className="flex items-center gap-2">
-          <ThemeSwitch />
-
-          <LanguageSwitcher />
-
-          <button
-            onClick={() => navigate('/Home')}
-            className="w-10 h-10 flex items-center justify-center rounded-full bg-secondary-bg/50 hover:bg-secondary-bg border border-custom-border text-secondary-text hover:text-primary-text transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-            title={t('navigation.home', { defaultValue: 'Trang chủ' })}
-            aria-label={t('navigation.home', { defaultValue: 'Trang chủ' })}
-          >
-            <Home size={16} />
-          </button>
-
-          <div className="h-4 w-px bg-custom-border mx-1" />
-
-          {/* User Menu */}
-          <UserMenu
-            onOpenProfile={() => setIsProfileModalOpen(true)}
-            onSwitchAccount={async () => {
-              await logout();
-              navigate('/');
-            }}
-          />
-        </div>
-      </header>
-
-      {/* Main Family Tree Manager Container */}
-      <main className="relative z-10 flex-1 w-[96%] max-w-[1400px] mx-auto pb-12">
-        <div className="glass-pill rounded-3xl p-4 sm:p-6 shadow-xl border border-custom-border overflow-hidden min-h-[700px]">
+    <div className="relative flex min-h-screen flex-col overflow-x-hidden bg-primary-bg font-sans transition-colors duration-300">
+      <UserWorkspaceHeader backTo="/mylife" />
+      <main className="relative z-10 mx-auto w-[96%] max-w-[1400px] flex-1 pb-12 pt-5">
+        <div className="glass-pill min-h-[700px] overflow-hidden rounded-3xl border border-custom-border p-4 shadow-xl sm:p-6">
+          <h1 className="sr-only">{t('myLife.modules.familyTree.title')}</h1>
           <FamilyTreeManager showToast={showToast} />
         </div>
       </main>
-
-      {/* User Profile Modal */}
-      <UserProfileModal
-        isOpen={isProfileModalOpen}
-        onClose={() => setIsProfileModalOpen(false)}
-        onSwitchAccount={async () => {
-          setIsProfileModalOpen(false);
-          await logout();
-          navigate('/');
-        }}
-      />
     </div>
   );
 };
+
 export default FamilyTreePage;

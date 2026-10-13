@@ -1,0 +1,28 @@
+{
+  "title": "My Space",
+  "subtitle": "Tools to help you care for everyday life.",
+  "greeting": "Hello, {{name}}",
+  "modules": {
+    "title": "Your tools",
+    "familyTree": {
+      "title": "Family Tree",
+      "description": "Preserve and connect the generations of your family.",
+      "open": "Open Family Tree"
+    },
+    "anniversaries": {
+      "title": "Anniversaries",
+      "description": "Remember important family dates and milestones.",
+      "open": "View anniversaries"
+    },
+    "library": {
+      "title": "Family Library",
+      "description": "Keep family photos and meaningful records together.",
+      "open": "Open library"
+    },
+    "map": {
+      "title": "Family Map",
+      "description": "Explore where family branches live around the world.",
+      "open": "Open map"
+    }
+  }
+}
