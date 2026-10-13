@@ -44,5 +44,5 @@ Backend, database, migrations, and Mobile repositories were not changed.
 ## Delivery
 
 - Branch: `feature_minhduc`
-- Commit SHA: pending
-- Push to `origin/feature_minhduc`: pending
+- Commit SHA: `a1cab82` (`style: polish MyLife dock and workspace scrolling`)
+- Push to `origin/feature_minhduc`: PASS
