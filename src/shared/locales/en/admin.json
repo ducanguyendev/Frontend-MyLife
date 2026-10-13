@@ -236,6 +236,12 @@
   "map_title": "Descendant and family branch distribution map",
   "map_desc": "Explore where members of your family tree live.",
   "family_map": {
+    "workspace_title": "Family Map",
+    "open_distribution": "Areas",
+    "compact_total": "Members",
+    "compact_located": "Located",
+    "compact_unlocated": "Unlocated",
+    "compact_regions": "Areas",
     "title": "Descendant and family branch distribution map",
     "description": "Explore where members of your family tree live.",
     "statistics": "Family map statistics",

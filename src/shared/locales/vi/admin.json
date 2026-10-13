@@ -288,6 +288,12 @@
   "map_title": "Bản đồ phân bố hậu duệ và chi tộc",
   "map_desc": "Theo dõi khu vực sinh sống của các thành viên trong gia phả.",
   "family_map": {
+    "workspace_title": "Bản đồ gia đình",
+    "open_distribution": "Khu vực",
+    "compact_total": "Thành viên",
+    "compact_located": "Có vị trí",
+    "compact_unlocated": "Chưa định vị",
+    "compact_regions": "Khu vực",
     "title": "Bản đồ phân bố hậu duệ và chi tộc",
     "description": "Theo dõi khu vực sinh sống của các thành viên trong gia phả.",
     "statistics": "Thống kê bản đồ gia phả",

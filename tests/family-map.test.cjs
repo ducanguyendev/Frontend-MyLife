@@ -23,14 +23,55 @@ test('Family map has API loading, error, empty, and no-location states without f
   const component = read('src/features/admin/components/family-tree/FamilyMapTab.tsx');
   assert.match(component, /role="status"/);
   assert.match(component, /role="alert"/);
-  assert.match(component, /data\.totalMembers === 0/);
+  assert.match(component, /data\?\.totalMembers === 0/);
   assert.match(component, /locations\.length > 0/);
   assert.match(component, /void load\(\)/);
+});
+
+test('Family map retains its single API owner, five-second polling, viewport fitting, and Leaflet layers', () => {
+  const component = read('src/features/admin/components/family-tree/FamilyMapTab.tsx');
+  assert.match(component, /getFamilyMapDistribution\(signal\)/);
+  assert.match(component, /setInterval\(\(\) => void load\(\), 5000\)/);
+  assert.match(component, /map\.setView\(VIETNAM_CENTER, 5\)/);
+  assert.match(component, /map\.setView\(\[locations\[0\]\.latitude, locations\[0\]\.longitude\], 8\)/);
+  assert.match(component, /map\.fitBounds/);
+  for (const layer of ['MapContainer', 'TileLayer', 'CircleMarker', 'Tooltip', 'Popup']) assert.ok(component.includes(layer));
+  assert.match(component, /openstreetmap\.org\/copyright/);
+  assert.match(component, /location\.members\.slice\(0, 6\)/);
+  assert.match(component, /family_map\.more_members/);
+});
+
+test('Family map uses a full workspace with overlay stats and a data-backed distribution panel', () => {
+  const page = read('src/features/my-life/pages/FamilyMapPage.tsx');
+  const component = read('src/features/admin/components/family-tree/FamilyMapTab.tsx');
+  const css = read('src/features/admin/components/family-tree/FamilyMapTab.css');
+  const modal = read('src/shared/components/ui/Modal.tsx');
+  assert.match(page, /contentScroll="hidden"/);
+  assert.match(page, /min-h-0/);
+  assert.doesNotMatch(page, /myLife\.modules\.map\.(title|description)/);
+  assert.match(component, /<h1[\s\S]*family_map\.workspace_title/);
+  assert.match(component, /family-map-stats-overlay[\s\S]*aria-label/);
+  assert.equal((component.match(/compact_(total|located|unlocated|regions)/g) || []).length, 4);
+  assert.match(component, /setDistributionOpen\(true\)/);
+  assert.match(component, /<Modal[\s\S]*family-map-distribution-panel/);
+  assert.match(component, /locations\.map\(location =>/);
+  assert.match(component, /location\.memberCount \/ data\.locatedMembers/);
+  assert.doesNotMatch(component, /<Card>[\s\S]*family_map\.distribution/);
+  assert.match(component, /family-distribution-map absolute inset-0/);
+  assert.doesNotMatch(component, /h-\[420px\]|sm:h-\[520px\]/);
+  assert.match(css, /min-height: min\(360px, 58dvh\)/);
+  assert.match(css, /family-map-distribution-panel/);
+  assert.match(component, /useReducedMotion/);
+  assert.match(component, /reducedMotion=\{Boolean\(shouldReduceMotion\)\}/);
+  assert.match(modal, /reducedMotion\?: boolean/);
+  assert.match(modal, /reducedMotion \? \{ duration: 0\.01 \}/);
+  assert.match(component, /void load\(controller\.signal\);[\s\S]*?\}, \[load\]\);/);
+  assert.match(component, /\}, \[data\?\.pendingGeocodingMembers, load\]\);/);
 });
 
 test('Vietnamese and English family map translations include every rendered key', () => {
   const vi = JSON.parse(read('src/shared/locales/vi/admin.json')).family_map;
   const en = JSON.parse(read('src/shared/locales/en/admin.json')).family_map;
-  const required = ['title', 'description', 'statistics', 'total', 'located', 'unlocated', 'regions', 'loading', 'error', 'retry', 'empty', 'no_locations', 'unknown_location', 'update_address', 'distribution', 'member_count', 'generation', 'more_members', 'view_members', 'locating'];
+  const required = ['title', 'description', 'workspace_title', 'open_distribution', 'compact_total', 'compact_located', 'compact_unlocated', 'compact_regions', 'statistics', 'total', 'located', 'unlocated', 'regions', 'loading', 'error', 'retry', 'empty', 'no_locations', 'unknown_location', 'update_address', 'distribution', 'member_count', 'generation', 'more_members', 'view_members', 'locating'];
   for (const locale of [vi, en]) for (const key of required) assert.equal(typeof locale[key], 'string', `missing ${key}`);
 });

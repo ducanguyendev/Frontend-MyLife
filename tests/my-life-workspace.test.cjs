@@ -33,8 +33,9 @@ test('Hub and all four module pages share the shell with the dock only on module
     'src/features/my-life/pages/LibraryPage.tsx',
     'src/features/my-life/pages/FamilyMapPage.tsx',
   ]) {
-    assert.match(read(file), /<MyLifeWorkspaceLayout backTo="\/mylife" showDock/);
+    assert.match(read(file), /<MyLifeWorkspaceLayout[\s\S]*?backTo="\/mylife"[\s\S]*?showDock/);
   }
+  assert.match(read('src/features/my-life/pages/FamilyMapPage.tsx'), /contentScroll="hidden"/);
 });
 
 test('dock renders NavLinks directly from the centralized module config', () => {
@@ -101,6 +102,6 @@ test('workspace routes stay canonical and no source outside the frontend repo is
   const mapPage = read('src/features/my-life/pages/FamilyMapPage.tsx');
   for (const route of ['/mylife', '/familytree', '/anniversaries', '/library', '/map']) assert.ok(app.includes(`path="${route}"`));
   assert.doesNotMatch(hub, /showDock|contentScroll=/);
-  assert.doesNotMatch(mapPage, /contentScroll=/);
+  assert.match(mapPage, /contentScroll="hidden"/);
   assert.doesNotMatch(layout + dock, /window\.location\.href/);
 });
