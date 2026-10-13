@@ -83,7 +83,9 @@ test('module content has internal scroll sizing and existing API contracts remai
   const memberHook = read('src/features/admin/components/family-tree/useFamilyMembers.ts');
 
   assert.match(manager, /min-h-0 flex-1 overflow-y-auto/);
-  assert.match(anniversary, /flex min-h-0 flex-1 flex-col overflow-y-auto/);
+  assert.match(anniversary, /flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain/);
+  assert.match(anniversary, /overflow-y-auto overscroll-contain p-3[\s\S]*?xl:overflow-hidden/);
+  assert.match(anniversary, /flex-1 overflow-y-auto overscroll-contain p-3 custom-scrollbar/);
   assert.match(library, /library-workspace flex min-h-0 flex-1 flex-col overflow-hidden/);
   assert.match(library, /library-gallery[\s\S]*?min-h-0 flex-1 overflow-y-auto/);
   assert.doesNotMatch(library, /flex min-h-0 flex-1 flex-col overflow-y-auto/);

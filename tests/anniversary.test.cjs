@@ -39,13 +39,38 @@ test('anniversary service uses authenticated CRUD and lunar conversion routes', 
   assert.equal(calls.at(-1).path, '/api/family-tree/anniversaries/lunar-to-solar?day=1&month=1&year=2025&isLeapMonth=false');
 });
 
-test('Anniversary tab is data-backed and exposes loading, error, search, empty, edit, and delete states', () => {
+test('Anniversary workspace is data-backed with calendar filtering and CRUD states', () => {
   const source = readFileSync(join(__dirname, '../src/features/admin/components/family-tree/AnniversaryTab.tsx'), 'utf8');
   assert.match(source, /anniversaryService\.getAnniversaries/);
   assert.doesNotMatch(source, /defaultAnniversaries|anni-[1-9]/);
   for (const state of ['loading', 'loadError', 'no_results', 'empty_desc', 'delete_confirm']) assert.ok(source.includes(state), `Missing UI state: ${state}`);
   for (const operation of ['createAnniversary', 'updateAnniversary', 'deleteAnniversary']) assert.ok(source.includes(operation));
   assert.match(source, /removeVietnameseTones/);
+  assert.match(source, /item\.nextSolarDate/);
+  assert.match(source, /getAnniversaryMonthGrid\(/);
+  assert.match(source, /selectedDate \? textFiltered\.filter/);
+  assert.match(source, /setSelectedDate\(null\)/);
+  assert.match(source, /overflow-y-auto overscroll-contain p-3/);
+  assert.match(source, /xl:grid-cols-\[minmax\(290px,0\.4fr\)_minmax\(0,0\.6fr\)\]/);
+  assert.doesNotMatch(source, /banner_title|admin\.anniversary_ui\.total|admin\.anniversary_ui\.nearest/);
+});
+
+test('solar calendar utilities handle month edges, leap February, and UTC-safe ISO dates', () => {
+  const source = readFileSync(join(__dirname, '../src/features/admin/components/family-tree/anniversaryCalendarUtils.ts'), 'utf8');
+  const output = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
+  const exports = {};
+  new vm.Script(output).runInNewContext({ exports, Date, Intl });
+  const { getAnniversaryMonthGrid, anniversaryDateParts, anniversaryDateKey } = exports;
+
+  const december = getAnniversaryMonthGrid(2026, 11);
+  assert.ok(december.some(day => day.year === 2027 && day.month === 0 && day.day === 1 && !day.inMonth));
+  const january = getAnniversaryMonthGrid(2027, 0);
+  assert.ok(january.some(day => day.year === 2026 && day.month === 11 && day.day === 31 && !day.inMonth));
+  const leapFebruary = getAnniversaryMonthGrid(2024, 1).filter(day => day.inMonth);
+  assert.equal(leapFebruary.length, 29);
+  assert.equal(JSON.stringify(anniversaryDateParts('2026-10-13')), JSON.stringify({ year: 2026, month: 9, day: 13 }));
+  assert.equal(anniversaryDateParts('2026-02-30'), null);
+  assert.equal(anniversaryDateKey(2027, 0, 2), '2027-01-02');
 });
 
 test('anniversary controls and status text are translated in Vietnamese and English', async () => {
@@ -53,7 +78,7 @@ test('anniversary controls and status text are translated in Vietnamese and Engl
     const resources = JSON.parse(readFileSync(join(__dirname, `../src/shared/locales/${lng}/admin.json`), 'utf8'));
     const i18n = i18next.createInstance();
     await i18n.init({ lng, fallbackLng: false, resources: { [lng]: { translation: { admin: resources } }, }, interpolation: { escapeValue: false } });
-  for (const key of ['banner_title', 'banner_desc', 'banner_upcoming', 'banner_today', 'banner_empty', 'add', 'edit_title', 'delete_confirm', 'event_type', 'lunar_day', 'leap_month', 'loading', 'load_failed', 'empty', 'invalid_lunar_date', 'save_failed', 'created', 'updated', 'deleted']) {
+  for (const key of ['calendar', 'calendar_solar', 'previous_month', 'next_month', 'upcoming_events', 'clear_date', 'no_events_date', 'add', 'edit_title', 'delete_confirm', 'event_type', 'lunar_day', 'leap_month', 'loading', 'load_failed', 'empty', 'invalid_lunar_date', 'save_failed', 'created', 'updated', 'deleted']) {
       const translation = i18n.t(`admin.anniversary_ui.${key}`, { title: 'event' });
       assert.notEqual(translation, `admin.anniversary_ui.${key}`);
       assert.ok(translation.length > 0);
