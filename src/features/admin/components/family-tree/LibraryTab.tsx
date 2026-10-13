@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { BookOpen, Plus, Eye, Pencil, Trash2, Loader2 } from "lucide-react";
+import { BookOpen, Plus, Eye, Pencil, Trash2, Loader2, Upload } from "lucide-react";
 import { useLanguage } from "@/shared/hooks/useLanguage";
 import { Button, Modal, Select, SelectItem } from "@/shared/components/ui";
 import { featureSuccessKeys, getFeatureErrorKey } from '../../services/featureMessages';
@@ -12,6 +12,7 @@ import { LibraryPhotoEditModal } from './LibraryPhotoEditModal';
 import { libraryCategoryLabel } from './LibraryPhotoFormFields';
 import { LibraryCategoryModal } from './LibraryCategoryModal';
 import { LibraryImage } from './LibraryImage';
+import './LibraryTab.css';
 
 interface LibraryTabProps {
   showToast: (text: string, ok: boolean) => void;
@@ -103,19 +104,19 @@ export const LibraryTab: React.FC<LibraryTabProps> = ({ showToast }) => {
   );
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain p-6 custom-scrollbar space-y-6">
+    <div className="library-workspace flex min-h-0 flex-1 flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-secondary-bg border border-custom-border p-6 rounded-2xl shadow-sm">
-        <div>
-          <h3 className="text-xl font-bold text-primary-text mb-1 flex items-center gap-2">
-            <BookOpen className="text-accent" size={20} />
-            {t("admin.library_title", { defaultValue: "Thư Viện & Kỷ Vật Dòng Tộc" })}
-          </h3>
-          <p className="text-secondary-text text-sm">
-            {t("admin.library_desc", { defaultValue: "Nơi lưu giữ gia phả cổ, sắc phong, văn tự và tư liệu lịch sử dòng họ." })}
-          </p>
+      <header className="flex shrink-0 flex-col gap-3 border-b border-custom-border px-1 pb-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-accent/10 text-accent">
+            <BookOpen size={19} aria-hidden="true" />
+          </span>
+          <div className="min-w-0">
+            <h1 className="truncate text-lg font-bold tracking-tight text-primary-text sm:text-xl">{t('admin.library_title')}</h1>
+            <p className="hidden truncate text-xs text-secondary-text sm:block">{t('admin.library_desc')}</p>
+          </div>
         </div>
-        <div className="flex flex-wrap items-center justify-start md:justify-end gap-2">
+        <div className="flex flex-wrap items-center gap-2 sm:justify-end">
           <Button variant="secondary" leftIcon={<Plus size={16} />} onClick={() => setCategoryDialog('create')}>
             {t('admin.library_ui.create_category')}
           </Button>
@@ -124,111 +125,91 @@ export const LibraryTab: React.FC<LibraryTabProps> = ({ showToast }) => {
           </Button>
           <Button
             variant="primary"
-            leftIcon={<Plus size={16} />}
+            leftIcon={<Upload size={16} />}
             disabled={isLoading || categoryLoading || albums.length === 0 || categories.length === 0}
             onClick={() => setUploadOpen(true)}
           >
             {t('admin.library_ui.upload')}
           </Button>
-          {!categoryLoading && categories.length === 0 && (
-            <p role="status" className="basis-full text-xs text-secondary-text md:text-right">
-              {t('admin.library_ui.create_category_first')}
-            </p>
-          )}
         </div>
-      </div>
+      </header>
 
       {/* Category Filters */}
-      <div className="flex flex-wrap items-center gap-2 pb-1">
+      <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-custom-border px-1 py-2">
         <Select aria-label={t('admin.library_ui.album_filter')}
-          containerClassName="!w-auto"
+          containerClassName="min-w-0 flex-1 sm:w-52 sm:flex-none"
           variant="compact"
-          className="max-w-full min-w-44 border-0"
+          className="w-full border-0"
           value={String(selectedAlbum)} disabled={isLoading} onValueChange={value => setSelectedAlbum(value === 'all' ? 'all' : Number(value))}>
           <SelectItem value="all">{t('admin.library_ui.all_albums')}</SelectItem>
           {albums.map(album => <SelectItem key={album.id} value={String(album.id)}>{album.name}</SelectItem>)}
         </Select>
-        {activeAlbum && <>
-          <button className="p-2 text-secondary-text hover:text-accent cursor-pointer" title={t('admin.library_ui.edit_album')}
-            aria-label={t('admin.library_ui.edit_album')} onClick={() => setAlbumDialog(activeAlbum)}><Pencil size={16} /></button>
-          <button className="p-2 text-secondary-text hover:text-error cursor-pointer" title={t('admin.library_ui.delete_album')}
-            aria-label={t('admin.library_ui.delete_album')} onClick={() => requestDelete({ kind: 'album', id: activeAlbum.id, name: activeAlbum.name })}><Trash2 size={16} /></button>
-        </>}
-        {activeCategory && !activeCategory.isDefault && <>
+        {activeAlbum && <div className="flex shrink-0 items-center rounded-xl border border-custom-border bg-secondary-bg">
+          <button className="cursor-pointer p-2 text-secondary-text transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-accent" title={t('admin.library_ui.edit_album')}
+            aria-label={t('admin.library_ui.edit_album')} onClick={() => setAlbumDialog(activeAlbum)}><Pencil size={15} /></button>
+          <button className="cursor-pointer p-2 text-secondary-text transition-colors hover:text-error focus-visible:outline-2 focus-visible:outline-error" title={t('admin.library_ui.delete_album')}
+            aria-label={t('admin.library_ui.delete_album')} onClick={() => requestDelete({ kind: 'album', id: activeAlbum.id, name: activeAlbum.name })}><Trash2 size={15} /></button>
+        </div>}
+        <Select aria-label={t('admin.library_ui.category_filter')}
+          containerClassName="min-w-0 flex-1 sm:w-48 sm:flex-none"
+          variant="compact"
+          className="w-full border-0"
+          value={libraryCategory} disabled={categoryLoading} onValueChange={setLibraryCategory}>
+          {categoryFilters.map(category => <SelectItem key={category.id} value={category.slug}>{category.label}</SelectItem>)}
+        </Select>
+        {activeCategory && !activeCategory.isDefault && <div className="flex shrink-0 items-center rounded-xl border border-custom-border bg-secondary-bg">
           <button aria-label={t('admin.library_ui.edit_category')} title={t('admin.library_ui.edit_category')}
-            className="p-2 text-secondary-text hover:text-accent cursor-pointer"
-            onClick={() => setCategoryDialog(activeCategory)}><Pencil size={16} /></button>
-          <button aria-label={t('admin.library_ui.delete_category')}
-          title={t('admin.library_ui.delete_category')} className="p-2 text-secondary-text hover:text-error cursor-pointer"
-          onClick={() => requestDelete({ kind: 'category', id: activeCategory.id, name: activeCategory.name, slug: activeCategory.slug })}><Trash2 size={16} /></button></>}
-        {categoryFilters.map((cat) => (
-          <button
-            key={cat.id}
-            aria-pressed={libraryCategory === cat.slug}
-            onClick={() => setLibraryCategory(cat.slug)}
-            className={`px-4 py-2 rounded-full text-xs font-bold transition-all border cursor-pointer shrink-0 ${
-              libraryCategory === cat.slug
-                ? "bg-accent text-primary-bg border-accent shadow-sm"
-                : "bg-secondary-bg border-custom-border text-secondary-text hover:text-primary-text hover:bg-primary-bg"
-            }`}
-          >
-            {cat.label}
-          </button>
-        ))}
+            className="cursor-pointer p-2 text-secondary-text transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-accent"
+            onClick={() => setCategoryDialog(activeCategory)}><Pencil size={15} /></button>
+          <button aria-label={t('admin.library_ui.delete_category')} title={t('admin.library_ui.delete_category')}
+            className="cursor-pointer p-2 text-secondary-text transition-colors hover:text-error focus-visible:outline-2 focus-visible:outline-error"
+            onClick={() => requestDelete({ kind: 'category', id: activeCategory.id, name: activeCategory.name, slug: activeCategory.slug })}><Trash2 size={15} /></button>
+        </div>}
       </div>
 
       {/* Gallery Grid */}
-      {isLoading && <div role="status" className="flex items-center justify-center gap-2 py-12 text-secondary-text"><Loader2 className="animate-spin" size={20} />{t('admin.library_ui.loading')}</div>}
-      {!isLoading && error && <div role="alert" className="p-6 text-center rounded-2xl border border-custom-border bg-secondary-bg space-y-3">
-        <p className="text-error">{t(error)}</p><Button variant="secondary" onClick={refresh}>{t('admin.library_ui.retry')}</Button>
-      </div>}
-      {!isLoading && !error && filteredPhotos.length === 0 && <p className="py-12 text-center text-secondary-text">
-        {t(libraryPhotos.length === 0 ? 'admin.library_ui.empty' : 'admin.library_ui.no_matches')}
-      </p>}
-      <div style={{ display: isLoading || error ? "none" : undefined }} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredPhotos.map((photo) => (
-          <div
-            key={photo.id}
-            role="button" tabIndex={0} aria-label={t("admin.view_detail") + ": " + photo.title}
-            onKeyDown={event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setPreviewPhoto(photo); } }}
-            onClick={() => setPreviewPhoto(photo)}
-            className="bg-secondary-bg border border-custom-border rounded-2xl overflow-hidden shadow-sm hover:shadow-md hover:border-accent/40 transition-all duration-300 flex flex-col group cursor-pointer"
-          >
-            <div className="relative aspect-video overflow-hidden bg-black/10">
-              <LibraryImage photoId={photo.id} variant="thumbnail"
-                url={photo.url} driveFileId={photo.driveFileId}
-                alt={photo.title || t('admin.library_ui.photo_alt')}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
-                <span className="text-white text-xs font-medium flex items-center gap-1.5">
-                  <Eye size={14} /> {t('admin.library_ui.enlarge')}
+      <section className="library-gallery custom-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain px-1 py-3 sm:px-2 sm:py-4" aria-label={t('admin.library_title')}>
+        {isLoading && <div role="status" className="flex min-h-48 items-center justify-center gap-2 text-secondary-text"><Loader2 className="motion-safe:animate-spin motion-reduce:animate-none" size={20} />{t('admin.library_ui.loading')}</div>}
+        {!isLoading && error && <div role="alert" className="mx-auto mt-6 max-w-lg space-y-3 rounded-2xl border border-custom-border bg-secondary-bg p-6 text-center">
+          <p className="text-error">{t(error)}</p><Button variant="secondary" onClick={refresh}>{t('admin.library_ui.retry')}</Button>
+        </div>}
+        {!isLoading && !error && filteredPhotos.length === 0 && <div className="flex min-h-48 flex-col items-center justify-center gap-2 py-10 text-center">
+          <span className="grid h-12 w-12 place-items-center rounded-2xl bg-accent/10 text-accent"><BookOpen size={21} aria-hidden="true" /></span>
+          <p className="text-sm font-medium text-primary-text">{t(libraryPhotos.length === 0 ? 'admin.library_ui.empty' : 'admin.library_ui.no_matches')}</p>
+        </div>}
+        {!isLoading && !error && filteredPhotos.length > 0 && <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 xl:grid-cols-4 2xl:grid-cols-5">
+          {filteredPhotos.map(photo => {
+            const photoCategory = categories.find(category => category.slug === photo.category);
+            return <button
+              key={photo.id}
+              type="button"
+              aria-label={t('admin.view_detail') + ': ' + photo.title}
+              onClick={() => setPreviewPhoto(photo)}
+              className="library-media-card group min-w-0 overflow-hidden rounded-2xl border border-custom-border bg-secondary-bg text-left shadow-sm transition-colors duration-200 hover:border-accent/50 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            >
+              <span className="relative block aspect-[4/3] overflow-hidden bg-primary-bg">
+                <LibraryImage photoId={photo.id} variant="thumbnail"
+                  url={photo.url} driveFileId={photo.driveFileId}
+                  alt={photo.title || t('admin.library_ui.photo_alt')}
+                  className="library-media-card__image h-full w-full object-cover"
+                />
+                <span className="library-media-card__overlay absolute inset-0 flex items-end bg-gradient-to-t from-black/60 via-black/0 to-transparent p-3 opacity-0">
+                  <span className="flex items-center gap-1.5 text-xs font-semibold text-white"><Eye size={14} aria-hidden="true" />{t('admin.library_ui.enlarge')}</span>
                 </span>
-              </div>
-              {photo.year && <span className="absolute top-3 right-3 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md text-white font-bold text-[10px] border border-white/10">
-                {photo.year}
-              </span>}
-            </div>
-            <div className="p-5 flex-1 flex flex-col justify-between">
-              <div>
-                <h4 className="font-bold text-primary-text text-base group-hover:text-accent transition-colors line-clamp-1 mb-1.5">
-                  {photo.title}
-                </h4>
-                <p className="text-xs text-secondary-text line-clamp-2 leading-relaxed">
-                  {photo.desc}
-                </p>
-              </div>
-              <div className="pt-4 mt-4 border-t border-custom-border/60 flex items-center justify-between text-[11px] text-secondary-text">
-                <span className="truncate max-w-[180px]">{photo.author}</span>
-                <span className="text-accent font-semibold flex items-center gap-1">
-                  <Eye size={13} /> {t("admin.view_detail", { defaultValue: "Xem ảnh" })}
+                {photo.year && <span className="absolute right-2 top-2 rounded-lg border border-white/15 bg-black/60 px-2 py-1 text-[10px] font-semibold text-white backdrop-blur-sm">{photo.year}</span>}
+              </span>
+              <span className="block p-3">
+                <span className="block truncate text-sm font-semibold text-primary-text">{photo.title}</span>
+                {photo.desc && <span className="mt-1 block line-clamp-2 text-xs leading-relaxed text-secondary-text">{photo.desc}</span>}
+                <span className="mt-2 flex min-w-0 items-center justify-between gap-2 text-[11px] text-secondary-text">
+                  <span className="truncate">{photo.author}</span>
+                  {photoCategory && <span className="shrink-0 rounded-full bg-accent/10 px-2 py-0.5 text-accent">{libraryCategoryLabel(photoCategory)}</span>}
                 </span>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
+              </span>
+            </button>;
+          })}
+        </div>}
+      </section>
       {/* Lightbox Modal */}
       {previewPhoto && <PhotoLightboxModal key={previewPhoto.id}
         photo={previewPhoto}

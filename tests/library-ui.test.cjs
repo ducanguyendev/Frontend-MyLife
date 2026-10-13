@@ -231,6 +231,26 @@ test('Library category filters keep virtual View all first and render only user-
   assert.match(source, /current => isCreate \? \[\.\.\.current, category\]/);
   assert.match(source, /if \(isCreate\) setLibraryCategory\(category\.slug\)/);
   assert.match(header, /flex flex-wrap items-center/);
+  assert.match(filters, /Select aria-label=\{t\('admin\.library_ui\.category_filter'\)\}/);
+  assert.match(filters, /categoryFilters\.map\(category => <SelectItem/);
+});
+
+test('Library is a single-title workspace with a compact toolbar and gallery-owned scrolling', () => {
+  const page = readFileSync(join(__dirname, '../src/features/my-life/pages/LibraryPage.tsx'), 'utf8');
+  const source = readFileSync(join(__dirname, '../src/features/admin/components/family-tree/LibraryTab.tsx'), 'utf8');
+  const css = readFileSync(join(__dirname, '../src/features/admin/components/family-tree/LibraryTab.css'), 'utf8');
+  assert.match(page, /contentScroll="hidden"/);
+  assert.doesNotMatch(page, /myLife\.modules\.library\.(title|description)/);
+  assert.match(source, /library-workspace flex min-h-0 flex-1 flex-col overflow-hidden/);
+  assert.match(source, /library-gallery custom-scrollbar min-h-0 flex-1 overflow-y-auto/);
+  assert.match(source, /variant="primary"[\s\S]*?onClick=\{\(\) => setUploadOpen\(true\)\}/);
+  assert.match(source, /variant="secondary"[\s\S]*?setCategoryDialog\('create'\)/);
+  assert.match(source, /library-media-card__image/);
+  assert.match(css, /transform 320ms/);
+  assert.match(css, /prefers-reduced-motion: reduce/);
+  assert.match(source, /role="status"[\s\S]*?library_ui\.loading/);
+  assert.match(source, /role="alert"[\s\S]*?onClick=\{refresh\}/);
+  assert.match(source, /library_ui\.empty[\s\S]*?library_ui\.no_matches/);
 });
 
 test('legacy photo category stays visible for editing without silently selecting a replacement', async () => {

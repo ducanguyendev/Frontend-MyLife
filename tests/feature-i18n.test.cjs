@@ -189,16 +189,16 @@ for (const locale of ['vi', 'en']) {
     const { LibraryTab } = load('src/features/admin/components/family-tree/LibraryTab.tsx', {
       react: { ...h.hooks, default: h.hooks }, 'react/jsx-runtime': { jsx: h.jsx, jsxs: h.jsx },
       'lucide-react': new Proxy({}, { get: (_, key) => key }), '@/shared/hooks/useLanguage': { useLanguage: () => ({ t }) },
-      '@/shared/components/ui': { Button: 'Button', Modal: 'Modal' }, '../../services/featureMessages': messages,
+      '@/shared/components/ui': { Button: 'Button', Modal: 'Modal', Select: 'Select', SelectItem: 'SelectItem' }, '../../services/featureMessages': messages,
       '../../services/libraryService': { libraryService }, './PhotoLightboxModal': { PhotoLightboxModal: 'Lightbox' },
       './LibraryAlbumModal': { LibraryAlbumModal: 'AlbumModal' }, './LibraryUploadModal': { LibraryUploadModal: 'UploadModal' },
       './LibraryPhotoEditModal': { LibraryPhotoEditModal: 'PhotoModal' },
-      './LibraryCategoryModal': { LibraryCategoryModal: 'CategoryModal' }, './LibraryImage': { LibraryImage: 'LibraryImage' },
+      './LibraryCategoryModal': { LibraryCategoryModal: 'CategoryModal' }, './LibraryImage': { LibraryImage: 'LibraryImage' }, './LibraryTab.css': {},
       './LibraryPhotoFormFields': { libraryFieldClass: '', libraryCategoryLabel: category => category.name },
     });
     const render = () => h.render(LibraryTab, { showToast: text => toasts.push(text) });
     render(); await h.mount();
-    find(render(), 'button', props => props.children === 'Hoạt hình').onClick();
+    find(render(), 'Select', props => props['aria-label'] === t('admin.library_ui.category_filter')).onValueChange('hoat-hinh');
     assert.ok(nodes(render()).some(node => node.props?.['aria-label'] === t('admin.library_ui.edit_category')));
     find(render(), 'Button', props => props.children === t('admin.library_ui.create_album')).onClick();
     await find(render(), 'AlbumModal').onSubmit({ name: 'Family' });
@@ -210,10 +210,10 @@ for (const locale of ['vi', 'en']) {
     await find(render(), 'UploadModal').onSubmit(1, [], { category: 'hoat-hinh' });
     assert.equal(toasts.at(-1), t('admin.library_ui.photo_uploaded'));
     assert.ok(!nodes(render()).some(node => node.type === 'Lightbox'));
-    find(render(), 'div', props => props.role === 'button').onClick();
+    find(render(), 'button', props => props['aria-label']?.endsWith(': Photo')).onClick();
     find(render(), 'Lightbox').onEdit(photo); await find(render(), 'PhotoModal').onSubmit({ category: 'hoat-hinh' });
     assert.equal(toasts.at(-1), t('admin.library_ui.photo_updated'));
-    find(render(), 'div', props => props.role === 'button').onClick();
+    find(render(), 'button', props => props['aria-label']?.endsWith(': Photo')).onClick();
     find(render(), 'Lightbox').onDelete(photo);
     find(render(), 'Button', props => props.variant === 'danger').onClick(); await flush();
     assert.equal(toasts.at(-1), t('admin.library_ui.photo_deleted'));
@@ -227,8 +227,8 @@ for (const locale of ['vi', 'en']) {
     assert.equal(find(render(), 'CategoryModal').category.name, 'Du lịch');
     await find(render(), 'CategoryModal').onSubmit('Du lịch gia đình');
     assert.equal(toasts.at(-1), t('admin.library_ui.category_updated'));
-    const selectedChip = find(render(), 'button', props => props.children === 'Du lịch gia đình');
-    assert.ok(selectedChip.className.includes('bg-accent'));
+    const selectedCategory = find(render(), 'Select', props => props['aria-label'] === t('admin.library_ui.category_filter'));
+    assert.equal(selectedCategory.value, 'du-lich');
     find(render(), 'Button', props => props.children === t('admin.library_ui.upload')).onClick();
     assert.equal(find(render(), 'UploadModal').initialCategory, 'du-lich');
     find(render(), 'UploadModal').onClose();
@@ -236,7 +236,7 @@ for (const locale of ['vi', 'en']) {
     find(render(), 'Button', props => props.variant === 'danger').onClick(); await flush();
     assert.equal(toasts.at(-1), t('admin.library_ui.category_deleted'));
     assert.ok(!nodes(render()).some(node => node.props?.['aria-label'] === t('admin.library_ui.edit_category') || node.props?.['aria-label'] === t('admin.library_ui.delete_category')));
-    assert.ok(find(render(), 'button', props => props.children === t('admin.all_categories')).className.includes('bg-accent'));
+    assert.equal(find(render(), 'Select', props => props['aria-label'] === t('admin.library_ui.category_filter')).value, 'all');
   });
 }
 

@@ -34,6 +34,7 @@
     "delete_failed": "Không thể xóa thành viên. Vui lòng thử lại."
   },
   "library_ui": {
+    "category_filter": "Lọc theo danh mục",
     "album_created": "Tạo album thành công.",
     "album_updated": "Cập nhật album thành công.",
     "album_deleted": "Đã xóa album thành công.",

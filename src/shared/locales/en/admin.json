@@ -30,6 +30,7 @@
     "save_failed": "Unable to save the member. Please try again.", "delete_failed": "Unable to delete the member. Please try again."
   },
   "library_ui": {
+    "category_filter": "Filter by category",
     "album_created": "Album created successfully.", "album_updated": "Album updated successfully.", "album_deleted": "Album deleted successfully.",
     "photo_uploaded": "Photos uploaded to the library successfully.", "photo_updated": "Photo details updated successfully.", "photo_deleted": "Photo deleted from the library.",
     "category_created": "Category created successfully.", "category_deleted": "Category deleted successfully.",

@@ -84,12 +84,14 @@ test('module content has internal scroll sizing and existing API contracts remai
 
   assert.match(manager, /min-h-0 flex-1 overflow-y-auto/);
   assert.match(anniversary, /flex min-h-0 flex-1 flex-col overflow-y-auto/);
-  assert.match(library, /flex min-h-0 flex-1 flex-col overflow-y-auto/);
+  assert.match(library, /library-workspace flex min-h-0 flex-1 flex-col overflow-hidden/);
+  assert.match(library, /library-gallery[\s\S]*?min-h-0 flex-1 overflow-y-auto/);
+  assert.doesNotMatch(library, /flex min-h-0 flex-1 flex-col overflow-y-auto/);
   assert.match(anniversariesPage, /contentScroll="hidden"/);
   assert.match(anniversariesPage, /h-full min-h-0 flex-1 flex-col/);
   assert.match(libraryPage, /contentScroll="hidden"/);
-  assert.match(libraryPage, /h-full min-h-0 flex-1 flex-col/);
-  assert.match(libraryPage, /flex min-h-0 flex-1 flex-col overflow-hidden/);
+  assert.doesNotMatch(libraryPage, /myLife\.modules\.library\.(title|description)/);
+  assert.match(libraryPage, /<LibraryTab showToast=\{showToast\} \/>/);
   assert.match(read('src/features/admin/services/familyMapService.ts'), /\/api\/family-tree\/map/);
   assert.match(memberHook, /\/api\/family-tree/);
   assert.match(read('src/features/admin/services/anniversaryService.ts'), /\/api\/family-tree\/anniversaries/);
