@@ -8,6 +8,7 @@ export interface MyLifeModule {
   actionKey: string;
   route: string;
   icon: LucideIcon;
+  visualVariant: 'family' | 'calendar' | 'library' | 'map';
 }
 
 export const myLifeModules: MyLifeModule[] = [
@@ -18,6 +19,7 @@ export const myLifeModules: MyLifeModule[] = [
     actionKey: 'myLife.modules.familyTree.open',
     route: '/familytree',
     icon: Network,
+    visualVariant: 'family',
   },
   {
     id: 'anniversaries',
@@ -26,6 +28,7 @@ export const myLifeModules: MyLifeModule[] = [
     actionKey: 'myLife.modules.anniversaries.open',
     route: '/anniversaries',
     icon: CalendarDays,
+    visualVariant: 'calendar',
   },
   {
     id: 'library',
@@ -34,6 +37,7 @@ export const myLifeModules: MyLifeModule[] = [
     actionKey: 'myLife.modules.library.open',
     route: '/library',
     icon: BookOpen,
+    visualVariant: 'library',
   },
   {
     id: 'map',
@@ -42,5 +46,6 @@ export const myLifeModules: MyLifeModule[] = [
     actionKey: 'myLife.modules.map.open',
     route: '/map',
     icon: MapPinned,
+    visualVariant: 'map',
   },
 ];

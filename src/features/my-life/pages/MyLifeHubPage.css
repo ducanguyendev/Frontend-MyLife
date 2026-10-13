@@ -1,0 +1,165 @@
+.my-life-hub-scroll {
+  background-color: var(--primary-bg);
+}
+
+.my-life-hub {
+  background-image:
+    radial-gradient(ellipse at 6% 8%, color-mix(in srgb, var(--accent-color) 7%, transparent), transparent 34rem),
+    radial-gradient(ellipse at 95% 78%, color-mix(in srgb, #8b5cf6 5%, transparent), transparent 30rem),
+    radial-gradient(color-mix(in srgb, var(--primary-text) 5%, transparent) 0.7px, transparent 0.7px);
+  background-size: auto, auto, 20px 20px;
+  background-position: center, center, 3px 4px;
+}
+
+.my-life-module-card {
+  --module-accent: var(--accent-color);
+  background: linear-gradient(145deg, color-mix(in srgb, var(--module-accent) 7%, var(--secondary-bg)), var(--secondary-bg) 76%);
+  isolation: isolate;
+}
+
+.my-life-module-card--family { --module-accent: var(--accent-color); }
+.my-life-module-card--calendar { --module-accent: #d97706; }
+.my-life-module-card--library { --module-accent: #8b5cf6; }
+.my-life-module-card--map { --module-accent: #0891b2; }
+
+.my-life-module-card:hover {
+  border-color: color-mix(in srgb, var(--module-accent) 38%, var(--custom-border));
+}
+
+.my-life-module-card__wash {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(ellipse at 92% 18%, color-mix(in srgb, var(--module-accent) 13%, transparent), transparent 58%);
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+.my-life-module-card__art {
+  position: absolute;
+  top: 0.25rem;
+  right: 0;
+  display: flex;
+  width: min(54%, 19rem);
+  height: 62%;
+  align-items: center;
+  justify-content: center;
+  color: color-mix(in srgb, var(--module-accent) 44%, var(--secondary-bg));
+  opacity: 0.78;
+  pointer-events: none;
+  transition: transform 240ms ease, opacity 240ms ease;
+}
+
+.my-life-module-card:hover .my-life-module-card__art {
+  transform: translateY(-2px);
+  opacity: 0.95;
+}
+
+.my-life-module-card__art--family {
+  top: 2%;
+  right: 0;
+  width: min(68%, 27rem);
+  height: 88%;
+}
+
+.my-life-module-card__network {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  stroke: color-mix(in srgb, var(--module-accent) 48%, var(--custom-border));
+  stroke-width: 2;
+}
+
+.my-life-module-card__network circle {
+  fill: color-mix(in srgb, var(--module-accent) 13%, var(--secondary-bg));
+  stroke-width: 2;
+}
+
+.my-life-module-card__art-icon {
+  position: absolute;
+  top: 13%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: var(--secondary-bg);
+  padding: 0.25rem;
+  color: var(--module-accent);
+}
+
+.my-life-module-card__art--calendar {
+  top: 0.5rem;
+  right: 0.75rem;
+  width: min(46%, 14rem);
+  height: 52%;
+  border: 1px solid color-mix(in srgb, var(--module-accent) 16%, var(--custom-border));
+  border-radius: 1.25rem;
+  background: color-mix(in srgb, var(--module-accent) 5%, var(--secondary-bg));
+  transform: rotate(4deg);
+}
+
+.my-life-module-card__calendar-grid {
+  display: grid;
+  width: 76%;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.55rem;
+  align-items: center;
+  justify-items: center;
+}
+
+.my-life-module-card__calendar-grid svg {
+  grid-column: 1 / -1;
+  margin-bottom: 0.35rem;
+}
+
+.my-life-module-card__calendar-grid i {
+  width: 0.42rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--module-accent) 42%, var(--custom-border));
+}
+
+.my-life-module-card__photo {
+  position: absolute;
+  display: flex;
+  width: 6.4rem;
+  height: 5.8rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid color-mix(in srgb, var(--module-accent) 25%, var(--custom-border));
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--module-accent) 10%, var(--secondary-bg));
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--primary-text) 8%, transparent);
+}
+
+.my-life-module-card__photo--back {
+  transform: translate(-1.1rem, -0.4rem) rotate(-12deg);
+  opacity: 0.68;
+}
+
+.my-life-module-card__photo--front {
+  transform: translate(0.6rem, 0.5rem) rotate(8deg);
+}
+
+.my-life-module-card__map-ring {
+  position: absolute;
+  aspect-ratio: 1;
+  border: 1px solid color-mix(in srgb, var(--module-accent) 23%, var(--custom-border));
+  border-radius: 50%;
+}
+
+.my-life-module-card__map-ring--outer { width: 9rem; }
+.my-life-module-card__map-ring--inner { width: 5.5rem; }
+.my-life-module-card__map-pin { position: relative; z-index: 1; color: var(--module-accent); }
+
+@media (min-width: 1280px) {
+  .my-life-module-card--family { min-height: 100%; }
+  .my-life-module-card:not(.my-life-module-card--family) { min-height: 100%; }
+}
+
+@media (max-width: 767px) {
+  .my-life-module-card__art--family { width: 57%; opacity: 0.55; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .my-life-module-card__art { transition-duration: 0.01ms; }
+}

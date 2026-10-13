@@ -1,7 +1,9 @@
 {
   "title": "My Space",
-  "subtitle": "Tools to help you care for everyday life.",
+  "subtitle": "A quiet place to keep your family close and the moments that matter.",
   "greeting": "Hello, {{name}}",
+  "hubEyebrow": "YOUR PERSONAL SPACE",
+  "hubSectionTitle": "Explore your space",
   "dock": {
     "label": "MyLife module navigation"
   },

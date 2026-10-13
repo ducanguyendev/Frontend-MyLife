@@ -15,6 +15,7 @@ const manager = read('src/features/admin/components/FamilyTreeManager.tsx');
 const hub = read('src/features/my-life/pages/MyLifeHubPage.tsx');
 const modules = read('src/features/my-life/config/myLifeModules.ts');
 const card = read('src/features/my-life/components/MyLifeModuleCard.tsx');
+const hubCss = read('src/features/my-life/pages/MyLifeHubPage.css');
 
 test('five canonical workspace routes reuse the USER guard', () => {
   for (const [route, page] of [
@@ -43,7 +44,30 @@ test('hub renders four configured real modules with semantic route links', () =>
   }
   assert.equal((modules.match(/id: '/g) || []).length, 4);
   assert.match(card, /<Link[\s\S]*to=\{module\.route\}/);
+  assert.match(card, /focus-visible:outline/);
+  assert.match(card, /duration-\[240ms\]/);
   assert.doesNotMatch(modules, /Finance|Tasks|Goals/);
+});
+
+test('hub uses a responsive bento with a primary family card and four visual variants', () => {
+  assert.match(hub, /cardPlacement\[module\.visualVariant\]/);
+  assert.match(hub, /grid-cols-1[\s\S]*md:grid-cols-2[\s\S]*xl:grid-cols-12/);
+  assert.match(hub, /family:[\s\S]*md:col-span-2[\s\S]*xl:col-span-6[\s\S]*xl:row-span-2/);
+  assert.match(modules, /visualVariant: 'family'/);
+  assert.match(modules, /visualVariant: 'calendar'/);
+  assert.match(modules, /visualVariant: 'library'/);
+  assert.match(modules, /visualVariant: 'map'/);
+  for (const variant of ['family', 'calendar', 'library', 'map']) assert.ok(hubCss.includes(`my-life-module-card--${variant}`));
+  assert.match(hubCss, /radial-gradient/);
+  assert.match(hubCss, /prefers-reduced-motion/);
+});
+
+test('hub stays personal and does not introduce fake summaries or API loading', () => {
+  assert.doesNotMatch(hub, /Promise\.all|fetch\(|axios|totalMembers|eventCount|albumCount/);
+  assert.doesNotMatch(card, /\b\d+\s*(members|events|albums|regions)\b/i);
+  assert.match(hub, /myLifeModules\.map/);
+  assert.match(hub, /backTo="\/Home"/);
+  assert.doesNotMatch(hub, /showDock/);
 });
 
 test('Home launcher and mobile drawer expose MyLife only to USER', () => {
@@ -96,6 +120,8 @@ test('module and page translations exist in Vietnamese and English; shared contr
   for (const locale of ['vi', 'en']) {
     const messages = JSON.parse(read(`src/shared/locales/${locale}/myLife.json`));
     assert.ok(messages.title);
+    assert.ok(messages.hubEyebrow);
+    assert.ok(messages.hubSectionTitle);
     for (const module of ['familyTree', 'anniversaries', 'library', 'map']) {
       assert.ok(messages.modules[module].title);
       assert.ok(messages.modules[module].description);
