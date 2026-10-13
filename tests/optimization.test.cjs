@@ -32,10 +32,11 @@ const find = (tree, predicate) => { const node = nodes(tree).find(predicate); as
 const flush = () => new Promise(resolve => setImmediate(resolve));
 function familySetup(request) {
   const h = harness(); const toast = [];
-  const names = ['MemberCard','MemberListItem','MemberDetailModal','MemberFormModal','DeleteConfirmModal','AnniversaryTab','LibraryTab','FamilyMapTab'];
+  const names = ['MemberCard','MemberTable','MemberDetailModal','MemberFormModal','DeleteConfirmModal','AnniversaryTab','LibraryTab','FamilyMapTab'];
   const { FamilyTreeManager } = load('src/features/admin/components/FamilyTreeManager.tsx', {
     react: { ...h.hooks, default: h.hooks }, 'react/jsx-runtime': { jsx: h.jsx, jsxs: h.jsx }, 'lucide-react': new Proxy({}, { get: (_, key) => key }),
     '@/shared/hooks/useLanguage': { useLanguage: () => ({ t: key => key }) }, '@/shared/components/ui': { Button: 'Button' },
+    '@/shared/components/SearchBar': { SearchBar: 'SearchBar' },
     '@/shared/api/apiClient': { apiClient: { requestRaw: request } }, '../services/featureMessages': messages,
     './family-tree/memberSearch': search, './family-tree': Object.fromEntries(names.map(name => [name,name])),
   }, { document: { addEventListener() {}, removeEventListener() {}, getElementById: () => ({ focus() {} }) } });

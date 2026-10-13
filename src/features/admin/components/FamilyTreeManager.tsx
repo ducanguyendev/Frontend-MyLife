@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback, useMemo, lazy, Suspense } from "react";
 import {
-  Plus, Loader2, LayoutGrid, List, Users, CalendarDays, BookOpen, Globe, Network
+  Plus, Loader2, LayoutGrid, Table2, Users, CalendarDays, BookOpen, Globe, Network
 } from "lucide-react";
 import { useLanguage } from "@/shared/hooks/useLanguage";
-import { Button, Select } from "@/shared/components/ui";
+import { Button, Select, SelectItem } from "@/shared/components/ui";
 import { SearchBar } from "@/shared/components/SearchBar";
 import { apiClient } from "@/shared/api/apiClient";
 import { featureSuccessKeys, getFeatureErrorKey } from '../services/featureMessages';
@@ -11,7 +11,7 @@ import {
   type FamilyMember,
   type FamilyTreeManagerProps,
   MemberCard,
-  MemberListItem,
+  MemberTable,
   MemberDetailModal,
   MemberFormModal,
   DeleteConfirmModal,
@@ -41,7 +41,7 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
   // UI State
   type FamilyTab = "members" | "anniversaries" | "library" | "map";
   const [activeTab, setActiveTab] = useState<FamilyTab>("members");
-  const [viewMode, setViewMode] = useState<"grid" | "list" | "mindmap">("grid");
+  const [viewMode, setViewMode] = useState<"grid" | "table" | "mindmap">("grid");
   const [searchQuery, setSearchQuery] = useState("");
   const [generationFilter, setGenerationFilter] = useState("all");
 
@@ -103,8 +103,8 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
     } else {
       setEditingMember({
         fullName: "",
-        generation: 1,
-        gender: "Nam",
+        generation: undefined,
+        gender: undefined,
         dateOfBirth: "",
         role: "",
         address: "",
@@ -130,6 +130,7 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
   const handleSaveMember = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingMember) return;
+    if (!Number.isInteger(editingMember.generation) || Number(editingMember.generation) < 1) return;
     setIsSaving(true);
 
     const isUpdate = !!editingMember.id;
@@ -145,7 +146,7 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
         ...relation,
         relationType: relation.relationType?.trim().toLowerCase() === 'sibling' ? 'sibling' : relation.relationType,
       })),
-      generation: Number(editingMember.generation),
+      generation: editingMember.generation,
     };
 
     try {
@@ -299,15 +300,15 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
               <Select
                 aria-label={t("admin.all_generations")}
                 value={generationFilter}
-                onChange={(e) => setGenerationFilter(e.target.value)}
+                onValueChange={setGenerationFilter}
                 containerClassName="!w-auto"
-                className="!py-0 !pl-4 !pr-10 !h-10 border-0"
+                className="min-w-44 border-0"
               >
-                <option value="all">{t("admin.all_generations", { defaultValue: "Tất cả các đời" })}</option>
+                <SelectItem value="all">{t("admin.all_generations", { defaultValue: "Tất cả các đời" })}</SelectItem>
                 {generations.map((g) => (
-                  <option key={g} value={g}>
+                  <SelectItem key={g} value={String(g)}>
                     {t("admin.generation", { defaultValue: "Đời thứ" })} {g}
-                  </option>
+                  </SelectItem>
                 ))}
               </Select>
 
@@ -322,12 +323,12 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
                   <LayoutGrid size={16} />
                 </button>
                 <button
-                  aria-label={t("admin.view_list")} aria-pressed={viewMode === "list"}
-                  onClick={() => setViewMode("list")}
-                  className={`p-1.5 rounded-lg transition-colors cursor-pointer ${viewMode === "list" ? "bg-accent text-primary-bg" : "text-secondary-text hover:text-primary-text"}`}
-                  title={t("admin.view_list", { defaultValue: "Danh sách" })}
+                  aria-label={t("admin.view_table")} aria-pressed={viewMode === "table"}
+                  onClick={() => setViewMode("table")}
+                  className={`p-1.5 rounded-lg transition-colors cursor-pointer ${viewMode === "table" ? "bg-accent text-primary-bg" : "text-secondary-text hover:text-primary-text"}`}
+                  title={t("admin.view_table")}
                 >
-                  <List size={16} />
+                  <Table2 size={16} />
                 </button>
                 <button
                   aria-label={t("admin.view_mindmap")} aria-pressed={viewMode === "mindmap"}
@@ -376,18 +377,13 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
                   />
                 ))}
               </div>
-            ) : viewMode === "list" ? (
-              <div className="space-y-3">
-                {filteredMembers.map((m) => (
-                  <MemberListItem
-                    key={m.id}
-                    member={m}
-                    onView={handleViewMember}
-                    onEdit={handleOpenModal}
-                    onDelete={setMemberToDelete}
-                  />
-                ))}
-              </div>
+            ) : viewMode === "table" ? (
+              <MemberTable
+                members={filteredMembers}
+                onView={handleViewMember}
+                onEdit={handleOpenModal}
+                onDelete={setMemberToDelete}
+              />
             ) : (
               <Suspense fallback={<div role="status">{t("admin.library_ui.loading")}</div>}>
               <FamilyMindmap 

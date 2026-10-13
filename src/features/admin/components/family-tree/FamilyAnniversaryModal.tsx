@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Button, Input, Modal, Select, Textarea } from '@/shared/components/ui';
+import { Button, Input, Modal, Select, SelectItem, Textarea } from '@/shared/components/ui';
 import { useLanguage } from '@/shared/hooks/useLanguage';
 import { anniversaryService, type AnniversaryEventType, type FamilyAnniversary, type FamilyAnniversaryPayload } from '../../services/anniversaryService';
 import type { FamilyMember } from './types';
@@ -10,6 +10,8 @@ interface Props {
   onClose: () => void;
   onSubmit: (payload: FamilyAnniversaryPayload) => Promise<void>;
 }
+
+const NO_RELATED_MEMBER = '__no_related_member__';
 
 const vietnameseToday = () => Number(new Intl.DateTimeFormat('en', { timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric' }).format(new Date()));
 
@@ -80,14 +82,15 @@ export function FamilyAnniversaryModal({ anniversary, members, onClose, onSubmit
     <form onSubmit={submit} noValidate className="space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Select label={t('admin.anniversary_ui.event_type')} value={eventType} disabled={isSaving}
-          onChange={e => setEventType(e.target.value as AnniversaryEventType)}>
-          <option value="DEATH_ANNIVERSARY">{t('admin.anniversary_ui.death_anniversary')}</option>
-          <option value="FAMILY_EVENT">{t('admin.anniversary_ui.family_event')}</option>
+          onValueChange={value => setEventType(value as AnniversaryEventType)}>
+          <SelectItem value="DEATH_ANNIVERSARY">{t('admin.anniversary_ui.death_anniversary')}</SelectItem>
+          <SelectItem value="FAMILY_EVENT">{t('admin.anniversary_ui.family_event')}</SelectItem>
         </Select>
-        <Select label={t('admin.anniversary_ui.related_member')} value={relatedMemberId} disabled={isSaving} includeEmptyOption={false}
-          onChange={e => setRelatedMemberId(e.target.value)}>
-          <option value="">{t('admin.anniversary_ui.no_related_member')}</option>
-          {members.map(member => <option key={member.id} value={member.id}>{member.fullName}</option>)}
+        <Select label={t('admin.anniversary_ui.related_member')} value={relatedMemberId || undefined} disabled={isSaving}
+          placeholder={t('admin.anniversary_ui.no_related_member')}
+          onValueChange={value => setRelatedMemberId(value === NO_RELATED_MEMBER ? '' : value)}>
+          <SelectItem value={NO_RELATED_MEMBER}>{t('admin.anniversary_ui.no_related_member')}</SelectItem>
+          {members.map(member => <SelectItem key={member.id} value={String(member.id)}>{member.fullName}</SelectItem>)}
         </Select>
       </div>
       <Input label={t('admin.anniversary_ui.title')} value={title} maxLength={200} disabled={isSaving}

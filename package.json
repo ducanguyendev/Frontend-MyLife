@@ -14,13 +14,17 @@
     "test:library-ui": "node --test tests/library-ui.test.cjs",
     "test:theme-switch": "node --test tests/theme-switch.test.cjs",
     "test:i18n": "node --test tests/feature-i18n.test.cjs",
+    "test:mindmap": "node --test tests/family-mindmap-graph.test.cjs",
     "test:anniversary": "node --test tests/anniversary.test.cjs",
+    "test:select": "node --test tests/shared-select.test.cjs",
+    "test:family-relation-select": "node --test tests/family-relation-select.test.cjs",
     "test:family-map": "node --test tests/family-map.test.cjs",
     "preview": "vite preview",
     "test:roles": "node --test tests/family-role.test.cjs",
     "test:optimization": "node --test tests/optimization.test.cjs"
   },
   "dependencies": {
+    "@radix-ui/react-select": "^2.4.1",
     "@tailwindcss/vite": "^4.3.3",
     "@types/dagre": "^0.7.54",
     "@xyflow/react": "^12.11.6",

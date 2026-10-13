@@ -61,12 +61,15 @@ test('anniversary controls and status text are translated in Vietnamese and Engl
   }
 });
 
-test('related-member empty option uses a floated label and anniversary search uses shared SearchBar', () => {
+test('related-member reset uses an explicit Radix item and anniversary search uses shared SearchBar', () => {
   const select = readFileSync(join(__dirname, '../src/shared/components/ui/Select.tsx'), 'utf8');
   const modal = readFileSync(join(__dirname, '../src/features/admin/components/family-tree/FamilyAnniversaryModal.tsx'), 'utf8');
   const tab = readFileSync(join(__dirname, '../src/features/admin/components/family-tree/AnniversaryTab.tsx'), 'utf8');
-  assert.match(select, /\|\| Boolean\(currentLabel\)/);
-  assert.match(modal, /includeEmptyOption=\{false\}/);
+  assert.match(select, /@radix-ui\/react-select/);
+  assert.match(select, /<SelectPrimitive\.Value[\s\S]*placeholder=\{floatingLabel \? ''/);
+  assert.match(modal, /SelectItem value=\{NO_RELATED_MEMBER\}/);
+  assert.match(modal, /value === NO_RELATED_MEMBER \? '' : value/);
+  assert.doesNotMatch(modal, /clearable|onClear|clearLabel/);
   assert.match(tab, /import \{ SearchBar \} from ['"]@\/shared\/components\/SearchBar['"]/);
   assert.match(tab, /<SearchBar\b[^>]*ariaLabel=/);
   assert.doesNotMatch(tab, /admin\.anniversary_title|admin\.anniversary_desc/);

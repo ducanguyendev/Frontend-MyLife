@@ -58,11 +58,12 @@ async function setup() {
     react: Object.assign(dateRuntime, { default: dateRuntime }), 'react/jsx-runtime': { jsx: (type, props) => ({ type, props }), jsxs: (type, props) => ({ type, props }) },
     'lucide-react': { Calendar: 'Calendar' }, './Input': { Input: 'Input' },
   });
-  mocks['@/shared/components/ui'] = { Button: 'Button', Modal: 'Modal', Select: 'Select', DateInput: 'DateInput',
+  const selectItem = function SelectItem() {};
+  mocks['@/shared/components/ui'] = { Button: 'Button', Modal: 'Modal', Select: 'Select', SelectItem: selectItem, DateInput: 'DateInput',
     validateCalendarDate: dateHelpers.validateCalendarDate };
   const fields = load('LibraryPhotoFormFields.tsx', mocks);
   mocks['./LibraryPhotoFormFields'] = fields;
-  return { i18n, fields, mocks,
+  return { i18n, fields, mocks, selectItem,
     render(component, props) { cursor = 0; const tree = component(props); const tasks = pending; pending = []; tasks.forEach(task => task()); return tree; },
     unmount() { effects.forEach(effect => effect?.cleanup?.()); },
   };
@@ -236,7 +237,7 @@ test('legacy photo category stays visible for editing without silently selecting
   const h = await setup();
   const fields = h.fields.LibraryPhotoFormFields({ value: { category: 'photos' }, onChange() {}, disabled: false, categories });
   const select = find(fields, h.fields.LibrarySelectField);
-  const options = nodes(select.children).filter(node => node.type === 'option');
+  const options = nodes(select.children).filter(node => node.type === h.selectItem);
   const legacy = options.find(option => option.props.value === 'photos');
   assert.ok(legacy); assert.equal(legacy.props.disabled, true);
   assert.equal(legacy.props.children, h.i18n.t('admin.library_ui.legacy_category', { category: 'photos' }));
@@ -250,7 +251,7 @@ test('legacy photo category stays visible for editing without silently selecting
   assert.equal(requests, 0);
   assert.equal(find(tree, 'p', props => props.role === 'alert').children, h.i18n.t('admin.library_ui.category_required'));
   const fieldProps = find(tree, h.fields.LibraryPhotoFormFields);
-  find(h.fields.LibraryPhotoFormFields(fieldProps), h.fields.LibrarySelectField).onChange({ target: { value: 'hoat-hinh' } });
+  find(h.fields.LibraryPhotoFormFields(fieldProps), h.fields.LibrarySelectField).onValueChange('hoat-hinh');
   tree = render(); await find(tree, 'form').onSubmit(event);
   assert.equal(requests, 1);
 });

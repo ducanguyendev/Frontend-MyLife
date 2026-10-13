@@ -53,10 +53,10 @@ export const Modal: React.FC<ModalProps> = ({
     if (!isOpen || !mounted) return;
     const previous = document.activeElement as HTMLElement | null;
     const dialog = dialogRef.current;
-    const selector = 'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex="0"]';
+    const selector = 'button:not([disabled]), input:not([disabled]), [role="combobox"]:not([aria-disabled="true"]), textarea:not([disabled]), a[href], [tabindex="0"]';
     // Focus once on opening; never steal focus from a user already interacting.
     if (dialog && !dialog.contains(document.activeElement)) {
-      (dialog.querySelector<HTMLElement>('input:not([disabled]), select:not([disabled]), textarea:not([disabled])') ?? dialog.querySelector<HTMLElement>(selector) ?? dialog).focus();
+      (dialog.querySelector<HTMLElement>('input:not([disabled]), [role="combobox"]:not([aria-disabled="true"]), textarea:not([disabled])') ?? dialog.querySelector<HTMLElement>(selector) ?? dialog).focus();
     }
     const keepFocus = (event: KeyboardEvent) => {
       if (event.key !== 'Tab' || !dialog?.contains(document.activeElement)) return;

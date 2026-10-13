@@ -23,6 +23,13 @@ export const MemberMindmapNode: React.FC<{ data: NodeData }> = ({ data }) => {
   };
 
   const genColors = getGenerationColors(m.generation);
+  const name = formatName(m.fullName);
+
+  const openWithKeyboard = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    onView(m);
+  };
 
   // Close dropdown when clicking outside
   React.useEffect(() => {
@@ -32,18 +39,28 @@ export const MemberMindmapNode: React.FC<{ data: NodeData }> = ({ data }) => {
   }, [isDropdownOpen]);
 
   return (
-    <div className={`bg-secondary-bg border-[1.5px] border-[#D4AF37] rounded-xl p-3 shadow-md w-64 relative group transition-transform hover:scale-105 cursor-pointer`}>
-      {/* Handles for connections */}
-      <Handle type="target" position={Position.Top} className="!w-2.5 !h-2.5 !bg-[#D4AF37] !border-none" />
+    <div className="bg-secondary-bg border-[1.5px] border-[#D4AF37] rounded-xl p-3 shadow-md w-64 h-24 relative group">
+      <Handle type="target" id="parent-target" position={Position.Top} isConnectable={false} aria-hidden="true" className="!w-1.5 !h-1.5 !bg-transparent !border-none !opacity-0 !pointer-events-none" />
+      <Handle type="source" id="child-source" position={Position.Bottom} isConnectable={false} aria-hidden="true" className="!w-1.5 !h-1.5 !bg-transparent !border-none !opacity-0 !pointer-events-none" />
+      <Handle type="source" id="child-source-right" position={Position.Right} isConnectable={false} aria-hidden="true" className="!w-1.5 !h-1.5 !bg-transparent !border-none !opacity-0 !pointer-events-none" />
+      <Handle type="target" id="parent-target-left" position={Position.Left} isConnectable={false} aria-hidden="true" className="!w-1.5 !h-1.5 !bg-transparent !border-none !opacity-0 !pointer-events-none" />
+      <Handle type="source" id="spouse-right" position={Position.Right} isConnectable={false} aria-hidden="true" className="!w-1.5 !h-1.5 !bg-transparent !border-none !opacity-0 !pointer-events-none" />
+      <Handle type="target" id="spouse-left" position={Position.Left} isConnectable={false} aria-hidden="true" className="!w-1.5 !h-1.5 !bg-transparent !border-none !opacity-0 !pointer-events-none" />
+      <Handle type="source" id="spouse-bottom" position={Position.Bottom} isConnectable={false} aria-hidden="true" className="!w-1.5 !h-1.5 !bg-transparent !border-none !opacity-0 !pointer-events-none" />
+      <Handle type="target" id="spouse-top" position={Position.Top} isConnectable={false} aria-hidden="true" className="!w-1.5 !h-1.5 !bg-transparent !border-none !opacity-0 !pointer-events-none" />
+      <Handle type="source" id="horizontal-right" position={Position.Right} isConnectable={false} aria-hidden="true" className="!w-1.5 !h-1.5 !bg-transparent !border-none !opacity-0 !pointer-events-none" />
+      <Handle type="target" id="horizontal-left" position={Position.Left} isConnectable={false} aria-hidden="true" className="!w-1.5 !h-1.5 !bg-transparent !border-none !opacity-0 !pointer-events-none" />
+      <Handle type="source" id="horizontal-bottom" position={Position.Bottom} isConnectable={false} aria-hidden="true" className="!w-1.5 !h-1.5 !bg-transparent !border-none !opacity-0 !pointer-events-none" />
+      <Handle type="target" id="horizontal-top" position={Position.Top} isConnectable={false} aria-hidden="true" className="!w-1.5 !h-1.5 !bg-transparent !border-none !opacity-0 !pointer-events-none" />
       
       {/* Dropdown Menu */}
       <div className="absolute top-2 right-2 z-50">
-        <button aria-label={t("admin.member_actions")} aria-expanded={isDropdownOpen}
+        <button aria-label={t("admin.member_actions_for", { name })} aria-expanded={isDropdownOpen}
           onClick={(e) => {
             e.stopPropagation();
             setIsDropdownOpen(!isDropdownOpen);
           }}
-          className="p-1 rounded-full text-secondary-text hover:text-primary-text hover:bg-primary-bg transition-colors"
+          className="flex h-10 w-10 items-center justify-center rounded-full text-secondary-text hover:text-primary-text hover:bg-primary-bg transition-colors"
         >
           <MoreVertical size={14} />
         </button>
@@ -87,10 +104,17 @@ export const MemberMindmapNode: React.FC<{ data: NodeData }> = ({ data }) => {
         )}
       </div>
 
-      <div className="flex items-center gap-3" onClick={() => onView(m)}>
+      <div
+        role="button"
+        tabIndex={0}
+        aria-label={`${t("admin.view_detail")}: ${name}`}
+        onClick={() => onView(m)}
+        onKeyDown={openWithKeyboard}
+        className="flex h-full items-center gap-3 rounded-md pr-8 outline-none focus-visible:ring-2 focus-visible:ring-accent cursor-pointer"
+      >
         <MemberAvatarImage
           member={m}
-          alt={formatName(m.fullName)}
+          alt={name}
           className="w-12 h-12 rounded-full object-cover border-[1.5px] border-[#D4AF37]/70 shrink-0 pointer-events-none"
         />
         <div className="flex-1 overflow-hidden pr-4">
@@ -103,7 +127,7 @@ export const MemberMindmapNode: React.FC<{ data: NodeData }> = ({ data }) => {
             </span>
           </div>
           <h3 className="text-sm font-bold text-primary-text truncate leading-tight pointer-events-none">
-            {formatName(m.fullName)}
+            {name}
           </h3>
           <p className="text-[10px] text-secondary-text truncate mt-0.5">
             {t(`admin.role_${m.role?.toLowerCase() || "member"}`, { defaultValue: m.role || "Thành viên" })}
@@ -111,7 +135,6 @@ export const MemberMindmapNode: React.FC<{ data: NodeData }> = ({ data }) => {
         </div>
       </div>
 
-      <Handle type="source" position={Position.Bottom} className="!w-2.5 !h-2.5 !bg-[#D4AF37] !border-none" />
     </div>
   );
 };

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { useLanguage } from '@/shared/hooks/useLanguage';
-import { Button, Modal } from '@/shared/components/ui';
+import { Button, Modal, SelectItem } from '@/shared/components/ui';
 import { getFeatureErrorKey } from '../../services/featureMessages';
 import { type LibraryAlbum, type LibraryCategory, type LibraryPhotoMetadata } from '../../services/libraryService';
 import { LibraryPhotoFormFields, libraryDisplayDateError, libraryFieldClass, LibrarySelectField } from './LibraryPhotoFormFields';
@@ -45,9 +45,9 @@ export function LibraryUploadModal({ albums, categories, initialAlbumId, initial
     description={t('admin.library_ui.upload_hint')} maxWidth="lg" closeOnBackdropClick={!isUploading} closeOnEsc={!isUploading}>
     <form onSubmit={submit} noValidate className="space-y-4">
       {categories.length === 0 && <p role="status" className="text-sm text-secondary-text">{t('admin.library_ui.create_category_first')}</p>}
-      <LibrarySelectField label={t('admin.library_ui.field_album')} value={albumId} disabled={isUploading} onChange={e => setAlbumId(e.target.value)}>
-          <option value="">{t('admin.library_ui.choose_album')}</option>
-          {albums.map(album => <option key={album.id} value={album.id}>{album.name}</option>)}
+      <LibrarySelectField label={t('admin.library_ui.field_album')} value={albumId || undefined} disabled={isUploading}
+        placeholder={t('admin.library_ui.choose_album')} onValueChange={setAlbumId}>
+          {albums.map(album => <SelectItem key={album.id} value={String(album.id)}>{album.name}</SelectItem>)}
       </LibrarySelectField>
       <label className="block text-sm text-secondary-text">{t('admin.library_ui.field_images')}
         <input ref={input} className={`${libraryFieldClass} mt-1.5`} type="file" multiple

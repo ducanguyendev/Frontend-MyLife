@@ -1,6 +1,6 @@
-import type { InputHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes } from 'react';
+import type { InputHTMLAttributes, TextareaHTMLAttributes } from 'react';
 import { useLanguage } from '@/shared/hooks/useLanguage';
-import { DateInput, Select, validateCalendarDate } from '@/shared/components/ui';
+import { DateInput, Select, SelectItem, validateCalendarDate, type SelectProps } from '@/shared/components/ui';
 import { type LibraryPhotoMetadata, type LibraryCategory } from '../../services/libraryService';
 
 // Library-only floating labels and matching text/select sizing.
@@ -19,7 +19,7 @@ export function libraryDisplayDateError(value: string): string | null {
 export function LibraryTextField({ label, ...props }: InputHTMLAttributes<HTMLInputElement> & { label: string }) {
   return <label className="relative block min-h-[56px]"><span className={labelClass}>{label}</span><input {...props} className={libraryFieldClass} /></label>;
 }
-export function LibrarySelectField({ label, children, ...props }: SelectHTMLAttributes<HTMLSelectElement> & { label: string }) {
+export function LibrarySelectField({ label, children, ...props }: SelectProps & { label: string }) {
   return <Select label={label} {...props} className="border-0">{children}</Select>;
 }
 export function LibraryTextArea({ label, ...props }: TextareaHTMLAttributes<HTMLTextAreaElement> & { label: string }) {
@@ -38,11 +38,10 @@ export function LibraryPhotoFormFields({ value, onChange, disabled, categories }
       disabled={disabled} onChange={e => onChange({ ...value, title: e.target.value })} />
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
       <LibrarySelectField label={t('admin.library_ui.field_category')} value={value.category} disabled={disabled}
-        onChange={e => onChange({ ...value, category: e.target.value })}>
-        {!categories.some(category => category.slug === value.category) && (value.category
-          ? <option value={value.category} disabled>{t('admin.library_ui.legacy_category', { category: value.category })}</option>
-          : <option value="">{t('admin.library_ui.choose_category')}</option>)}
-        {categories.map(category => <option key={category.id} value={category.slug}>{libraryCategoryLabel(category)}</option>)}
+        onValueChange={category => onChange({ ...value, category })}>
+        {!categories.some(category => category.slug === value.category) && value.category &&
+          <SelectItem value={value.category} disabled>{t('admin.library_ui.legacy_category', { category: value.category })}</SelectItem>}
+        {categories.map(category => <SelectItem key={category.id} value={category.slug}>{libraryCategoryLabel(category)}</SelectItem>)}
       </LibrarySelectField>
       <DateInput label={t('admin.library_ui.field_date')} value={value.displayDate ?? ''} disabled={disabled}
         placeholder="DD/MM/YYYY" onValueChange={displayDate => onChange({ ...value, displayDate })} />

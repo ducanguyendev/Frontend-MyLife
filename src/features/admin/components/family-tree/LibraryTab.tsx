@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { BookOpen, Plus, Eye, Pencil, Trash2, Loader2 } from "lucide-react";
 import { useLanguage } from "@/shared/hooks/useLanguage";
-import { Button, Modal, Select } from "@/shared/components/ui";
+import { Button, Modal, Select, SelectItem } from "@/shared/components/ui";
 import { featureSuccessKeys, getFeatureErrorKey } from '../../services/featureMessages';
 import { libraryService, type LibraryAlbum, type LibraryPhotoMetadata, type LibraryCategory } from '../../services/libraryService';
 import { type LibraryPhoto } from "./types";
@@ -9,7 +9,7 @@ import { PhotoLightboxModal } from "./PhotoLightboxModal";
 import { LibraryAlbumModal } from './LibraryAlbumModal';
 import { LibraryUploadModal } from './LibraryUploadModal';
 import { LibraryPhotoEditModal } from './LibraryPhotoEditModal';
-import { libraryFieldClass, libraryCategoryLabel } from './LibraryPhotoFormFields';
+import { libraryCategoryLabel } from './LibraryPhotoFormFields';
 import { LibraryCategoryModal } from './LibraryCategoryModal';
 import { LibraryImage } from './LibraryImage';
 
@@ -142,10 +142,11 @@ export const LibraryTab: React.FC<LibraryTabProps> = ({ showToast }) => {
       <div className="flex flex-wrap items-center gap-2 pb-1">
         <Select aria-label={t('admin.library_ui.album_filter')}
           containerClassName="!w-auto"
-          className={`${libraryFieldClass} max-w-full min-w-44 !py-0 !pl-4 !pr-10 border-0`}
-          value={selectedAlbum} disabled={isLoading} onChange={event => setSelectedAlbum(event.target.value === 'all' ? 'all' : Number(event.target.value))}>
-          <option value="all">{t('admin.library_ui.all_albums')}</option>
-          {albums.map(album => <option key={album.id} value={album.id}>{album.name}</option>)}
+          variant="compact"
+          className="max-w-full min-w-44 border-0"
+          value={String(selectedAlbum)} disabled={isLoading} onValueChange={value => setSelectedAlbum(value === 'all' ? 'all' : Number(value))}>
+          <SelectItem value="all">{t('admin.library_ui.all_albums')}</SelectItem>
+          {albums.map(album => <SelectItem key={album.id} value={String(album.id)}>{album.name}</SelectItem>)}
         </Select>
         {activeAlbum && <>
           <button className="p-2 text-secondary-text hover:text-accent cursor-pointer" title={t('admin.library_ui.edit_album')}

@@ -1,6 +1,6 @@
 export * from "./types";
 export * from "./MemberCard";
-export * from "./MemberListItem";
+export * from "./MemberTable";
 export * from "./MemberDetailModal";
 export * from "./MemberFormModal";
 export * from "./DeleteConfirmModal";

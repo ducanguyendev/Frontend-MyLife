@@ -11,16 +11,19 @@ import {
   Panel,
   MiniMap,
   ReactFlowProvider,
+  useReactFlow,
   type Node,
   type Edge,
+  Handle,
+  Position,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import dagre from "dagre";
 import { MemberMindmapNode } from "./MemberMindmapNode";
 import { type FamilyMember } from "./types";
 import { useLanguage } from "@/shared/hooks/useLanguage";
 import { toPng } from "html-to-image";
 import { Download, GitMerge } from "lucide-react";
+import { buildFamilyMindmapGraph, layoutFamilyMindmapGraph } from "./familyMindmapGraph";
 
 interface FamilyMindmapProps {
   members: FamilyMember[];
@@ -31,108 +34,67 @@ interface FamilyMindmapProps {
 
 const nodeTypes = {
   member: MemberMindmapNode,
-};
-
-const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = "TB") => {
-  const dagreGraph = new dagre.graphlib.Graph();
-  dagreGraph.setDefaultEdgeLabel(() => ({}));
-  
-  // Dimensions based on MemberMindmapNode size + some padding
-  const nodeWidth = 300;
-  const nodeHeight = 150;
-
-  dagreGraph.setGraph({ rankdir: direction });
-
-  nodes.forEach((node) => {
-    dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
-  });
-
-  edges.forEach((edge) => {
-    dagreGraph.setEdge(edge.source, edge.target);
-  });
-
-  dagre.layout(dagreGraph);
-
-  const newNodes = nodes.map((node) => {
-    const nodeWithPosition = dagreGraph.node(node.id);
-    const newNode = {
-      ...node,
-      position: {
-        x: nodeWithPosition.x - nodeWidth / 2,
-        y: nodeWithPosition.y - nodeHeight / 2,
-      },
-    };
-    return newNode;
-  });
-
-  return { nodes: newNodes, edges };
+  familyUnion: () => (
+    <div aria-hidden="true" className="h-full w-full pointer-events-none">
+      <Handle type="target" id="union-parent-target" position={Position.Top} isConnectable={false} className="!h-1 !w-1 !border-0 !bg-transparent !opacity-0" />
+      <Handle type="source" id="union-child-source" position={Position.Bottom} isConnectable={false} className="!h-1 !w-1 !border-0 !bg-transparent !opacity-0" />
+      <Handle type="target" id="union-parent-target-left" position={Position.Left} isConnectable={false} className="!h-1 !w-1 !border-0 !bg-transparent !opacity-0" />
+      <Handle type="source" id="union-child-source-right" position={Position.Right} isConnectable={false} className="!h-1 !w-1 !border-0 !bg-transparent !opacity-0" />
+    </div>
+  ),
 };
 
 const FamilyMindmapInner: React.FC<FamilyMindmapProps> = ({ members, onView, onEdit, onDelete }) => {
   const { t } = useLanguage();
   const reduceMotion = useReducedMotion();
+  const { fitView } = useReactFlow();
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [layoutDirection, setLayoutDirection] = useState("TB");
+  const [graphRevision, setGraphRevision] = useState(0);
 
   const buildGraph = useCallback(() => {
-    const initialNodes: Node[] = [];
-    const initialEdges: Edge[] = [];
-
-    const nodeIds = new Set(members.map(m => m.id.toString()));
-
-    members.forEach((m) => {
-      initialNodes.push({
-        id: m.id.toString(),
-        type: "member",
-        position: { x: 0, y: 0 },
-        data: { member: m, onView, onEdit, onDelete },
-      });
-
-      if (m.fatherId && nodeIds.has(m.fatherId.toString())) {
-        initialEdges.push({
-          id: `e-${m.fatherId}-${m.id}`,
-          source: m.fatherId.toString(),
-          target: m.id.toString(),
-          type: "smoothstep",
-          animated: !reduceMotion,
-          style: { stroke: "#D4AF37", strokeWidth: 1.5 },
-        });
-      }
-      if (m.motherId && nodeIds.has(m.motherId.toString())) {
-        initialEdges.push({
-          id: `e-${m.motherId}-${m.id}`,
-          source: m.motherId.toString(),
-          target: m.id.toString(),
-          type: "smoothstep",
-          animated: !reduceMotion,
-          style: { stroke: "#D4AF37", strokeWidth: 1.5 },
-        });
-      }
-    });
-
-    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(initialNodes, initialEdges, layoutDirection);
+    const graph = buildFamilyMindmapGraph(members, { direction: layoutDirection as "TB" | "LR", animateParentEdges: !reduceMotion });
+    const initialNodes = graph.nodes.map(node => node.type === "member"
+      ? { ...node, data: { ...node.data, onView, onEdit, onDelete } }
+      : node) as Node[];
+    const { nodes: layoutedNodes, edges: layoutedEdges } = layoutFamilyMindmapGraph(
+      initialNodes as Parameters<typeof layoutFamilyMindmapGraph>[0],
+      graph.edges,
+      layoutDirection as "TB" | "LR",
+    );
 
     setNodes(layoutedNodes);
     setEdges(layoutedEdges);
+    setGraphRevision(revision => revision + 1);
   }, [members, onView, onEdit, onDelete, layoutDirection, reduceMotion, setNodes, setEdges]);
 
   useEffect(() => {
     buildGraph();
   }, [buildGraph]);
 
+  useEffect(() => {
+    if (!graphRevision) return;
+    const frame = requestAnimationFrame(() => {
+      void fitView({ padding: 0.14, duration: reduceMotion ? 0 : 220 });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [graphRevision, fitView, reduceMotion]);
 
 
-  const onDownload = useCallback(() => {
+
+  const onDownload = useCallback(async () => {
     const el = document.querySelector(".react-flow") as HTMLElement;
     if (!el) return;
-    toPng(el, { backgroundColor: "#141414" }).then((dataUrl) => {
-      const a = document.createElement("a");
-      a.setAttribute("download", "mylife-family-tree.png");
-      a.setAttribute("href", dataUrl);
-      a.click();
-    });
-  }, []);
+    await fitView({ padding: 0.12, duration: 0 });
+    await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+    const backgroundColor = getComputedStyle(document.documentElement).getPropertyValue("--primary-bg").trim() || undefined;
+    const dataUrl = await toPng(el, { backgroundColor });
+    const a = document.createElement("a");
+    a.setAttribute("download", "mylife-family-tree.png");
+    a.setAttribute("href", dataUrl);
+    a.click();
+  }, [fitView]);
 
   return (
     <div className="w-full h-[600px] bg-secondary-bg/30 rounded-xl border border-custom-border overflow-hidden relative">
@@ -153,8 +115,13 @@ const FamilyMindmapInner: React.FC<FamilyMindmapProps> = ({ members, onView, onE
           className="!bg-secondary-bg !border-custom-border"
           maskColor="rgba(128, 128, 128, 0.25)"
         />
-        
-
+        <Panel position="top-left" className="!m-3">
+          <div role="list" aria-label={t("admin.mindmap_relationship_legend")} className="space-y-2 rounded-xl border border-custom-border bg-secondary-bg/95 px-3 py-2.5 text-[10px] font-medium text-secondary-text shadow-sm backdrop-blur-sm">
+            <div role="listitem" className="flex items-center gap-2"><span aria-hidden="true" className="w-5 border-t-2 border-[#D4AF37]" />{t("admin.mindmap_parent_child")}</div>
+            <div role="listitem" className="flex items-center gap-2"><span aria-hidden="true" className="w-5 border-t-2 border-accent" />{t("admin.mindmap_spouse")}</div>
+            <div role="listitem" className="flex items-center gap-2"><span aria-hidden="true" className="w-5 border-t-2 border-dashed border-secondary-text" />{t("admin.mindmap_horizontal")}</div>
+          </div>
+        </Panel>
 
         {/* Action Panel (Top Right) */}
         <Panel position="top-right" className="flex gap-2">
@@ -171,7 +138,7 @@ const FamilyMindmapInner: React.FC<FamilyMindmapProps> = ({ members, onView, onE
            </button>
 
            <button 
-             onClick={onDownload}
+             onClick={() => { void onDownload(); }}
              className="flex items-center gap-2 px-3 py-2 bg-accent border border-accent rounded-lg text-xs text-primary-bg font-bold hover:bg-yellow-500 transition-colors shadow-sm cursor-pointer"
              aria-label={t("admin.export_png")} title={t("admin.export_png")}
            >

@@ -8,6 +8,7 @@ import {
   Button,
   Input,
   Select,
+  SelectItem,
   Textarea,
   DateInput,
   formatBackendToDob,
@@ -17,6 +18,7 @@ import {
 import { type FamilyMember, type Generation, removeVietnameseTones } from "./types";
 import { getSiblingDisplayLabelKey, getSiblingSeniority, isBiologicalSibling } from "./siblingRelations";
 import { MemberAvatarImage } from "./MemberAvatarImage";
+import { FamilyRelationSelect } from "./FamilyRelationSelect";
 
 interface MemberFormModalProps {
   isOpen: boolean;
@@ -312,7 +314,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
     }
 
     if (!Number.isInteger(editingMember.generation) || Number(editingMember.generation) < 1) {
-      newErrors.generation = 'admin.error_generation';
+      newErrors.generation = 'admin.select_generation_error';
       if (!sectionToOpen) sectionToOpen = 'basic';
     }
 
@@ -451,19 +453,19 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                   {/* Thế hệ (Đời thứ) * - Lấy động từ bảng database generations */}
                   <Select
                     required
-                    label={t("admin.field_generation", { defaultValue: "Thế hệ (Đời thứ) *" })}
-                    value={editingMember.generation ?? 1}
-                    includeEmptyOption={false}
+                    label={t("admin.field_generation", { defaultValue: "Thế hệ (Đời thứ)" })}
+                    value={editingMember.generation == null ? undefined : String(editingMember.generation)}
+                    floatingLabel
                     error={errors.generation ? t(errors.generation) : undefined}
-                    onChange={(e) => {
-                      onChange({ ...editingMember, generation: parseInt(e.target.value) || 1 });
+                    onValueChange={(value) => {
+                      onChange({ ...editingMember, generation: Number(value) });
                       if (errors.generation) setErrors((prev) => ({ ...prev, generation: undefined }));
                     }}
                   >
                     {generations.map((g) => (
-                      <option key={g.id} value={g.id}>
-                        {g.name} {g.title ? `(${g.title})` : ""}
-                      </option>
+                      <SelectItem key={g.id} value={String(g.id)}>
+                        {t("admin.generation_option", { generation: g.id, defaultValue: `Đời ${g.id} (Thế hệ thứ ${g.id})` })}
+                      </SelectItem>
                     ))}
                   </Select>
 
@@ -482,13 +484,13 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                   {/* Giới tính */}
                   <Select
                     label={t("admin.field_gender", { defaultValue: "Giới tính" })}
-                    value={editingMember.gender || "Nam"}
-                    includeEmptyOption={false}
-                    onChange={(e) => onChange({ ...editingMember, gender: e.target.value })}
+                    value={editingMember.gender || undefined}
+                    floatingLabel
+                    onValueChange={(value) => onChange({ ...editingMember, gender: value })}
                   >
-                    <option value="Nam">{t("admin.gender_nam", { defaultValue: "Nam" })}</option>
-                    <option value="Nữ">{t("admin.gender_nu", { defaultValue: "Nữ" })}</option>
-                    <option value="Khác">{t("admin.gender_khac", { defaultValue: "Khác" })}</option>
+                    <SelectItem value="Nam">{t("admin.gender_nam", { defaultValue: "Nam" })}</SelectItem>
+                    <SelectItem value="Nữ">{t("admin.gender_nu", { defaultValue: "Nữ" })}</SelectItem>
+                    <SelectItem value="Khác">{t("admin.gender_khac", { defaultValue: "Khác" })}</SelectItem>
                   </Select>
 
                   {/* Ngày sinh */}
@@ -555,44 +557,38 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
               >
                 <div className="p-3.5 pt-1 border-t border-custom-border/40 grid grid-cols-1 md:grid-cols-2 gap-3.5">
                   {/* Cha */}
-                  <Select
+                  <FamilyRelationSelect
                     label={t("admin.field_father", { defaultValue: "Cha (Bố)" })}
-                    value={editingMember.fatherId || ""}
-                    onChange={(e) => onChange({ ...editingMember, fatherId: e.target.value ? parseInt(e.target.value) : undefined })}
-                  >
-                    {potentialFathers.map((f) => (
-                      <option key={f.id} value={f.id}>
-                        {formatName(f.fullName)} ({t("admin.generation", { defaultValue: "Đời" })} {f.generation})
-                      </option>
-                    ))}
-                  </Select>
+                    value={editingMember.fatherId}
+                    options={potentialFathers.map((member) => ({ id: member.id, fullName: formatName(member.fullName), generation: member.generation }))}
+                    generationLabel={t("admin.generation_label")}
+                    placeholder={t("admin.select_father")}
+                    ariaLabel={t("admin.select_father")}
+                    onChange={(fatherId) => onChange({ ...editingMember, fatherId })}
+                  />
 
                   {/* Mẹ */}
-                  <Select
+                  <FamilyRelationSelect
                     label={t("admin.field_mother", { defaultValue: "Mẹ" })}
-                    value={editingMember.motherId || ""}
-                    onChange={(e) => onChange({ ...editingMember, motherId: e.target.value ? parseInt(e.target.value) : undefined })}
-                  >
-                    {potentialMothers.map((m) => (
-                      <option key={m.id} value={m.id}>
-                        {formatName(m.fullName)} ({t("admin.generation", { defaultValue: "Đời" })} {m.generation})
-                      </option>
-                    ))}
-                  </Select>
+                    value={editingMember.motherId}
+                    options={potentialMothers.map((member) => ({ id: member.id, fullName: formatName(member.fullName), generation: member.generation }))}
+                    generationLabel={t("admin.generation_label")}
+                    placeholder={t("admin.select_mother")}
+                    ariaLabel={t("admin.select_mother")}
+                    onChange={(motherId) => onChange({ ...editingMember, motherId })}
+                  />
 
                   {/* Vợ / Chồng */}
                   <div className="md:col-span-2">
-                    <Select
+                    <FamilyRelationSelect
                       label={t("admin.field_spouse", { defaultValue: "Vợ / Chồng" })}
-                      value={editingMember.spouseId || ""}
-                      onChange={(e) => onChange({ ...editingMember, spouseId: e.target.value ? parseInt(e.target.value) : undefined })}
-                    >
-                      {potentialSpouses.map((s) => (
-                        <option key={s.id} value={s.id}>
-                          {formatName(s.fullName)} ({t("admin.generation", { defaultValue: "Đời" })} {s.generation})
-                        </option>
-                      ))}
-                    </Select>
+                      value={editingMember.spouseId}
+                      options={potentialSpouses.map((member) => ({ id: member.id, fullName: formatName(member.fullName), generation: member.generation }))}
+                      generationLabel={t("admin.generation_label")}
+                      placeholder={t("admin.select_spouse")}
+                      ariaLabel={t("admin.select_spouse")}
+                      onChange={(spouseId) => onChange({ ...editingMember, spouseId })}
+                    />
                   </div>
 
                   {/* Con cái (Children multi-selector) */}
@@ -636,18 +632,18 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                     {availableForChildren.length > 0 ? (
                       <Select
                         label={t("admin.select_children_placeholder", { defaultValue: "+ Chọn thêm con cái từ danh sách..." })}
-                        value=""
-                        includeEmptyOption={true}
-                        onChange={(e) => {
-                          if (e.target.value) {
-                            handleAddChild(e.target.value);
+                        value={undefined}
+                        placeholder={t("admin.select_children_placeholder", { defaultValue: "+ Chọn thêm con cái từ danh sách..." })}
+                        onValueChange={(value) => {
+                          if (value) {
+                            handleAddChild(value);
                           }
                         }}
                       >
                         {availableForChildren.map((c) => (
-                          <option key={c.id} value={c.id}>
+                          <SelectItem key={c.id} value={String(c.id)}>
                             {formatName(c.fullName)} ({t("admin.generation", { defaultValue: "Đời" })} {c.generation}{c.gender ? ` • ${c.gender}` : ""})
-                          </option>
+                          </SelectItem>
                         ))}
                       </Select>
                     ) : (
@@ -716,18 +712,18 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                     {availableForSiblings.length > 0 ? (
                       <Select
                         label={t("admin.select_cousin_sibling")}
-                        value=""
-                        includeEmptyOption={true}
-                        onChange={(e) => {
-                          if (e.target.value) {
-                            handleAddSibling(e.target.value);
+                        value={undefined}
+                        placeholder={t("admin.select_cousin_sibling")}
+                        onValueChange={(value) => {
+                          if (value) {
+                            handleAddSibling(value);
                           }
                         }}
                       >
                         {availableForSiblings.map((c) => (
-                          <option key={c.id} value={c.id}>
+                          <SelectItem key={c.id} value={String(c.id)}>
                             {formatName(c.fullName)} ({t("admin.generation", { defaultValue: "Đời" })} {c.generation}{c.gender ? ` • ${c.gender}` : ""})
-                          </option>
+                          </SelectItem>
                         ))}
                       </Select>
                     ) : (

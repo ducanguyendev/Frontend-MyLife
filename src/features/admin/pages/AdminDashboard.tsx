@@ -11,7 +11,7 @@ import { authService } from "@/features/auth/services/authService";
 import { useLanguage } from "@/shared/hooks/useLanguage";
 import { LanguageSwitcher } from "@/shared/components/LanguageSwitcher";
 import { ThemeSwitch } from "@/shared/components";
-import { Select } from "@/shared/components/ui";
+import { Select, SelectItem } from "@/shared/components/ui";
 import { SearchBar } from "@/shared/components/SearchBar";
 import { useNotification } from "@/shared/contexts/NotificationContext";
 import { apiClient, getApiErrorMessage } from "@/shared/api/apiClient";
@@ -400,13 +400,14 @@ export const AdminDashboard: React.FC = () => {
                       <Select
                         value={u.role}
                         disabled={roleUpdating === u.id || user?.id === u.id}
-                        onChange={(event) => void handleRoleChange(u, event.target.value as AdminUser['role'])}
+                        onValueChange={(value) => void handleRoleChange(u, value as AdminUser['role'])}
                         containerClassName="!w-auto"
-                        className="!py-0 !pl-3 !pr-8 !h-7 !text-[10px] !rounded-full uppercase font-bold tracking-wider"
+                        variant="compact"
+                        className="uppercase font-bold tracking-wider"
                         aria-label={`Change role for ${u.email}`}
                       >
-                        <option value="USER">User</option>
-                        <option value="ADMIN">Admin</option>
+                        <SelectItem value="USER">User</SelectItem>
+                        <SelectItem value="ADMIN">Admin</SelectItem>
                       </Select>
                     </div>
                     <div className="col-span-2 hidden md:flex items-center text-secondary-text text-xs font-medium gap-1.5">

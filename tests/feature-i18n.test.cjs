@@ -53,6 +53,18 @@ test('FamilyTree sibling labels resolve to human-readable text in VI and EN', as
     assert.notEqual(en.t(`admin.${key}`), `admin.${key}`);
   }
 });
+
+test('Mindmap legend and layout controls have VI and EN translations', async () => {
+  const vi = await translator('vi');
+  const en = await translator('en');
+  for (const locale of [vi, en]) {
+    for (const key of ['mindmap_relationship_legend', 'mindmap_parent_child', 'mindmap_spouse', 'mindmap_horizontal', 'layout_vertical', 'layout_horizontal']) {
+      assert.notEqual(locale.t(`admin.${key}`), `admin.${key}`);
+    }
+  }
+  assert.equal(vi.t('admin.mindmap_spouse'), 'Vợ / Chồng');
+  assert.equal(en.t('admin.mindmap_spouse'), 'Spouse');
+});
 function harness() {
   const states = []; const effects = []; let index = 0;
   const hooks = {
@@ -78,28 +90,50 @@ const find = (tree, type, condition = () => true) => {
   const node = nodes(tree).find(node => node.type === type && condition(node.props));
   assert.ok(node, `Missing ${type}`); return node.props;
 };
-const stubNames = ['MemberCard', 'MemberListItem', 'MemberDetailModal', 'MemberFormModal', 'DeleteConfirmModal',
+const stubNames = ['MemberCard', 'MemberTable', 'MemberDetailModal', 'MemberFormModal', 'DeleteConfirmModal',
   'AnniversaryTab', 'LibraryTab', 'FamilyMapTab', 'FamilyMindmap'];
 
 async function familySetup(locale, response = { success: true, message: 'Family member deleted.' }) {
   const i18n = await translator(locale); const t = i18n.t.bind(i18n); const hooks = harness(); const toasts = [];
   const member = { id: 15, fullName: 'Nguyễn Văn An', generation: 1, gender: 'Nam' };
+  const otherMember = { id: 16, fullName: 'Lê Thị Bình', generation: 2, gender: 'Nữ' };
   const calls = [];
   const apiClient = { requestRaw: async (path, options = {}) => {
     calls.push({ path, method: options.method });
-    const body = options.method === 'POST' && path === '/api/family-tree' ? { data: { ...member } } : options.method === 'PUT' ? { data: { ...member } } : options.method === 'DELETE' ? response : { data: [member] };
+    const body = options.method === 'POST' && path === '/api/family-tree' ? { data: { ...member } } : options.method === 'PUT' ? { data: { ...member } } : options.method === 'DELETE' ? response : { data: [member, otherMember] };
     return new Response(JSON.stringify(body), { status: options.method === 'DELETE' && response.success === false ? 404 : 200, headers: { 'Content-Type': 'application/json' } });
   } };
   const { FamilyTreeManager } = load('src/features/admin/components/FamilyTreeManager.tsx', {
     react: { ...hooks.hooks, default: hooks.hooks }, 'react/jsx-runtime': { jsx: hooks.jsx, jsxs: hooks.jsx },
     'lucide-react': new Proxy({}, { get: (_, key) => key }), '@/shared/hooks/useLanguage': { useLanguage: () => ({ t, language: i18n.language }) },
-    '@/shared/components/ui': { Button: 'Button' }, '@/shared/api/apiClient': { apiClient }, '../services/featureMessages': messages,
+    '@/shared/components/ui': { Button: 'Button', Select: 'Select' }, '@/shared/components/SearchBar': { SearchBar: 'SearchBar' },
+    '@/shared/api/apiClient': { apiClient }, '../services/featureMessages': messages,
     './family-tree/memberSearch': searchHelpers,
     './family-tree': { ...Object.fromEntries(stubNames.map(name => [name, name])), removeVietnameseTones: name => name },
   });
   const render = () => hooks.render(FamilyTreeManager, { showToast: (text, ok) => toasts.push({ text, ok }) });
   render(); await hooks.mount();
-  return { render, toasts, member, calls, t };
+  return { render, toasts, member, otherMember, calls, t };
+}
+
+for (const locale of ['vi', 'en']) {
+  test(`${locale}: FamilyTree switches grid to table to mindmap and supplies filtered members`, async () => {
+    const setup = await familySetup(locale);
+    const initial = setup.render();
+    assert.ok(nodes(initial).some(node => node.type === 'MemberCard'));
+    const tableView = find(initial, 'button', props => props['aria-label'] === setup.t('admin.view_table'));
+    tableView.onClick();
+    let tree = setup.render();
+    const table = find(tree, 'MemberTable');
+    assert.deepEqual(table.members.map(member => member.id), [setup.member.id, setup.otherMember.id]);
+    find(tree, 'button', props => props['aria-label'] === setup.t('admin.view_mindmap')).onClick();
+    tree = setup.render();
+    assert.ok(nodes(tree).some(node => node.type === 'FamilyMindmap'));
+    find(tree, 'button', props => props['aria-label'] === setup.t('admin.view_table')).onClick();
+    tree = setup.render();
+    find(tree, 'SearchBar').onChange('Bình');
+    assert.deepEqual(find(setup.render(), 'MemberTable').members.map(member => member.id), [setup.otherMember.id]);
+  });
 }
 
 for (const locale of ['vi', 'en']) {
@@ -114,13 +148,16 @@ for (const locale of ['vi', 'en']) {
   test(`${locale}: actual FamilyTree create/update success use separate localized actions`, async () => {
     const setup = await familySetup(locale, { success: true, message: 'English created/updated.' });
     find(setup.render(), 'Button', props => props.title === setup.t('admin.add_member')).onClick();
+    const createForm = find(setup.render(), 'MemberFormModal');
+    createForm.onChange({ ...createForm.editingMember, generation: 1 });
     await find(setup.render(), 'MemberFormModal').onSubmit({ preventDefault() {} });
     assert.equal(setup.toasts.findLast(toast => toast.ok)?.text, setup.t('admin.member_create_success'));
     await flush();
     setup.member.id = 15;
     find(setup.render(), 'MemberCard').onEdit(setup.member);
     setup.member.id = 15;
-    await find(setup.render(), 'MemberFormModal').onSubmit({ preventDefault() {} });
+    const editForm = find(setup.render(), 'MemberFormModal');
+    await editForm.onSubmit({ preventDefault() {} });
     assert.equal(setup.toasts.findLast(toast => toast.ok)?.text, setup.t('admin.member_update_success'));
   });
 }
@@ -258,6 +295,7 @@ test('Member form validations, including birth date, follow current locale witho
     '@/shared/hooks/useLanguage': { useLanguage: () => ({ t, language: i18n.language }) },
     '@/shared/api/apiClient': { apiClient: {} }, './types': { removeVietnameseTones: value => value },
     './MemberAvatarImage': { MemberAvatarImage: 'MemberAvatarImage' },
+    './FamilyRelationSelect': { FamilyRelationSelect: 'FamilyRelationSelect' },
     './siblingRelations': { isBiologicalSibling: () => false, getSiblingSeniority: () => 'unknown', getSiblingDisplayLabelKey: () => 'sibling_neutral_biological' },
     '@/shared/components/ui': { ...dateHelpers, ...Object.fromEntries(['Modal', 'Button', 'Input', 'Select', 'Textarea', 'DateInput'].map(name => [name, name])) },
   });

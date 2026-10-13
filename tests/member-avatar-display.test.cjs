@@ -87,7 +87,7 @@ test('legacy avatar URLs still work and a member without an avatar uses local fa
 });
 
 test('all member avatar locations use the shared display component', () => {
-  for (const file of ['MemberCard.tsx', 'MemberListItem.tsx', 'MemberDetailModal.tsx', 'MemberMindmapNode.tsx', 'MemberFormModal.tsx']) {
+  for (const file of ['MemberCard.tsx', 'MemberTable.tsx', 'MemberDetailModal.tsx', 'MemberMindmapNode.tsx', 'MemberFormModal.tsx']) {
     const source = readFileSync(join(__dirname, `../src/features/admin/components/family-tree/${file}`), 'utf8');
     assert.match(source, /MemberAvatarImage/ , `${file} should use MemberAvatarImage`);
   }
