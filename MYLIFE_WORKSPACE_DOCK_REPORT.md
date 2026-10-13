@@ -1,4 +1,4 @@
-﻿# MyLife Workspace Dock Report
+# MyLife Workspace Dock Report
 
 ## Problem and implementation
 
@@ -62,5 +62,5 @@ Manual browser checks at the requested desktop, mobile, and zoom sizes could not
 ## Delivery
 
 - Branch: `feature_minhduc`.
-- Commit: pending.
-- Push: pending.
+- Implementation commit: `f181d4e` (`feat: add MyLife workspace dock and viewport shell`).
+- Push: successful to `origin/feature_minhduc` (`c0af51a..f181d4e`).
