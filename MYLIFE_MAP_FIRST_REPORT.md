@@ -73,5 +73,5 @@ No API service, backend, database, migration, or mobile app files were changed.
 ## Delivery
 
 - Branch: `feature_minhduc`
-- Feature commit SHA: pending
-- Push to `origin/feature_minhduc`: pending
+- Feature commit SHA: `6d64a55` (`feat: redesign family map as map-first workspace`)
+- Push to `origin/feature_minhduc`: PASS
