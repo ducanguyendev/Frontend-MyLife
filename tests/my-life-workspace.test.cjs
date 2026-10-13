@@ -8,6 +8,8 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const layout = read('src/shared/layouts/MyLifeWorkspaceLayout.tsx');
 const dock = read('src/features/my-life/components/MyLifeDock.tsx');
 const dockCss = read('src/features/my-life/components/MyLifeDock.css');
+const anniversariesPage = read('src/features/my-life/pages/AnniversariesPage.tsx');
+const libraryPage = read('src/features/my-life/pages/LibraryPage.tsx');
 const modules = read('src/features/my-life/config/myLifeModules.ts');
 const header = read('src/shared/layouts/UserWorkspaceHeader.tsx');
 const userMenu = read('src/features/auth/components/UserMenu.tsx');
@@ -55,6 +57,14 @@ test('dock exposes active, localized, keyboard, tooltip, and reduced-motion stat
   assert.match(dockCss, /@media \(prefers-reduced-motion: reduce\)/);
   assert.match(dockCss, /env\(safe-area-inset-bottom/);
   assert.match(dock, /<NavLink/); // NavLink supplies aria-current="page" for its active route.
+  assert.match(dockCss, /background: color-mix\(in srgb, var\(--secondary-bg\)/);
+  assert.match(dockCss, /border: 1px solid var\(--custom-border\)/);
+  assert.match(dockCss, /box-shadow: 0 8px 24px/);
+  assert.match(dockCss, /backdrop-filter: blur/);
+  assert.match(dockCss, /transition: color 240ms ease/);
+  assert.match(dockCss, /translateY\(-1px\) scale\(1\.03\)/);
+  assert.match(dockCss, /transition: opacity 200ms ease/);
+  assert.match(dockCss, /transform 220ms ease/);
 });
 
 test('back navigation remains separate and UserMenu has no module links', () => {
@@ -74,6 +84,11 @@ test('module content has internal scroll sizing and existing API contracts remai
   assert.match(manager, /min-h-0 flex-1 overflow-y-auto/);
   assert.match(anniversary, /flex min-h-0 flex-1 flex-col overflow-y-auto/);
   assert.match(library, /flex min-h-0 flex-1 flex-col overflow-y-auto/);
+  assert.match(anniversariesPage, /contentScroll="hidden"/);
+  assert.match(anniversariesPage, /h-full min-h-0 flex-1 flex-col/);
+  assert.match(libraryPage, /contentScroll="hidden"/);
+  assert.match(libraryPage, /h-full min-h-0 flex-1 flex-col/);
+  assert.match(libraryPage, /flex min-h-0 flex-1 flex-col overflow-hidden/);
   assert.match(read('src/features/admin/services/familyMapService.ts'), /\/api\/family-tree\/map/);
   assert.match(memberHook, /\/api\/family-tree/);
   assert.match(read('src/features/admin/services/anniversaryService.ts'), /\/api\/family-tree\/anniversaries/);
@@ -82,6 +97,10 @@ test('module content has internal scroll sizing and existing API contracts remai
 
 test('workspace routes stay canonical and no source outside the frontend repo is referenced for edits', () => {
   const app = read('src/App.tsx');
+  const hub = read('src/features/my-life/pages/MyLifeHubPage.tsx');
+  const mapPage = read('src/features/my-life/pages/FamilyMapPage.tsx');
   for (const route of ['/mylife', '/familytree', '/anniversaries', '/library', '/map']) assert.ok(app.includes(`path="${route}"`));
+  assert.doesNotMatch(hub, /showDock|contentScroll=/);
+  assert.doesNotMatch(mapPage, /contentScroll=/);
   assert.doesNotMatch(layout + dock, /window\.location\.href/);
 });

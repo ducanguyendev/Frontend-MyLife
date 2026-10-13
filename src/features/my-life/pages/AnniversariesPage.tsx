@@ -12,8 +12,8 @@ export const AnniversariesPage: React.FC = () => {
   const { members, loading, loadError, fetchMembers } = useFamilyMembers();
 
   return (
-    <MyLifeWorkspaceLayout backTo="/mylife" showDock contentClassName="px-3 py-3 sm:px-5 sm:py-4">
-      <div className="flex min-h-full flex-1 flex-col">
+    <MyLifeWorkspaceLayout backTo="/mylife" showDock contentScroll="hidden" contentClassName="px-3 py-3 sm:px-5 sm:py-4">
+      <div className="flex h-full min-h-0 flex-1 flex-col">
         <div className="mb-4 max-w-2xl shrink-0">
           <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">MyLife</p>
           <h1 className="text-2xl font-black tracking-tight text-primary-text sm:text-3xl">{t('myLife.modules.anniversaries.title')}</h1>
