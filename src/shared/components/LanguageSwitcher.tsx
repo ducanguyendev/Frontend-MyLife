@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useLanguage } from '../hooks/useLanguage';
-import { ChevronDown } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Vector SVG Vietnam Flag
@@ -111,19 +111,18 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ isMobile = f
     );
   }
 
+  const languageLabel = t('navigation.changeLanguage');
+
   return (
     <div className="relative inline-block text-left" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex h-10 items-center gap-2.5 pl-1 pr-3 rounded-full border border-custom-border hover:border-accent bg-secondary-bg/60 hover:bg-secondary-bg transition-colors cursor-pointer group focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        className="flex h-10 w-10 items-center justify-center rounded-full border border-custom-border bg-secondary-bg/60 p-1 hover:border-accent hover:bg-secondary-bg transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
         aria-haspopup="true"
         aria-expanded={isOpen}
-        aria-label="Select language"
+        aria-label={languageLabel}
       >
-        <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center bg-primary-bg shadow-sm shrink-0 border border-custom-border/50">
-          {currentLang.flagIcon({ className: "w-full h-full object-cover scale-150" })}
-        </div>
-        <ChevronDown size={14} className={`text-secondary-text group-hover:text-primary-text transition-transform duration-300 ${isOpen ? 'rotate-180 text-accent' : ''}`} />
+        {currentLang.flagIcon({ className: "w-[28px] h-[19px] object-contain" })}
       </button>
 
 
@@ -143,7 +142,7 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ isMobile = f
                   key={lang.code}
                   onClick={() => handleLangSelect(lang.code)}
                   onKeyDown={(e) => handleKeyDown(e, lang.code)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 text-left text-xs font-semibold tracking-wider uppercase hover:bg-primary-bg transition-colors text-primary-text cursor-pointer ${
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 text-left text-xs font-semibold tracking-wide hover:bg-primary-bg transition-colors text-primary-text cursor-pointer focus-visible:outline-2 focus-visible:outline-inset ${
                     language === lang.code ? 'text-accent font-bold bg-primary-bg/50' : ''
                   }`}
                   role="menuitem"
@@ -151,6 +150,7 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ isMobile = f
                 >
                   {lang.flagIcon({})}
                   <span>{lang.label}</span>
+                  {language === lang.code && <Check size={14} className="ml-auto" aria-hidden="true" />}
                 </button>
               ))}
             </div>

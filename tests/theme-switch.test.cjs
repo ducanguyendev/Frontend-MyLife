@@ -16,17 +16,17 @@ test('ThemeSwitch is controlled by the shared ThemeContext without local theme s
   assert.doesNotMatch(switchSource, /useState|localStorage|document\.documentElement/);
 });
 
-test('ThemeSwitch dimensions fit the 40px header control standard and remain keyboard accessible', () => {
-  assert.match(switchCss, /--toggle-size:\s*16px;/);
-  assert.match(switchCss, /--container-width:\s*5\.25em;/);
-  assert.match(switchCss, /--container-height:\s*2\.5em;/);
-  assert.match(switchCss, /--container-radius:\s*6\.25em;/);
-  assert.match(switchCss, /--circle-container-diameter:\s*2\.5em;/);
-  assert.match(switchCss, /--sun-moon-diameter:\s*1\.5em;/);
-  assert.match(switchCss, /--transition:\s*\.5s cubic-bezier\(0, -0\.02, 0\.4, 1\.25\);/);
-  assert.match(switchCss, /--circle-transition:\s*\.3s cubic-bezier\(0, -0\.02, 0\.35, 1\.17\);/);
-  assert.match(switchCss, /\.theme-switch__checkbox:focus-visible \+ \.theme-switch__container/);
-  assert.match(switchCss, /\.theme-switch__checkbox \{\s*position: absolute;/);
+test('ThemeSwitch dimensions match 64x40 with a 32px thumb and calculated 24px travel', () => {
+  assert.match(switchCss, /\.theme-switch \{[\s\S]*?width: 64px;[\s\S]*?height: 40px;/);
+  assert.match(switchCss, /\.theme-switch__thumb \{[\s\S]*?top: 3px;[\s\S]*?left: 3px;[\s\S]*?width: 32px;[\s\S]*?height: 32px;/);
+  assert.match(switchCss, /transform: translateX\(24px\);/);
+  assert.equal(64 - 32 - 4 * 2, 24);
+  assert.match(switchSource, /className="theme-switch__input"/);
+  assert.match(switchCss, /\.theme-switch__input:focus-visible \+ \.theme-switch__slider/);
+  assert.match(switchCss, /@media \(prefers-reduced-motion: reduce\)/);
+  assert.match(switchCss, /animation: none;/);
+  assert.doesNotMatch(switchCss, /#(?:input|moon-dot-\d|star-\d|cloud-\d)\b/);
+  assert.doesNotMatch(switchCss, /display:\s*none/);
 });
 
 test('shared header controls, FamilyTree controls, and centered Home navigation use 40px sizing', () => {
@@ -36,7 +36,14 @@ test('shared header controls, FamilyTree controls, and centered Home navigation 
   const familyTree = read('src/features/family-tree/pages/FamilyTreePage.tsx');
   const admin = read('src/features/admin/pages/AdminDashboard.tsx');
 
-  assert.match(languageSwitcher, /h-10 items-center/);
+  assert.match(languageSwitcher, /h-10 w-10 items-center justify-center/);
+  assert.doesNotMatch(languageSwitcher, /import \{[^}]*ChevronDown/);
+  assert.match(languageSwitcher, /aria-label=\{languageLabel\}/);
+  const desktopTrigger = languageSwitcher.split('return (\n    <div className="relative inline-block text-left"')[1].split('</button>')[0];
+  assert.match(desktopTrigger, /currentLang\.flagIcon/);
+  assert.doesNotMatch(desktopTrigger, /<span|ChevronDown|lang\.code/);
+  assert.match(languageSwitcher, /lang\.label/);
+  assert.match(languageSwitcher, /language === lang\.code && <Check/);
   assert.match(userMenu, /h-10 items-center/);
   assert.match(header, /justify-center gap-1 p-1 h-10/);
   assert.match(header, /px-4 h-10/);
