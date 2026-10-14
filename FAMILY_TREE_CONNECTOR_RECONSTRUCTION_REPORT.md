@@ -41,5 +41,6 @@ The previous family branch used a pseudo-element filling the entire invisible br
 
 ## Commit and push
 
-- Feature commit: pending.
-- Push: pending.
+- Feature commit: `250e3cf` (`fix: rebuild family tree connectors around family units`).
+- Push to `origin/feature_minhduc` was attempted but not completed: automatic approval review rejected publishing repository contents to the external GitHub destination. The feature commit remains local and ready to push after approval.
+
