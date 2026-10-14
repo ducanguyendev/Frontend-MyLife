@@ -12,6 +12,7 @@ import {
   getStraightPath,
   useEdgesState,
   useNodesState,
+  useNodesInitialized,
   useReactFlow,
   type EdgeProps,
   type NodeProps,
@@ -48,14 +49,30 @@ const HiddenUnionNode = memo(({ data }: NodeProps<FamilyMindmapNode>) => {
   </div>;
 });
 
+const FamilyAnchorNode = memo(({ data }: NodeProps<FamilyMindmapNode>) => {
+  const direction = data.direction as Direction;
+  return <div className="family-mindmap-anchor" aria-hidden="true">
+    <Handle type="source" id={direction === "TB" ? "family-anchor-source" : "family-anchor-source-right"}
+      position={direction === "TB" ? Position.Bottom : Position.Right} />
+  </div>;
+});
+
 const FamilyBranchNode = memo(({ data }: NodeProps<FamilyMindmapNode>) => {
   const direction = data.direction as Direction;
   const childIds = data.childIds as number[];
+  const childOffsets = data.childOffsets as Array<{ id: number; offset: number }>;
+  const span = Math.max(1, Number(data.span));
+  const targetPercent = (Number(data.targetOffset) / span) * 100;
   return <div className={`family-mindmap-branch ${direction === "LR" ? "family-mindmap-branch--lr" : ""}`} aria-hidden="true">
+    {direction === "TB"
+      ? <svg className="family-mindmap-branch__svg" viewBox={`0 0 ${span} 2`} aria-hidden="true"><line className="family-mindmap-branch__line" x1="0" y1="1" x2={span} y2="1" /></svg>
+      : <svg className="family-mindmap-branch__svg" viewBox={`0 0 2 ${span}`} aria-hidden="true"><line className="family-mindmap-branch__line" x1="1" y1="0" x2="1" y2={span} /></svg>}
     <Handle type="target" id={direction === "TB" ? "branch-parent-target" : "branch-parent-target-left"}
-      position={direction === "TB" ? Position.Top : Position.Left} />
-    {childIds.map((childId, index) => {
-      const proportion = childIds.length <= 1 ? 50 : (index / (childIds.length - 1)) * 100;
+      position={direction === "TB" ? Position.Top : Position.Left}
+      style={direction === "TB" ? { left: `${targetPercent}%` } : { top: `${targetPercent}%` }} />
+    {childIds.map(childId => {
+      const offset = childOffsets?.find(item => item.id === childId)?.offset ?? span / 2;
+      const proportion = Math.max(0, Math.min(100, (offset / span) * 100));
       return <Handle key={childId} type="source" id={`branch-child-${childId}`}
         position={direction === "TB" ? Position.Bottom : Position.Right}
         style={direction === "TB" ? { left: `${proportion}%` } : { top: `${proportion}%` }} />;
@@ -73,17 +90,25 @@ const GenerationLabelNode = memo(({ data }: NodeProps<FamilyMindmapNode>) => {
 });
 
 const FamilyTreeEdge = memo((props: EdgeProps<FamilyMindmapEdge>) => {
-  const spouse = props.data?.relationType === "spouse";
-  const [path, labelX, labelY] = spouse
-    ? getStraightPath(props)
-    : getSmoothStepPath({ ...props, borderRadius: 0, offset: 22 });
+  const relationType = props.data?.relationType;
+  const spouse = relationType === "spouse";
+  const horizontal = relationType === "horizontal";
+  const [, labelX, labelY] = getStraightPath(props);
+  let path: string;
+  if (spouse) path = getStraightPath(props)[0];
+  else if (horizontal) path = getSmoothStepPath({ ...props, borderRadius: 8, offset: 18 })[0];
+  else if (props.sourcePosition === Position.Bottom || props.sourcePosition === Position.Top) {
+    path = `M ${props.sourceX},${props.sourceY} L ${props.sourceX},${props.targetY} L ${props.targetX},${props.targetY}`;
+  } else {
+    path = `M ${props.sourceX},${props.sourceY} L ${props.targetX},${props.sourceY} L ${props.targetX},${props.targetY}`;
+  }
   return <>
     <BaseEdge id={props.id} path={path} style={props.style} />
     {spouse && <EdgeLabelRenderer><span className="family-mindmap-spouse-mark" style={{ transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)` }} aria-hidden="true">♥</span></EdgeLabelRenderer>}
   </>;
 });
 
-const nodeTypes = { member: MemberMindmapNode, familyUnion: HiddenUnionNode, familyBranch: FamilyBranchNode, generationLabel: GenerationLabelNode };
+const nodeTypes = { member: MemberMindmapNode, familyAnchor: FamilyAnchorNode, familyUnion: HiddenUnionNode, familyBranch: FamilyBranchNode, generationLabel: GenerationLabelNode };
 const edgeTypes = { familyTree: FamilyTreeEdge };
 
 const label = (t: ReturnType<typeof useLanguage>["t"], key: string, fallback: string) => t(key, { defaultValue: fallback });
@@ -92,6 +117,7 @@ const FamilyMindmapInner: React.FC<FamilyMindmapProps> = ({ members, onView, onE
   const { t } = useLanguage();
   const reduceMotion = useReducedMotion();
   const { fitView, zoomIn, zoomOut } = useReactFlow();
+  const nodesInitialized = useNodesInitialized();
   const [nodes, setNodes, onNodesChange] = useNodesState<FamilyMindmapNode>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<FamilyMindmapEdge>([]);
   const [direction, setDirection] = useState<Direction>("TB");
@@ -120,9 +146,13 @@ const FamilyMindmapInner: React.FC<FamilyMindmapProps> = ({ members, onView, onE
     return related;
   }, [activeMemberId, members]);
   const visibleNodes = useMemo(() => graph.nodes.map(node => {
-    if (activeMemberId == null || node.type !== "member") return node;
-    const member = node.data.member as FamilyMember;
-    return { ...node, className: `${node.className ?? ""} ${relatedMemberIds.has(member.id) ? "is-family-related" : "is-family-dimmed"}` };
+    if (activeMemberId == null) return node;
+    const familyIds = node.type === "member"
+      ? [(node.data.member as FamilyMember).id]
+      : node.data.familyIds as number[] | undefined;
+    if (!familyIds?.length) return node;
+    const highlighted = familyIds.some(id => relatedMemberIds.has(id));
+    return { ...node, className: `${node.className ?? ""} ${highlighted ? "is-family-related" : "is-family-dimmed"}` };
   }), [graph.nodes, activeMemberId, relatedMemberIds]);
   const visibleEdges = useMemo(() => graph.edges.map(edge => {
     if (activeMemberId == null) return edge;
@@ -132,10 +162,10 @@ const FamilyMindmapInner: React.FC<FamilyMindmapProps> = ({ members, onView, onE
 
   useEffect(() => { setNodes(visibleNodes); setEdges(visibleEdges); }, [visibleNodes, visibleEdges, setNodes, setEdges]);
   useEffect(() => {
-    if (members.length === 0) return;
+    if (members.length === 0 || !nodesInitialized) return;
     const frame = requestAnimationFrame(() => { void fitView({ padding: 0.16, maxZoom: 1, duration: reduceMotion ? 0 : 240 }); });
     return () => cancelAnimationFrame(frame);
-  }, [graph.nodes, fitView, reduceMotion, members.length]);
+  }, [graph.nodes, fitView, nodesInitialized, reduceMotion, members.length]);
   useEffect(() => {
     const onFullscreenChange = () => setIsFullscreen(document.fullscreenElement === document.querySelector(".family-mindmap-shell"));
     document.addEventListener("fullscreenchange", onFullscreenChange);
@@ -162,16 +192,16 @@ const FamilyMindmapInner: React.FC<FamilyMindmapProps> = ({ members, onView, onE
       await fitView({ padding: 0.13, maxZoom: 1.25, duration: 0 });
       await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
       const backgroundColor = getComputedStyle(shell).backgroundColor;
-      const edgePaths = [...canvas.querySelectorAll<SVGPathElement>(".react-flow__edge-path")];
-      const originalEdgeStyles = edgePaths.map(path => path.getAttribute("style"));
-      edgePaths.forEach(path => {
-        const stroke = getComputedStyle(path).stroke;
+      const connectorShapes = [...canvas.querySelectorAll<SVGElement>(".react-flow__edge-path, .family-mindmap-branch__line")];
+      const originalConnectorStyles = connectorShapes.map(shape => shape.getAttribute("style"));
+      connectorShapes.forEach(shape => {
+        const stroke = getComputedStyle(shape).stroke;
         const modernSrgb = stroke.match(/^color\(srgb\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)(?:\s*\/\s*([\d.]+))?\)$/);
         if (modernSrgb) {
           const [, red, green, blue, alpha] = modernSrgb;
-          path.style.stroke = `rgba(${Math.round(Number(red) * 255)}, ${Math.round(Number(green) * 255)}, ${Math.round(Number(blue) * 255)}, ${alpha ?? 1})`;
+          shape.style.stroke = `rgba(${Math.round(Number(red) * 255)}, ${Math.round(Number(green) * 255)}, ${Math.round(Number(blue) * 255)}, ${alpha ?? 1})`;
         } else {
-          path.style.stroke = stroke;
+          shape.style.stroke = stroke;
         }
       });
       let dataUrl: string;
@@ -183,10 +213,10 @@ const FamilyMindmapInner: React.FC<FamilyMindmapProps> = ({ members, onView, onE
           filter: element => !(element instanceof HTMLElement && element.classList.contains("family-mindmap-ui")),
         });
       } finally {
-        edgePaths.forEach((path, index) => {
-          const originalStyle = originalEdgeStyles[index];
-          if (originalStyle == null) path.removeAttribute("style");
-          else path.setAttribute("style", originalStyle);
+        connectorShapes.forEach((shape, index) => {
+          const originalStyle = originalConnectorStyles[index];
+          if (originalStyle == null) shape.removeAttribute("style");
+          else shape.setAttribute("style", originalStyle);
         });
       }
       const anchor = document.createElement("a");

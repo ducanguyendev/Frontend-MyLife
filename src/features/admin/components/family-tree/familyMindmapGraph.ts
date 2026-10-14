@@ -4,12 +4,14 @@ import type { FamilyMember } from "./types";
 export const MEMBER_NODE_WIDTH = 196;
 export const MEMBER_NODE_HEIGHT = 136;
 const UNION_NODE_SIZE = 4;
+const ANCHOR_NODE_SIZE = 2;
 const SPOUSE_GAP = 20;
 const FAMILY_GAP = 54;
 const GENERATION_GAP = 168;
-const SIBLING_BRANCH_GAP = 38;
+const SIBLING_BAR_TO_CHILD_GAP = 38;
+const FAMILY_TRUNK_GAP = 32;
 
-export type FamilyRelationType = "parentChild" | "spouse" | "horizontal";
+export type FamilyRelationType = "familyStem" | "childDrop" | "spouse" | "horizontal";
 export type FamilyMindmapNode = Node<Record<string, unknown>>;
 export type FamilyMindmapEdge = Edge<{
   relationType: FamilyRelationType;
@@ -24,6 +26,7 @@ interface GraphOptions {
 
 interface FamilyHub {
   id: string;
+  anchorId: string;
   parentIds: number[];
   childIds: number[];
   generation: number;
@@ -59,7 +62,7 @@ function makeEdge(
         : direction === "TB" ? "parent-target" : "parent-target-left",
     ...handles,
     className: `family-mindmap-edge family-mindmap-edge--${relationType}`,
-    style: { stroke: "var(--family-tree-line)", strokeWidth: relationType === "parentChild" ? 1.7 : 1.4 },
+    style: { stroke: "var(--family-tree-line)", strokeWidth: relationType === "familyStem" || relationType === "childDrop" ? 1.7 : 1.4 },
     data: { relationType, familyIds, ...dataExtra },
   };
 }
@@ -91,9 +94,10 @@ export function buildFamilyMindmapGraph(members: FamilyMember[], options: GraphO
     for (const parentId of parentIds) parentPairs.add(pairKey(parentId, child.id));
     if (parentIds.length === 0) continue;
 
-    const key = `${parentIds.join(":")}:g${child.generation}`;
+    const key = parentIds.join(":");
     const hub = hubs.get(key) ?? {
-      id: `family-union-${key.replaceAll(":", "-").replace("g", "g-")}`,
+      id: `family-union-${key.replaceAll(":", "-")}`,
+      anchorId: `family-anchor-${key.replaceAll(":", "-")}`,
       parentIds,
       childIds: [],
       generation: child.generation,
@@ -104,6 +108,18 @@ export function buildFamilyMindmapGraph(members: FamilyMember[], options: GraphO
 
   for (const hub of hubs.values()) {
     if (hub.childIds.length > 1) hub.branchId = `family-branch-${hub.id.slice("family-union-".length)}`;
+    const familyIds = [...new Set([...hub.parentIds, ...hub.childIds])];
+    nodes.push({
+      id: hub.anchorId,
+      type: "familyAnchor",
+      position: { x: 0, y: 0 },
+      width: ANCHOR_NODE_SIZE,
+      height: ANCHOR_NODE_SIZE,
+      selectable: false,
+      draggable: false,
+      connectable: false,
+      data: { direction, familyIds },
+    });
     nodes.push({
       id: hub.id,
       type: "familyUnion",
@@ -113,7 +129,7 @@ export function buildFamilyMindmapGraph(members: FamilyMember[], options: GraphO
       selectable: false,
       draggable: false,
       connectable: false,
-      data: { parentIds: hub.parentIds, childIds: hub.childIds, generation: hub.generation, direction },
+      data: { anchorId: hub.anchorId, parentIds: hub.parentIds, childIds: hub.childIds, generation: hub.generation, direction, familyIds },
     });
     if (hub.branchId) {
       nodes.push({
@@ -125,7 +141,7 @@ export function buildFamilyMindmapGraph(members: FamilyMember[], options: GraphO
         selectable: false,
         draggable: false,
         connectable: false,
-        data: { childIds: hub.childIds, direction },
+        data: { childIds: hub.childIds, direction, familyIds, unionId: hub.id },
       });
     }
   }
@@ -144,24 +160,23 @@ export function buildFamilyMindmapGraph(members: FamilyMember[], options: GraphO
 
   for (const hub of hubs.values()) {
     const familyIds = [...new Set([...hub.parentIds, ...hub.childIds])];
-    for (const parentId of hub.parentIds) {
-      edges.push(makeEdge(`parent-union-${parentId}-${hub.id}`, parentId, hub.id, "parentChild", [parentId], direction, {}, {
-        targetHandle: direction === "TB" ? "union-parent-target" : "union-parent-target-left",
-      }));
-    }
+    edges.push(makeEdge(`family-stem-${hub.anchorId}-${hub.id}`, hub.anchorId, hub.id, "familyStem", familyIds, direction, {}, {
+      sourceHandle: direction === "TB" ? "family-anchor-source" : "family-anchor-source-right",
+      targetHandle: direction === "TB" ? "union-parent-target" : "union-parent-target-left",
+    }));
     if (hub.branchId) {
-      edges.push(makeEdge(`union-branch-${hub.id}`, hub.id, hub.branchId, "parentChild", familyIds, direction, {}, {
+      edges.push(makeEdge(`family-branch-stem-${hub.id}`, hub.id, hub.branchId, "familyStem", familyIds, direction, {}, {
         sourceHandle: direction === "TB" ? "union-child-source" : "union-child-source-right",
         targetHandle: direction === "TB" ? "branch-parent-target" : "branch-parent-target-left",
       }));
       for (const childId of hub.childIds) {
-        edges.push(makeEdge(`branch-child-${hub.branchId}-${childId}`, hub.branchId, childId, "parentChild", [childId], direction, {}, {
+        edges.push(makeEdge(`child-drop-${hub.branchId}-${childId}`, hub.branchId, childId, "childDrop", familyIds, direction, {}, {
           sourceHandle: `branch-child-${childId}`,
         }));
       }
     } else {
       for (const childId of hub.childIds) {
-        edges.push(makeEdge(`union-child-${hub.id}-${childId}`, hub.id, childId, "parentChild", [childId], direction, {}, {
+        edges.push(makeEdge(`child-drop-${hub.id}-${childId}`, hub.id, childId, "childDrop", familyIds, direction, {}, {
           sourceHandle: direction === "TB" ? "union-child-source" : "union-child-source-right",
         }));
       }
@@ -336,30 +351,50 @@ export function layoutFamilyMindmapGraph(
     const childPositions = childIds.map(id => positions.get(id)).filter((position): position is NonNullable<typeof position> => !!position);
     if (!parentPositions.length || !childPositions.length) continue;
     const centerAxis = (list: Array<{ x: number; y: number }>) => list.reduce((sum, item) => sum + (direction === "TB" ? item.x + MEMBER_NODE_WIDTH / 2 : item.y + MEMBER_NODE_HEIGHT / 2), 0) / list.length;
-    const parentCross = (parentPositions[0][direction === "TB" ? "y" : "x"] + cardCross);
-    const childCross = childPositions[0][direction === "TB" ? "y" : "x"];
-    const branchCross = childCross - SIBLING_BRANCH_GAP;
-    const unionCross = (parentCross + branchCross) / 2;
     const unionAxis = centerAxis(parentPositions);
-    positions.set(hubNode.id, direction === "TB"
-      ? { x: unionAxis - UNION_NODE_SIZE / 2, y: unionCross - UNION_NODE_SIZE / 2 }
-      : { x: unionCross - UNION_NODE_SIZE / 2, y: unionAxis - UNION_NODE_SIZE / 2 });
+    const parentCrossCenter = parentPositions.reduce((sum, position) => sum + (direction === "TB"
+      ? position.y + MEMBER_NODE_HEIGHT / 2
+      : position.y + MEMBER_NODE_HEIGHT / 2), 0) / parentPositions.length;
+    const parentBottom = parentPositions[0].y + MEMBER_NODE_HEIGHT;
+    const parentRight = Math.max(...parentPositions.map(position => position.x + MEMBER_NODE_WIDTH));
+    const anchorId = `family-anchor-${hubNode.id.slice("family-union-".length)}`;
+    const anchorPosition = direction === "TB"
+      ? { x: unionAxis - ANCHOR_NODE_SIZE / 2, y: (parentIds.length > 1 ? parentCrossCenter : parentBottom) - ANCHOR_NODE_SIZE }
+      : { x: (parentIds.length > 1 ? unionAxis : parentRight) - ANCHOR_NODE_SIZE, y: unionAxis - ANCHOR_NODE_SIZE / 2 };
+    positions.set(anchorId, anchorPosition);
+
+    const unionPosition = direction === "TB"
+      ? { x: unionAxis - UNION_NODE_SIZE / 2, y: parentBottom + FAMILY_TRUNK_GAP }
+      : { x: parentRight + FAMILY_TRUNK_GAP, y: unionAxis - UNION_NODE_SIZE / 2 };
+    positions.set(hubNode.id, unionPosition);
 
     const branchId = `family-branch-${hubNode.id.slice("family-union-".length)}`;
     if (childIds.length > 1 && memberNodeById.has(childIds[0])) {
       const axes = childIds.map(id => positions.get(id)!).map(position => direction === "TB" ? position.x + MEMBER_NODE_WIDTH / 2 : position.y + MEMBER_NODE_HEIGHT / 2);
       const start = Math.min(...axes);
       const end = Math.max(...axes);
+      const span = end - start;
+      const barCross = (direction === "TB" ? childPositions[0].y : childPositions[0].x) - SIBLING_BAR_TO_CHILD_GAP - 2;
+      const branchTargetOffset = Math.max(0, Math.min(span, unionAxis - start));
       const branchPosition = direction === "TB"
-        ? { x: start, y: branchCross - 1 }
-        : { x: branchCross - 1, y: start };
+        ? { x: start, y: barCross }
+        : { x: barCross, y: start };
       positions.set(branchId, branchPosition);
       const branchNode = graphNodes.find(node => node.id === branchId);
       if (branchNode) {
         extraNodes.push({ ...branchNode, position: branchPosition,
-          width: Math.max(2, direction === "TB" ? end - start : 2),
-          height: Math.max(2, direction === "LR" ? end - start : 2),
-          data: { ...branchNode.data, childIds: childIds.map(Number), direction, span: Math.max(2, end - start) } });
+          width: direction === "TB" ? span : 2,
+          height: direction === "LR" ? span : 2,
+          data: {
+            ...branchNode.data,
+            childIds: childIds.map(Number),
+            direction,
+            span,
+            familyIds: hubNode.data.familyIds,
+            unionId: hubNode.id,
+            targetOffset: branchTargetOffset,
+            childOffsets: childIds.map((id, index) => ({ id: Number(id), offset: axes[index] - start })),
+          } });
       }
     }
   }

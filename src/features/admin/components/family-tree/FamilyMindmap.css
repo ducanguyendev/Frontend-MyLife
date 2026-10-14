@@ -294,6 +294,7 @@
   line-height: 1;
 }
 
+.family-mindmap-anchor,
 .family-mindmap-union,
 .family-mindmap-branch {
   position: relative;
@@ -304,6 +305,7 @@
   pointer-events: none;
 }
 
+.family-mindmap-anchor .react-flow__handle,
 .family-mindmap-union .react-flow__handle,
 .family-mindmap-branch .react-flow__handle {
   width: 2px;
@@ -317,33 +319,47 @@
   pointer-events: none;
 }
 
-.family-mindmap-branch::before {
+.family-mindmap-branch__svg {
   position: absolute;
-  inset: 0;
-  background: var(--family-tree-line);
-  content: "";
-}
-
-.family-mindmap-generation {
-  position: relative;
-  display: flex;
-  align-items: center;
+  top: 0;
+  left: 0;
+  display: block;
   width: 100%;
-  height: 26px;
-  color: var(--secondary-text);
+  height: 100%;
+  overflow: visible;
   pointer-events: none;
 }
 
-.family-mindmap-generation::after {
-  height: 1px;
-  flex: 1;
-  margin-left: 12px;
-  background: var(--family-tree-line-muted);
-  content: "";
+.family-mindmap-branch__line {
+  stroke: var(--family-tree-line);
+  stroke-width: 1.7px;
+  vector-effect: non-scaling-stroke;
+}
+
+.react-flow__node-familyBranch.is-family-related .family-mindmap-branch__line {
+  stroke: var(--accent-color, #527a68);
+  stroke-width: 2px;
+}
+
+.react-flow__node-familyBranch.is-family-dimmed .family-mindmap-branch__line {
+  opacity: .22;
+}
+
+.family-mindmap-generation {
+  display: inline-flex;
+  align-items: center;
+  width: max-content;
+  height: 22px;
+  padding: 0 7px;
+  border: 1px solid color-mix(in srgb, var(--custom-border, #d7d9dd) 55%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--secondary-bg, #fff) 78%, transparent);
+  color: var(--secondary-text);
+  opacity: .78;
+  pointer-events: none;
 }
 
 .family-mindmap-generation span {
-  flex: none;
   font-size: 10px;
   font-weight: 750;
   letter-spacing: .12em;
@@ -351,20 +367,8 @@
 }
 
 .family-mindmap-generation--lr {
-  flex-direction: column;
-  justify-content: flex-start;
-  width: 26px;
-  height: 100%;
-}
-
-.family-mindmap-generation--lr::after {
-  width: 1px;
-  flex: 1;
-  margin: 10px 0 0;
-}
-
-.family-mindmap-generation--lr span {
-  writing-mode: vertical-rl;
+  width: max-content;
+  height: 22px;
 }
 
 .family-mindmap-toolbar {
