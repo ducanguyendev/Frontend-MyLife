@@ -123,7 +123,7 @@ export const Header: React.FC = () => {
 
           {/* Desktop Navigation */}
           <nav className={`hidden xl:flex items-center justify-center gap-1 p-1 h-10 rounded-full border transition-colors ${
-            isScrolled ? 'bg-gray-50/50 dark:bg-primary-bg/50 border-gray-200 dark:border-custom-border' : 'glass-pill'
+            isScrolled ? 'bg-gray-50/50 dark:bg-primary-bg/50 border-gray-200 dark:border-custom-border' : 'hero-nav-glass'
           }`}>
         {NAV_LINKS.map((link) => (
               <a

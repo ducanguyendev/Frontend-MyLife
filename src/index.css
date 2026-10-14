@@ -109,6 +109,20 @@
 }
 
 @layer utilities {
+  .hero-nav-glass {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  }
+
+  .dark .hero-nav-glass {
+    background: rgba(17, 17, 17, 0.18);
+    border-color: rgba(255, 255, 255, 0.16);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+  }
+
   .glass-pill {
     background: color-mix(in srgb, var(--secondary-bg) 88%, transparent);
     backdrop-filter: blur(12px);
