@@ -15,6 +15,7 @@ export interface FamilyAnniversary {
   isLeapMonth: boolean;
   originalSolarDate: string | null;
   lunarYear: number | null;
+  nextLunarYear: number;
   nextSolarDate: string;
   daysUntil: number;
   place: string | null;
@@ -63,7 +64,7 @@ export const anniversaryService = {
   async getNextOccurrence(day: number, month: number, isLeapMonth: boolean, signal?: AbortSignal) {
     const query = new URLSearchParams({ day: String(day), month: String(month), isLeapMonth: String(isLeapMonth) });
     return (await apiClient.get<ApiEnvelope<{
-      lunarDay: number; lunarMonth: number; isLeapMonth: boolean; nextSolarDate: string;
+      lunarDay: number; lunarMonth: number; isLeapMonth: boolean; nextLunarYear: number; nextSolarDate: string;
       daysUntil: number; solarYear: number; isCurrentYearPassed: boolean;
     }>>(`${route}/next-occurrence?${query}`, { signal })).data;
   },

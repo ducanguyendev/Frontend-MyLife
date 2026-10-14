@@ -1,4 +1,5 @@
 export * from './Button';
+export * from './FloatingAddButton';
 export * from './Modal';
 export * from './Input';
 export * from './PasswordInput';

@@ -4,6 +4,7 @@ import { Button, DateInput, Input, Modal, Select, SelectItem, Textarea, formatBa
 import { useLanguage } from '@/shared/hooks/useLanguage';
 import { anniversaryService, type AnniversaryEventType, type FamilyAnniversary, type FamilyAnniversaryPayload } from '../../services/anniversaryService';
 import type { FamilyMember } from './types';
+import { formatLunarYearLabel, getLunarYearCanChi, isSupportedLunarYear } from './lunarYearUtils';
 
 interface Props {
   anniversary?: FamilyAnniversary;
@@ -32,8 +33,8 @@ export function FamilyAnniversaryModal({ anniversary, members, onClose, onSubmit
   const [place, setPlace] = useState(anniversary?.place ?? '');
   const [host, setHost] = useState(anniversary?.host ?? '');
   const [notes, setNotes] = useState(anniversary?.notes ?? '');
-  const [occurrence, setOccurrence] = useState<{ date: string; daysUntil: number; solarYear: number; isCurrentYearPassed: boolean } | null>(
-    anniversary ? { date: anniversary.nextSolarDate, daysUntil: anniversary.daysUntil, solarYear: Number(anniversary.nextSolarDate.slice(0, 4)), isCurrentYearPassed: false } : null,
+  const [occurrence, setOccurrence] = useState<{ date: string; daysUntil: number; lunarYear: number; isCurrentYearPassed: boolean } | null>(
+    anniversary ? { date: anniversary.nextSolarDate, daysUntil: anniversary.daysUntil, lunarYear: anniversary.nextLunarYear, isCurrentYearPassed: false } : null,
   );
   const [occurrenceLoading, setOccurrenceLoading] = useState(false);
   const [occurrenceError, setOccurrenceError] = useState<string | null>(null);
@@ -49,6 +50,7 @@ export function FamilyAnniversaryModal({ anniversary, members, onClose, onSubmit
   const day = /^\d+$/.test(lunarDay) ? Number(lunarDay) : NaN;
   const month = /^\d+$/.test(lunarMonth) ? Number(lunarMonth) : NaN;
   const year = /^\d{4}$/.test(lunarYear) ? Number(lunarYear) : NaN;
+  const lunarYearLabel = isSupportedLunarYear(year) ? formatLunarYearLabel(year) : null;
   const validLunarParts = Number.isInteger(day) && day >= 1 && day <= 30 && Number.isInteger(month) && month >= 1 && month <= 12;
 
   useEffect(() => {
@@ -71,7 +73,7 @@ export function FamilyAnniversaryModal({ anniversary, members, onClose, onSubmit
       try {
         const result = await anniversaryService.getNextOccurrence(day, month, isLeapMonth, controller.signal);
         if (controller.signal.aborted) return;
-        setOccurrence({ date: result.nextSolarDate, daysUntil: result.daysUntil, solarYear: result.solarYear, isCurrentYearPassed: result.isCurrentYearPassed });
+        setOccurrence({ date: result.nextSolarDate, daysUntil: result.daysUntil, lunarYear: result.nextLunarYear, isCurrentYearPassed: result.isCurrentYearPassed });
       } catch (requestError) {
         if (controller.signal.aborted) return;
         setOccurrence(null);
@@ -198,7 +200,9 @@ export function FamilyAnniversaryModal({ anniversary, members, onClose, onSubmit
               <Input containerClassName="col-span-2 sm:col-span-1" label={t('admin.anniversary_ui.lunar_year')} type="number" inputMode="numeric" min={1800} max={2200} value={lunarYear} disabled={isSaving}
                 onChange={event => { setLunarYear(event.target.value); setDateCheck(null); setError(null); }} />
             </div>
+            {isDeathAnniversary && lunarYearLabel && <p className="mt-1.5 text-xs font-medium text-accent">{lunarYearLabel}<span className="ml-1.5 font-normal text-secondary-text">{t('admin.anniversary_ui.historical_lunar_year')}</span></p>}
           </div>
+          {isDeathAnniversary && <p className="text-xs leading-relaxed text-secondary-text">{t('admin.anniversary_ui.lunar_recurrence_help')}</p>}
           <label className="flex w-fit cursor-pointer items-center gap-2 rounded-lg px-1 py-1 text-sm text-primary-text">
             <input type="checkbox" checked={isLeapMonth} disabled={isSaving} onChange={event => { setIsLeapMonth(event.target.checked); setDateCheck(null); setError(null); }} />
             {t('admin.anniversary_ui.leap_month')}
@@ -206,7 +210,8 @@ export function FamilyAnniversaryModal({ anniversary, members, onClose, onSubmit
 
           <div className="space-y-2 rounded-xl border border-custom-border bg-primary-bg p-3 text-sm" aria-live="polite">
             {dateCheckLoading ? <p className="flex items-center gap-2 text-secondary-text"><Loader2 size={14} className="animate-spin" />{t('admin.anniversary_ui.checking_dates')}</p>
-              : dateCheck?.status === 'matched' ? <p className="font-medium text-emerald-600 dark:text-emerald-400">✓ {t('admin.anniversary_ui.dates_match')}</p>
+              : dateCheck?.status === 'matched' ? <div className="space-y-1"><p className="font-medium text-emerald-600 dark:text-emerald-400">✓ {t('admin.anniversary_ui.dates_match')}</p>
+                  {isDeathAnniversary && lunarYearLabel && <p className="text-xs text-secondary-text">{t('admin.anniversary_ui.original_date_summary', { lunarDate: `${day}/${month}/${year} – ${getLunarYearCanChi(year) ?? ''}`, solarDate: formatIsoDate(solarDateValue ?? '') })}</p>}</div>
                 : dateCheck?.status === 'mismatch' ? <p role="alert" className="text-sm text-error">{t('admin.anniversary_ui.date_mismatch')} {dateCheck.convertedDate && <span>{t('admin.anniversary_ui.converted_date', { date: formatIsoDate(dateCheck.convertedDate) })}</span>}</p>
                   : dateCheckError ? <p role="alert" className="text-sm text-error">{t(dateCheckError)}</p>
                     : <p className="text-xs text-secondary-text">{t('admin.anniversary_ui.date_pair_hint')}</p>}
@@ -219,8 +224,10 @@ export function FamilyAnniversaryModal({ anniversary, members, onClose, onSubmit
             {occurrenceLoading ? <p className="mt-2 flex items-center gap-2 text-sm text-secondary-text"><Loader2 size={14} className="animate-spin" />{t('admin.anniversary_ui.preview_loading')}</p>
               : occurrenceError ? <p role="alert" className="mt-2 text-sm text-error">{t(occurrenceError)}</p>
                 : occurrence ? <div className="mt-1.5">
-                  <strong className="text-base text-primary-text">{occurrence.daysUntil === 0 ? t('admin.anniversary_ui.today') : formatIsoDate(occurrence.date)}</strong>
+                  <p className="text-xs text-secondary-text">{t('admin.anniversary_ui.upcoming_lunar_date', { date: `${day}/${month}/${occurrence.lunarYear}`, canChi: getLunarYearCanChi(occurrence.lunarYear) ?? '' })}</p>
+                  <strong className="mt-0.5 block text-base text-primary-text">{occurrence.daysUntil === 0 ? t('admin.anniversary_ui.today') : formatIsoDate(occurrence.date)}</strong>
                   <p className="mt-0.5 text-xs text-secondary-text">{occurrence.daysUntil === 0 ? t('admin.anniversary_ui.today') : t('admin.anniversary_ui.days_left', { count: occurrence.daysUntil })}</p>
+                  <p className="mt-1 text-xs text-secondary-text">{t('admin.anniversary_ui.recurrence_explanation')}</p>
                   {occurrence.daysUntil > 0 && <p className="mt-1 text-xs text-secondary-text">{t(occurrence.isCurrentYearPassed ? 'admin.anniversary_ui.current_year_passed' : 'admin.anniversary_ui.current_year_upcoming', { date: formatIsoDate(occurrence.date) })}</p>}
                 </div> : <p className="mt-1.5 text-xs text-secondary-text">{t('admin.anniversary_ui.enter_lunar_date')}</p>}
           </div>

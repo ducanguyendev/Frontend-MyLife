@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo, lazy, Suspense } from "react";
 import {
-  Plus, Loader2, LayoutGrid, Table2, Network
+  Loader2, LayoutGrid, Table2, Network
 } from "lucide-react";
 import { useLanguage } from "@/shared/hooks/useLanguage";
-import { Button, Select, SelectItem } from "@/shared/components/ui";
+import { Button, FloatingAddButton, Select, SelectItem } from "@/shared/components/ui";
 import { SearchBar } from "@/shared/components/SearchBar";
 import { apiClient } from "@/shared/api/apiClient";
 import { featureSuccessKeys, getFeatureErrorKey } from '../services/featureMessages';
@@ -203,15 +203,11 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
           </div>
 
           <div className="flex items-center gap-3">
-            <Button
-              variant="primary"
-              className="!p-3 !rounded-full aspect-square"
-              aria-label={t("admin.add_member")}
-              title={t("admin.add_member", { defaultValue: "Thêm Thành Viên" })}
+            <FloatingAddButton
+              ariaLabel={t("admin.add_member")}
+              tooltip={t("admin.add_member", { defaultValue: "Thêm Thành Viên" })}
               onClick={() => handleOpenModal()}
-            >
-              <Plus size={20} />
-            </Button>
+            />
           </div>
         </div>
 

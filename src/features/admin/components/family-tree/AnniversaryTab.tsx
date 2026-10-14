@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { CalendarDays, ChevronLeft, ChevronRight, Loader2, MapPin, Pencil, Plus, RotateCcw, Trash2, Users, X } from 'lucide-react';
-import { Button, Modal } from '@/shared/components/ui';
+import { CalendarDays, ChevronLeft, ChevronRight, Loader2, MapPin, Pencil, RotateCcw, Trash2, Users, X } from 'lucide-react';
+import { Button, FloatingAddButton, Modal } from '@/shared/components/ui';
 import { SearchBar } from '@/shared/components/SearchBar';
 import { useLanguage } from '@/shared/hooks/useLanguage';
 import { anniversaryService, type FamilyAnniversary, type FamilyAnniversaryPayload } from '../../services/anniversaryService';
 import { FamilyAnniversaryModal } from './FamilyAnniversaryModal';
+import { formatLunarYearLabel } from './lunarYearUtils';
 import { removeVietnameseTones, type FamilyMember } from './types';
 import { anniversaryDateKey, anniversaryDateParts, getAnniversaryMonthGrid, getVietnamTodayKey } from './anniversaryCalendarUtils';
 import { fetchFamilyMembers } from './useFamilyMembers';
@@ -164,17 +165,10 @@ export const AnniversaryTab: React.FC<Props> = ({ showToast, members: initialMem
         <h1 className="text-xl font-black tracking-tight text-primary-text sm:text-2xl">{t('myLife.modules.anniversaries.title')}</h1>
         <p className="mt-0.5 text-xs text-secondary-text sm:text-sm">{t('myLife.modules.anniversaries.description')}</p>
       </div>
-      <div className="flex w-full shrink-0 items-center gap-2 sm:w-auto sm:min-w-[22rem]">
+      <div className="flex w-full shrink-0 items-center gap-2 sm:min-w-[22rem] sm:flex-1 sm:justify-end">
         <SearchBar className="min-w-0 flex-1" ariaLabel={t('admin.anniversary_ui.search')} placeholder={t('admin.anniversary_ui.search')} value={search} onChange={setSearch} />
-        <span className="group relative shrink-0">
-          <Button className="min-h-10 min-w-10 px-2" variant="outline" disabled={membersLoading}
-            aria-label={t('admin.anniversary_ui.add_aria_label')} title={t('admin.anniversary_ui.add_aria_label')}
-            leftIcon={membersLoading ? <Loader2 size={17} className="animate-spin" /> : <Plus size={18} />}
-            onClick={() => void openEditor(null)} />
-          <span role="tooltip" className="pointer-events-none absolute right-0 top-full z-20 mt-2 whitespace-nowrap rounded-lg bg-primary-text px-2.5 py-1.5 text-xs font-medium text-primary-bg opacity-0 shadow-md transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
-            {t('admin.anniversary_ui.add_aria_label')}
-          </span>
-        </span>
+        <FloatingAddButton ariaLabel={t('admin.anniversary_ui.add_aria_label')}
+          tooltip={t('admin.anniversary_ui.add')} disabled={membersLoading} onClick={() => void openEditor(null)} />
       </div>
     </header>
 
@@ -226,7 +220,7 @@ export const AnniversaryTab: React.FC<Props> = ({ showToast, members: initialMem
               : filtered.length === 0 ? <div className="flex min-h-40 flex-col items-center justify-center px-4 text-center">
                 <CalendarDays className="mb-2 text-secondary-text" size={28} aria-hidden="true" />
                 <p className="font-semibold text-primary-text">{selectedDate ? t('admin.anniversary_ui.no_events_date') : hasFilters ? t('admin.anniversary_ui.no_results') : t('admin.anniversary_ui.empty')}</p>
-                {!hasFilters && !items.length && <><p className="mt-1 text-sm text-secondary-text">{t('admin.anniversary_ui.empty_desc')}</p><Button className="mt-3 min-h-10" disabled={membersLoading} leftIcon={membersLoading ? <Loader2 size={15} className="animate-spin" /> : <Plus size={15} />} onClick={() => void openEditor(null)}>{t('admin.anniversary_ui.add_first')}</Button></>}
+                {!hasFilters && !items.length && <p className="mt-1 text-sm text-secondary-text">{t('admin.anniversary_ui.empty_desc')}</p>}
                 {hasFilters && <button type="button" onClick={() => { setSearch(''); clearDateFilter(); }} className="mt-2 rounded-md px-2 py-1 text-sm font-semibold text-accent hover:bg-accent/10   ">{t('admin.anniversary_ui.clear_filters')}</button>}
               </div>
                 : <div className="space-y-2.5">{filtered.map(item => <article key={item.id} className="rounded-xl border border-custom-border bg-secondary-bg p-3 shadow-sm transition-colors duration-300 motion-reduce:transition-none hover:border-accent/30 sm:p-4">
@@ -241,6 +235,8 @@ export const AnniversaryTab: React.FC<Props> = ({ showToast, members: initialMem
                     </div>
                     <div className="shrink-0 text-right">
                       <p className="text-xs font-bold text-accent">{t('admin.anniversary_ui.lunar_date', { day: item.lunarDay, month: item.lunarMonth })}{item.isLeapMonth ? ` · ${t('admin.anniversary_ui.leap_month_short')}` : ''}</p>
+                      {formatLunarYearLabel(item.lunarYear ?? NaN) && <p className="text-[11px] text-secondary-text">{t('admin.anniversary_ui.original_lunar_year', { label: formatLunarYearLabel(item.lunarYear ?? NaN) })}</p>}
+                      <p className="mt-1 text-[11px] font-medium text-primary-text">{t('admin.anniversary_ui.upcoming_lunar_date', { date: `${item.lunarDay}/${item.lunarMonth}/${item.nextLunarYear}`, canChi: formatLunarYearLabel(item.nextLunarYear)?.replace(`${item.nextLunarYear} – `, '') ?? '' })}</p>
                       <p className="mt-0.5 text-[11px] text-secondary-text">{dateFormat.format(new Date(`${item.nextSolarDate}T12:00:00Z`))}</p>
                     </div>
                   </div>

@@ -111,7 +111,7 @@ async function familySetup(locale, response = { success: true, message: 'Family 
   const { FamilyTreeManager } = load('src/features/admin/components/FamilyTreeManager.tsx', {
     react: { ...hooks.hooks, default: hooks.hooks }, 'react/jsx-runtime': { jsx: hooks.jsx, jsxs: hooks.jsx },
     'lucide-react': new Proxy({}, { get: (_, key) => key }), '@/shared/hooks/useLanguage': { useLanguage: () => ({ t, language: i18n.language }) },
-    '@/shared/components/ui': { Button: 'Button', Select: 'Select' }, '@/shared/components/SearchBar': { SearchBar: 'SearchBar' },
+    '@/shared/components/ui': { Button: 'Button', FloatingAddButton: 'Button', Select: 'Select' }, '@/shared/components/SearchBar': { SearchBar: 'SearchBar' },
     '@/shared/api/apiClient': { apiClient }, '../services/featureMessages': messages,
     './family-tree/memberSearch': searchHelpers,
     './family-tree/useFamilyMembers': familyMembersHook,
@@ -153,7 +153,7 @@ for (const locale of ['vi', 'en']) {
   });
   test(`${locale}: actual FamilyTree create/update success use separate localized actions`, async () => {
     const setup = await familySetup(locale, { success: true, message: 'English created/updated.' });
-    find(setup.render(), 'Button', props => props.title === setup.t('admin.add_member')).onClick();
+    find(setup.render(), 'Button', props => props.tooltip === setup.t('admin.add_member')).onClick();
     const createForm = find(setup.render(), 'MemberFormModal');
     createForm.onChange({ ...createForm.editingMember, generation: 1 });
     await find(setup.render(), 'MemberFormModal').onSubmit({ preventDefault() {} });

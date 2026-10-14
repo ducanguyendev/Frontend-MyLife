@@ -20,6 +20,7 @@
     "test:i18n": "node --test tests/feature-i18n.test.cjs",
     "test:mindmap": "node --test tests/family-mindmap-graph.test.cjs",
     "test:anniversary": "node --test tests/anniversary.test.cjs",
+    "test:lunar-year-utils": "node --test tests/lunar-year-utils.test.cjs",
     "test:select": "node --test tests/shared-select.test.cjs",
     "test:family-relation-select": "node --test tests/family-relation-select.test.cjs",
     "test:family-member-picker": "node --test tests/family-member-picker.test.cjs",
