@@ -13,6 +13,7 @@ export interface AuthenticatedUser {
   id: number;
   email: string;
   fullName?: string | null;
+  displayName?: string | null;
   name?: string | null;
   phoneNumber?: string | null;
   gender?: string | null;
@@ -67,7 +68,7 @@ interface MessageResponse {
 }
 
 interface ProfileResponse extends MessageResponse {
-  user?: AuthenticatedUser;
+  user: AuthenticatedUser;
 }
 
 const LEGACY_AUTH_STORAGE_KEYS = [
@@ -275,7 +276,7 @@ export const authService = {
     return response;
   },
 
-  async updateProfile(data: { fullName: string; phoneNumber: string; gender: string; dateOfBirth: string }): Promise<ProfileResponse> {
+  async updateProfile(data: { displayName: string; phoneNumber: string; gender: string; dateOfBirth: string }): Promise<ProfileResponse> {
     return apiClient.put<ProfileResponse>('/api/me/profile', data);
   },
 

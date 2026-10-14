@@ -6,10 +6,13 @@ import {
   type LoginResponse,
   type UserRole,
 } from '../services/authService';
+import { generateDefaultDisplayName } from '@/shared/utils/userDisplayName';
 
 export interface User {
   id: number;
   email: string;
+  fullName?: string;
+  displayName: string;
   name: string;
   role: UserRole;
   roles: UserRole[];
@@ -28,6 +31,7 @@ interface AuthContextType {
   loginWithGoogle: (code: string, redirectUri: string) => Promise<LoginResponse>;
   logout: () => Promise<void>;
   switchAccount: () => Promise<void>;
+  updateUser: (user: AuthenticatedUser) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -39,10 +43,14 @@ function isGoogleOAuthPopupCallback(): boolean {
 }
 
 function toContextUser(user: AuthenticatedUser): User {
+  const fullName = user.fullName?.trim() || '';
+  const displayName = user.displayName?.trim() || generateDefaultDisplayName(fullName) || user.name?.trim() || '';
   return {
     id: user.id,
     email: user.email,
-    name: user.fullName?.trim() || user.name?.trim() || user.email.split('@')[0],
+    fullName,
+    displayName,
+    name: displayName,
     role: user.role,
     roles: [user.role],
     avatar: authService.getDisplayAvatarUrl(user.avatarUrl, user.email, Date.now()) ?? undefined,
@@ -95,9 +103,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     const handleNameUpdated = (event: Event) => {
-      const { name } = (event as CustomEvent<{ name?: string }>).detail ?? {};
-      if (name?.trim()) {
-        setUser((previous) => previous ? { ...previous, name: name.trim() } : null);
+      const { name, displayName } = (event as CustomEvent<{ name?: string; displayName?: string }>).detail ?? {};
+      const updatedName = displayName?.trim() || name?.trim();
+      if (updatedName) {
+        setUser((previous) => previous ? { ...previous, displayName: updatedName, name: updatedName } : null);
       }
     };
 
@@ -135,6 +144,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await logout();
   }, [logout]);
 
+  const updateUser = useCallback((updatedUser: AuthenticatedUser): void => {
+    setUser(toContextUser(updatedUser));
+  }, []);
+
   const isAuthenticated = user !== null;
   const isAdmin = user?.role === 'ADMIN';
   const isUser = user?.role === 'USER';
@@ -151,6 +164,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         loginWithGoogle,
         logout,
         switchAccount,
+        updateUser,
       }}
     >
       {children}

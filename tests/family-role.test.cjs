@@ -48,6 +48,10 @@ for (const roles of [['ADMIN'], ['USER']]) {
       '../components': { ThemeSwitch: 'ThemeSwitch' },
       '@/features/auth/components/LoginModal': { LoginModal: 'Login' }, '@/features/auth/components/UserMenu': { UserMenu: 'UserMenu' },
       '@/features/profile/components/UserProfileModal': { UserProfileModal: 'Profile' },
+      '@/shared/utils/userDisplayName': {
+        getUserDisplayName: identity => identity?.displayName || identity?.fullName || 'Account',
+        getDisplayNameInitials: () => 'AC',
+      },
     };
     const Guard = load('src/features/auth/components/ProtectedRoute.tsx', mocks).ProtectedRoute;
     const tree = Guard({ requiredRole: 'USER', children: 'FamilyTreeChild' });
@@ -87,6 +91,7 @@ test('AuthProvider uses exclusive server business role; ADMIN never implies USER
     const authService = { prepareSessionCheck() {}, getUserInfo: async () => user, getDisplayAvatarUrl: () => null };
     const { AuthProvider } = load('src/features/auth/context/AuthContext.tsx', {
       react: { ...h.hooks, default: h.hooks }, 'react/jsx-runtime': { jsx: h.jsx, jsxs: h.jsx }, '../services/authService': { authService },
+      '@/shared/utils/userDisplayName': { generateDefaultDisplayName: fullName => fullName || '' },
     }, { window: { location: { search: '' }, addEventListener() {}, removeEventListener() {} } });
     h.render(AuthProvider); h.effects.splice(0).forEach(effect => effect()); await new Promise(resolve => setImmediate(resolve));
     const context = h.render(AuthProvider).props.value;

@@ -5,11 +5,12 @@ import { useBodyScrollLock } from '@/shared/hooks/useBodyScrollLock';
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { authService } from '@/features/auth/services/authService';
 import { getApiErrorMessage } from '@/shared/api/apiClient';
-import { Input, PasswordInput } from '@/shared/components/ui';
+import { DateInput, Input, PasswordInput, formatBackendToDob, validateCalendarDate } from '@/shared/components/ui';
+import { getDisplayNameInitials, getUserDisplayName, normalizeNameWhitespace } from '@/shared/utils/userDisplayName';
 import {
   X, Mail, Shield, LogOut, ArrowLeftRight, CheckCircle2,
   Camera, Trash2, Loader2, AlertCircle, User,
-  Lock, KeyRound, Save, Check, ShieldCheck, Phone, Calendar
+  Lock, KeyRound, Save, Check, ShieldCheck, Phone
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -25,7 +26,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   onSwitchAccount,
 }) => {
   const { t } = useLanguage();
-  const { user, isAdmin, logout } = useAuth();
+  const { user, isAdmin, logout, updateUser } = useAuth();
   useBodyScrollLock(isOpen && !!user);
   const navigate = useNavigate();
 
@@ -42,6 +43,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
   // Profile Info States
   const [fullName, setFullName] = useState('');
+  const [displayName, setDisplayName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [gender, setGender] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
@@ -57,7 +59,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
   // Validation field errors
   const [fieldErrors, setFieldErrors] = useState<{
-    fullName?: string;
+    displayName?: string;
     phoneNumber?: string;
     gender?: string;
     dateOfBirth?: string;
@@ -130,15 +132,11 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
         setIsFetchingInfo(true);
         try {
           const info = await authService.getUserInfo();
-          setFullName(info.fullName || user.name || user.email.split('@')[0]);
+          setFullName(info.fullName || user.fullName || '');
+          setDisplayName(info.displayName || getUserDisplayName({ fullName: info.fullName || user.fullName, displayName: user.displayName, name: user.name }, ''));
           setPhoneNumber(info.phoneNumber || '');
           setGender(info.gender || '');
-          if (info.dateOfBirth) {
-             const [y, m, d] = info.dateOfBirth.split('T')[0].split('-');
-             setDateOfBirth(`${d}/${m}/${y}`);
-          } else {
-             setDateOfBirth('');
-          }
+          setDateOfBirth(info.dateOfBirth ? formatBackendToDob(info.dateOfBirth) : '');
         } catch (error) {
            console.error('Unable to load profile information.', error);
            setErrorMessage('Unable to load profile information. Please try again.');
@@ -151,6 +149,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   }, [isOpen, user]);
 
   if (!isOpen || !user) return null;
+
+  const userDisplayName = getUserDisplayName(user, t('common.userProfile.accountFallback', { defaultValue: 'Account' }));
 
   const hasLocalLogin = user.loginProviders?.local ?? user.authProvider !== 1;
   const hasGoogleLogin = user.loginProviders?.google ?? user.authProvider === 1;
@@ -234,13 +234,11 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     setSuccessMessage(null);
     
     const errors: typeof fieldErrors = {};
-    const trimmedFullName = fullName.trim();
-    if (!trimmedFullName) {
-      errors.fullName = t('common.registerPage.errors.nameRequired', { defaultValue: 'Vui lòng nhập họ và tên.' });
-    } else if (trimmedFullName.length < 2 || trimmedFullName.length > 50) {
-      errors.fullName = t('common.registerPage.errors.nameLength', { defaultValue: 'Họ và tên phải có độ dài từ 2 đến 50 ký tự.' });
-    } else if (!/^[\p{L}\s]+$/u.test(trimmedFullName)) {
-      errors.fullName = t('common.registerPage.errors.nameSpecialChars', { defaultValue: 'Họ và tên không được chứa số hoặc ký tự đặc biệt.' });
+    const trimmedDisplayName = normalizeNameWhitespace(displayName);
+    if (!trimmedDisplayName) {
+      errors.displayName = t('common.userProfile.msgNameEmpty', { defaultValue: 'Please enter a display name.' });
+    } else if (trimmedDisplayName.length > 100) {
+      errors.displayName = t('common.userProfile.msgNameLong', { maxLength: 100, defaultValue: 'Display name must be 100 characters or fewer.' });
     }
 
     const trimmedPhone = phoneNumber.trim().replace(/\s+/g, '');
@@ -250,24 +248,17 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
       errors.phoneNumber = t('common.registerPage.errors.phoneInvalid', { defaultValue: 'Số điện thoại không hợp lệ (10 chữ số bắt đầu bằng 03, 05, 07, 08, 09).' });
     }
     
-    // dateOfBirth format DD/MM/YYYY
-    let backendDob = '';
-    if (!dateOfBirth) {
-       errors.dateOfBirth = t('common.registerPage.errors.dobRequired', { defaultValue: 'Vui lòng nhập ngày sinh.' });
-    } else {
-       const dobParts = dateOfBirth.split('/');
-       if (dobParts.length !== 3) {
-           errors.dateOfBirth = t('common.registerPage.errors.dobFormat', { defaultValue: 'Ngày sinh không hợp lệ (DD/MM/YYYY).' });
-       } else {
-           const [d, m, y] = dobParts;
-           const dobStr = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
-           const dDate = new Date(dobStr);
-           if (isNaN(dDate.getTime())) {
-               errors.dateOfBirth = t('common.registerPage.errors.dobInvalid', { defaultValue: 'Ngày sinh không hợp lệ.' });
-           } else {
-               backendDob = dobStr;
-           }
-       }
+    const dobValidation = validateCalendarDate(dateOfBirth, { required: true });
+    const backendDob = dobValidation.backendDate || '';
+    if (!dobValidation.valid) {
+      const dobErrorKey = dobValidation.error === 'required'
+        ? 'common.registerPage.errors.dobRequired'
+        : dobValidation.error === 'format'
+          ? 'common.registerPage.errors.dobFormat'
+          : dobValidation.error === 'future'
+            ? 'common.registerPage.errors.dobFuture'
+            : 'common.registerPage.errors.dobInvalid';
+      errors.dateOfBirth = t(dobErrorKey);
     }
 
     if (!gender || !['Nam', 'Nữ', 'Khác'].includes(gender)) {
@@ -283,17 +274,19 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     setFieldErrors({});
     setIsSavingProfile(true);
     try {
-      await authService.updateProfile({
-        fullName: trimmedFullName,
+      const response = await authService.updateProfile({
+        displayName: trimmedDisplayName,
         phoneNumber: trimmedPhone,
         gender,
         dateOfBirth: backendDob
       });
-      authService.setStoredName(trimmedFullName);
-      setSuccessMessage(t('common.userProfile.msgProfileSuccess', { defaultValue: 'Cập nhật hồ sơ thành công!' }));
+      updateUser(response.user);
+      setFullName(response.user.fullName || fullName);
+      setDisplayName(response.user.displayName || trimmedDisplayName);
+      setSuccessMessage(t('common.userProfile.msgNameSuccess'));
       setIsEditingProfile(false);
     } catch (err: unknown) {
-      setErrorMessage(getApiErrorMessage(err, 'Lỗi khi cập nhật hồ sơ.'));
+      setErrorMessage(getApiErrorMessage(err, t('common.userProfile.msgProfileError', { defaultValue: 'Unable to update profile.' })));
     } finally {
       setIsSavingProfile(false);
     }
@@ -383,10 +376,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     } finally {
       setIsChangingPassword(false);
     }
-  };
-
-  const getInitials = (email: string) => {
-    return email ? email.substring(0, 2).toUpperCase() : 'US';
   };
 
   return (
@@ -492,7 +481,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-tr from-accent to-accent-hover text-primary-bg flex items-center justify-center text-xl font-bold font-mono">
-                    {getInitials(user.email)}
+                    {getDisplayNameInitials(userDisplayName)}
                   </div>
                 )}
 
@@ -515,9 +504,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             {/* Profile Info Summary */}
             <div className="text-center sm:text-left flex-1 min-w-0">
               <h2 className="text-lg font-bold text-primary-text truncate">
-                {user.name || user.email.split('@')[0]}
+                {userDisplayName}
               </h2>
-              <p className="text-xs text-secondary-text truncate mt-0.5">{user.email}</p>
 
               <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-2">
                 <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${
@@ -602,20 +590,20 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     <>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="flex flex-col">
-                          <span className="text-[11px] font-semibold text-secondary-text mb-1 uppercase">Họ và tên</span>
-                          <span className="text-sm font-bold text-primary-text">{fullName || user.name || user.email.split('@')[0]}</span>
+                          <span className="text-[11px] font-semibold text-secondary-text mb-1 uppercase">{t('common.userProfile.fullName', { defaultValue: 'Full name' })}</span>
+                          <span className="text-sm font-bold text-primary-text">{fullName || t('common.userProfile.notProvided', { defaultValue: 'Not provided' })}</span>
                         </div>
                         <div className="flex flex-col">
-                          <span className="text-[11px] font-semibold text-secondary-text mb-1 uppercase">Số điện thoại</span>
-                          <span className="text-sm font-bold text-primary-text">{phoneNumber || 'Chưa cập nhật'}</span>
+                          <span className="text-[11px] font-semibold text-secondary-text mb-1 uppercase">{t('common.userProfile.phoneNumber', { defaultValue: 'Phone number' })}</span>
+                          <span className="text-sm font-bold text-primary-text">{phoneNumber || t('common.userProfile.notProvided', { defaultValue: 'Not provided' })}</span>
                         </div>
                         <div className="flex flex-col">
-                          <span className="text-[11px] font-semibold text-secondary-text mb-1 uppercase">Ngày sinh</span>
-                          <span className="text-sm font-bold text-primary-text">{dateOfBirth || 'Chưa cập nhật'}</span>
+                          <span className="text-[11px] font-semibold text-secondary-text mb-1 uppercase">{t('common.userProfile.dateOfBirth', { defaultValue: 'Date of birth' })}</span>
+                          <span className="text-sm font-bold text-primary-text">{dateOfBirth || t('common.userProfile.notProvided', { defaultValue: 'Not provided' })}</span>
                         </div>
                         <div className="flex flex-col">
-                          <span className="text-[11px] font-semibold text-secondary-text mb-1 uppercase">Giới tính</span>
-                          <span className="text-sm font-bold text-primary-text">{gender || 'Chưa cập nhật'}</span>
+                          <span className="text-[11px] font-semibold text-secondary-text mb-1 uppercase">{t('common.userProfile.gender', { defaultValue: 'Gender' })}</span>
+                          <span className="text-sm font-bold text-primary-text">{gender || t('common.userProfile.notProvided', { defaultValue: 'Not provided' })}</span>
                         </div>
                       </div>
                       <button
@@ -623,7 +611,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                         onClick={() => setIsEditingProfile(true)}
                         className="w-full h-[40px] rounded-xl border border-accent text-accent font-semibold text-xs hover:bg-accent hover:text-primary-bg transition-all flex items-center justify-center gap-1.5 mt-2 cursor-pointer"
                       >
-                        Chỉnh sửa hồ sơ
+                        {t('common.userProfile.editProfile', { defaultValue: 'Edit profile' })}
                       </button>
                     </>
                   )}
@@ -634,18 +622,19 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                      <div className="flex justify-center p-4"><Loader2 size={24} className="animate-spin text-accent" /></div>
                   ) : (
                     <>
-                    {/* Full Name */}
+                    {/* Display Name */}
                     <Input
-                      label={t('common.userProfile.editDisplayName', { defaultValue: 'Họ và tên' })}
+                      label={t('common.userProfile.displayName', { defaultValue: 'Display name' })}
                       leftIcon={<User size={16} />}
-                      value={fullName}
+                      value={displayName}
                       onChange={(e) => {
-                        setFullName(e.target.value);
-                        if (fieldErrors.fullName) setFieldErrors((prev) => ({ ...prev, fullName: undefined }));
+                        setDisplayName(e.target.value);
+                        if (fieldErrors.displayName) setFieldErrors((prev) => ({ ...prev, displayName: undefined }));
                       }}
-                      maxLength={50}
-                      error={fieldErrors.fullName}
+                      maxLength={100}
+                      error={fieldErrors.displayName}
                     />
+                    <p className="-mt-2 px-1 text-[11px] text-secondary-text">{t('common.userProfile.displayNameHelper')}</p>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <Input
@@ -660,18 +649,14 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                         error={fieldErrors.phoneNumber}
                       />
 
-                      <Input
-                        label={t('common.userProfile.dateOfBirth', { defaultValue: 'Ngày sinh (DD/MM/YYYY)' })}
-                        leftIcon={<Calendar size={16} />}
+                      <DateInput
+                        label={t('common.userProfile.dateOfBirth', { defaultValue: 'Date of birth' })}
+                        disableFuture
                         value={dateOfBirth}
                         onChange={(e) => {
-                          let val = e.target.value.replace(/[^0-9]/g, '');
-                          if (val.length > 2) val = val.slice(0, 2) + '/' + val.slice(2);
-                          if (val.length > 5) val = val.slice(0, 5) + '/' + val.slice(5, 9);
-                          setDateOfBirth(val);
+                          setDateOfBirth(e.target.value);
                           if (fieldErrors.dateOfBirth) setFieldErrors((prev) => ({ ...prev, dateOfBirth: undefined }));
                         }}
-                        maxLength={10}
                         error={fieldErrors.dateOfBirth}
                       />
                     </div>
@@ -679,7 +664,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     {/* Gender Selector */}
                     <div>
                       <label className="block text-[11px] font-semibold text-secondary-text mb-1.5 ml-1 uppercase tracking-wider">
-                        {t('common.gender', { defaultValue: 'Giới tính' })}
+                        {t('common.userProfile.gender', { defaultValue: 'Gender' })}
                       </label>
                       <div className="grid grid-cols-3 gap-2">
                         {[
@@ -713,7 +698,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                         onClick={() => setIsEditingProfile(false)}
                         className="flex-1 h-[48px] rounded-xl bg-secondary-bg border border-custom-border text-primary-text font-semibold text-xs hover:opacity-90 transition-all cursor-pointer"
                       >
-                        Hủy
+                        {t('common.userProfile.cancel', { defaultValue: 'Cancel' })}
                       </button>
                       <button
                         type="submit"

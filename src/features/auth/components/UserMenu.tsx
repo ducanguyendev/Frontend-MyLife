@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { authService } from '../services/authService';
 import { User, LogOut, ArrowLeftRight, ChevronDown, Shield, LayoutDashboard } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getDisplayNameInitials, getUserDisplayName } from '@/shared/utils/userDisplayName';
 
 interface UserMenuProps {
   onOpenProfile: () => void;
@@ -68,7 +69,8 @@ export const UserMenu: React.FC<UserMenuProps> = ({ onOpenProfile, onSwitchAccou
 
   if (!user) return null;
 
-  const initials = user.email ? user.email.substring(0, 2).toUpperCase() : 'US';
+  const userDisplayName = getUserDisplayName(user, t('common.userProfile.accountFallback', { defaultValue: 'Account' }));
+  const initials = getDisplayNameInitials(userDisplayName);
 
   const handleProfileClick = () => {
     setIsOpen(false);
@@ -102,7 +104,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ onOpenProfile, onSwitchAccou
               <img
                 key={menuAvatarSrc}
                 src={menuAvatarSrc}
-                alt={user.email}
+                alt={userDisplayName}
                 onError={handleMenuImageError}
                 referrerPolicy="no-referrer"
                 className="w-full h-full object-cover"
@@ -118,7 +120,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ onOpenProfile, onSwitchAccou
         </div>
 
         <span className="text-xs font-semibold text-primary-text max-w-[180px] truncate hidden lg:inline">
-          {user.email}
+          {userDisplayName}
         </span>
 
         <ChevronDown
@@ -148,7 +150,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ onOpenProfile, onSwitchAccou
                       <img
                         key={menuAvatarSrc}
                         src={menuAvatarSrc}
-                        alt={user.email}
+                        alt={userDisplayName}
                         onError={handleMenuImageError}
                         referrerPolicy="no-referrer"
                         className="w-full h-full object-cover"
@@ -163,7 +165,8 @@ export const UserMenu: React.FC<UserMenuProps> = ({ onOpenProfile, onSwitchAccou
                   <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full border-2 border-secondary-bg z-10 shadow-sm" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-bold text-primary-text truncate">{user.email}</p>
+                  <p className="text-xs font-bold text-primary-text truncate">{userDisplayName}</p>
+                  <p className="mt-0.5 text-[10px] text-secondary-text truncate">{user.email}</p>
                   <span className="inline-flex items-center gap-1 mt-0.5 text-[10px] font-semibold text-accent bg-accent/15 px-2 py-0.5 rounded-full">
                     <Shield size={10} />
                     {isAdmin

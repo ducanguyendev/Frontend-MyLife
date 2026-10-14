@@ -10,6 +10,7 @@ import { ThemeSwitch } from '../components';
 import { LoginModal } from '@/features/auth/components/LoginModal';
 import { UserMenu } from '@/features/auth/components/UserMenu';
 import { UserProfileModal } from '@/features/profile/components/UserProfileModal';
+import { getDisplayNameInitials, getUserDisplayName } from '@/shared/utils/userDisplayName';
 
 const NAV_LINKS = [
   { id: 'home', labelKey: 'navigation.home' },
@@ -31,6 +32,7 @@ export const Header: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const userDisplayName = getUserDisplayName(user, t('common.userProfile.accountFallback', { defaultValue: 'Account' }));
 
   useEffect(() => {
     const handleScroll = () => {
@@ -195,13 +197,13 @@ export const Header: React.FC = () => {
                 {user?.avatar ? (
                   <img
                     src={user.avatar}
-                    alt={user.email}
+                    alt={userDisplayName}
                     referrerPolicy="no-referrer"
                     className="w-full h-full object-cover"
                   />
                 ) : (
                   <div className="w-full h-full bg-accent text-black font-mono font-bold text-xs flex items-center justify-center">
-                    {user?.email ? user.email.substring(0, 2).toUpperCase() : 'US'}
+                    {getDisplayNameInitials(userDisplayName)}
                   </div>
                 )}
               </button>
@@ -239,11 +241,11 @@ export const Header: React.FC = () => {
                   <div className="p-4 bg-white/10 rounded-xl flex items-center justify-between border border-white/10">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-white text-black font-mono font-bold text-sm flex items-center justify-center">
-                        {user.email.substring(0, 2).toUpperCase()}
+                        {getDisplayNameInitials(userDisplayName)}
                       </div>
                       <div className="min-w-0 text-white">
-                        <p className="text-sm font-bold truncate">{user.email}</p>
-                        <p className="text-xs text-white/70">{user.role}</p>
+                        <p className="text-sm font-bold truncate">{userDisplayName}</p>
+                        <p className="text-xs text-white/70 truncate">{user.role} · {user.email}</p>
                       </div>
                     </div>
                     <button
