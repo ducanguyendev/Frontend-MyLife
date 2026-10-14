@@ -91,7 +91,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ onOpenProfile, onSwitchAccou
       {/* Trigger Button: User Avatar (Trên) */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex h-10 items-center gap-2.5 pl-1 pr-3 rounded-full border border-custom-border hover:border-accent bg-secondary-bg/60 hover:bg-secondary-bg transition-colors cursor-pointer group focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        className="flex h-10 items-center gap-2.5 pl-1 pr-3 rounded-full border border-custom-border hover:border-accent bg-secondary-bg/60 hover:bg-secondary-bg transition-colors cursor-pointer group   "
         aria-haspopup="true"
         aria-label="User profile menu"
         aria-expanded={isOpen}

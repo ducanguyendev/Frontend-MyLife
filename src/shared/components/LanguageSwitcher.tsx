@@ -117,7 +117,7 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ isMobile = f
     <div className="relative inline-block text-left" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex h-10 w-10 items-center justify-center rounded-full border border-custom-border bg-secondary-bg/60 p-1 hover:border-accent hover:bg-secondary-bg transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        className="flex h-10 w-10 items-center justify-center rounded-full border border-custom-border bg-secondary-bg/60 p-1 hover:border-accent hover:bg-secondary-bg transition-colors cursor-pointer   "
         aria-haspopup="true"
         aria-expanded={isOpen}
         aria-label={languageLabel}
@@ -142,7 +142,7 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ isMobile = f
                   key={lang.code}
                   onClick={() => handleLangSelect(lang.code)}
                   onKeyDown={(e) => handleKeyDown(e, lang.code)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 text-left text-xs font-semibold tracking-wide hover:bg-primary-bg transition-colors text-primary-text cursor-pointer focus-visible:outline-2 focus-visible:outline-inset ${
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 text-left text-xs font-semibold tracking-wide hover:bg-primary-bg transition-colors text-primary-text cursor-pointer   ${
                     language === lang.code ? 'text-accent font-bold bg-primary-bg/50' : ''
                   }`}
                   role="menuitem"

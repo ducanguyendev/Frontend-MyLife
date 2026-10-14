@@ -31,8 +31,9 @@
 }
 
 .theme-switch__input:focus-visible + .theme-switch__slider {
-  outline: 2px solid var(--color-accent, #3b82f6);
-  outline-offset: 3px;
+  outline: none;
+  border-color: var(--focus-border);
+  filter: brightness(0.94);
 }
 
 .theme-switch__thumb {

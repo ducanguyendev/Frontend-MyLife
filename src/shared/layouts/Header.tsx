@@ -157,7 +157,7 @@ export const Header: React.FC = () => {
               <button
                 type="button"
                 onClick={() => navigate('/mylife')}
-                className="w-10 h-10 flex items-center justify-center rounded-full bg-secondary-bg/50 hover:bg-secondary-bg border border-custom-border text-secondary-text hover:text-primary-text transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                className="w-10 h-10 flex items-center justify-center rounded-full bg-secondary-bg/50 hover:bg-secondary-bg border border-custom-border text-secondary-text hover:text-primary-text transition-colors cursor-pointer   "
                 aria-label={t('myLife.title')}
                 title={t('myLife.title')}
               >
@@ -173,7 +173,7 @@ export const Header: React.FC = () => {
             ) : (
               <button
                 onClick={() => setIsLoginModalOpen(true)}
-                className={`px-4 h-10 flex items-center justify-center text-sm font-bold rounded-full transition-colors whitespace-nowrap cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${
+                className={`px-4 h-10 flex items-center justify-center text-sm font-bold rounded-full transition-colors whitespace-nowrap cursor-pointer    ${
                   isScrolled 
                     ? 'bg-[#111111] dark:bg-white text-white dark:text-black'
                     : 'bg-white dark:bg-[#111111] text-black dark:text-white shadow-sm'
@@ -189,7 +189,7 @@ export const Header: React.FC = () => {
             {isAuthenticated ? (
               <button
                 onClick={() => setIsProfileModalOpen(true)}
-                className="w-10 h-10 rounded-full overflow-hidden cursor-pointer flex items-center justify-center border border-custom-border focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                className="w-10 h-10 rounded-full overflow-hidden cursor-pointer flex items-center justify-center border border-custom-border   "
                 aria-label="Profile"
               >
                 {user?.avatar ? (

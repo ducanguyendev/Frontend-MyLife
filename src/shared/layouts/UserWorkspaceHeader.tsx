@@ -32,7 +32,7 @@ export const UserWorkspaceHeader: React.FC<UserWorkspaceHeaderProps> = ({ backTo
         <div className="flex min-w-0 items-center gap-2 sm:gap-3 xl:col-start-1">
           <Link
             to={backTo}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-custom-border bg-secondary-bg/60 text-secondary-text transition-colors hover:bg-primary-bg hover:text-primary-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-custom-border bg-secondary-bg/60 text-secondary-text transition-colors hover:bg-primary-bg hover:text-primary-text   "
             aria-label={t('common.back', { defaultValue: 'Back' })}
             title={t('common.back', { defaultValue: 'Back' })}
           >

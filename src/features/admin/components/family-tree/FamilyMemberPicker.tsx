@@ -176,7 +176,7 @@ export const FamilyMemberPicker: React.FC<FamilyMemberPickerProps> = ({
             openPopup();
           }
         }}
-        className="flex min-h-[56px] w-full items-center justify-between gap-2 rounded-2xl border border-custom-border bg-primary-bg px-4 py-3 text-left text-sm font-medium text-secondary-text outline-none transition-all hover:border-custom-border/80 focus:border-accent focus:ring-2 focus:ring-accent/20 disabled:cursor-not-allowed disabled:opacity-50"
+        className="flex min-h-[56px] w-full items-center justify-between gap-2 rounded-2xl border border-custom-border bg-primary-bg px-4 py-3 text-left text-sm font-medium text-secondary-text outline-none transition-all hover:border-custom-border/80 focus:border-[var(--focus-border)]   disabled:cursor-not-allowed disabled:opacity-50"
       >
         <span className="min-w-0 flex-1 truncate">{placeholder}</span>
         <ChevronDown size={18} aria-hidden="true" className="shrink-0 text-secondary-text" />

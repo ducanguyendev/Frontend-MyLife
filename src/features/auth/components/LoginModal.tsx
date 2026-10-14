@@ -303,7 +303,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
                 type="checkbox"
                 checked={rememberMe}
                 onChange={(event) => setRememberMe(event.target.checked)}
-                className="cursor-pointer rounded border-custom-border text-accent accent-accent focus:ring-accent"
+                className="cursor-pointer rounded border-custom-border text-accent accent-accent "
               />
               <span className="text-xs text-secondary-text">
                 {t('common.rememberMe', { defaultValue: 'Remember my email' })}

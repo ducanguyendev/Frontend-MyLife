@@ -55,7 +55,7 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({ member, me
       type="button"
       onClick={() => onView(related)}
       aria-label={roleLabel ? `${roleLabel}: ${formatName(related.fullName)}` : formatName(related.fullName)}
-      className="inline-flex min-h-8 max-w-full cursor-pointer items-center gap-1.5 rounded-lg border border-custom-border bg-secondary-bg px-2.5 py-1 text-left transition-colors hover:border-accent/40 hover:bg-primary-bg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+      className="inline-flex min-h-8 max-w-full cursor-pointer items-center gap-1.5 rounded-lg border border-custom-border bg-secondary-bg px-2.5 py-1 text-left transition-colors hover:border-accent/40 hover:bg-primary-bg   "
     >
       <span className="max-w-full truncate text-xs font-semibold text-primary-text">{formatName(related.fullName)}</span>
       {roleLabel && <span className="shrink-0 text-[10px] text-secondary-text">{roleLabel}</span>}
@@ -113,7 +113,7 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({ member, me
             <button
               type="button"
               onClick={() => { onClose(); onEdit(member); }}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-custom-border bg-secondary-bg px-2.5 py-2 text-xs font-semibold text-primary-text transition-colors hover:border-accent/50 hover:bg-primary-bg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent sm:px-3"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-custom-border bg-secondary-bg px-2.5 py-2 text-xs font-semibold text-primary-text transition-colors hover:border-accent/50 hover:bg-primary-bg    sm:px-3"
             >
               <Edit2 size={14} aria-hidden="true" /><span className="hidden sm:inline">{t("admin.edit_info", { defaultValue: "Chỉnh sửa" })}</span><span className="sm:hidden">{t("admin.edit", { defaultValue: "Sửa" })}</span>
             </button>
@@ -121,7 +121,7 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({ member, me
               type="button"
               onClick={onClose}
               aria-label={t("admin.close", { defaultValue: "Đóng" })}
-              className="rounded-xl p-2 text-secondary-text transition-colors hover:bg-primary-bg hover:text-primary-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              className="rounded-xl p-2 text-secondary-text transition-colors hover:bg-primary-bg hover:text-primary-text   "
             >
               <X size={19} />
             </button>

@@ -67,8 +67,8 @@
 }
 
 .mylife-module-nav__link:focus-visible {
-  outline: 2px solid var(--accent-color);
-  outline-offset: 2px;
+  outline: none;
+  border-color: var(--focus-border);
 }
 
 .mylife-module-nav__tooltip {

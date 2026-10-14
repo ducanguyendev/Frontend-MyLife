@@ -106,7 +106,7 @@ export const MemberTable: React.FC<MemberTableProps> = ({ members, onView, onEdi
                   }}
                   tabIndex={0}
                   aria-label={`${t("admin.view_detail")}: ${name}`}
-                  className="group cursor-pointer border-b border-custom-border/70 last:border-b-0 hover:bg-primary-bg/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent"
+                  className="group cursor-pointer border-b border-custom-border/70 last:border-b-0 hover:bg-primary-bg/55    "
                 >
                   <td className="px-4 py-2.5">
                     <div className="flex min-w-0 items-center gap-3">
@@ -115,7 +115,7 @@ export const MemberTable: React.FC<MemberTableProps> = ({ members, onView, onEdi
                         type="button"
                         onClick={event => { event.stopPropagation(); onView(member); }}
                         title={name}
-                        className="min-w-0 truncate text-left text-sm font-semibold text-primary-text hover:text-accent focus-visible:outline-none focus-visible:underline"
+                        className="min-w-0 truncate text-left text-sm font-semibold text-primary-text hover:text-accent  focus-visible:underline"
                       >
                         {name || missingValue}
                       </button>
@@ -145,7 +145,7 @@ export const MemberTable: React.FC<MemberTableProps> = ({ members, onView, onEdi
                       aria-label={t("admin.member_actions_for", { name })}
                       aria-haspopup="menu"
                       aria-expanded={openMenu?.member.id === member.id}
-                      className="rounded-lg p-2 text-secondary-text hover:bg-primary-bg hover:text-primary-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                      className="rounded-lg p-2 text-secondary-text hover:bg-primary-bg hover:text-primary-text   "
                     >
                       <MoreVertical size={16} />
                     </button>

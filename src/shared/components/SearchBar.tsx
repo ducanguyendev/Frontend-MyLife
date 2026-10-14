@@ -41,7 +41,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       aria-label={ariaLabel ?? placeholder}
       autoFocus={autoFocus}
       disabled={disabled}
-      className="w-full rounded-xl border border-custom-border bg-secondary-bg py-2 pl-9 pr-4 text-sm text-primary-text shadow-sm transition-colors placeholder:text-secondary-text/60 focus-visible:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 disabled:cursor-not-allowed disabled:opacity-50"
+      className="w-full rounded-xl border border-custom-border bg-secondary-bg py-2 pl-9 pr-4 text-sm text-primary-text shadow-sm transition-colors placeholder:text-secondary-text/60 focus-visible:border-[var(--focus-border)]    disabled:cursor-not-allowed disabled:opacity-50"
     />
   </div>
 );

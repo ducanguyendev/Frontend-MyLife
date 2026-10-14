@@ -71,9 +71,9 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             ${disabled ? 'opacity-50 cursor-not-allowed bg-secondary-bg/30' : ''}
             ${
               error
-                ? 'border-error ring-1 ring-error/30'
+                ? 'border-error'
                 : isFocused
-                ? 'border-accent ring-2 ring-accent/20'
+                ? 'border-[var(--focus-border)] bg-[var(--focus-surface)]'
                 : 'border-custom-border hover:border-custom-border/80'
             }
           `}

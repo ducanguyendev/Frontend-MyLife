@@ -17,7 +17,7 @@ export const MyLifeModuleCard: React.FC<MyLifeModuleCardProps> = ({ module }) =>
   return (
     <Link
       to={module.route}
-      className={`my-life-module-card ${variantClass} group relative isolate flex h-full min-h-[230px] w-full flex-col overflow-hidden rounded-[1.75rem] border border-custom-border p-5 text-primary-text shadow-sm transition-all duration-[240ms] hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent md:p-6`}
+      className={`my-life-module-card ${variantClass} group relative isolate flex h-full min-h-[230px] w-full flex-col overflow-hidden rounded-[1.75rem] border border-custom-border p-5 text-primary-text shadow-sm transition-all duration-[240ms] hover:-translate-y-0.5 hover:shadow-lg    md:p-6`}
     >
       <span className="my-life-module-card__wash" aria-hidden="true" />
       <span className={`my-life-module-card__art my-life-module-card__art--${module.visualVariant}`} aria-hidden="true">

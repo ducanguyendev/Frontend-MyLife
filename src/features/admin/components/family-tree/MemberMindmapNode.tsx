@@ -110,7 +110,7 @@ export const MemberMindmapNode: React.FC<{ data: NodeData }> = ({ data }) => {
         aria-label={`${t("admin.view_detail")}: ${name}`}
         onClick={() => onView(m)}
         onKeyDown={openWithKeyboard}
-        className="flex h-full items-center gap-3 rounded-md pr-8 outline-none focus-visible:ring-2 focus-visible:ring-accent cursor-pointer"
+        className="flex h-full items-center gap-3 rounded-md pr-8 outline-none   cursor-pointer"
       >
         <MemberAvatarImage
           member={m}

@@ -146,7 +146,7 @@ export const MemberCard: React.FC<MemberCardProps> = ({
             <p className="family-flip-card__role text-secondary-text" title={role}>{role}</p>
             <button
               type="button"
-              className="family-flip-card__flip-trigger text-accent focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
+              className="family-flip-card__flip-trigger text-accent   "
               onClick={flipToBack}
               aria-label={t("admin.quick_preview", { defaultValue: "Xem nhanh thông tin" })}
             >
@@ -179,10 +179,10 @@ export const MemberCard: React.FC<MemberCardProps> = ({
               </div>
             </dl>
             <div className="family-flip-card__back-actions">
-              <button type="button" onClick={flipToFront} className="family-flip-card__flip-trigger text-secondary-text focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">
+              <button type="button" onClick={flipToFront} className="family-flip-card__flip-trigger text-secondary-text   ">
                 <ArrowLeft size={14} aria-hidden="true" /> {t("admin.flip_back", { defaultValue: "Lật lại" })}
               </button>
-              <button ref={viewButtonRef} type="button" onClick={() => onView(m)} className="family-flip-card__view text-accent focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">
+              <button ref={viewButtonRef} type="button" onClick={() => onView(m)} className="family-flip-card__view text-accent   ">
                 {t("admin.view_profile", { defaultValue: "Xem hồ sơ" })} <ArrowRight size={14} aria-hidden="true" />
               </button>
             </div>
@@ -199,7 +199,7 @@ export const MemberCard: React.FC<MemberCardProps> = ({
           type="button"
           onClick={onToggleDropdown}
           disabled={!isActionMenuVisible}
-          className="rounded-full border border-custom-border bg-secondary-bg/90 p-2 text-secondary-text shadow-sm transition-colors hover:text-primary-text hover:bg-primary-bg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          className="rounded-full border border-custom-border bg-secondary-bg/90 p-2 text-secondary-text shadow-sm transition-colors hover:text-primary-text hover:bg-primary-bg   "
           aria-label={t("admin.member_actions_for", { name: formatName(m.fullName) })}
           aria-haspopup="menu"
           aria-expanded={isDropdownOpen}
