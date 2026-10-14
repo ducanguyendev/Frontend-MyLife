@@ -548,6 +548,11 @@
   display: none !important;
 }
 
+.family-mindmap-exporting .react-flow__edge {
+  opacity: 1 !important;
+  transition: none !important;
+}
+
 @media (max-width: 720px) {
   .family-mindmap-shell {
     height: max(560px, 72vh);

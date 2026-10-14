@@ -162,12 +162,33 @@ const FamilyMindmapInner: React.FC<FamilyMindmapProps> = ({ members, onView, onE
       await fitView({ padding: 0.13, maxZoom: 1.25, duration: 0 });
       await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
       const backgroundColor = getComputedStyle(shell).backgroundColor;
-      const dataUrl = await toPng(canvas, {
-        backgroundColor,
-        pixelRatio: members.length > 100 ? 1.5 : 2,
-        skipFonts: true,
-        filter: element => !(element instanceof HTMLElement && element.classList.contains("family-mindmap-ui")),
+      const edgePaths = [...canvas.querySelectorAll<SVGPathElement>(".react-flow__edge-path")];
+      const originalEdgeStyles = edgePaths.map(path => path.getAttribute("style"));
+      edgePaths.forEach(path => {
+        const stroke = getComputedStyle(path).stroke;
+        const modernSrgb = stroke.match(/^color\(srgb\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)(?:\s*\/\s*([\d.]+))?\)$/);
+        if (modernSrgb) {
+          const [, red, green, blue, alpha] = modernSrgb;
+          path.style.stroke = `rgba(${Math.round(Number(red) * 255)}, ${Math.round(Number(green) * 255)}, ${Math.round(Number(blue) * 255)}, ${alpha ?? 1})`;
+        } else {
+          path.style.stroke = stroke;
+        }
       });
+      let dataUrl: string;
+      try {
+        dataUrl = await toPng(canvas, {
+          backgroundColor,
+          pixelRatio: members.length > 100 ? 1.5 : 2,
+          skipFonts: true,
+          filter: element => !(element instanceof HTMLElement && element.classList.contains("family-mindmap-ui")),
+        });
+      } finally {
+        edgePaths.forEach((path, index) => {
+          const originalStyle = originalEdgeStyles[index];
+          if (originalStyle == null) path.removeAttribute("style");
+          else path.setAttribute("style", originalStyle);
+        });
+      }
       const anchor = document.createElement("a");
       anchor.download = "mylife-family-tree.png";
       anchor.href = dataUrl;
