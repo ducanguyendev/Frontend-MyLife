@@ -18,6 +18,30 @@ test('shared Select exposes floating labels and preserves Radix Portal without c
   assert.doesNotMatch(select, /clearable|onClear|clearLabel|<X\b/);
   assert.match(select, /variant === 'compact'[\s\S]*'h-10/);
   assert.match(select, /min-h-\[56px\]/);
+  assert.match(select, /appearance\?: 'default' \| 'simple'/);
+  assert.match(select, /data-ui-control/);
+  assert.match(select, /focus-visible:border-\[var\(--focus-border\)\]/);
+  assert.doesNotMatch(select, /focus-visible:ring-/);
+  assert.match(select, /data-\[state=checked\]:bg-primary-bg/);
+  assert.match(select, /<SelectPrimitive\.ItemIndicator[\s\S]*?<Check size=\{16\}/);
+  assert.match(select, /shadow-\[0_4px_16px_rgb\(0_0_0\/0\.08\)\]/);
+  assert.match(select, /outline-none ring-0 ring-offset-0/);
+  assert.match(select, /motion-reduce:animate-none/);
+});
+
+test('MyLife Selects use the simple appearance without changing custom relation semantics', () => {
+  const library = read('src/features/admin/components/family-tree/LibraryTab.tsx');
+  const upload = read('src/features/admin/components/family-tree/LibraryUploadModal.tsx');
+  const anniversary = read('src/features/admin/components/family-tree/FamilyAnniversaryModal.tsx');
+  const relation = read('src/features/admin/components/family-tree/FamilyRelationSelect.tsx');
+  assert.match(library, /appearance="simple"[\s\S]*?variant="compact"/);
+  assert.match(upload, /LibrarySelectField[\s\S]*?appearance="simple"/);
+  assert.equal((anniversary.match(/appearance="simple"/g) || []).length, 2);
+  assert.doesNotMatch(memberForm, /appearance="simple"[\s\S]{0,120}clearable/);
+  assert.match(memberForm, /appearance="simple"[\s\S]*?floatingLabel/);
+  assert.match(relation, /toggleFamilyRelationSelection/);
+  assert.match(relation, /createPortal/);
+  assert.doesNotMatch(library, /category|categories/i);
 });
 
 test('generation starts empty, uses dynamic options, floats its label, and validates before submit', () => {

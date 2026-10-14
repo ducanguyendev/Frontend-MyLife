@@ -28,7 +28,7 @@ export const UserWorkspaceHeader: React.FC<UserWorkspaceHeaderProps> = ({ backTo
 
   return (
     <>
-      <header className={`mx-auto grid w-[96%] max-w-[1400px] grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-2xl border border-custom-border bg-secondary-bg/90 px-2 py-2 shadow-sm backdrop-blur-md sm:gap-3 sm:px-4 md:rounded-full ${showModuleNavigation ? 'xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]' : 'xl:grid-cols-[minmax(0,1fr)_auto]'}`}>
+      <header className={`mx-auto grid w-[96%] max-w-[1400px] grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-2xl border border-custom-border bg-secondary-bg px-2 py-2 sm:gap-3 sm:px-4 md:rounded-full ${showModuleNavigation ? 'xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]' : 'xl:grid-cols-[minmax(0,1fr)_auto]'}`}>
         <div className="flex min-w-0 items-center gap-2 sm:gap-3 xl:col-start-1">
           <Link
             to={backTo}

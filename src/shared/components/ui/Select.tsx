@@ -19,6 +19,7 @@ export type SelectProps = Omit<React.ComponentPropsWithoutRef<typeof SelectPrimi
   options?: SelectOption[];
   placeholder?: string;
   variant?: 'default' | 'compact';
+  appearance?: 'default' | 'simple';
   floatingLabel?: boolean;
   value?: string | null;
   defaultValue?: string | null;
@@ -35,7 +36,7 @@ export function SelectItem({ children, className = '', ...props }: React.Compone
   return (
     <SelectPrimitive.Item
       {...props}
-      className={`relative flex min-h-10 w-full cursor-pointer select-none items-center rounded-xl py-2 pl-3 pr-9 text-sm text-primary-text outline-none data-[highlighted]:bg-accent/10 data-[highlighted]:text-primary-text data-[disabled]:pointer-events-none data-[disabled]:opacity-40 [&_[data-radix-select-item-text]]:truncate ${className}`}
+      className={`relative flex min-h-10 w-full cursor-pointer select-none items-center rounded-xl border border-transparent py-2 pl-3 pr-9 text-sm text-primary-text outline-none ring-0 ring-offset-0 data-[highlighted]:bg-accent/10 data-[highlighted]:text-primary-text data-[state=checked]:bg-primary-bg data-[state=checked]:data-[highlighted]:bg-accent/10 data-[disabled]:pointer-events-none data-[disabled]:opacity-40 [&_[data-radix-select-item-text]]:truncate ${className}`}
     >
       <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
       <SelectPrimitive.ItemIndicator className="absolute right-3 inline-flex items-center text-accent">
@@ -49,7 +50,7 @@ export const Select = React.forwardRef<React.ElementRef<typeof SelectPrimitive.T
   ({
     label, error, helperText, className = '', triggerClassName = '', contentClassName = '', containerClassName = '',
     disabled, required, id, value, defaultValue, onValueChange, children, options, placeholder,
-    variant = 'default', floatingLabel = false, name, open: controlledOpen, onOpenChange,
+    variant = 'default', appearance = 'default', floatingLabel = false, name, open: controlledOpen, onOpenChange,
     onFocus, onBlur, 'aria-label': ariaLabel, ...props
   }, ref) => {
     const generatedId = useId();
@@ -62,6 +63,7 @@ export const Select = React.forwardRef<React.ElementRef<typeof SelectPrimitive.T
     const triggerId = id ?? generatedId;
     const describedBy = error ? `${triggerId}-error` : helperText ? `${triggerId}-helper` : undefined;
     const isFloating = floatingLabel && (isOpen || isFocused || Boolean(currentValue));
+    const isSimple = appearance === 'simple';
     const items = options?.map(option => (
       <SelectItem key={option.value} value={option.value} disabled={option.disabled}>{option.label}</SelectItem>
     ));
@@ -82,26 +84,27 @@ export const Select = React.forwardRef<React.ElementRef<typeof SelectPrimitive.T
           <div className="relative w-full">
             <SelectPrimitive.Trigger
               ref={ref}
+              data-ui-control
               id={triggerId}
               aria-label={ariaLabel}
               aria-invalid={error ? true : undefined}
               aria-describedby={describedBy}
               onFocus={event => { setIsFocused(true); onFocus?.(event); }}
               onBlur={event => { setIsFocused(false); onBlur?.(event); }}
-              className={`flex w-full rounded-2xl border bg-primary-bg text-left font-medium text-primary-text outline-none transition-all duration-200 data-[placeholder]:text-secondary-text focus:border-accent focus:ring-2 focus:ring-accent/20 disabled:cursor-not-allowed disabled:opacity-50 ${
+              className={`flex w-full rounded-2xl border bg-primary-bg text-left font-medium text-primary-text outline-none transition-colors duration-200 data-[placeholder]:text-secondary-text focus-visible:border-[var(--focus-border)]    disabled:cursor-not-allowed disabled:opacity-50 ${
                 variant === 'compact'
                   ? 'h-10 items-center justify-between gap-2 rounded-xl px-3 py-2 text-sm'
                   : floatingLabel
                     ? 'min-h-[56px] items-end justify-between gap-2 px-4 pt-5 pb-1.5 text-sm'
                     : 'min-h-[56px] items-center justify-between gap-2 px-4 py-3 text-sm'
-              } ${error ? 'border-error focus:border-error focus:ring-error/20' : 'border-custom-border hover:border-custom-border/80'} ${className} ${triggerClassName}`}
+              } ${error ? 'border-error focus-visible:border-error ' : 'border-custom-border hover:border-custom-border/80'} ${isSimple && isOpen ? 'border-[var(--focus-border)]' : ''} ${className} ${triggerClassName}`}
             >
               <SelectPrimitive.Value
                 placeholder={floatingLabel ? '' : placeholder ?? (label ? `Chọn ${label.toLocaleLowerCase()}` : 'Chọn một giá trị')}
                 className={`min-w-0 flex-1 truncate ${className}`}
               />
               {!floatingLabel && (
-                <SelectPrimitive.Icon className="shrink-0 text-secondary-text transition-transform data-[state=open]:rotate-180">
+                <SelectPrimitive.Icon className="shrink-0 text-secondary-text transition-transform duration-200 motion-reduce:transition-none data-[state=open]:rotate-180">
                   <ChevronDown size={18} aria-hidden="true" />
                 </SelectPrimitive.Icon>
               )}
@@ -115,7 +118,7 @@ export const Select = React.forwardRef<React.ElementRef<typeof SelectPrimitive.T
                     : 'top-1/2 -translate-y-1/2 text-sm font-normal text-secondary-text'
                 }`}
               >{label}{required ? ' *' : ''}</label>
-              <SelectPrimitive.Icon className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-secondary-text transition-transform data-[state=open]:rotate-180">
+              <SelectPrimitive.Icon className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-secondary-text transition-transform duration-200 motion-reduce:transition-none data-[state=open]:rotate-180">
                 <ChevronDown size={18} aria-hidden="true" />
               </SelectPrimitive.Icon>
             </>}
@@ -125,7 +128,7 @@ export const Select = React.forwardRef<React.ElementRef<typeof SelectPrimitive.T
               position="popper"
               sideOffset={6}
               collisionPadding={8}
-              className={`z-[100] max-h-[var(--radix-select-content-available-height)] min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-2xl border border-custom-border bg-secondary-bg p-1.5 text-primary-text shadow-xl data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 ${contentClassName}`}
+              className={`z-[100] max-h-[var(--radix-select-content-available-height)] min-w-[var(--radix-select-trigger-width)] overflow-hidden border border-custom-border bg-secondary-bg text-primary-text outline-none ring-0 ring-offset-0 data-[state=open]:outline-none data-[state=open]:ring-0 ${isSimple ? 'rounded-2xl p-1 shadow-[0_4px_16px_rgb(0_0_0/0.08)] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=open]:zoom-in-[0.98] motion-reduce:animate-none' : 'rounded-2xl p-1.5 shadow-lg'} data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 ${contentClassName}`}
             >
               <SelectPrimitive.ScrollUpButton className="flex h-7 cursor-default items-center justify-center text-secondary-text"><ChevronUp size={16} /></SelectPrimitive.ScrollUpButton>
               <SelectPrimitive.Viewport className="max-h-[var(--radix-select-content-available-height)]">

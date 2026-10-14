@@ -110,17 +110,17 @@
 
 @layer utilities {
   .glass-pill {
-    background: rgba(255, 255, 255, 0.1);
+    background: color-mix(in srgb, var(--secondary-bg) 88%, transparent);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--custom-border);
+    box-shadow: 0 2px 12px color-mix(in srgb, var(--primary-text) 5%, transparent);
   }
   
   .dark .glass-pill {
-    background: rgba(30, 41, 59, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+    background: color-mix(in srgb, var(--secondary-bg) 88%, transparent);
+    border: 1px solid var(--custom-border);
+    box-shadow: 0 2px 12px color-mix(in srgb, var(--primary-text) 7%, transparent);
   }
 
   .glass-card {

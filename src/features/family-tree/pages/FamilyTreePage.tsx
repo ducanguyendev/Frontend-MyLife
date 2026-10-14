@@ -10,7 +10,7 @@ export const FamilyTreePage: React.FC = () => {
 
   return (
     <MyLifeWorkspaceLayout backTo="/mylife" showDock contentScroll="hidden" contentClassName="px-2 py-2 sm:px-4 sm:py-3">
-      <section className="glass-pill flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl border border-custom-border shadow-xl">
+      <section className="glass-pill flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl border border-custom-border">
         <h1 className="sr-only">{t('myLife.modules.familyTree.title')}</h1>
         <FamilyTreeManager showToast={showToast} />
       </section>

@@ -127,7 +127,7 @@ export const Modal: React.FC<ModalProps> = ({
             exit={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.96, y: 10 }}
             transition={reducedMotion ? { duration: 0.01 } : { type: 'spring', damping: 28, stiffness: 360 }}
             onClick={(e) => e.stopPropagation()}
-            className={`relative w-full ${maxWidthMap[maxWidth]} flex flex-col min-h-0 bg-secondary-bg border border-custom-border rounded-2xl sm:rounded-3xl shadow-2xl z-10 overflow-hidden ${className}`}
+            className={`relative w-full ${maxWidthMap[maxWidth]} flex flex-col min-h-0 bg-secondary-bg border border-custom-border rounded-2xl sm:rounded-3xl shadow-xl z-10 overflow-hidden ${className}`}
             style={{ maxHeight: 'min(85vh, 720px)' }}
             ref={dialogRef} tabIndex={-1}
             role="dialog" aria-labelledby={showTitle && title ? titleId : undefined} aria-label={showTitle && title ? undefined : ariaLabel ?? t('common.dialog')}
