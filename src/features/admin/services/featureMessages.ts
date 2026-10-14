@@ -10,6 +10,8 @@ export const featureSuccessKeys = {
 const errorCodes: Record<string, string> = {
   RATE_LIMITED: 'common.rate_limited',
   FAMILY_MEMBER_NOT_FOUND: 'admin.member_errors.not_found', FAMILY_RELATED_MEMBER_NOT_FOUND: 'admin.member_errors.related_not_found',
+  FAMILY_MEMBER_INVALID_LIFE_STATUS: 'admin.member_life_status.invalid_status', FAMILY_MEMBER_DEATH_DATE_REQUIRED: 'admin.member_life_status.death_date_required',
+  FAMILY_MEMBER_DEATH_DATE_FUTURE: 'admin.member_life_status.death_date_future', FAMILY_MEMBER_DEATH_BEFORE_BIRTH: 'admin.member_life_status.death_before_birth',
   FAMILY_SELF_RELATION: 'admin.member_errors.self_relation', FAMILY_PARENTS_MUST_DIFFER: 'admin.member_errors.parents_differ',
   FAMILY_SPOUSE_IN_USE: 'admin.member_errors.spouse_in_use', FAMILY_RELATIONSHIP_INVALID: 'admin.member_errors.relationship_invalid',
   FAMILY_AVATAR_INVALID: 'admin.member_avatar_errors.invalid_file', FAMILY_AVATAR_STORAGE_FAILED: 'admin.member_avatar_errors.upload_failed',

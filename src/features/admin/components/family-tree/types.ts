@@ -9,6 +9,8 @@ export interface FamilyMember {
   generation: number;
   gender?: string;
   dateOfBirth?: string;
+  lifeStatus?: "LIVING" | "DECEASED";
+  deathDate?: string | null;
   role?: string;
   address?: string;
   phoneNumber?: string;

@@ -42,6 +42,7 @@ interface FormErrors {
   generation?: string;
   phoneNumber?: string;
   dateOfBirth?: string;
+  deathDate?: string;
   facebookUrl?: string;
   avatarUrl?: string;
 }
@@ -350,6 +351,29 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
       }
     }
 
+    const lifeStatus = editingMember.lifeStatus === "DECEASED" ? "DECEASED" : "LIVING";
+    if (lifeStatus === "DECEASED") {
+      const rawDeathDate = (editingMember.deathDate || "").trim();
+      if (!rawDeathDate) {
+        newErrors.deathDate = "admin.member_life_status.death_date_required";
+        if (!sectionToOpen) sectionToOpen = "basic";
+      } else {
+        const deathDate = rawDeathDate.includes("-") ? rawDeathDate : formatDobToBackend(rawDeathDate);
+        const dob = rawDob.includes("-") ? rawDob : formatDobToBackend(rawDob);
+        const dateIsValid = Boolean(deathDate && /^\d{4}-\d{2}-\d{2}$/.test(deathDate) && !Number.isNaN(Date.parse(`${deathDate}T00:00:00Z`)) && new Date(`${deathDate}T00:00:00Z`).toISOString().slice(0, 10) === deathDate);
+        const now = new Date();
+        const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+        if (!dateIsValid) {
+          newErrors.deathDate = "admin.member_life_status.death_date_required";
+        } else if (deathDate! > today) {
+          newErrors.deathDate = "admin.member_life_status.death_date_future";
+        } else if (dob && /^\d{4}-\d{2}-\d{2}$/.test(dob) && deathDate! < dob) {
+          newErrors.deathDate = "admin.member_life_status.death_before_birth";
+        }
+        if (newErrors.deathDate && !sectionToOpen) sectionToOpen = "basic";
+      }
+    }
+
     // 5. Facebook URL
     const fb = (editingMember.facebookUrl || "").trim();
     if (fb && !/^https?:\/\/(www\.)?facebook\.com\/.+/i.test(fb) && !fb.startsWith("https://")) {
@@ -531,6 +555,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                   {/* Thế hệ (Đời thứ) * - Lấy động từ bảng database generations */}
                   <Select
                     required
+                    appearance="simple"
                     label={t("admin.field_generation", { defaultValue: "Thế hệ (Đời thứ)" })}
                     value={editingMember.generation == null ? undefined : String(editingMember.generation)}
                     floatingLabel
@@ -561,6 +586,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
 
                   {/* Giới tính */}
                   <Select
+                    appearance="simple"
                     label={t("admin.field_gender", { defaultValue: "Giới tính" })}
                     value={editingMember.gender || undefined}
                     floatingLabel
@@ -572,8 +598,9 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                   </Select>
 
                   {/* Ngày sinh */}
-                  <div className="md:col-span-2">
+                  <div>
                     <DateInput
+                      disableFuture
                       label={t("admin.field_dob", { defaultValue: "Ngày sinh" })}
                       value={
                         editingMember.dateOfBirth
@@ -591,6 +618,31 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                       }}
                     />
                   </div>
+                  <Select
+                    appearance="simple"
+                    label={t("admin.member_life_status.label")}
+                    value={editingMember.lifeStatus === "DECEASED" ? "DECEASED" : "LIVING"}
+                    onValueChange={(value) => {
+                      const lifeStatus = value === "DECEASED" ? "DECEASED" : "LIVING";
+                      onChange({ ...editingMember, lifeStatus, deathDate: lifeStatus === "LIVING" ? null : editingMember.deathDate ?? null });
+                      if (errors.deathDate) setErrors((prev) => ({ ...prev, deathDate: undefined }));
+                    }}
+                  >
+                    <SelectItem value="LIVING">{t("admin.member_life_status.living")}</SelectItem>
+                    <SelectItem value="DECEASED">{t("admin.member_life_status.deceased")}</SelectItem>
+                  </Select>
+                  {editingMember.lifeStatus === "DECEASED" && <DateInput
+                    disableFuture
+                    label={t("admin.member_life_status.death_date")}
+                    value={editingMember.deathDate ? (editingMember.deathDate.includes("-") ? formatBackendToDob(editingMember.deathDate) : editingMember.deathDate) : ""}
+                    error={errors.deathDate ? t(errors.deathDate) : undefined}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      const backend = formatDobToBackend(raw);
+                      onChange({ ...editingMember, deathDate: backend || raw });
+                      if (errors.deathDate) setErrors((prev) => ({ ...prev, deathDate: undefined }));
+                    }}
+                  />}
                 </div>
               </motion.div>
             )}

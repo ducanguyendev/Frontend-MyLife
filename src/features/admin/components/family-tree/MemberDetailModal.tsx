@@ -106,6 +106,8 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({ member, me
             </p>
             <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-secondary-text">
               {member.dateOfBirth && <span className="inline-flex items-center gap-1.5"><CalendarDays size={13} className="text-accent" />{new Date(member.dateOfBirth).toLocaleDateString(dateLocale)}</span>}
+              <span>{t("admin.member_life_status.label")}: {t(member.lifeStatus === "DECEASED" ? "admin.member_life_status.deceased" : "admin.member_life_status.living")}</span>
+              {member.lifeStatus === "DECEASED" && member.deathDate && <span className="inline-flex items-center gap-1.5"><CalendarDays size={13} className="text-accent" />{t("admin.member_life_status.death_date")}: {new Date(`${member.deathDate.split("T")[0]}T00:00:00Z`).toLocaleDateString(dateLocale, { timeZone: "UTC" })}</span>}
               {member.address && <span className="inline-flex min-w-0 max-w-full items-center gap-1.5"><MapPin size={13} className="shrink-0 text-accent" /><span className="line-clamp-1 break-all">{member.address}</span></span>}
             </div>
           </div>

@@ -66,6 +66,8 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
       setEditingMember({
         ...member,
         dateOfBirth: member.dateOfBirth ? member.dateOfBirth.split("T")[0] : "",
+        lifeStatus: member.lifeStatus === "DECEASED" ? "DECEASED" : "LIVING",
+        deathDate: member.deathDate ? member.deathDate.split("T")[0] : null,
         childIds: member.childIds || [],
       });
     } else {
@@ -74,6 +76,8 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
         generation: undefined,
         gender: undefined,
         dateOfBirth: "",
+        lifeStatus: "LIVING",
+        deathDate: null,
         role: "",
         address: "",
         phoneNumber: "",
@@ -106,6 +110,8 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
       ...editingMember,
       avatarUrl: undefined,
       dateOfBirth: editingMember.dateOfBirth || null,
+      lifeStatus: editingMember.lifeStatus === "DECEASED" ? "DECEASED" : "LIVING",
+      deathDate: editingMember.lifeStatus === "DECEASED" ? editingMember.deathDate || null : null,
       fatherId: editingMember.fatherId || null,
       motherId: editingMember.motherId || null,
       spouseId: editingMember.spouseId || null,

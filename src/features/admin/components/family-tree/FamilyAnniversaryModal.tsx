@@ -25,6 +25,11 @@ export function FamilyAnniversaryModal({ anniversary, members, onClose, onSubmit
   const [eventType, setEventType] = useState<AnniversaryEventType>(anniversary?.eventType ?? 'DEATH_ANNIVERSARY');
   const [title, setTitle] = useState(anniversary?.title ?? '');
   const [relatedMemberId, setRelatedMemberId] = useState(anniversary?.relatedMemberId ? String(anniversary.relatedMemberId) : '');
+  const initialRelatedMember = members.find(member => member.id === anniversary?.relatedMemberId);
+  const [dateFromMember, setDateFromMember] = useState(() => Boolean(
+    anniversary?.eventType === 'DEATH_ANNIVERSARY' && initialRelatedMember?.lifeStatus === 'DECEASED' &&
+    initialRelatedMember.deathDate && initialRelatedMember.deathDate === anniversary.originalSolarDate,
+  ));
   const [lunarDay, setLunarDay] = useState(anniversary?.lunarDay ? String(anniversary.lunarDay) : '');
   const [lunarMonth, setLunarMonth] = useState(anniversary?.lunarMonth ? String(anniversary.lunarMonth) : '');
   const [lunarYear, setLunarYear] = useState(anniversary?.lunarYear ? String(anniversary.lunarYear) : '');
@@ -45,6 +50,8 @@ export function FamilyAnniversaryModal({ anniversary, members, onClose, onSubmit
   const [isSaving, setIsSaving] = useState(false);
   const selectedMember = useMemo(() => members.find(member => member.id === Number(relatedMemberId)), [members, relatedMemberId]);
   const isDeathAnniversary = eventType === 'DEATH_ANNIVERSARY';
+  const linkedDeathDate = isDeathAnniversary && selectedMember?.lifeStatus === 'DECEASED' ? selectedMember.deathDate?.split('T')[0] ?? null : null;
+  const hasLinkedMemberWithoutDeathDate = isDeathAnniversary && selectedMember?.lifeStatus === 'DECEASED' && !linkedDeathDate;
   const solarDateValue = formatDobToBackend(originalSolarDate);
   const validSolarDate = validateCalendarDate(originalSolarDate, { required: true, allowFuture: true });
   const day = /^\d+$/.test(lunarDay) ? Number(lunarDay) : NaN;
@@ -52,6 +59,22 @@ export function FamilyAnniversaryModal({ anniversary, members, onClose, onSubmit
   const year = /^\d{4}$/.test(lunarYear) ? Number(lunarYear) : NaN;
   const lunarYearLabel = isSupportedLunarYear(year) ? formatLunarYearLabel(year) : null;
   const validLunarParts = Number.isInteger(day) && day >= 1 && day <= 30 && Number.isInteger(month) && month >= 1 && month <= 12;
+
+  useEffect(() => {
+    if (linkedDeathDate) {
+      const date = formatBackendToDob(linkedDeathDate);
+      if (date !== originalSolarDate) setOriginalSolarDate(date);
+      if (date !== originalSolarDate) setDateFromMember(true);
+    }
+  }, [linkedDeathDate, originalSolarDate]);
+
+  useEffect(() => {
+    if (isDeathAnniversary && selectedMember && selectedMember.lifeStatus !== 'DECEASED') {
+      setRelatedMemberId('');
+      if (dateFromMember) setOriginalSolarDate('');
+      setDateFromMember(false);
+    }
+  }, [dateFromMember, isDeathAnniversary, selectedMember]);
 
   useEffect(() => {
     if (isDeathAnniversary && selectedMember && !title.trim()) {
@@ -120,6 +143,7 @@ export function FamilyAnniversaryModal({ anniversary, members, onClose, onSubmit
     if (isSaving) return;
     setError(null);
     if (title.trim().length < 2 || title.trim().length > 200) { setError('admin.anniversary_ui.invalid_title'); return; }
+    if (hasLinkedMemberWithoutDeathDate) { setError('admin.anniversary_ui.member_death_date_missing'); return; }
     if (!validLunarParts) { setError('admin.anniversary_ui.invalid_lunar_date'); return; }
     const hasSolar = Boolean(originalSolarDate.trim());
     const hasYear = Boolean(lunarYear.trim());
@@ -144,6 +168,9 @@ export function FamilyAnniversaryModal({ anniversary, members, onClose, onSubmit
     } catch (saveError) {
       const code = errorCode(saveError);
       setError(code === 'FAMILY_ANNIVERSARY_DATE_MISMATCH' ? 'admin.anniversary_ui.date_mismatch'
+        : code === 'FAMILY_ANNIVERSARY_DEATH_DATE_MISMATCH' ? 'admin.anniversary_ui.member_death_date_mismatch'
+          : code === 'FAMILY_ANNIVERSARY_MEMBER_NOT_DECEASED' ? 'admin.anniversary_ui.member_not_deceased'
+            : code === 'FAMILY_ANNIVERSARY_MEMBER_DEATH_DATE_REQUIRED' ? 'admin.anniversary_ui.member_death_date_missing'
         : code === 'FAMILY_ANNIVERSARY_INVALID_LUNAR_DATE' ? 'admin.anniversary_ui.invalid_lunar_date'
           : code === 'FAMILY_ANNIVERSARY_ORIGINAL_DATE_REQUIRED' ? 'admin.anniversary_ui.original_date_required'
             : 'admin.anniversary_ui.save_failed');
@@ -158,7 +185,7 @@ export function FamilyAnniversaryModal({ anniversary, members, onClose, onSubmit
     onClose={() => { if (!isSaving) onClose(); }} closeOnBackdropClick={!isSaving} closeOnEsc={!isSaving} maxWidth="xl"
     footer={<div className="flex w-full items-center justify-end gap-3">
       <Button type="button" variant="secondary" disabled={isSaving} onClick={onClose}>{t('admin.anniversary_ui.cancel')}</Button>
-      <Button type="submit" form="familyAnniversaryForm" isLoading={isSaving}>{t(anniversary ? 'admin.anniversary_ui.save' : 'admin.anniversary_ui.add_action')}</Button>
+      <Button type="submit" form="familyAnniversaryForm" isLoading={isSaving}>{t(anniversary ? 'admin.anniversary_ui.save_changes' : 'admin.anniversary_ui.add_action')}</Button>
     </div>}>
     <form id="familyAnniversaryForm" onSubmit={submit} noValidate className="space-y-3">
       <section className="overflow-visible rounded-xl border border-custom-border/70 bg-secondary-bg/30">
@@ -167,16 +194,33 @@ export function FamilyAnniversaryModal({ anniversary, members, onClose, onSubmit
         </h2>
         <div className="grid grid-cols-1 gap-3 p-3.5 sm:grid-cols-2">
           <Select appearance="simple" label={t('admin.anniversary_ui.event_type')} value={eventType} disabled={isSaving}
-            onValueChange={value => { setEventType(value as AnniversaryEventType); setError(null); }}>
+            onValueChange={value => {
+              setEventType(value as AnniversaryEventType);
+              setRelatedMemberId('');
+              if (dateFromMember) setOriginalSolarDate('');
+              setDateFromMember(false);
+              setError(null);
+            }}>
             <SelectItem value="DEATH_ANNIVERSARY">{t('admin.anniversary_ui.death_anniversary')}</SelectItem>
             <SelectItem value="FAMILY_EVENT">{t('admin.anniversary_ui.family_event')}</SelectItem>
           </Select>
           <Select appearance="simple" label={t('admin.anniversary_ui.related_member')} value={relatedMemberId || undefined} disabled={isSaving}
             placeholder={t('admin.anniversary_ui.no_related_member')}
-            onValueChange={value => setRelatedMemberId(value === NO_RELATED_MEMBER ? '' : value)}>
+            onValueChange={value => {
+              const nextId = value === NO_RELATED_MEMBER ? '' : value;
+              const nextMember = members.find(member => member.id === Number(nextId));
+              setRelatedMemberId(nextId);
+              if (dateFromMember) setOriginalSolarDate('');
+              if (isDeathAnniversary && nextMember?.lifeStatus === 'DECEASED' && nextMember.deathDate) {
+                setOriginalSolarDate(formatBackendToDob(nextMember.deathDate.split('T')[0]));
+                setDateFromMember(true);
+              } else setDateFromMember(false);
+              setError(null);
+            }}>
             <SelectItem value={NO_RELATED_MEMBER}>{t('admin.anniversary_ui.no_related_member')}</SelectItem>
-            {members.map(member => <SelectItem key={member.id} value={String(member.id)}>{member.fullName}</SelectItem>)}
+            {members.filter(member => !isDeathAnniversary || member.lifeStatus === 'DECEASED').map(member => <SelectItem key={member.id} value={String(member.id)}>{member.fullName}</SelectItem>)}
           </Select>
+          {isDeathAnniversary && members.length > 0 && !members.some(member => member.lifeStatus === 'DECEASED') && <p className="text-xs text-secondary-text sm:col-span-2">{t('admin.anniversary_ui.no_deceased_members')}</p>}
           <Input containerClassName="sm:col-span-2" label={t('admin.anniversary_ui.title')} value={title} maxLength={200} disabled={isSaving}
             error={error === 'admin.anniversary_ui.invalid_title' ? t(error) : null} onChange={event => setTitle(event.target.value)} />
         </div>
@@ -189,7 +233,9 @@ export function FamilyAnniversaryModal({ anniversary, members, onClose, onSubmit
         </h2>
         <div className="space-y-3.5 p-3.5">
           <DateInput label={t(isDeathAnniversary ? 'admin.anniversary_ui.solar_death_date' : 'admin.anniversary_ui.solar_event_date')}
-            value={originalSolarDate} onValueChange={value => { setOriginalSolarDate(value); setDateCheck(null); setError(null); }} disabled={isSaving} />
+            value={originalSolarDate} onValueChange={value => { setOriginalSolarDate(value); setDateFromMember(false); setDateCheck(null); setError(null); }} disabled={isSaving || Boolean(linkedDeathDate)} />
+          {linkedDeathDate && <p className="-mt-2 text-xs text-secondary-text">{t('admin.anniversary_ui.date_from_member')}</p>}
+          {hasLinkedMemberWithoutDeathDate && <p role="alert" className="-mt-2 text-xs text-error">{t('admin.anniversary_ui.member_death_date_missing')}</p>}
           <div>
             <p className="mb-2 text-xs font-semibold text-secondary-text">{t(isDeathAnniversary ? 'admin.anniversary_ui.lunar_death_date' : 'admin.anniversary_ui.lunar_event_date')}</p>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
