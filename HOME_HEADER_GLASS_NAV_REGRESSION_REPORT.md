@@ -28,3 +28,6 @@ Added a dedicated `hero-nav-glass` utility and applied it only to the unscrolled
 ## Git
 - Branch: `feature_minhduc`.
 - Commit and push status will be recorded after publication.
+
+- Commit: `e4bc909adeb721657f17db8540ebfd674773955b` (`fix: restore transparent home navigation glass`).
+- Push: successful to `origin/feature_minhduc`.
