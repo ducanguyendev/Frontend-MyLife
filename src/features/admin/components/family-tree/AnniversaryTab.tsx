@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CalendarDays, ChevronLeft, ChevronRight, Loader2, MapPin, Pencil, Plus, RotateCcw, Trash2, Users, X } from 'lucide-react';
 import { Button, Modal } from '@/shared/components/ui';
 import { SearchBar } from '@/shared/components/SearchBar';
@@ -7,13 +7,14 @@ import { anniversaryService, type FamilyAnniversary, type FamilyAnniversaryPaylo
 import { FamilyAnniversaryModal } from './FamilyAnniversaryModal';
 import { removeVietnameseTones, type FamilyMember } from './types';
 import { anniversaryDateKey, anniversaryDateParts, getAnniversaryMonthGrid, getVietnamTodayKey } from './anniversaryCalendarUtils';
+import { fetchFamilyMembers } from './useFamilyMembers';
 
 interface Props {
   showToast: (text: string, ok: boolean) => void;
-  members: FamilyMember[];
+  members?: FamilyMember[];
 }
 
-export const AnniversaryTab: React.FC<Props> = ({ showToast, members }) => {
+export const AnniversaryTab: React.FC<Props> = ({ showToast, members: initialMembers }) => {
   const { t, language } = useLanguage();
   const [items, setItems] = useState<FamilyAnniversary[]>([]);
   const [search, setSearch] = useState('');
@@ -24,6 +25,56 @@ export const AnniversaryTab: React.FC<Props> = ({ showToast, members }) => {
   const [editing, setEditing] = useState<FamilyAnniversary | null | undefined>(undefined);
   const [deleting, setDeleting] = useState<FamilyAnniversary | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [members, setMembers] = useState<FamilyMember[] | null>(initialMembers ?? null);
+  const [membersLoading, setMembersLoading] = useState(false);
+  const [membersLoadError, setMembersLoadError] = useState<string | null>(null);
+  const membersRequest = useRef<Promise<FamilyMember[] | null> | null>(null);
+  const membersController = useRef<AbortController | null>(null);
+  const pendingEditor = useRef<FamilyAnniversary | null>(null);
+
+  useEffect(() => {
+    if (initialMembers !== undefined) setMembers(initialMembers);
+  }, [initialMembers]);
+
+  useEffect(() => () => membersController.current?.abort(), []);
+
+  const openEditor = async (anniversary: FamilyAnniversary | null) => {
+    pendingEditor.current = anniversary;
+    if (initialMembers !== undefined) {
+      setEditing(anniversary);
+      return;
+    }
+    if (members !== null) {
+      setEditing(anniversary);
+      return;
+    }
+    setMembersLoadError(null);
+    let request = membersRequest.current;
+    if (!request) {
+      const controller = new AbortController();
+      membersController.current = controller;
+      setMembersLoading(true);
+      request = fetchFamilyMembers(controller.signal).then(result => {
+        if (controller.signal.aborted) return null;
+        if ('errorKey' in result) {
+          setMembersLoadError(result.errorKey);
+          showToast(t(result.errorKey), false);
+          return null;
+        }
+        setMembers(result.members);
+        return result.members;
+      }).finally(() => {
+        if (membersRequest.current === request) membersRequest.current = null;
+        if (!controller.signal.aborted) setMembersLoading(false);
+      });
+      membersRequest.current = request;
+    }
+    const loaded = await request;
+    if (loaded !== null && !membersController.current?.signal.aborted) {
+      setEditing(pendingEditor.current);
+      setMembersLoadError(null);
+    }
+  };
 
   const load = useCallback(async (signal?: AbortSignal) => {
     setLoading(true);
@@ -115,7 +166,15 @@ export const AnniversaryTab: React.FC<Props> = ({ showToast, members }) => {
       </div>
       <div className="flex w-full shrink-0 items-center gap-2 sm:w-auto sm:min-w-[22rem]">
         <SearchBar className="min-w-0 flex-1" ariaLabel={t('admin.anniversary_ui.search')} placeholder={t('admin.anniversary_ui.search')} value={search} onChange={setSearch} />
-        <Button className="min-h-10 shrink-0 px-3" leftIcon={<Plus size={16} />} onClick={() => setEditing(null)}>{t('admin.anniversary_ui.add')}</Button>
+        <span className="group relative shrink-0">
+          <Button className="min-h-10 min-w-10 px-2" variant="outline" disabled={membersLoading}
+            aria-label={t('admin.anniversary_ui.add_aria_label')} title={t('admin.anniversary_ui.add_aria_label')}
+            leftIcon={membersLoading ? <Loader2 size={17} className="animate-spin" /> : <Plus size={18} />}
+            onClick={() => void openEditor(null)} />
+          <span role="tooltip" className="pointer-events-none absolute right-0 top-full z-20 mt-2 whitespace-nowrap rounded-lg bg-primary-text px-2.5 py-1.5 text-xs font-medium text-primary-bg opacity-0 shadow-md transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+            {t('admin.anniversary_ui.add_aria_label')}
+          </span>
+        </span>
       </div>
     </header>
 
@@ -140,7 +199,7 @@ export const AnniversaryTab: React.FC<Props> = ({ showToast, members }) => {
             const dayEvents = eventsByDate.get(key) ?? [];
             const isToday = key === todayKey;
             const isSelected = key === selectedDate;
-            return <button key={key} type="button" role="gridcell" aria-label={`${fullDateFormat.format(new Date(Date.UTC(year, month, day, 12)))}${dayEvents.length ? `, ${t('admin.anniversary_ui.event_count', { count: dayEvents.length })}` : ''}${isToday ? `, ${t('admin.anniversary_ui.today')}` : ''}`} aria-pressed={isSelected} onClick={() => selectDay(key)} className={`relative flex aspect-square min-h-9 flex-col items-center justify-center rounded-lg text-sm transition-colors duration-200 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 ${inMonth ? 'text-primary-text' : 'text-secondary-text/40'} ${isToday ? 'ring-1 ring-inset ring-accent/50' : ''} ${isSelected ? 'bg-accent text-white shadow-sm' : dayEvents.length ? 'bg-accent/10 font-bold text-accent hover:bg-accent/20' : 'hover:bg-primary-bg'}`}>
+            return <button key={key} type="button" role="gridcell" aria-label={`${fullDateFormat.format(new Date(Date.UTC(year, month, day, 12)))}${dayEvents.length ? `, ${t('admin.anniversary_ui.event_count', { count: dayEvents.length })}` : ''}${isToday ? `, ${t('admin.anniversary_ui.today')}` : ''}`} aria-pressed={isSelected} onClick={() => selectDay(key)} className={`relative flex aspect-square min-h-9 flex-col items-center justify-center rounded-lg text-sm transition-colors duration-200 motion-reduce:transition-none    ${inMonth ? 'text-primary-text' : 'text-secondary-text/40'} ${isToday ? 'bg-[var(--focus-surface)] font-semibold' : ''} ${isSelected ? 'bg-accent text-white shadow-sm' : dayEvents.length ? 'bg-accent/10 font-bold text-accent hover:bg-accent/20' : 'hover:bg-primary-bg'}`}>
               <span>{day}</span>
               {dayEvents.length > 0 && <span aria-hidden="true" className={`absolute bottom-1 flex h-1.5 min-w-1.5 items-center justify-center rounded-full ${isSelected ? 'bg-white' : 'bg-accent'} ${dayEvents.length > 1 ? 'px-1 text-[8px] leading-none text-white' : ''}`}>{dayEvents.length > 1 ? dayEvents.length : ''}</span>}
             </button>;
@@ -148,7 +207,7 @@ export const AnniversaryTab: React.FC<Props> = ({ showToast, members }) => {
         </div>
         <div className="mt-3 flex min-h-6 flex-wrap items-center justify-between gap-2 border-t border-custom-border pt-2 text-xs text-secondary-text">
           <span>{t('admin.anniversary_ui.calendar_solar')}</span>
-          {selectedDate && <button type="button" onClick={clearDateFilter} className="inline-flex items-center gap-1 rounded-md px-2 py-1 font-semibold text-accent transition-colors duration-200 hover:bg-accent/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50"><X size={13} />{t('admin.anniversary_ui.clear_date')}</button>}
+          {selectedDate && <button type="button" onClick={clearDateFilter} className="inline-flex items-center gap-1 rounded-md px-2 py-1 font-semibold text-accent transition-colors duration-200 hover:bg-accent/10   "><X size={13} />{t('admin.anniversary_ui.clear_date')}</button>}
         </div>
       </section>
 
@@ -158,7 +217,7 @@ export const AnniversaryTab: React.FC<Props> = ({ showToast, members }) => {
             <h2 id="anniversary-events-heading" className="font-bold text-primary-text">{t('admin.anniversary_ui.upcoming_events')}</h2>
             <p className="text-xs text-secondary-text">{selectedDate ? dateFormat.format(new Date(`${selectedDate}T12:00:00Z`)) : t('admin.anniversary_ui.event_count', { count: filtered.length })}</p>
           </div>
-          {selectedDate && <button type="button" onClick={clearDateFilter} aria-label={t('admin.anniversary_ui.clear_date')} className="inline-flex min-h-9 shrink-0 items-center gap-1 rounded-lg px-2 text-xs font-semibold text-accent transition-colors duration-200 hover:bg-accent/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50"><X size={14} />{t('admin.anniversary_ui.all_events')}</button>}
+          {selectedDate && <button type="button" onClick={clearDateFilter} aria-label={t('admin.anniversary_ui.clear_date')} className="inline-flex min-h-9 shrink-0 items-center gap-1 rounded-lg px-2 text-xs font-semibold text-accent transition-colors duration-200 hover:bg-accent/10   "><X size={14} />{t('admin.anniversary_ui.all_events')}</button>}
         </header>
 
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3 custom-scrollbar sm:p-4">
@@ -167,8 +226,8 @@ export const AnniversaryTab: React.FC<Props> = ({ showToast, members }) => {
               : filtered.length === 0 ? <div className="flex min-h-40 flex-col items-center justify-center px-4 text-center">
                 <CalendarDays className="mb-2 text-secondary-text" size={28} aria-hidden="true" />
                 <p className="font-semibold text-primary-text">{selectedDate ? t('admin.anniversary_ui.no_events_date') : hasFilters ? t('admin.anniversary_ui.no_results') : t('admin.anniversary_ui.empty')}</p>
-                {!hasFilters && !items.length && <><p className="mt-1 text-sm text-secondary-text">{t('admin.anniversary_ui.empty_desc')}</p><Button className="mt-3 min-h-10" leftIcon={<Plus size={15} />} onClick={() => setEditing(null)}>{t('admin.anniversary_ui.add_first')}</Button></>}
-                {hasFilters && <button type="button" onClick={() => { setSearch(''); clearDateFilter(); }} className="mt-2 rounded-md px-2 py-1 text-sm font-semibold text-accent hover:bg-accent/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50">{t('admin.anniversary_ui.clear_filters')}</button>}
+                {!hasFilters && !items.length && <><p className="mt-1 text-sm text-secondary-text">{t('admin.anniversary_ui.empty_desc')}</p><Button className="mt-3 min-h-10" disabled={membersLoading} leftIcon={membersLoading ? <Loader2 size={15} className="animate-spin" /> : <Plus size={15} />} onClick={() => void openEditor(null)}>{t('admin.anniversary_ui.add_first')}</Button></>}
+                {hasFilters && <button type="button" onClick={() => { setSearch(''); clearDateFilter(); }} className="mt-2 rounded-md px-2 py-1 text-sm font-semibold text-accent hover:bg-accent/10   ">{t('admin.anniversary_ui.clear_filters')}</button>}
               </div>
                 : <div className="space-y-2.5">{filtered.map(item => <article key={item.id} className="rounded-xl border border-custom-border bg-secondary-bg p-3 shadow-sm transition-colors duration-300 motion-reduce:transition-none hover:border-accent/30 sm:p-4">
                   <div className="flex items-start justify-between gap-3">
@@ -191,7 +250,7 @@ export const AnniversaryTab: React.FC<Props> = ({ showToast, members }) => {
                     {item.notes && <p className="whitespace-pre-wrap break-words text-secondary-text">{item.notes}</p>}
                   </div>}
                   <div className="mt-2 flex justify-end gap-1 border-t border-custom-border/60 pt-1.5">
-                    <Button className="min-h-9 px-2 text-xs" variant="ghost" leftIcon={<Pencil size={13} />} onClick={() => setEditing(item)}>{t('admin.anniversary_ui.edit')}</Button>
+                    <Button className="min-h-9 px-2 text-xs" variant="ghost" disabled={membersLoading} leftIcon={<Pencil size={13} />} onClick={() => void openEditor(item)}>{t('admin.anniversary_ui.edit')}</Button>
                     <Button className="min-h-9 px-2 text-xs text-error hover:text-error" variant="ghost" leftIcon={<Trash2 size={13} />} onClick={() => setDeleting(item)}>{t('admin.anniversary_ui.delete')}</Button>
                   </div>
                 </article>)}</div>}
@@ -199,7 +258,10 @@ export const AnniversaryTab: React.FC<Props> = ({ showToast, members }) => {
       </section>
     </main>
 
-    {editing !== undefined && <FamilyAnniversaryModal anniversary={editing ?? undefined} members={members} onClose={() => setEditing(undefined)} onSubmit={save} />}
+    {membersLoadError && <div role="alert" className="fixed bottom-4 right-4 z-50 max-w-sm rounded-xl border border-error/30 bg-secondary-bg p-4 text-sm text-primary-text shadow-lg">
+      <p>{t(membersLoadError)}</p><Button className="mt-3 min-h-9" variant="outline" disabled={membersLoading} onClick={() => void openEditor(pendingEditor.current)}>{t('admin.library_ui.retry')}</Button>
+    </div>}
+    {editing !== undefined && members !== null && <FamilyAnniversaryModal anniversary={editing ?? undefined} members={members} onClose={() => setEditing(undefined)} onSubmit={save} />}
     <Modal isOpen={!!deleting} title={t('admin.anniversary_ui.delete_title')} onClose={() => !isDeleting && setDeleting(null)} maxWidth="sm" closeOnBackdropClick={!isDeleting} closeOnEsc={!isDeleting}>
       <div className="space-y-5"><p className="text-sm text-secondary-text">{t('admin.anniversary_ui.delete_confirm', { title: deleting?.title ?? '' })}</p>
         <div className="flex justify-end gap-3"><Button className="min-h-11" variant="secondary" disabled={isDeleting} onClick={() => setDeleting(null)}>{t('admin.anniversary_ui.cancel')}</Button>

@@ -17,12 +17,13 @@ function loadService(apiClient) {
   return exports.anniversaryService;
 }
 
-test('anniversary service uses authenticated CRUD and lunar conversion routes', async () => {
+test('anniversary service uses authenticated CRUD and calendar calculation routes', async () => {
   const calls = [];
+  const next = { lunarDay: 1, lunarMonth: 1, isLeapMonth: false, nextSolarDate: '2026-02-17', daysUntil: 7, solarYear: 2026, isCurrentYearPassed: false };
   const data = { id: 12, title: 'Ngày giỗ', daysUntil: 0 };
   const apiClient = Object.fromEntries(['get', 'post', 'put', 'delete'].map(method => [method, async (path, body) => {
     calls.push({ method, path, body });
-    return method === 'delete' ? undefined : { data: path.endsWith('lunar-to-solar?day=1&month=1&year=2025&isLeapMonth=false') ? { solarDate: '2025-01-29' } : method === 'get' && path === '/api/family-tree/anniversaries' ? [data] : data };
+    return method === 'delete' ? undefined : { data: path.includes('next-occurrence?') ? next : path.endsWith('lunar-to-solar?day=1&month=1&year=2025&isLeapMonth=false') ? { solarDate: '2025-01-29' } : method === 'get' && path === '/api/family-tree/anniversaries' ? [data] : data };
   }]));
   const service = loadService(apiClient);
   const signal = new AbortController().signal;
@@ -33,10 +34,14 @@ test('anniversary service uses authenticated CRUD and lunar conversion routes', 
   assert.deepEqual(await service.updateAnniversary(12, { title: 'Ngày giỗ sửa' }), data);
   await service.deleteAnniversary(12);
   assert.equal((await service.convertLunarToSolar(1, 1, 2025, false)).solarDate, '2025-01-29');
+  assert.deepEqual(await service.getNextOccurrence(1, 1, false), next);
   assert.deepEqual(calls.slice(1, 4).map(call => [call.method, call.path]), [
     ['post', '/api/family-tree/anniversaries'], ['put', '/api/family-tree/anniversaries/12'], ['delete', '/api/family-tree/anniversaries/12'],
   ]);
-  assert.equal(calls.at(-1).path, '/api/family-tree/anniversaries/lunar-to-solar?day=1&month=1&year=2025&isLeapMonth=false');
+  assert.equal(calls.at(-2).path, '/api/family-tree/anniversaries/lunar-to-solar?day=1&month=1&year=2025&isLeapMonth=false');
+  assert.equal(calls.at(-1).method, 'get');
+  assert.equal(calls.at(-1).body.signal, undefined);
+  assert.equal(calls.at(-1).path, '/api/family-tree/anniversaries/next-occurrence?day=1&month=1&isLeapMonth=false');
 });
 
 test('Anniversary workspace is data-backed with calendar filtering and CRUD states', () => {
@@ -78,7 +83,7 @@ test('anniversary controls and status text are translated in Vietnamese and Engl
     const resources = JSON.parse(readFileSync(join(__dirname, `../src/shared/locales/${lng}/admin.json`), 'utf8'));
     const i18n = i18next.createInstance();
     await i18n.init({ lng, fallbackLng: false, resources: { [lng]: { translation: { admin: resources } }, }, interpolation: { escapeValue: false } });
-  for (const key of ['calendar', 'calendar_solar', 'previous_month', 'next_month', 'upcoming_events', 'clear_date', 'no_events_date', 'add', 'edit_title', 'delete_confirm', 'event_type', 'lunar_day', 'leap_month', 'loading', 'load_failed', 'empty', 'invalid_lunar_date', 'save_failed', 'created', 'updated', 'deleted']) {
+  for (const key of ['calendar', 'calendar_solar', 'previous_month', 'next_month', 'upcoming_events', 'clear_date', 'no_events_date', 'add', 'add_aria_label', 'edit_title', 'delete_confirm', 'event_type', 'event_information', 'date_of_death', 'solar_death_date', 'lunar_death_date', 'lunar_day', 'lunar_month', 'lunar_year', 'leap_month', 'checking_dates', 'dates_match', 'date_mismatch', 'current_year_passed', 'current_year_upcoming', 'loading', 'load_failed', 'empty', 'invalid_lunar_date', 'save_failed', 'created', 'updated', 'deleted']) {
       const translation = i18n.t(`admin.anniversary_ui.${key}`, { title: 'event' });
       assert.notEqual(translation, `admin.anniversary_ui.${key}`);
       assert.ok(translation.length > 0);
@@ -98,4 +103,22 @@ test('related-member reset uses an explicit Radix item and anniversary search us
   assert.match(tab, /import \{ SearchBar \} from ['"]@\/shared\/components\/SearchBar['"]/);
   assert.match(tab, /<SearchBar\b[^>]*ariaLabel=/);
   assert.doesNotMatch(tab, /admin\.anniversary_title|admin\.anniversary_desc/);
+});
+
+test('anniversary modal keeps accessible naming, original date checks, backend preview, and compact add action', () => {
+  const modal = readFileSync(join(__dirname, '../src/features/admin/components/family-tree/FamilyAnniversaryModal.tsx'), 'utf8');
+  const tab = readFileSync(join(__dirname, '../src/features/admin/components/family-tree/AnniversaryTab.tsx'), 'utf8');
+  const service = readFileSync(join(__dirname, '../src/features/admin/services/anniversaryService.ts'), 'utf8');
+  assert.match(modal, /showTitle=\{false\}\s+ariaLabel=\{ariaLabel\}/);
+  assert.match(modal, /<DateInput\s+label=\{t\(isDeathAnniversary \? 'admin\.anniversary_ui\.solar_death_date'/);
+  assert.match(modal, /label=\{t\('admin\.anniversary_ui\.lunar_year'\)\}/);
+  assert.match(modal, /type="checkbox" checked=\{isLeapMonth\}/);
+  assert.match(modal, /anniversaryService\.getNextOccurrence\(day, month, isLeapMonth, controller\.signal\)/);
+  assert.match(modal, /anniversaryService\.convertLunarToSolar\(day, month, year, isLeapMonth, controller\.signal\)/);
+  assert.match(modal, /dateCheck\?\.status === 'mismatch'/);
+  assert.match(modal, /footer=\{/);
+  assert.doesNotMatch(modal, /vietnameseToday|year \+ offset|offset <= 4/);
+  assert.match(service, /next-occurrence\?/);
+  assert.match(tab, /aria-label=\{t\('admin\.anniversary_ui\.add_aria_label'\)\}/);
+  assert.match(tab, /<Plus size=\{18\}/);
 });

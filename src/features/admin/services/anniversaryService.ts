@@ -13,6 +13,8 @@ export interface FamilyAnniversary {
   lunarDay: number;
   lunarMonth: number;
   isLeapMonth: boolean;
+  originalSolarDate: string | null;
+  lunarYear: number | null;
   nextSolarDate: string;
   daysUntil: number;
   place: string | null;
@@ -29,6 +31,8 @@ export interface FamilyAnniversaryPayload {
   lunarDay: number;
   lunarMonth: number;
   isLeapMonth: boolean;
+  originalSolarDate: string | null;
+  lunarYear: number | null;
   place: string | null;
   host: string | null;
   notes: string | null;
@@ -52,8 +56,15 @@ export const anniversaryService = {
     return (await apiClient.put<ApiEnvelope<FamilyAnniversary>>(`${route}/${id}`, payload)).data;
   },
   deleteAnniversary: (id: number) => apiClient.delete<void>(`${route}/${id}`),
-  async convertLunarToSolar(day: number, month: number, year: number, isLeapMonth: boolean) {
+  async convertLunarToSolar(day: number, month: number, year: number, isLeapMonth: boolean, signal?: AbortSignal) {
     const query = new URLSearchParams({ day: String(day), month: String(month), year: String(year), isLeapMonth: String(isLeapMonth) });
-    return (await apiClient.get<ApiEnvelope<{ solarDate: string }>>(`${route}/lunar-to-solar?${query}`)).data;
+    return (await apiClient.get<ApiEnvelope<{ solarDate: string }>>(`${route}/lunar-to-solar?${query}`, { signal })).data;
+  },
+  async getNextOccurrence(day: number, month: number, isLeapMonth: boolean, signal?: AbortSignal) {
+    const query = new URLSearchParams({ day: String(day), month: String(month), isLeapMonth: String(isLeapMonth) });
+    return (await apiClient.get<ApiEnvelope<{
+      lunarDay: number; lunarMonth: number; isLeapMonth: boolean; nextSolarDate: string;
+      daysUntil: number; solarYear: number; isCurrentYearPassed: boolean;
+    }>>(`${route}/next-occurrence?${query}`, { signal })).data;
   },
 };
