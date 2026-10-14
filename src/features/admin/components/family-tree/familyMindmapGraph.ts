@@ -1,308 +1,374 @@
-import dagre from "dagre";
 import type { Edge, Node } from "@xyflow/react";
 import type { FamilyMember } from "./types";
 
-export const MEMBER_NODE_WIDTH = 256;
-export const MEMBER_NODE_HEIGHT = 96;
+export const MEMBER_NODE_WIDTH = 196;
+export const MEMBER_NODE_HEIGHT = 136;
 const UNION_NODE_SIZE = 4;
 const SPOUSE_GAP = 20;
-const FAMILY_GAP = 64;
-const GENERATION_GAP = 160;
+const FAMILY_GAP = 54;
+const GENERATION_GAP = 168;
+const SIBLING_BRANCH_GAP = 38;
 
-export const MINDMAP_EDGE_STYLES = {
-  parentChild: { stroke: "#D4AF37", strokeWidth: 1.8 },
-  spouse: { stroke: "var(--accent-color)", strokeWidth: 1.8 },
-  horizontal: { stroke: "var(--secondary-text)", strokeWidth: 1.6, strokeDasharray: "6 5" },
-} as const;
-
-interface MemberNodeData extends Record<string, unknown> {
-  member: FamilyMember;
-  onView?: (member: FamilyMember) => void;
-  onEdit?: (member: FamilyMember) => void;
-  onDelete?: (member: FamilyMember) => void;
-}
-
-export interface FamilyUnionNodeData extends Record<string, unknown> {
-  parentIds: number[];
-  childIds: number[];
-  generation: number;
-}
-
-export type FamilyMindmapNode = Node<MemberNodeData | FamilyUnionNodeData>;
-export type FamilyMindmapEdge = Edge<{ relationType: "parentChild" | "spouse" | "horizontal"; relationTypes?: string[] }>;
+export type FamilyRelationType = "parentChild" | "spouse" | "horizontal";
+export type FamilyMindmapNode = Node<Record<string, unknown>>;
+export type FamilyMindmapEdge = Edge<{
+  relationType: FamilyRelationType;
+  relationTypes?: string[];
+  familyIds?: number[];
+}>;
 
 interface GraphOptions {
   direction?: "TB" | "LR";
-  animateParentEdges?: boolean;
+  showHorizontalRelations?: boolean;
 }
 
-const pairKey = (first: number, second: number) => {
-  const [min, max] = first < second ? [first, second] : [second, first];
-  return `${min}:${max}`;
-};
+interface FamilyHub {
+  id: string;
+  parentIds: number[];
+  childIds: number[];
+  generation: number;
+  branchId?: string;
+}
 
-function relationshipEdge(
+const pairKey = (first: number, second: number) => first < second ? `${first}:${second}` : `${second}:${first}`;
+
+function makeEdge(
   id: string,
-  source: number | string,
-  target: number | string,
-  relationType: "parentChild" | "spouse" | "horizontal",
-  style: Record<string, string | number>,
-  sourceHandle: string,
-  targetHandle: string,
-  animated = false,
-  data: FamilyMindmapEdge["data"] = { relationType },
+  source: string | number,
+  target: string | number,
+  relationType: FamilyRelationType,
+  familyIds: number[],
+  direction: "TB" | "LR",
+  dataExtra: Partial<NonNullable<FamilyMindmapEdge["data"]>> = {},
+  handles: { sourceHandle?: string; targetHandle?: string } = {},
 ): FamilyMindmapEdge {
   return {
     id,
     source: String(source),
     target: String(target),
-    sourceHandle,
-    targetHandle,
-    type: "smoothstep",
-    animated,
-    style: { ...style },
-    data,
+    type: "familyTree",
+    sourceHandle: relationType === "spouse"
+      ? direction === "TB" ? "spouse-right" : "spouse-bottom"
+      : relationType === "horizontal"
+        ? direction === "TB" ? "horizontal-right" : "horizontal-bottom"
+        : direction === "TB" ? "child-source" : "child-source-right",
+    targetHandle: relationType === "spouse"
+      ? direction === "TB" ? "spouse-left" : "spouse-top"
+      : relationType === "horizontal"
+        ? direction === "TB" ? "horizontal-left" : "horizontal-top"
+        : direction === "TB" ? "parent-target" : "parent-target-left",
+    ...handles,
+    className: `family-mindmap-edge family-mindmap-edge--${relationType}`,
+    style: { stroke: "var(--family-tree-line)", strokeWidth: relationType === "parentChild" ? 1.7 : 1.4 },
+    data: { relationType, familyIds, ...dataExtra },
   };
+}
+
+function uniqueVisibleParents(child: FamilyMember, visibleIds: Set<number>): number[] {
+  return [...new Set([child.fatherId, child.motherId]
+    .filter((id): id is number => id != null && id !== child.id && visibleIds.has(id)))].sort((a, b) => a - b);
 }
 
 export function buildFamilyMindmapGraph(members: FamilyMember[], options: GraphOptions = {}) {
   const direction = options.direction ?? "TB";
-  const animateParentEdges = options.animateParentEdges ?? false;
-  const nodeIds = new Set(members.map(member => String(member.id)));
+  const showHorizontalRelations = options.showHorizontalRelations ?? false;
   const memberById = new Map(members.map(member => [member.id, member]));
+  const visibleIds = new Set(memberById.keys());
   const nodes: FamilyMindmapNode[] = members.map(member => ({
     id: String(member.id),
     type: "member",
     position: { x: 0, y: 0 },
-    style: { width: MEMBER_NODE_WIDTH, height: MEMBER_NODE_HEIGHT },
+    width: MEMBER_NODE_WIDTH,
+    height: MEMBER_NODE_HEIGHT,
     data: { member },
   }));
   const edges: FamilyMindmapEdge[] = [];
-  const parentChildPairs = new Set<string>();
-  const unions = new Map<string, { id: string; parentIds: number[]; childIds: number[]; generation: number }>();
+  const parentPairs = new Set<string>();
+  const hubs = new Map<string, FamilyHub>();
 
   for (const child of members) {
-    const parentIds = [...new Set([child.fatherId, child.motherId]
-      .filter((parentId): parentId is number => parentId != null && parentId !== child.id && nodeIds.has(String(parentId))))];
-    for (const parentId of parentIds) parentChildPairs.add(pairKey(parentId, child.id));
+    const parentIds = uniqueVisibleParents(child, visibleIds);
+    for (const parentId of parentIds) parentPairs.add(pairKey(parentId, child.id));
+    if (parentIds.length === 0) continue;
 
-    if (parentIds.length === 2) {
-      const key = `${pairKey(parentIds[0], parentIds[1])}:g${child.generation}`;
-      const existing = unions.get(key);
-      if (existing) existing.childIds.push(child.id);
-      else unions.set(key, {
-        id: `union-${key.replace(":", "-").replace(":g", "-g")}`,
-        parentIds,
-        childIds: [child.id],
-        generation: child.generation,
-      });
-    } else if (parentIds.length === 1) {
-      const parentId = parentIds[0];
-      edges.push(relationshipEdge(
-        `parent-child-${parentId}-${child.id}`, parentId, child.id, "parentChild",
-        MINDMAP_EDGE_STYLES.parentChild,
-        direction === "TB" ? "child-source" : "child-source-right",
-        direction === "TB" ? "parent-target" : "parent-target-left",
-        animateParentEdges,
-      ));
-    }
+    const key = `${parentIds.join(":")}:g${child.generation}`;
+    const hub = hubs.get(key) ?? {
+      id: `family-union-${key.replaceAll(":", "-").replace("g", "g-")}`,
+      parentIds,
+      childIds: [],
+      generation: child.generation,
+    };
+    hub.childIds.push(child.id);
+    hubs.set(key, hub);
   }
 
-  for (const union of unions.values()) {
+  for (const hub of hubs.values()) {
+    if (hub.childIds.length > 1) hub.branchId = `family-branch-${hub.id.slice("family-union-".length)}`;
     nodes.push({
-      id: union.id,
+      id: hub.id,
       type: "familyUnion",
       position: { x: 0, y: 0 },
+      width: UNION_NODE_SIZE,
+      height: UNION_NODE_SIZE,
       selectable: false,
       draggable: false,
       connectable: false,
-      style: { width: UNION_NODE_SIZE, height: UNION_NODE_SIZE, opacity: 0, pointerEvents: "none" },
-      data: { parentIds: union.parentIds, childIds: union.childIds, generation: union.generation },
+      data: { parentIds: hub.parentIds, childIds: hub.childIds, generation: hub.generation, direction },
     });
-    for (const parentId of union.parentIds) {
-      edges.push(relationshipEdge(
-        `parent-union-${parentId}-${union.id}`, parentId, union.id, "parentChild",
-        MINDMAP_EDGE_STYLES.parentChild,
-        direction === "TB" ? "child-source" : "child-source-right",
-        direction === "TB" ? "union-parent-target" : "union-parent-target-left",
-        animateParentEdges,
-      ));
-    }
-    for (const childId of union.childIds) {
-      edges.push(relationshipEdge(
-        `union-child-${union.id}-${childId}`, union.id, childId, "parentChild",
-        MINDMAP_EDGE_STYLES.parentChild,
-        direction === "TB" ? "union-child-source" : "union-child-source-right",
-        direction === "TB" ? "parent-target" : "parent-target-left",
-        animateParentEdges,
-      ));
+    if (hub.branchId) {
+      nodes.push({
+        id: hub.branchId,
+        type: "familyBranch",
+        position: { x: 0, y: 0 },
+        width: 2,
+        height: 2,
+        selectable: false,
+        draggable: false,
+        connectable: false,
+        data: { childIds: hub.childIds, direction },
+      });
     }
   }
 
+  // Deduplicate spouses even when both records point to each other.
   const spousePairs = new Set<string>();
   for (const member of members) {
     const spouseId = member.spouseId;
-    if (spouseId == null || spouseId === member.id || !memberById.has(spouseId)) continue;
-    const key = pairKey(member.id, spouseId);
-    if (spousePairs.has(key)) continue;
-    spousePairs.add(key);
-    const [firstId, secondId] = key.split(":").map(Number);
-    edges.push(relationshipEdge(
-      `spouse-${key}`, firstId, secondId, "spouse", MINDMAP_EDGE_STYLES.spouse,
-      direction === "TB" ? "spouse-right" : "spouse-bottom",
-      direction === "TB" ? "spouse-left" : "spouse-top",
-    ));
+    if (spouseId == null || spouseId === member.id || !visibleIds.has(spouseId)) continue;
+    spousePairs.add(pairKey(member.id, spouseId));
+  }
+  for (const key of spousePairs) {
+    const [first, second] = key.split(":").map(Number);
+    edges.push(makeEdge(`spouse-${key}`, first, second, "spouse", [first, second], direction));
   }
 
-  const horizontalRelations = new Map<string, { firstId: number; secondId: number; relationTypes: Set<string> }>();
-  for (const member of members) {
-    for (const relation of member.horizontalRelations ?? []) {
-      const otherId = Number(relation.memberId);
-      if (!Number.isInteger(otherId) || otherId === member.id || !memberById.has(otherId)) continue;
-      const key = pairKey(member.id, otherId);
-      if (spousePairs.has(key) || parentChildPairs.has(key)) continue;
-      const relationType = relation.relationType?.trim().toLowerCase();
-      if (!relationType) continue;
-      const [firstId, secondId] = key.split(":").map(Number);
-      const existing = horizontalRelations.get(key) ?? { firstId, secondId, relationTypes: new Set<string>() };
-      existing.relationTypes.add(relationType);
-      horizontalRelations.set(key, existing);
+  for (const hub of hubs.values()) {
+    const familyIds = [...new Set([...hub.parentIds, ...hub.childIds])];
+    for (const parentId of hub.parentIds) {
+      edges.push(makeEdge(`parent-union-${parentId}-${hub.id}`, parentId, hub.id, "parentChild", [parentId], direction, {}, {
+        targetHandle: direction === "TB" ? "union-parent-target" : "union-parent-target-left",
+      }));
+    }
+    if (hub.branchId) {
+      edges.push(makeEdge(`union-branch-${hub.id}`, hub.id, hub.branchId, "parentChild", familyIds, direction, {}, {
+        sourceHandle: direction === "TB" ? "union-child-source" : "union-child-source-right",
+        targetHandle: direction === "TB" ? "branch-parent-target" : "branch-parent-target-left",
+      }));
+      for (const childId of hub.childIds) {
+        edges.push(makeEdge(`branch-child-${hub.branchId}-${childId}`, hub.branchId, childId, "parentChild", [childId], direction, {}, {
+          sourceHandle: `branch-child-${childId}`,
+        }));
+      }
+    } else {
+      for (const childId of hub.childIds) {
+        edges.push(makeEdge(`union-child-${hub.id}-${childId}`, hub.id, childId, "parentChild", [childId], direction, {}, {
+          sourceHandle: direction === "TB" ? "union-child-source" : "union-child-source-right",
+        }));
+      }
     }
   }
 
-  for (const [key, relation] of horizontalRelations) {
-    edges.push(relationshipEdge(
-      `horizontal-${key}`, relation.firstId, relation.secondId, "horizontal", MINDMAP_EDGE_STYLES.horizontal,
-      direction === "TB" ? "horizontal-right" : "horizontal-bottom",
-      direction === "TB" ? "horizontal-left" : "horizontal-top",
-      false,
-      { relationType: "horizontal", relationTypes: [...relation.relationTypes].sort() },
-    ));
+  if (showHorizontalRelations) {
+    const relations = new Map<string, { firstId: number; secondId: number; relationTypes: Set<string> }>();
+    for (const member of members) {
+      for (const relation of member.horizontalRelations ?? []) {
+        const otherId = Number(relation.memberId);
+        if (!Number.isInteger(otherId) || otherId === member.id || !visibleIds.has(otherId)) continue;
+        const key = pairKey(member.id, otherId);
+        if (spousePairs.has(key) || parentPairs.has(key)) continue;
+        const relationType = relation.relationType?.trim().toLocaleLowerCase();
+        if (!relationType) continue;
+        const pair = relations.get(key) ?? { firstId: Math.min(member.id, otherId), secondId: Math.max(member.id, otherId), relationTypes: new Set<string>() };
+        pair.relationTypes.add(relationType);
+        relations.set(key, pair);
+      }
+    }
+    for (const [key, relation] of relations) {
+      edges.push(makeEdge(`horizontal-${key}`, relation.firstId, relation.secondId, "horizontal", [relation.firstId, relation.secondId], direction, {
+        relationTypes: [...relation.relationTypes].sort(),
+      }));
+    }
   }
 
   return { nodes, edges };
 }
 
+interface Unit {
+  key: string;
+  ids: string[];
+  generation: number;
+  parentKey: string;
+}
+
+function memberFromNode(node: FamilyMindmapNode): FamilyMember {
+  return node.data.member as FamilyMember;
+}
+
+/** Places spouse components as one compact unit and keeps sibling families together by their visible parents. */
 export function layoutFamilyMindmapGraph(
-  nodes: FamilyMindmapNode[],
+  graphNodes: FamilyMindmapNode[],
   edges: FamilyMindmapEdge[],
   direction: "TB" | "LR" = "TB",
 ): { nodes: FamilyMindmapNode[]; edges: FamilyMindmapEdge[] } {
-  const graph = new dagre.graphlib.Graph();
-  graph.setDefaultEdgeLabel(() => ({}));
-  graph.setGraph({ rankdir: direction, nodesep: 52, ranksep: 112, marginx: 16, marginy: 16 });
-  const members = nodes.filter(node => node.type === "member");
-  const memberNodeById = new Map(members.map(node => [node.id, node]));
-  const memberById = new Map(members.map(node => [node.id, (node.data as MemberNodeData).member]));
-  const spouseById = new Map<string, string>();
+  const memberNodes = graphNodes.filter(node => node.type === "member");
+  const memberNodeById = new Map(memberNodes.map(node => [node.id, node]));
+  const spouseNeighbours = new Map<string, Set<string>>();
   for (const edge of edges) {
-    if (edge.data?.relationType === "spouse") {
-      spouseById.set(edge.source, edge.target);
-      spouseById.set(edge.target, edge.source);
+    if (edge.data?.relationType !== "spouse") continue;
+    (spouseNeighbours.get(edge.source) ?? spouseNeighbours.set(edge.source, new Set()).get(edge.source)!).add(edge.target);
+    (spouseNeighbours.get(edge.target) ?? spouseNeighbours.set(edge.target, new Set()).get(edge.target)!).add(edge.source);
+  }
+
+  const components: string[][] = [];
+  const visited = new Set<string>();
+  for (const node of memberNodes) {
+    if (visited.has(node.id)) continue;
+    const component: string[] = [];
+    const stack = [node.id];
+    visited.add(node.id);
+    while (stack.length) {
+      const id = stack.pop()!;
+      component.push(id);
+      for (const neighbor of spouseNeighbours.get(id) ?? []) {
+        if (!visited.has(neighbor)) { visited.add(neighbor); stack.push(neighbor); }
+      }
+    }
+    component.sort((a, b) => Number(a) - Number(b));
+    components.push(component);
+  }
+
+  const units: Unit[] = components.map(ids => {
+    const generation = Math.min(...ids.map(id => memberFromNode(memberNodeById.get(id)!).generation || 1));
+    const parentCandidates = ids.map(id => {
+      const person = memberFromNode(memberNodeById.get(id)!);
+      return [person.fatherId, person.motherId].filter((value): value is number => value != null && memberNodeById.has(String(value))).sort((a, b) => a - b).join(":");
+    }).filter(Boolean).sort();
+    return { key: ids.join(":"), ids, generation, parentKey: parentCandidates[0] ?? `root:${ids[0]}` };
+  });
+  const ranks = [...new Set(units.map(unit => unit.generation))].sort((a, b) => a - b);
+  const rankIndex = new Map(ranks.map((rank, index) => [rank, index]));
+  const rankUnits = new Map<number, Unit[]>();
+  for (const unit of units) {
+    const list = rankUnits.get(unit.generation) ?? [];
+    list.push(unit);
+    rankUnits.set(unit.generation, list);
+  }
+  const positions = new Map<string, { x: number; y: number }>();
+  const cardCross = direction === "TB" ? MEMBER_NODE_HEIGHT : MEMBER_NODE_WIDTH;
+
+  // First assign stable within-rank rows, sorting descendant family clusters under their parents.
+  for (const generation of ranks) {
+    const index = rankIndex.get(generation)!;
+    const clusterMap = new Map<string, Unit[]>();
+    for (const unit of rankUnits.get(generation) ?? []) {
+      const list = clusterMap.get(unit.parentKey) ?? [];
+      list.push(unit);
+      clusterMap.set(unit.parentKey, list);
+    }
+    const clusters = [...clusterMap.entries()].map(([key, clusterUnits]) => {
+      clusterUnits.sort((a, b) => a.key.localeCompare(b.key));
+      const width = clusterUnits.reduce((total, unit) => total + unit.ids.length * MEMBER_NODE_WIDTH + Math.max(0, unit.ids.length - 1) * SPOUSE_GAP, 0)
+        + Math.max(0, clusterUnits.length - 1) * 28;
+      const parentIds = key.startsWith("root:") ? [] : key.split(":").map(Number);
+      const parentPositions = parentIds.map(id => positions.get(String(id))).filter((position): position is NonNullable<typeof position> => !!position);
+      const parentCenter = parentPositions.length
+        ? parentPositions.reduce((total, position) => total + (direction === "TB" ? position.x + MEMBER_NODE_WIDTH / 2 : position.y + MEMBER_NODE_HEIGHT / 2), 0) / parentPositions.length
+        : Number.POSITIVE_INFINITY;
+      return { key, units: clusterUnits, width, parentCenter, desiredCenter: parentCenter };
+    }).sort((a, b) => a.parentCenter - b.parentCenter || a.key.localeCompare(b.key));
+    const anchored = clusters.filter(cluster => Number.isFinite(cluster.desiredCenter));
+    const anchoredCenter = anchored.length
+      ? anchored.reduce((sum, cluster) => sum + cluster.desiredCenter, 0) / anchored.length
+      : 0;
+    const unanchored = clusters.filter(cluster => !Number.isFinite(cluster.desiredCenter));
+    const unanchoredWidth = unanchored.reduce((sum, cluster) => sum + cluster.width, 0) + Math.max(0, unanchored.length - 1) * FAMILY_GAP;
+    let unanchoredCursor = anchoredCenter - unanchoredWidth / 2;
+    for (const cluster of unanchored) {
+      cluster.desiredCenter = unanchoredCursor + cluster.width / 2;
+      unanchoredCursor += cluster.width + FAMILY_GAP;
+    }
+    clusters.sort((a, b) => a.desiredCenter - b.desiredCenter || a.key.localeCompare(b.key));
+    let previousRight = Number.NEGATIVE_INFINITY;
+    const cross = index * (cardCross + GENERATION_GAP);
+    for (const cluster of clusters) {
+      let unitCursor = Math.max(cluster.desiredCenter - cluster.width / 2, previousRight + FAMILY_GAP);
+      const clusterLeft = unitCursor;
+      for (const unit of cluster.units) {
+        const unitWidth = unit.ids.length * MEMBER_NODE_WIDTH + Math.max(0, unit.ids.length - 1) * SPOUSE_GAP;
+        unit.ids.forEach((id, memberIndex) => {
+          const axis = unitCursor + memberIndex * (MEMBER_NODE_WIDTH + SPOUSE_GAP);
+          positions.set(id, direction === "TB"
+            ? { x: axis, y: cross }
+            : { x: cross, y: axis });
+        });
+        unitCursor += unitWidth + 28;
+      }
+      previousRight = clusterLeft + cluster.width;
     }
   }
 
-  nodes.forEach(node => {
-    const width = node.type === "member" ? MEMBER_NODE_WIDTH : UNION_NODE_SIZE;
-    const height = node.type === "member" ? MEMBER_NODE_HEIGHT : UNION_NODE_SIZE;
-    graph.setNode(node.id, { width, height });
-  });
-  edges.filter(edge => edge.data?.relationType === "parentChild").forEach(edge => graph.setEdge(edge.source, edge.target));
-  dagre.layout(graph);
-
-  const effectiveGeneration = new Map<string, number>();
-  for (const node of members) {
-    const member = memberById.get(node.id)!;
-    effectiveGeneration.set(node.id, member.generation);
-  }
-  for (const [firstId, secondId] of spouseById) {
-    const firstGeneration = effectiveGeneration.get(firstId);
-    const secondGeneration = effectiveGeneration.get(secondId);
-    if (firstGeneration == null || secondGeneration == null || firstGeneration === secondGeneration) continue;
-    const sharedGeneration = Math.min(firstGeneration, secondGeneration);
-    effectiveGeneration.set(firstId, sharedGeneration);
-    effectiveGeneration.set(secondId, sharedGeneration);
-  }
-
-  const ranks = [...new Set(effectiveGeneration.values())].sort((a, b) => a - b);
-  const rankIndex = new Map(ranks.map((rank, index) => [rank, index]));
-  const unitsByRank = new Map<number, Array<{ key: string; nodeIds: string[]; center: number }>>();
-  const included = new Set<string>();
-  const axisCenter = (id: string) => {
-    const positioned = graph.node(id);
-    return direction === "TB" ? positioned.x : positioned.y;
-  };
-
-  for (const memberNode of members) {
-    if (included.has(memberNode.id)) continue;
-    const spouseId = spouseById.get(memberNode.id);
-    const spouseNode = spouseId ? memberNodeById.get(spouseId) : undefined;
-    const ids = spouseNode ? [memberNode.id, spouseNode.id].sort((a, b) => axisCenter(a) - axisCenter(b) || Number(a) - Number(b)) : [memberNode.id];
-    ids.forEach(id => included.add(id));
-    const generation = Math.min(...ids.map(id => effectiveGeneration.get(id) ?? 1));
-    const unit = {
-      key: ids.join(":"),
-      nodeIds: ids,
-      center: ids.reduce((sum, id) => sum + axisCenter(id), 0) / ids.length,
-    };
-    const units = unitsByRank.get(generation) ?? [];
-    units.push(unit);
-    unitsByRank.set(generation, units);
-  }
-
-  const positions = new Map<string, { x: number; y: number; width: number; height: number }>();
+  const extraNodes: FamilyMindmapNode[] = [];
   for (const generation of ranks) {
-    const units = (unitsByRank.get(generation) ?? []).sort((a, b) => a.center - b.center || a.key.localeCompare(b.key));
-    const nodeSpan = direction === "TB" ? MEMBER_NODE_WIDTH : MEMBER_NODE_HEIGHT;
-    const spans = units.map(unit => unit.nodeIds.length > 1 ? nodeSpan * 2 + SPOUSE_GAP : nodeSpan);
-    const totalSpan = spans.reduce((sum, span) => sum + span, 0) + Math.max(0, units.length - 1) * FAMILY_GAP;
-    let cursor = -totalSpan / 2;
-    const rank = rankIndex.get(generation) ?? 0;
-    const crossAxis = rank * ((direction === "TB" ? MEMBER_NODE_HEIGHT : MEMBER_NODE_WIDTH) + GENERATION_GAP);
-
-    units.forEach((unit, unitIndex) => {
-      const span = spans[unitIndex];
-      if (unit.nodeIds.length > 1) {
-        unit.nodeIds.forEach((id, spouseIndex) => {
-          const axis = cursor + MEMBER_NODE_WIDTH / 2 + spouseIndex * (MEMBER_NODE_WIDTH + SPOUSE_GAP);
-          positions.set(id, direction === "TB"
-            ? { x: axis - MEMBER_NODE_WIDTH / 2, y: crossAxis, width: MEMBER_NODE_WIDTH, height: MEMBER_NODE_HEIGHT }
-            : { x: crossAxis, y: axis - MEMBER_NODE_HEIGHT / 2, width: MEMBER_NODE_WIDTH, height: MEMBER_NODE_HEIGHT });
-        });
-      } else {
-        const axis = cursor + span / 2;
-        positions.set(unit.nodeIds[0], direction === "TB"
-          ? { x: axis - MEMBER_NODE_WIDTH / 2, y: crossAxis, width: MEMBER_NODE_WIDTH, height: MEMBER_NODE_HEIGHT }
-          : { x: crossAxis, y: axis - MEMBER_NODE_HEIGHT / 2, width: MEMBER_NODE_WIDTH, height: MEMBER_NODE_HEIGHT });
-      }
-      cursor += span + FAMILY_GAP;
+    const rowIds = (rankUnits.get(generation) ?? []).flatMap(unit => unit.ids);
+    const rowPositions = rowIds.map(id => positions.get(id)!).filter(Boolean);
+    if (!rowPositions.length) continue;
+    const minAxis = Math.min(...rowPositions.map(position => direction === "TB" ? position.x : position.y));
+    const maxAxis = Math.max(...rowPositions.map(position => (direction === "TB" ? position.x : position.y) + (direction === "TB" ? MEMBER_NODE_WIDTH : MEMBER_NODE_HEIGHT)));
+    const cross = (rankIndex.get(generation) ?? 0) * (cardCross + GENERATION_GAP);
+    extraNodes.push({
+      id: `generation-${generation}`,
+      type: "generationLabel",
+      position: direction === "TB" ? { x: minAxis, y: cross - 36 } : { x: cross, y: minAxis - 34 },
+      width: direction === "TB" ? maxAxis - minAxis : 26,
+      height: direction === "TB" ? 26 : maxAxis - minAxis,
+      selectable: false,
+      draggable: false,
+      connectable: false,
+      data: { generation, direction, width: maxAxis - minAxis },
     });
   }
 
-  for (const node of nodes.filter(item => item.type === "familyUnion")) {
-    const data = node.data as FamilyUnionNodeData;
-    const parentCenters = data.parentIds.map(id => positions.get(String(id))).filter((position): position is NonNullable<typeof position> => !!position);
-    const childCenters = data.childIds.map(id => positions.get(String(id))).filter((position): position is NonNullable<typeof position> => !!position);
-    if (!parentCenters.length || !childCenters.length) continue;
-    const centerX = (items: typeof parentCenters) => items.reduce((sum, item) => sum + item.x + item.width / 2, 0) / items.length;
-    const centerY = (items: typeof parentCenters) => items.reduce((sum, item) => sum + item.y + item.height / 2, 0) / items.length;
-    const parentX = centerX(parentCenters);
-    const parentY = centerY(parentCenters);
-    const childX = centerX(childCenters);
-    const childY = centerY(childCenters);
-    positions.set(node.id, direction === "TB"
-      ? { x: parentX - UNION_NODE_SIZE / 2, y: (parentY + childY) / 2 - UNION_NODE_SIZE / 2, width: UNION_NODE_SIZE, height: UNION_NODE_SIZE }
-      : { x: (parentX + childX) / 2 - UNION_NODE_SIZE / 2, y: parentY - UNION_NODE_SIZE / 2, width: UNION_NODE_SIZE, height: UNION_NODE_SIZE });
+  const hubNodes = graphNodes.filter(node => node.type === "familyUnion");
+  for (const hubNode of hubNodes) {
+    const parentIds = (hubNode.data.parentIds as number[]).map(String);
+    const childIds = (hubNode.data.childIds as number[]).map(String);
+    const parentPositions = parentIds.map(id => positions.get(id)).filter((position): position is NonNullable<typeof position> => !!position);
+    const childPositions = childIds.map(id => positions.get(id)).filter((position): position is NonNullable<typeof position> => !!position);
+    if (!parentPositions.length || !childPositions.length) continue;
+    const centerAxis = (list: Array<{ x: number; y: number }>) => list.reduce((sum, item) => sum + (direction === "TB" ? item.x + MEMBER_NODE_WIDTH / 2 : item.y + MEMBER_NODE_HEIGHT / 2), 0) / list.length;
+    const parentCross = (parentPositions[0][direction === "TB" ? "y" : "x"] + cardCross);
+    const childCross = childPositions[0][direction === "TB" ? "y" : "x"];
+    const branchCross = childCross - SIBLING_BRANCH_GAP;
+    const unionCross = (parentCross + branchCross) / 2;
+    const unionAxis = centerAxis(parentPositions);
+    positions.set(hubNode.id, direction === "TB"
+      ? { x: unionAxis - UNION_NODE_SIZE / 2, y: unionCross - UNION_NODE_SIZE / 2 }
+      : { x: unionCross - UNION_NODE_SIZE / 2, y: unionAxis - UNION_NODE_SIZE / 2 });
+
+    const branchId = `family-branch-${hubNode.id.slice("family-union-".length)}`;
+    if (childIds.length > 1 && memberNodeById.has(childIds[0])) {
+      const axes = childIds.map(id => positions.get(id)!).map(position => direction === "TB" ? position.x + MEMBER_NODE_WIDTH / 2 : position.y + MEMBER_NODE_HEIGHT / 2);
+      const start = Math.min(...axes);
+      const end = Math.max(...axes);
+      const branchPosition = direction === "TB"
+        ? { x: start, y: branchCross - 1 }
+        : { x: branchCross - 1, y: start };
+      positions.set(branchId, branchPosition);
+      const branchNode = graphNodes.find(node => node.id === branchId);
+      if (branchNode) {
+        extraNodes.push({ ...branchNode, position: branchPosition,
+          width: Math.max(2, direction === "TB" ? end - start : 2),
+          height: Math.max(2, direction === "LR" ? end - start : 2),
+          data: { ...branchNode.data, childIds: childIds.map(Number), direction, span: Math.max(2, end - start) } });
+      }
+    }
   }
 
-  const layoutedNodes = nodes.map(node => {
+  const positioned = graphNodes.map(node => {
+    if (node.type === "generationLabel") return node;
     const position = positions.get(node.id);
-    if (position) return { ...node, position: { x: position.x, y: position.y } };
-    const dagrePosition = graph.node(node.id);
-    const width = node.type === "member" ? MEMBER_NODE_WIDTH : UNION_NODE_SIZE;
-    const height = node.type === "member" ? MEMBER_NODE_HEIGHT : UNION_NODE_SIZE;
-    return { ...node, position: { x: dagrePosition.x - width / 2, y: dagrePosition.y - height / 2 } };
+    return position ? { ...node, position } : node;
   });
-
-  return { nodes: layoutedNodes, edges };
+  const extraIds = new Set(extraNodes.map(node => node.id));
+  return { nodes: [...positioned.filter(node => !extraIds.has(node.id)), ...extraNodes], edges };
 }
