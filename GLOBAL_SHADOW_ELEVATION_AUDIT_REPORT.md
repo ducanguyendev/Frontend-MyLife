@@ -47,4 +47,7 @@ Browser screenshot/computed-style QA across light/dark, responsive widths, and z
 
 ## Git
 
-No commit or push recorded yet. The working tree already contained unrelated modified files and deleted reports before this audit; they were preserved and not staged wholesale. The prior push attempt to `origin/feature_minhduc` was rejected by automatic approval review because it would export private Frontend source to an unverified GitHub remote. This task does not bypass that rejection.
+Commit: `ad97a06` (`style: refine shadows and remove dark edge artifacts`).  
+Push: not pushed. The prior push attempt to `origin/feature_minhduc` was rejected by automatic approval review because it would export private Frontend source to an unverified GitHub remote; that rejection remains in effect, so this commit was not sent to the remote.
+
+The working tree already contained unrelated modified files and deleted reports before this audit. They were preserved and not staged wholesale; the repository is consequently not clean.
