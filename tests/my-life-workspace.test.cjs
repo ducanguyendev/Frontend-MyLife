@@ -8,15 +8,17 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const layout = read('src/shared/layouts/MyLifeWorkspaceLayout.tsx');
 const dock = read('src/features/my-life/components/MyLifeDock.tsx');
 const dockCss = read('src/features/my-life/components/MyLifeDock.css');
+const moduleNav = read('src/features/my-life/components/MyLifeModuleNav.tsx');
+const moduleNavCss = read('src/features/my-life/components/MyLifeModuleNav.css');
 const anniversariesPage = read('src/features/my-life/pages/AnniversariesPage.tsx');
 const libraryPage = read('src/features/my-life/pages/LibraryPage.tsx');
 const modules = read('src/features/my-life/config/myLifeModules.ts');
 const header = read('src/shared/layouts/UserWorkspaceHeader.tsx');
 const userMenu = read('src/features/auth/components/UserMenu.tsx');
 
-test('shared workspace layout owns the viewport, header, content pane, and optional dock', () => {
+test('shared workspace layout owns the viewport and routes optional module navigation to header and dock', () => {
   assert.match(layout, /h-dvh min-h-0 flex-col overflow-hidden/);
-  assert.match(layout, /<UserWorkspaceHeader backTo=\{backTo\} \/>/);
+  assert.match(layout, /<UserWorkspaceHeader backTo=\{backTo\} showModuleNavigation=\{showDock\} \/>/);
   assert.match(layout, /flex-1 flex-col/);
   assert.match(layout, /overflow-y-auto overscroll-contain/);
   assert.match(layout, /contentScroll === 'auto'/);
@@ -39,33 +41,48 @@ test('Hub and all four module pages share the shell with the dock only on module
 });
 
 test('dock renders NavLinks directly from the centralized module config', () => {
-  assert.match(dock, /import \{ myLifeModules \} from '\.\.\/config\/myLifeModules'/);
-  assert.match(dock, /myLifeModules\.map/);
-  assert.match(dock, /<NavLink[\s\S]*to=\{module\.route\}/);
-  assert.match(dock, /const Icon = module\.icon/);
+  assert.match(dock, /<MyLifeModuleNav variant="bottom" \/>/);
+  assert.match(moduleNav, /import \{ myLifeModules \} from '\.\.\/config\/myLifeModules'/);
+  assert.match(moduleNav, /myLifeModules\.map/);
+  assert.match(moduleNav, /<NavLink[\s\S]*to=\{module\.route\}/);
+  assert.match(moduleNav, /const Icon = module\.icon/);
   for (const [id, route] of [['familytree', '/familytree'], ['anniversaries', '/anniversaries'], ['library', '/library'], ['map', '/map']]) {
     assert.match(modules, new RegExp(`id: '${id}'[\\s\\S]*?route: '${route.replaceAll('/', '\\/')}'`));
   }
 });
 
-test('dock exposes active, localized, keyboard, tooltip, and reduced-motion states', () => {
-  assert.match(dock, /isActive \? 'mylife-dock__link--active'/);
-  assert.match(dock, /aria-label=\{label\}/);
-  assert.match(dock, /title=\{label\}/);
-  assert.match(dock, /event\.key === ' '/);
-  assert.match(dock, /mylife-dock__tooltip/);
-  assert.match(dockCss, /:focus-visible/);
-  assert.match(dockCss, /@media \(prefers-reduced-motion: reduce\)/);
+test('shared module nav exposes active, localized, keyboard, tooltip, focus, and reduced-motion states', () => {
+  assert.match(moduleNav, /isActive \? 'mylife-module-nav__link--active'/);
+  assert.match(moduleNav, /aria-label=\{label\}/);
+  assert.match(moduleNav, /aria-label=\{t\('myLife\.dock\.label'/);
+  assert.match(moduleNav, /title=\{label\}/);
+  assert.match(moduleNav, /event\.key === ' '/);
+  assert.match(moduleNav, /mylife-module-nav__tooltip/);
+  assert.match(moduleNavCss, /:focus-visible/);
+  assert.match(moduleNavCss, /@media \(prefers-reduced-motion: reduce\)/);
   assert.match(dockCss, /env\(safe-area-inset-bottom/);
-  assert.match(dock, /<NavLink/); // NavLink supplies aria-current="page" for its active route.
-  assert.match(dockCss, /background: color-mix\(in srgb, var\(--secondary-bg\)/);
-  assert.match(dockCss, /border: 1px solid var\(--custom-border\)/);
-  assert.match(dockCss, /box-shadow: 0 8px 24px/);
-  assert.match(dockCss, /backdrop-filter: blur/);
-  assert.match(dockCss, /transition: color 240ms ease/);
-  assert.match(dockCss, /translateY\(-1px\) scale\(1\.03\)/);
-  assert.match(dockCss, /transition: opacity 200ms ease/);
-  assert.match(dockCss, /transform 220ms ease/);
+  assert.match(moduleNav, /<NavLink/); // NavLink supplies aria-current="page" for its active route.
+  assert.match(moduleNavCss, /background: color-mix\(in srgb, var\(--secondary-bg\)/);
+  assert.match(moduleNavCss, /border: 1px solid var\(--custom-border\)/);
+  assert.match(moduleNavCss, /box-shadow: 0 8px 24px/);
+  assert.match(moduleNavCss, /backdrop-filter: blur/);
+  assert.match(moduleNavCss, /transition: color 320ms ease/);
+  assert.match(moduleNavCss, /translateY\(-1px\) scale\(1\.03\)/);
+  assert.match(moduleNavCss, /transition: opacity 260ms ease/);
+  assert.match(moduleNavCss, /transform 290ms ease/);
+});
+
+test('desktop header navigation and mobile dock are mutually exclusive at the xl breakpoint', () => {
+  assert.match(header, /showModuleNavigation\?: boolean/);
+  assert.match(header, /showModuleNavigation && <MyLifeModuleNav variant="header" \/>/);
+  assert.match(moduleNavCss, /@media \(min-width: 80rem\)[\s\S]*?mylife-module-nav--header\s*\{\s*display: flex/);
+  assert.match(dockCss, /@media \(min-width: 80rem\)[\s\S]*?mylife-dock-row\s*\{\s*display: none/);
+  assert.match(header, /xl:grid-cols-\[minmax\(0,1fr\)_auto_minmax\(0,1fr\)\]/);
+  assert.match(header, /xl:col-start-3/);
+  assert.match(userMenu, /max-w-\[180px\] truncate hidden lg:inline/);
+  assert.match(layout, /showDock && <MyLifeDock \/>/);
+  assert.match(read('src/features/my-life/pages/MyLifeHubPage.tsx'), /<MyLifeWorkspaceLayout backTo="\/Home"/);
+  assert.doesNotMatch(read('src/features/my-life/pages/MyLifeHubPage.tsx'), /showDock/);
 });
 
 test('back navigation remains separate and UserMenu has no module links', () => {

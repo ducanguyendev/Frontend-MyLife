@@ -87,7 +87,7 @@ test('UserMenu contains account actions but no personal module links', () => {
 test('all workspace pages share a single ArrowLeft-only header with explicit parents', () => {
   assert.match(workspaceHeader, /ArrowLeft/);
   assert.doesNotMatch(workspaceHeader, /\bHome\b|<Home/);
-  assert.match(workspaceLayout, /<UserWorkspaceHeader backTo=\{backTo\} \/>/);
+  assert.match(workspaceLayout, /<UserWorkspaceHeader backTo=\{backTo\} showModuleNavigation=\{showDock\} \/>/);
   assert.match(hub, /<MyLifeWorkspaceLayout backTo="\/Home"/);
   assert.match(familyTreePage, /<MyLifeWorkspaceLayout backTo="\/mylife"/);
   for (const file of ['AnniversariesPage.tsx', 'LibraryPage.tsx']) {
