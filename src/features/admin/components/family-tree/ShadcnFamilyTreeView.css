@@ -1,0 +1,126 @@
+.shadcn-family-tree {
+  --sft-accent: #78927e;
+  --sft-line: color-mix(in srgb, var(--secondary-text, #66736a) 28%, #e9e2d7);
+  --sft-border: color-mix(in srgb, var(--custom-border, #d9ded8) 78%, #efe8dc);
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: clamp(620px, 82vh, 920px);
+  min-height: 580px;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--sft-border);
+  border-radius: 24px;
+  background: radial-gradient(ellipse at 50% -12%, color-mix(in srgb, var(--sft-accent) 9%, transparent), transparent 62%), var(--primary-bg, #f7f6f1);
+  color: var(--primary-text, #262b27);
+  box-shadow: 0 16px 42px rgb(48 48 38 / 6%), inset 0 1px rgb(255 255 255 / 45%);
+}
+
+.shadcn-family-tree:fullscreen { width: 100vw; height: 100vh; min-height: 100vh; border: 0; border-radius: 0; }
+.dark .shadcn-family-tree, [data-theme="dark"] .shadcn-family-tree { --sft-accent: #a3b5a4; --sft-line: color-mix(in srgb, var(--secondary-text, #a1a1aa) 44%, #4c5950); --sft-border: #303630; }
+
+.shadcn-family-tree__toolbar {
+  position: absolute;
+  z-index: 8;
+  top: 14px;
+  left: 50%;
+  display: flex;
+  max-width: calc(100% - 24px);
+  align-items: center;
+  gap: 4px;
+  padding: 6px;
+  transform: translateX(-50%);
+  border: 1px solid var(--sft-border);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--secondary-bg, #fff) 91%, transparent);
+  box-shadow: 0 5px 20px rgb(34 41 35 / 10%);
+  backdrop-filter: blur(16px);
+}
+.shadcn-family-tree__tool {
+  display: inline-flex;
+  min-width: 34px;
+  height: 34px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--secondary-text, #68716b);
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 650;
+  white-space: nowrap;
+  transition: color 260ms ease, background-color 260ms ease, transform 260ms ease;
+}
+.shadcn-family-tree__tool:hover { transform: translateY(-1px); background: color-mix(in srgb, var(--sft-accent) 12%, transparent); color: var(--sft-accent); }
+.shadcn-family-tree__tool:focus-visible { outline: 2px solid var(--sft-accent); outline-offset: 2px; }
+.shadcn-family-tree__tool.is-active { background: color-mix(in srgb, var(--sft-accent) 14%, transparent); color: var(--sft-accent); }
+.shadcn-family-tree__export { background: var(--sft-accent); color: white; }
+.shadcn-family-tree__export:hover { background: color-mix(in srgb, var(--sft-accent) 84%, black); color: white; }
+
+.shadcn-family-tree__viewport { position: relative; flex: 1; overflow: hidden; touch-action: none; cursor: grab; user-select: none; }
+.shadcn-family-tree__viewport:active { cursor: grabbing; }
+.shadcn-family-tree__viewport:focus-visible { outline: 2px solid color-mix(in srgb, var(--sft-accent) 55%, transparent); outline-offset: -3px; }
+.shadcn-family-tree__scene { position: absolute; top: 0; left: 0; transform-origin: top left; transition: transform 420ms cubic-bezier(.2,.7,.2,1); }
+.shadcn-family-tree__links { position: absolute; inset: 0; overflow: visible; pointer-events: none; }
+.shadcn-family-tree__link { fill: none; stroke: var(--sft-line); stroke-width: 1.55px; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; transition: stroke 320ms ease, opacity 320ms ease, stroke-width 320ms ease; }
+.shadcn-family-tree__link.is-related { stroke: color-mix(in srgb, var(--sft-accent) 70%, #a9b5a8); stroke-width: 1.85px; opacity: 1; }
+.shadcn-family-tree__link.is-dimmed { opacity: .3; }
+.shadcn-family-tree__link--spouse { stroke: color-mix(in srgb, var(--sft-accent) 22%, var(--sft-line)); }
+.shadcn-family-tree__link--spouse text { fill: var(--sft-accent); stroke: var(--primary-bg, #f7f6f1); stroke-width: 5px; paint-order: stroke; font-size: 13px; }
+.shadcn-family-tree__link--extended { stroke-dasharray: 4 7; }
+.shadcn-family-tree__lane-label { position: absolute; z-index: 4; left: 12px; padding: 5px 9px; border: 1px solid var(--sft-border); border-radius: 999px; background: color-mix(in srgb, var(--secondary-bg, #fff) 92%, transparent); color: var(--secondary-text, #68716b); font-size: 9px; font-weight: 760; letter-spacing: .1em; text-transform: uppercase; pointer-events: none; }
+
+.shadcn-family-tree__person {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  width: 232px;
+  height: 178px;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 14px 9px;
+  border: 1px solid var(--sft-border);
+  border-radius: 22px;
+  background: var(--secondary-bg, #fff);
+  box-shadow: 0 3px 8px rgb(47 55 48 / 5%), 0 13px 27px rgb(47 55 48 / 8%);
+  cursor: pointer;
+  transition: transform 320ms cubic-bezier(.2,.7,.2,1), box-shadow 320ms ease, border-color 320ms ease, opacity 320ms ease, filter 320ms ease;
+}
+.shadcn-family-tree__person:hover { z-index: 6; transform: translateY(-3px); box-shadow: 0 8px 20px rgb(47 55 48 / 10%), 0 18px 36px rgb(47 55 48 / 12%); }
+.shadcn-family-tree__person.is-focused { border-color: color-mix(in srgb, var(--sft-accent) 64%, var(--sft-border)); box-shadow: 0 0 0 3px color-mix(in srgb, var(--sft-accent) 12%, transparent), 0 13px 30px rgb(47 55 48 / 10%); }
+.shadcn-family-tree__person.is-deceased { background: color-mix(in srgb, var(--secondary-bg, #fff) 95%, var(--secondary-text, #68716b)); }
+.shadcn-family-tree__person.is-dimmed { filter: saturate(.72); }
+.dark .shadcn-family-tree__person, [data-theme="dark"] .shadcn-family-tree__person { background: color-mix(in srgb, var(--secondary-bg, #111) 94%, #697c6c); box-shadow: 0 4px 12px rgb(0 0 0 / 25%), 0 15px 30px rgb(0 0 0 / 18%); }
+.shadcn-family-tree__portrait { display: grid; width: 68px; height: 68px; flex: none; place-items: center; margin-bottom: 4px; padding: 3px; border: 1px solid color-mix(in srgb, var(--sft-accent) 32%, var(--sft-border)); border-radius: 50%; background: var(--secondary-bg, #fff); box-shadow: 0 2px 8px rgb(47 55 48 / 8%); cursor: pointer; }
+.shadcn-family-tree__avatar { width: 100%; height: 100%; overflow: hidden; border-radius: 50%; object-fit: cover; }
+.shadcn-family-tree__copy { display: flex; width: 100%; min-height: 0; flex: 1; flex-direction: column; align-items: center; }
+.shadcn-family-tree__name { display: -webkit-box; max-width: 100%; overflow: hidden; padding: 0; border: 0; background: transparent; color: var(--primary-text, #262b27); cursor: pointer; font-size: 14px; font-weight: 740; line-height: 1.22; text-align: center; overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.shadcn-family-tree__role { max-width: 100%; margin-top: 3px; overflow: hidden; color: var(--secondary-text, #68716b); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.shadcn-family-tree__meta { display: flex; align-items: center; gap: 6px; margin-top: 6px; color: var(--secondary-text, #68716b); font-size: 9px; }
+.shadcn-family-tree__generation-chip { padding: 2px 7px; border: 1px solid var(--sft-border); border-radius: 999px; background: color-mix(in srgb, var(--sft-accent) 8%, var(--secondary-bg, #fff)); color: var(--secondary-text, #68716b); font-size: 9px; letter-spacing: normal; text-transform: none; }
+.shadcn-family-tree__actions { position: absolute; top: 7px; right: 7px; display: flex; gap: 2px; opacity: 0; transition: opacity 240ms ease; }
+.shadcn-family-tree__person:hover .shadcn-family-tree__actions,.shadcn-family-tree__person:focus-within .shadcn-family-tree__actions { opacity: 1; }
+.shadcn-family-tree__action,.shadcn-family-tree__action-menu { display: grid; width: 28px; height: 28px; place-items: center; border: 1px solid var(--sft-border); border-radius: 9px; background: var(--secondary-bg, #fff); color: var(--secondary-text, #68716b); cursor: pointer; }
+.shadcn-family-tree__action:hover,.shadcn-family-tree__action-menu:hover { color: var(--sft-accent); }
+.shadcn-family-tree__menu { position: absolute; z-index: 8; top: 34px; right: 0; display: grid; min-width: 170px; gap: 3px; padding: 5px; border: 1px solid var(--sft-border); border-radius: 12px; background: var(--secondary-bg, #fff); box-shadow: 0 12px 28px rgb(34 41 35 / 14%); }
+.shadcn-family-tree__menu button { display: flex; align-items: center; gap: 8px; padding: 7px 8px; border: 0; border-radius: 8px; background: transparent; color: var(--primary-text, #262b27); cursor: pointer; font-size: 10px; text-align: left; }
+.shadcn-family-tree__menu button:hover { background: color-mix(in srgb, var(--sft-accent) 10%, transparent); }
+.shadcn-family-tree__menu button.is-delete { color: #c24d48; }
+.shadcn-family-tree__expand { position: absolute; right: 9px; bottom: 8px; min-width: 30px; height: 26px; padding: 0 7px; border: 1px solid var(--sft-border); border-radius: 999px; background: color-mix(in srgb, var(--secondary-bg, #fff) 90%, var(--sft-accent)); color: var(--sft-accent); cursor: pointer; font-size: 10px; font-weight: 700; }
+.shadcn-family-tree__person :focus-visible { outline: 2px solid var(--sft-accent); outline-offset: 2px; }
+.shadcn-family-tree__hint,.shadcn-family-tree__status { position: absolute; z-index: 4; right: 14px; padding: 7px 10px; border: 1px solid var(--sft-border); border-radius: 999px; background: color-mix(in srgb, var(--secondary-bg, #fff) 92%, transparent); color: var(--secondary-text, #68716b); font-size: 9px; pointer-events: none; }
+.shadcn-family-tree__hint { bottom: 12px; opacity: .76; }
+.shadcn-family-tree__status { top: auto; bottom: 12px; right: auto; left: 14px; }
+.shadcn-family-tree.is-exporting .shadcn-family-tree__toolbar,.shadcn-family-tree.is-exporting .shadcn-family-tree__hint,.shadcn-family-tree.is-exporting .shadcn-family-tree__status,.shadcn-family-tree.is-exporting .shadcn-family-tree__actions,.shadcn-family-tree.is-exporting .shadcn-family-tree__expand { display: none; }
+
+@media (pointer: coarse) { .shadcn-family-tree__actions { opacity: 1; } }
+@media (max-width: 760px) {
+  .shadcn-family-tree { height: max(620px, 82vh); min-height: 580px; border-radius: 18px; }
+  .shadcn-family-tree__toolbar { top: 8px; max-width: calc(100% - 14px); flex-wrap: wrap; justify-content: center; gap: 2px; padding: 5px; }
+  .shadcn-family-tree__tool { min-width: 31px; height: 31px; padding: 0 7px; font-size: 9px; }
+  .shadcn-family-tree__tool span { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .shadcn-family-tree *, .shadcn-family-tree *::before, .shadcn-family-tree *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; } }
