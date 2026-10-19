@@ -63,4 +63,4 @@ Changed only frontend Family Tree integration, its test harness, package metadat
 - `tests/memoir-tree-adapter.test.cjs`
 - `tests/family-tree-view.test.cjs`, `tests/feature-i18n.test.cjs`, `tests/optimization.test.cjs` (renderer integration mocks/assertions)
 
-Implementation commit and push status will be recorded after the code commit is pushed.
+Implementation commit: `dea805e` (`feat: add memoir genealogy renderer poc`). Push status: successfully pushed to `origin/feature_minhduc`. The report's delivery-status update is a separate documentation commit.
