@@ -43,6 +43,7 @@ function familySetup(request) {
     '@/shared/components/SearchBar': { SearchBar: 'SearchBar' },
     '@/shared/api/apiClient': { apiClient }, '../services/featureMessages': messages,
     './family-tree/memberSearch': search, './family-tree': Object.fromEntries(names.map(name => [name,name])),
+    './family-tree/familyTreeRendererConfig': { FAMILY_TREE_RENDERER: 'family-chart', IS_FAMILY_CHART_DEV_POC: true },
     './family-tree/useFamilyMembers': familyMembersHook,
   }, { document: { addEventListener() {}, removeEventListener() {}, getElementById: () => ({ focus() {} }) } });
   const render = () => h.render(FamilyTreeManager, { showToast: value => toast.push(value) }); render(); h.mount(); return { h, render, toast };
@@ -116,11 +117,14 @@ test('loading is driven by auth/import/API; critical messages exist in both loca
     for (const key of ['my_family_tree','tree_empty','tree_empty_hint','search_member']) assert.ok(admin[key]);
   }
 });
-test('production manifest separates protected routes and defers Mindmap from static import closure', () => {
+test('production manifest separates protected routes, defers Mindmap, and keeps Family Chart out of the runtime import closure', () => {
   const manifest = JSON.parse(read('dist/.vite/manifest.json'));
-  const keys = Object.keys(manifest); const entry = keys.find(key => manifest[key].isEntry); const family = keys.find(key => key.endsWith('FamilyTreePage.tsx')); const admin = keys.find(key => key.endsWith('AdminDashboard.tsx')); const mindmap = keys.find(key => key.endsWith('FamilyMindmap.tsx'));
+  const keys = Object.keys(manifest); const entry = keys.find(key => manifest[key].isEntry); const family = keys.find(key => key.endsWith('FamilyTreePage.tsx')); const admin = keys.find(key => key.endsWith('AdminDashboard.tsx')); const mindmap = keys.find(key => key.endsWith('FamilyMindmap.tsx')); const familyChart = keys.find(key => key.endsWith('FamilyChartView.tsx'));
   assert.ok(entry && family && admin && mindmap);
+  assert.ok(familyChart);
   function closure(key, seen = new Set()) { if (seen.has(key)) return seen; seen.add(key); (manifest[key].imports ?? []).forEach(child => closure(child,seen)); return seen; }
   const home = closure(entry); assert.ok(!home.has(family) && !home.has(admin) && !home.has(mindmap));
   assert.ok(!closure(family).has(mindmap)); assert.ok(manifest[family].dynamicImports.includes(mindmap));
+  assert.ok(!closure(family).has(familyChart));
+  assert.ok(!read(join('dist', manifest[family].file)).includes('FamilyChartView'));
 });

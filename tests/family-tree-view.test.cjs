@@ -92,7 +92,10 @@ test('large expanded datasets produce finite non-overlapping cards and connector
 
 test('React Flow remains retained as an internal rollback path', () => {
   const manager = readFileSync(join(__dirname, '../src/features/admin/components/FamilyTreeManager.tsx'), 'utf8');
+  const rendererConfig = readFileSync(join(__dirname, '../src/features/admin/components/family-tree/familyTreeRendererConfig.ts'), 'utf8');
   assert.match(manager, /const FamilyMindmap = lazy/);
   assert.match(manager, /const FamilyTreeView = lazy/);
-  assert.match(manager, /USE_FAMILY_TREE_VIEW_V3 \? <FamilyTreeView/);
+  assert.match(manager, /FAMILY_TREE_RENDERER === "react-flow" \? <FamilyMindmap/);
+  assert.match(manager, /: <FamilyTreeView/);
+  assert.match(rendererConfig, /IS_FAMILY_CHART_DEV_POC \? "family-chart" : "family-view"/);
 });

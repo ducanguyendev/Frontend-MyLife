@@ -17,11 +17,13 @@ import {
   DeleteConfirmModal,
 } from "./family-tree";
 import { useFamilyMembers } from './family-tree/useFamilyMembers';
+import { FAMILY_TREE_RENDERER, IS_FAMILY_CHART_DEV_POC } from './family-tree/familyTreeRendererConfig';
 
 import { filterFamilyMembers } from './family-tree/memberSearch';
 const FamilyMindmap = lazy(() => import('./family-tree/FamilyMindmap').then(module => ({ default: module.FamilyMindmap })));
 const FamilyTreeView = lazy(() => import('./family-tree/family-view/FamilyTreeView').then(module => ({ default: module.FamilyTreeView })));
-const USE_FAMILY_TREE_VIEW_V3 = true;
+// Keep the library evaluation limited to development/POC; the validated custom view remains the production renderer.
+const FamilyChartView = IS_FAMILY_CHART_DEV_POC ? lazy(() => import('./family-tree/FamilyChartView').then(module => ({ default: module.FamilyChartView }))) : null;
 
 export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast }) => {
   const { t } = useLanguage();
@@ -324,15 +326,21 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
               />
             ) : (
               <Suspense fallback={<div role="status">{t("admin.library_ui.loading")}</div>}>
-              {/* Keep the React Flow renderer available as a rollback path until the new family renderer is fully validated. */}
-              {USE_FAMILY_TREE_VIEW_V3 ? <FamilyTreeView
+              {FAMILY_TREE_RENDERER === "family-chart" && FamilyChartView ? <FamilyChartView
                 members={members}
                 searchFocusMemberId={searchQuery.trim() ? filteredMembers[0]?.id ?? null : null}
                 generationFilterId={generationFilter === "all" ? null : Number(generationFilter)}
                 onView={handleViewMember}
                 onEdit={handleOpenModal}
                 onDelete={setMemberToDelete}
-              /> : <FamilyMindmap
+              /> : FAMILY_TREE_RENDERER === "react-flow" ? <FamilyMindmap
+                members={members}
+                searchFocusMemberId={searchQuery.trim() ? filteredMembers[0]?.id ?? null : null}
+                generationFilterId={generationFilter === "all" ? null : Number(generationFilter)}
+                onView={handleViewMember}
+                onEdit={handleOpenModal}
+                onDelete={setMemberToDelete}
+              /> : <FamilyTreeView
                 members={members}
                 searchFocusMemberId={searchQuery.trim() ? filteredMembers[0]?.id ?? null : null}
                 generationFilterId={generationFilter === "all" ? null : Number(generationFilter)}

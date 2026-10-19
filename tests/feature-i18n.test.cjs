@@ -91,7 +91,7 @@ const find = (tree, type, condition = () => true) => {
   assert.ok(node, `Missing ${type}`); return node.props;
 };
 const stubNames = ['MemberCard', 'MemberTable', 'MemberDetailModal', 'MemberFormModal', 'DeleteConfirmModal',
-  'AnniversaryTab', 'LibraryTab', 'FamilyMapTab', 'FamilyMindmap'];
+  'AnniversaryTab', 'LibraryTab', 'FamilyMapTab', 'FamilyMindmap', 'FamilyChartView'];
 
 async function familySetup(locale, response = { success: true, message: 'Family member deleted.' }) {
   const i18n = await translator(locale); const t = i18n.t.bind(i18n); const hooks = harness(); const toasts = [];
@@ -115,6 +115,7 @@ async function familySetup(locale, response = { success: true, message: 'Family 
     '@/shared/api/apiClient': { apiClient }, '../services/featureMessages': messages,
     './family-tree/memberSearch': searchHelpers,
     './family-tree/useFamilyMembers': familyMembersHook,
+    './family-tree/familyTreeRendererConfig': { FAMILY_TREE_RENDERER: 'family-chart', IS_FAMILY_CHART_DEV_POC: true },
     './family-tree': { ...Object.fromEntries(stubNames.map(name => [name, name])), removeVietnameseTones: name => name },
   });
   const render = () => hooks.render(FamilyTreeManager, { showToast: (text, ok) => toasts.push({ text, ok }) });
