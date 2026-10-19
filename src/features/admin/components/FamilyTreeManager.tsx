@@ -20,6 +20,8 @@ import { useFamilyMembers } from './family-tree/useFamilyMembers';
 
 import { filterFamilyMembers } from './family-tree/memberSearch';
 const FamilyMindmap = lazy(() => import('./family-tree/FamilyMindmap').then(module => ({ default: module.FamilyMindmap })));
+const FamilyTreeView = lazy(() => import('./family-tree/family-view/FamilyTreeView').then(module => ({ default: module.FamilyTreeView })));
+const USE_FAMILY_TREE_VIEW_V3 = true;
 
 export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast }) => {
   const { t } = useLanguage();
@@ -322,14 +324,22 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
               />
             ) : (
               <Suspense fallback={<div role="status">{t("admin.library_ui.loading")}</div>}>
-              <FamilyMindmap 
+              {/* Keep the React Flow renderer available as a rollback path until the new family renderer is fully validated. */}
+              {USE_FAMILY_TREE_VIEW_V3 ? <FamilyTreeView
                 members={members}
                 searchFocusMemberId={searchQuery.trim() ? filteredMembers[0]?.id ?? null : null}
                 generationFilterId={generationFilter === "all" ? null : Number(generationFilter)}
                 onView={handleViewMember}
                 onEdit={handleOpenModal}
                 onDelete={setMemberToDelete}
-              />
+              /> : <FamilyMindmap
+                members={members}
+                searchFocusMemberId={searchQuery.trim() ? filteredMembers[0]?.id ?? null : null}
+                generationFilterId={generationFilter === "all" ? null : Number(generationFilter)}
+                onView={handleViewMember}
+                onEdit={handleOpenModal}
+                onDelete={setMemberToDelete}
+              />}
               </Suspense>
             )}
           </div>

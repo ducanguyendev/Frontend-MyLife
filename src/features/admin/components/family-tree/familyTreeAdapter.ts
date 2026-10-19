@@ -12,6 +12,7 @@ export interface TreePerson {
   generation: number;
   role?: string;
   gender?: string;
+  dateOfBirth?: string;
   lifeStatus?: FamilyMember["lifeStatus"];
   deathDate?: string | null;
   horizontalRelations: NonNullable<FamilyMember["horizontalRelations"]>;
@@ -51,6 +52,7 @@ export function adaptFamilyMembers(members: FamilyMember[]): TreePerson[] {
     generation: member.generation,
     role: member.role,
     gender: member.gender,
+    dateOfBirth: member.dateOfBirth,
     lifeStatus: member.lifeStatus,
     deathDate: member.deathDate,
     horizontalRelations: member.horizontalRelations ?? [],
@@ -67,7 +69,7 @@ export function chooseInitialFocus(people: TreePerson[]): number | null {
 export function getVisibleFamilyMembers(
   members: FamilyMember[], focusedId: number | null, expandedIds: ReadonlySet<number>, showAll = false, index = buildFamilyTreeIndex(members),
 ): FamilyMember[] {
-  if (showAll || members.length <= 12 || focusedId == null) return members;
+  if (showAll || focusedId == null) return members;
   const byId = index.byId;
   const focused = byId.get(focusedId) ?? byId.get(chooseInitialFocus(adaptFamilyMembers(members)) ?? -1);
   if (!focused) return members.slice(0, 1);
@@ -83,6 +85,16 @@ export function getVisibleFamilyMembers(
     else if (parentIds.some(id => member.fatherId === id || member.motherId === id)) add(member.id);
   }
   for (const id of focused.childIds ?? []) add(id);
+  for (const parentId of parentIds) {
+    const parent = byId.get(parentId);
+    add(parent?.fatherId);
+    add(parent?.motherId);
+  }
+  // Show spouses for visible siblings as part of their family-unit context.
+  for (const member of members) {
+    const isSibling = parentIds.length > 0 && parentIds.some(id => member.fatherId === id || member.motherId === id);
+    if (isSibling) add(member.spouseId);
+  }
   // Expanded cards reveal one more generation at a time, keeping rendering proportional to the open branch.
   for (const id of expandedIds) {
     if (!visible.has(id)) continue;
@@ -101,4 +113,34 @@ export function getHiddenDescendantCount(member: FamilyMember, index: FamilyTree
     pending.push(...(index.childrenByParent.get(id) ?? []));
   }
   return [...visited].filter(id => !visibleIds.has(id)).length;
+}
+
+/** Immediate kin plus the adjacent household context needed to keep each branch visually legible. */
+export function getRelatedFamilyMemberIds(
+  members: FamilyMember[], activeId: number | null, showExtendedRelations = false,
+): Set<number> {
+  if (activeId == null) return new Set();
+  const byId = new Map(members.map(member => [member.id, member]));
+  const active = byId.get(activeId);
+  if (!active) return new Set([activeId]);
+  const related = new Set<number>([activeId]);
+  const add = (id?: number | null) => { if (id != null && byId.has(id)) related.add(id); };
+  const parents = [active.fatherId, active.motherId].filter((id): id is number => id != null);
+  for (const id of [...parents, active.spouseId, ...(active.childIds ?? [])]) add(id);
+  for (const parentId of parents) {
+    const parent = byId.get(parentId);
+    add(parent?.fatherId);
+    add(parent?.motherId);
+  }
+  for (const member of members) {
+    const isSibling = parents.some(id => member.fatherId === id || member.motherId === id);
+    if (member.fatherId === activeId || member.motherId === activeId || member.childIds?.includes(activeId) || member.spouseId === activeId || isSibling) add(member.id);
+  }
+  // Keep spouses of visible siblings and children in the same highlighted household.
+  for (const id of [...related]) add(byId.get(id)?.spouseId);
+  if (showExtendedRelations) {
+    for (const relation of active.horizontalRelations ?? []) add(Number(relation.memberId));
+    for (const member of members) if (member.horizontalRelations?.some(relation => Number(relation.memberId) === activeId)) add(member.id);
+  }
+  return related;
 }
