@@ -20,7 +20,7 @@ import { getSiblingKind, isBiologicalSibling } from "./siblingRelations";
 import { MemberAvatarImage } from "./MemberAvatarImage";
 import { FamilyRelationSelect } from "./FamilyRelationSelect";
 import { FamilyMemberPicker } from "./FamilyMemberPicker";
-import { GoogleAddressAutocomplete } from "@/shared/components/GoogleAddressAutocomplete";
+import { AddressInput } from "@/shared/components/AddressInput";
 
 interface MemberFormModalProps {
   isOpen: boolean;
@@ -887,12 +887,11 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
 
                   {/* Nơi ở */}
                   <div className="md:col-span-2">
-                    <GoogleAddressAutocomplete
+                    <AddressInput
                       id="family-member-address"
                       name="address"
                       label={t("admin.field_address", { defaultValue: "Nơi ở hiện tại / Quê quán" })}
-                      placeholder={t("admin.address_autocomplete_placeholder", { defaultValue: "Nhập địa chỉ..." })}
-                      unavailableMessage={t("admin.address_autocomplete_unavailable", { defaultValue: "Không tải được gợi ý địa chỉ. Bạn vẫn có thể nhập thủ công." })}
+                      placeholder={t("admin.address_input_placeholder", { defaultValue: "Nhập địa chỉ..." })}
                       value={editingMember.address || ""}
                       disabled={isSaving}
                       onChange={(address) => onChange({ ...editingMember, address })}

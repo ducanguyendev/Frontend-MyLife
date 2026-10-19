@@ -40,13 +40,15 @@ test('Mai Anh and Mai Son child groups stay centered as fairly as collision allo
     const commands = familyLink.path.match(/[ML] [-\d.]+ [-\d.]+/g).map(command => command.slice(2).split(' ').map(Number));
     assert.deepEqual(commands[0], [parentX, nodeFor(result, parentId).y + nodeFor(result, parentId).height]);
     assert.equal(commands[1][0], commands[0][0], 'trunk connects vertically to junction');
-    assert.equal(commands[1][1], nodeFor(result, childIds[0]).y - 30, 'trunk reaches rail height');
+    const childTop = nodeFor(result, childIds[0]).y;
+    const parentBottom = nodeFor(result, parentId).y + nodeFor(result, parentId).height;
+    assert.equal(commands[1][1], parentBottom + (childTop - parentBottom) * .5, 'trunk reaches the midpoint rail between generations');
     assert.equal(commands.at(-1)[1], commands[1][1], 'junction reaches sibling rail at rail height');
     for (const childId of childIds) {
       const drop = result.links.find(link => link.id.startsWith(`family-child-${parentId}:`) && link.id.endsWith(`-${childId}`));
       assert.ok(drop, `child ${childId} has a drop`);
       assert.deepEqual(Array.from(drop.memberIds).sort((a, b) => a - b), [parentId, ...childIds].sort((a, b) => a - b), 'all family drops share highlight state with the parent rail');
-      assert.match(drop.path, new RegExp(`^M ${center(nodeFor(result, childId))} ${nodeFor(result, childId).y - 30} L ${center(nodeFor(result, childId))} ${nodeFor(result, childId).y}$`));
+      assert.match(drop.path, new RegExp(`^M ${center(nodeFor(result, childId))} ${commands[1][1]} L ${center(nodeFor(result, childId))} ${nodeFor(result, childId).y}$`));
     }
   }
 
@@ -73,6 +75,9 @@ test('couple union uses spouse midpoint for one shared sibling rail', () => {
   const family = result.links.find(link => link.id.startsWith('family-10:11:'));
   assert.equal((family.path.match(/M /g) ?? []).length, 1);
   assert.equal(result.links.filter(link => link.id.startsWith('family-child-10:11:')).length, 2);
+  const spouse = result.links.find(link => link.kind === 'spouse' && link.memberIds.includes(10));
+  const source = family.path.match(/^M ([-\d.]+) ([-\d.]+)/);
+  assert.deepEqual(source.slice(1).map(Number), [spouse.labelX, spouse.labelY], 'family trunk starts exactly at heart center');
 });
 
 test('three children share one couple rail with three drops', () => {
@@ -117,8 +122,89 @@ test('connector geometry remains attached when parent anchor falls outside the c
   assert.equal(familyLayout.buildFamilyConnectorGeometry(2, 4, 8, []), null);
 });
 
+test('connector geometry draws the complete sibling rail when source is inside child range', () => {
+  const geometry = familyLayout.buildFamilyConnectorGeometry(100, 10, 50, [40, 100, 160]);
+  assert.equal(geometry.path, 'M 100 10 L 100 50 L 40 50 L 160 50');
+  assert.equal(geometry.railLeft, 40);
+  assert.equal(geometry.railRight, 160);
+});
+
 test('union anchor uses a registered couple midpoint and never averages unrelated parents', () => {
   const parents = [{ id: 2, x: 400, width: 232 }, { id: 1, x: 0, width: 232 }];
   assert.equal(familyLayout.getUnionAnchorX(parents, new Set(['1:2'])), 316);
   assert.equal(familyLayout.getUnionAnchorX(parents, new Set()), 116, 'unrelated parent nodes do not shift the anchor away from either parent');
+});
+
+test('two parents and three children share one trunk, sibling rail and one drop per child', () => {
+  const result = familyLayout.layoutShadcnFamilyTree([
+    person(30, 'Parent A', 1, { spouseId: 31 }), person(31, 'Parent B', 1),
+    person(32, 'Child A', 2, { fatherId: 30, motherId: 31 }),
+    person(33, 'Child B', 2, { fatherId: 30, motherId: 31 }),
+    person(34, 'Child C', 2, { fatherId: 30, motherId: 31 }),
+  ]);
+  assert.equal(result.links.filter(link => link.id.startsWith('family-30:31:')).length, 1);
+  assert.equal(result.links.filter(link => link.id.startsWith('family-child-30:31:')).length, 3);
+  const trunkPath = result.links.find(link => link.id.startsWith('family-30:31:')).path;
+  const railY = Number(trunkPath.match(/L [-\d.]+ ([-\d.]+) L [-\d.]+ \1/)[1]);
+  assert.equal(new Set(result.links.filter(link => link.id.startsWith('family-child-30:31:')).map(link => Number(link.path.match(/M [-\d.]+ ([-\d.]+)/)[1]))).size, 1);
+  assert.equal(railY, Number(result.nodes.find(node => node.member.id === 30).y + 90 + (result.nodes.find(node => node.member.id === 32).y - (result.nodes.find(node => node.member.id === 30).y + 90)) * .5));
+});
+
+test('single-parent child is normalized into visible spouse union when non-conflicting', () => {
+  const result = familyLayout.layoutShadcnFamilyTree([
+    person(40, 'Father', 1, { spouseId: 41 }), person(41, 'Mother', 1),
+    person(42, 'Child with one parent recorded', 2, { fatherId: 40 }),
+    person(43, 'Child with both parents', 2, { fatherId: 40, motherId: 41 }),
+  ]);
+  const unions = result.links.filter(link => link.kind === 'family' && link.memberIds.includes(40));
+  assert.equal(unions.length, 1);
+  assert.deepEqual([...unions[0].memberIds].sort((a, b) => a - b), [40, 41, 42, 43]);
+  assert.equal(result.links.filter(link => link.id.startsWith('family-child-40:41:')).length, 2);
+});
+
+test('conflicting explicit parent is not silently replaced by a spouse', () => {
+  const result = familyLayout.layoutShadcnFamilyTree([
+    person(50, 'Parent A', 1, { spouseId: 51 }), person(51, 'Spouse', 1), person(52, 'Other parent', 1),
+    person(53, 'Child', 2, { fatherId: 50, motherId: 52 }),
+  ]);
+  const family = result.links.find(link => link.kind === 'family' && link.memberIds.includes(53));
+  assert.ok(family);
+  assert.ok(family.memberIds.includes(52));
+  assert.ok(!family.memberIds.includes(51));
+});
+
+test('one-sided spouseId still aligns couple source to spouse connector midpoint', () => {
+  const result = familyLayout.layoutShadcnFamilyTree([
+    person(60, 'One-sided spouse link', 1, { spouseId: 61 }), person(61, 'No reverse spouse link', 1),
+    person(62, 'Child', 2, { fatherId: 60, motherId: 61 }),
+  ]);
+  const spouse = result.links.find(link => link.kind === 'spouse');
+  const family = result.links.find(link => link.kind === 'family' && link.memberIds.includes(62));
+  assert.ok(spouse);
+  assert.deepEqual(family.path.match(/^M ([-\d.]+) ([-\d.]+)/).slice(1).map(Number), [spouse.labelX, spouse.labelY]);
+});
+
+test('married child receives parent drop at biological card center; descendant trunk starts at couple heart', () => {
+  const result = familyLayout.layoutShadcnFamilyTree([
+    person(70, 'Grandparent A', 1, { spouseId: 71 }), person(71, 'Grandparent B', 1),
+    person(72, 'Biological child', 2, { fatherId: 70, motherId: 71, spouseId: 73 }), person(73, 'Child spouse', 2),
+    person(74, 'Grandchild', 3, { fatherId: 72, motherId: 73 }),
+  ]);
+  const parentDrop = result.links.find(link => link.kind === 'family' && link.memberIds.includes(72) && link.memberIds.includes(70));
+  assert.ok(parentDrop);
+  assert.match(parentDrop.path, new RegExp(`L ${center(nodeFor(result, 72))} ${nodeFor(result, 72).y}$`));
+  const spouse = result.links.find(link => link.kind === 'spouse' && link.memberIds.includes(72));
+  const descendantTrunk = result.links.find(link => link.kind === 'family' && link.memberIds.includes(74));
+  assert.deepEqual(descendantTrunk.path.match(/^M ([-\d.]+) ([-\d.]+)/).slice(1).map(Number), [spouse.labelX, spouse.labelY]);
+});
+
+test('true single parent starts connector at bottom-center and multi-generation coordinates stay finite', () => {
+  const result = familyLayout.layoutShadcnFamilyTree([
+    person(80, 'Single parent', 1), person(81, 'Child', 2, { fatherId: 80 }), person(82, 'Grandchild', 3, { fatherId: 81 }),
+  ]);
+  const first = result.links.find(link => link.kind === 'family' && link.memberIds.includes(81));
+  const parent = nodeFor(result, 80);
+  assert.deepEqual(first.path.match(/^M ([-\d.]+) ([-\d.]+)/).slice(1).map(Number), [center(parent), parent.y + parent.height]);
+  assert.ok(result.links.every(link => [...link.path.matchAll(/-?\d+(?:\.\d+)?/g)].every(match => Number.isFinite(Number(match[0])))));
+  assert.equal(new Set(result.links.filter(link => link.kind === 'family').map(link => link.id)).size, result.links.filter(link => link.kind === 'family').length);
 });

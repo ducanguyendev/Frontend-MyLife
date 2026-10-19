@@ -293,7 +293,7 @@ test('Member form validations, including birth date, follow current locale witho
     './MemberAvatarImage': { MemberAvatarImage: 'MemberAvatarImage' },
     './FamilyRelationSelect': { FamilyRelationSelect: 'FamilyRelationSelect' },
     './FamilyMemberPicker': { FamilyMemberPicker: 'FamilyMemberPicker' },
-    '@/shared/components/GoogleAddressAutocomplete': { GoogleAddressAutocomplete: 'GoogleAddressAutocomplete' },
+    '@/shared/components/AddressInput': { AddressInput: 'AddressInput' },
     './siblingRelations': { isBiologicalSibling: () => false, getSiblingSeniority: () => 'unknown', getSiblingDisplayLabelKey: () => 'sibling_neutral_biological' },
     '@/shared/components/ui': { ...dateHelpers, ...Object.fromEntries(['Modal', 'Button', 'Input', 'Select', 'Textarea', 'DateInput'].map(name => [name, name])) },
   });

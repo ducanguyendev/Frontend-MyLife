@@ -24,6 +24,13 @@ export interface FamilyConnectorGeometry {
   childCenters: number[];
 }
 
+export interface ParentUnionSource {
+  sourceX: number;
+  sourceY: number;
+  couple: boolean;
+  singleParent: boolean;
+}
+
 /** Minimize squared movement from desired centers subject to ordered, non-overlapping groups. */
 export function resolveRowGroupPositions(groups: RowGroupPosition[], gap: number): number[] {
   if (!groups.length) return [];
@@ -60,12 +67,8 @@ export function buildFamilyConnectorGeometry(sourceX: number, sourceY: number, r
   const railLeft = childCenters[0];
   const railRight = childCenters[childCenters.length - 1];
   const junctionX = Math.max(railLeft, Math.min(railRight, sourceX));
-  const points = [[sourceX, sourceY], [sourceX, railY]];
-  if (Math.abs(sourceX - junctionX) > .01) points.push([junctionX, railY]);
-  if (childCenters.length > 1) {
-    const railEnd = sourceX <= railLeft ? railRight : railLeft;
-    if (Math.abs(points[points.length - 1][0] - railEnd) > .01) points.push([railEnd, railY]);
-  }
+  const points = [[sourceX, sourceY], [sourceX, railY], [railLeft, railY], [railRight, railY]]
+    .filter((point, index, all) => index === 0 || Math.abs(point[0] - all[index - 1][0]) > .01 || Math.abs(point[1] - all[index - 1][1]) > .01);
   const path = points.map(([x, y], index) => `${index ? "L" : "M"} ${x} ${y}`).join(" ");
   return { path, sourceX, sourceY, railLeft, railRight, railY, junctionX, childCenters };
 }
@@ -85,6 +88,32 @@ export function getUnionAnchorX(parents: Array<{ id: number; x: number; width: n
   }
   const parent = [...parents].sort((a, b) => a.id - b.id)[0];
   return parent.x + parent.width / 2;
+}
+
+/** Match a couple's spouse connector midpoint; only a true single parent starts at card bottom. */
+export function getParentUnionSource(parents: Array<{ id: number; x: number; y: number; width: number; height: number }>, coupleKeys: Set<string>): ParentUnionSource | null {
+  if (!parents.length) return null;
+  for (let first = 0; first < parents.length; first++) {
+    for (let second = first + 1; second < parents.length; second++) {
+      const left = parents[first]; const right = parents[second];
+      if (!coupleKeys.has(householdKey(left.id, right.id))) continue;
+      const leftNode = left.x <= right.x ? left : right;
+      const rightNode = left.x <= right.x ? right : left;
+      return {
+        sourceX: ((leftNode.x + leftNode.width) + rightNode.x) / 2,
+        sourceY: leftNode.y + leftNode.height / 2,
+        couple: true,
+        singleParent: false,
+      };
+    }
+  }
+  if (parents.length > 1) {
+    const first = [...parents].sort((a, b) => a.x - b.x)[0];
+    const last = [...parents].sort((a, b) => a.x - b.x).at(-1)!;
+    return { sourceX: (first.x + first.width / 2 + last.x + last.width / 2) / 2, sourceY: first.y + first.height / 2, couple: false, singleParent: false };
+  }
+  const parent = parents[0];
+  return { sourceX: parent.x + parent.width / 2, sourceY: parent.y + parent.height, couple: false, singleParent: true };
 }
 
 /** Places explicit generation lanes and family clusters, centring sibling anchors over their parent unit. */
@@ -109,7 +138,28 @@ export function layoutShadcnFamilyTree(members: FamilyMember[], showExtendedRela
     if (spouseId == null || spouseId === member.id || !visibleIds.has(spouseId)) continue;
     spousePairs.set(householdKey(member.id, spouseId), [member.id, spouseId].sort((a, b) => a - b));
   }
+  // Treat a one-sided spouseId as an undirected couple reference.
+  for (const member of members) {
+    const spouse = members.find(candidate => candidate.spouseId === member.id);
+    if (spouse) spousePairs.set(householdKey(member.id, spouse.id), [member.id, spouse.id].sort((a, b) => a - b));
+  }
   const coupleKeys = new Set(spousePairs.keys());
+
+  // Complete a single known parent into that parent's visible couple unless the
+  // child explicitly names a different second parent.
+  for (const child of members) {
+    const parents = parentsByChild.get(child.id);
+    if (parents?.size !== 1) continue;
+    const parentId = [...parents][0];
+    const parent = byId.get(parentId);
+    const spouseId = parent?.spouseId != null && visibleIds.has(parent.spouseId)
+      ? parent.spouseId
+      : members.find(candidate => candidate.spouseId === parentId)?.id;
+    if (spouseId == null || spouseId === child.id || !visibleIds.has(spouseId)) continue;
+    const childExplicitParents = [child.fatherId, child.motherId].filter((id): id is number => id != null && visibleIds.has(id));
+    if (childExplicitParents.some(id => id !== parentId && id !== spouseId)) continue;
+    parents.add(spouseId);
+  }
 
   const generations = [...new Set(members.map(member => member.generation))].sort((a, b) => a - b);
   const minGeneration = generations[0];
@@ -234,16 +284,23 @@ export function layoutShadcnFamilyTree(members: FamilyMember[], showExtendedRela
     if (!parents.length || !children.length) continue;
     const sourceX = getUnionAnchorX(parents.map(node => ({ id: node.member.id, x: node.x, width: node.width })), coupleKeys);
     if (sourceX == null) continue;
-    const sourceY = Math.max(...parents.map(node => node.y + node.height));
+    const source = getParentUnionSource(parents.map(node => ({ id: node.member.id, x: node.x, y: node.y, width: node.width, height: node.height })), coupleKeys);
+    if (!source) continue;
+    const connectorSourceX = source.sourceX;
+    const connectorSourceY = source.sourceY;
     const childCenters = children.map(node => node.x + node.width / 2).sort((a, b) => a - b);
-    const railY = children[0].y - 30;
+    const parentBottom = Math.max(...parents.map(node => node.y + node.height));
+    const childTop = Math.min(...children.map(node => node.y));
+    const railY = parentBottom + (childTop - parentBottom) * .5;
     if (children.length === 1) {
       const child = children[0]; const childX = child.x + child.width / 2;
-      const path = Math.abs(sourceX - childX) < .5 ? `M ${sourceX} ${sourceY} L ${childX} ${child.y}` : `M ${sourceX} ${sourceY} L ${sourceX} ${railY} L ${childX} ${railY} L ${childX} ${child.y}`;
+      const path = !source.singleParent
+        ? `M ${connectorSourceX} ${connectorSourceY} L ${connectorSourceX} ${railY} L ${childX} ${railY} L ${childX} ${child.y}`
+        : Math.abs(connectorSourceX - childX) < .5 ? `M ${connectorSourceX} ${connectorSourceY} L ${childX} ${child.y}` : `M ${connectorSourceX} ${connectorSourceY} L ${connectorSourceX} ${railY} L ${childX} ${railY} L ${childX} ${child.y}`;
       links.push({ id: `family-${key}`, path, kind: "family", memberIds: [...group.parentIds, child.member.id] });
       continue;
     }
-    const connector = buildFamilyConnectorGeometry(sourceX, sourceY, railY, childCenters);
+    const connector = buildFamilyConnectorGeometry(connectorSourceX, connectorSourceY, railY, childCenters);
     if (!connector) continue;
     links.push({ id: `family-${key}`, path: connector.path, kind: "family", memberIds: [...group.parentIds, ...children.map(child => child.member.id)] });
     children.forEach(child => {
