@@ -1,6 +1,6 @@
 import React, { memo, useEffect, useRef, useState } from "react";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
-import { Edit2, Eye, MoreVertical, Trash2 } from "lucide-react";
+import { Edit2, Eye, GitBranch, MoreVertical, Trash2 } from "lucide-react";
 import { useLanguage } from "@/shared/hooks/useLanguage";
 import { getGenerationColors, removeVietnameseTones, type FamilyMember } from "./types";
 import { MemberAvatarImage } from "./MemberAvatarImage";
@@ -12,10 +12,14 @@ interface MemberNodeData extends Record<string, unknown> {
   onEdit: (member: FamilyMember) => void;
   onDelete: (member: FamilyMember) => void;
   onFocusMember?: (memberId: number | null) => void;
+  onFocusBranch?: (memberId: number) => void;
+  onExpandBranch?: (memberId: number) => void;
+  hiddenDescendantCount?: number;
+  branchExpanded?: boolean;
 }
 
 function MemberMindmapNodeComponent({ data }: NodeProps<FamilyMindmapNode>) {
-  const { member, onView, onEdit, onDelete, onFocusMember } = data as MemberNodeData;
+  const { member, onView, onEdit, onDelete, onFocusMember, onFocusBranch, onExpandBranch, hiddenDescendantCount = 0, branchExpanded = false } = data as MemberNodeData;
   const { t, language } = useLanguage();
   const [menuOpen, setMenuOpen] = useState(false);
   const actionButtonRef = useRef<HTMLButtonElement>(null);
@@ -82,10 +86,16 @@ function MemberMindmapNodeComponent({ data }: NodeProps<FamilyMindmapNode>) {
         className="family-mindmap-card__action-trigger"><MoreVertical size={16} /></button>
       {menuOpen && <div className="family-mindmap-card__menu" role="menu" aria-label={t("admin.member_actions_for", { name })} onKeyDown={onMenuKeyDown}>
         <button type="button" role="menuitem" onClick={() => { setMenuOpen(false); onView(member); }}><Eye size={14} />{t("admin.view_detail", { defaultValue: "Xem chi tiết" })}</button>
+        <button type="button" role="menuitem" onClick={() => { setMenuOpen(false); onFocusBranch?.(member.id); }}><GitBranch size={14} />{t("admin.mindmap_focus_branch", { defaultValue: "Xem nhánh người này" })}</button>
         <button type="button" role="menuitem" onClick={() => { setMenuOpen(false); onEdit(member); }}><Edit2 size={14} />{t("admin.edit", { defaultValue: "Chỉnh sửa" })}</button>
         <button type="button" role="menuitem" className="is-delete" onClick={() => { setMenuOpen(false); onDelete(member); }}><Trash2 size={14} />{t("admin.delete", { defaultValue: "Xóa" })}</button>
       </div>}
     </div>
+    {hiddenDescendantCount > 0 && <button type="button" className="family-mindmap-card__expand"
+      aria-expanded={branchExpanded} aria-label={t("admin.mindmap_expand_descendants", { count: hiddenDescendantCount, defaultValue: `${branchExpanded ? "Thu gọn" : "Mở"} ${hiddenDescendantCount} hậu duệ` })}
+      onClick={() => onExpandBranch?.(member.id)}>
+      {branchExpanded ? "−" : `+${hiddenDescendantCount}`} {branchExpanded ? t("admin.mindmap_collapse", { defaultValue: "Thu gọn" }) : t("admin.mindmap_descendants", { defaultValue: "hậu duệ" })}
+    </button>}
   </article>;
 }
 

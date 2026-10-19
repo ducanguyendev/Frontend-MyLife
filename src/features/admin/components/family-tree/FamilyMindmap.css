@@ -56,6 +56,11 @@
   z-index: 4 !important;
 }
 
+.family-mindmap-shell .react-flow__node-member.is-focus-person .family-mindmap-card {
+  border-color: color-mix(in srgb, var(--accent-color, #527a68) 72%, var(--family-tree-card-border));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-color, #527a68) 15%, transparent), 0 8px 24px rgb(15 23 42 / 11%);
+}
+
 .family-mindmap-card {
   position: relative;
   width: 196px;
@@ -241,6 +246,41 @@
 .family-mindmap-card__menu button.is-delete:hover {
   background: color-mix(in srgb, var(--error-color, #dc2626) 10%, transparent);
   color: var(--error-color, #dc2626);
+}
+
+.family-mindmap-card__expand {
+  position: absolute;
+  z-index: 6;
+  bottom: -13px;
+  left: 50%;
+  display: inline-flex;
+  min-height: 25px;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 0 9px;
+  transform: translateX(-50%);
+  border: 1px solid var(--family-tree-card-border);
+  border-radius: 999px;
+  background: var(--family-tree-card);
+  box-shadow: 0 3px 10px rgb(15 23 42 / 9%);
+  color: var(--accent-color, #527a68);
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: background-color 280ms ease, border-color 280ms ease, transform 280ms ease;
+}
+
+.family-mindmap-card__expand:hover,
+.family-mindmap-card__expand:focus-visible {
+  border-color: var(--accent-color, #527a68);
+  background: color-mix(in srgb, var(--accent-color, #527a68) 8%, var(--family-tree-card));
+}
+
+.family-mindmap-card__expand:focus-visible {
+  outline: 2px solid var(--accent-color, #527a68);
+  outline-offset: 2px;
 }
 
 .family-mindmap-card .react-flow__handle {
