@@ -20,6 +20,8 @@ export interface FamilyMapData {
   locatedMembers: number;
   unlocatedMembers: number;
   pendingGeocodingMembers: number;
+  noAddressMembers: number;
+  failedGeocodingMembers: number;
   locations: FamilyMapLocation[];
 }
 

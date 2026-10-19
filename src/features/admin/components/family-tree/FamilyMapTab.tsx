@@ -20,7 +20,7 @@ function MapViewport({ locations }: { locations: FamilyMapLocation[] }) {
     if (locations.length === 0) {
       map.setView(VIETNAM_CENTER, 5);
     } else if (locations.length === 1) {
-      map.setView([locations[0].latitude, locations[0].longitude], 8);
+      map.setView([locations[0].latitude, locations[0].longitude], 13);
     } else {
       map.fitBounds(locations.map(location => [location.latitude, location.longitude]), { padding: [28, 28], maxZoom: 8 });
     }
@@ -68,6 +68,17 @@ export const FamilyMapTab: React.FC = () => {
     { label: t('admin.family_map.compact_unlocated'), value: data?.unlocatedMembers ?? 0, icon: Globe },
     { label: t('admin.family_map.compact_regions'), value: locations.length, icon: Layers3 },
   ], [data, locations.length, t]);
+
+  const hasGeocodingStatus = Boolean(data && (
+    data.pendingGeocodingMembers > 0 || (data.noAddressMembers ?? 0) > 0 || (data.failedGeocodingMembers ?? 0) > 0
+  ));
+  const geocodingStatus = hasGeocodingStatus && data ? (
+    <div className="flex flex-wrap justify-center gap-x-3 gap-y-1 text-xs text-secondary-text" aria-label={t('admin.family_map.geocoding_status')}>
+      {(data.noAddressMembers ?? 0) > 0 && <span>{t('admin.family_map.no_address_status', { count: data.noAddressMembers })}</span>}
+      {data.pendingGeocodingMembers > 0 && <span role="status">{t('admin.family_map.pending_status', { count: data.pendingGeocodingMembers })}</span>}
+      {(data.failedGeocodingMembers ?? 0) > 0 && <span>{t('admin.family_map.failed_status', { count: data.failedGeocodingMembers })}</span>}
+    </div>
+  ) : null;
 
   const retry = () => {
     setLoading(true);
@@ -118,6 +129,7 @@ export const FamilyMapTab: React.FC = () => {
             <MapPin size={30} className="text-accent" aria-hidden="true" />
             <p className="font-medium text-primary-text">{t('admin.family_map.no_locations')}</p>
             <p className="max-w-md text-sm">{t('admin.family_map.update_address')}</p>
+            {geocodingStatus}
             {error && <button type="button" className="mt-2 text-sm font-semibold text-accent underline-offset-4 hover:underline" onClick={retry}>{t('admin.family_map.retry')}</button>}
           </div>
         ) : data && locations.length > 0 ? (
@@ -158,7 +170,7 @@ export const FamilyMapTab: React.FC = () => {
               ))}
             </ul>
 
-            {(error || data.pendingGeocodingMembers > 0) && (
+            {(error || hasGeocodingStatus) && (
               <div className="absolute bottom-8 left-1/2 z-[450] flex max-w-[calc(100%-1rem)] -translate-x-1/2 flex-wrap items-center justify-center gap-2 rounded-xl border border-custom-border bg-secondary-bg/95 px-3 py-2 text-xs text-secondary-text shadow-sm backdrop-blur-md">
                 {error && (
                   <p role="alert" className="flex flex-wrap items-center justify-center gap-2">
@@ -167,11 +179,12 @@ export const FamilyMapTab: React.FC = () => {
                   </p>
                 )}
                 {data.pendingGeocodingMembers > 0 && (
-                  <p role="status" className="inline-flex items-center gap-2">
+                  <p className="inline-flex items-center gap-2">
                     <Loader2 size={14} className="shrink-0 animate-spin text-accent" aria-hidden="true" />
                     {t('admin.family_map.locating')}
                   </p>
                 )}
+                {geocodingStatus}
               </div>
             )}
           </>

@@ -14,6 +14,8 @@ test('Family map uses the authenticated backend distribution API and real Leafle
   assert.match(component, /tile\.openstreetmap\.org/);
   assert.match(component, /OpenStreetMap contributors/);
   assert.match(component, /fitBounds/);
+  assert.match(component, /center=\{\[location\.latitude, location\.longitude\]\}/);
+  assert.doesNotMatch(component, /Math\.round\([^\n]*(?:latitude|longitude)/i);
   assert.match(component, /data\?\.totalMembers/);
   assert.doesNotMatch(component, /245\s*members|245\s*thành viên|142\s*members|142\s*thành viên|68\s*members|68\s*thành viên/i);
   assert.doesNotMatch(component, /const\s+regions\s*=\s*\[/);
@@ -33,7 +35,7 @@ test('Family map retains its single API owner, five-second polling, viewport fit
   assert.match(component, /getFamilyMapDistribution\(signal\)/);
   assert.match(component, /setInterval\(\(\) => void load\(\), 5000\)/);
   assert.match(component, /map\.setView\(VIETNAM_CENTER, 5\)/);
-  assert.match(component, /map\.setView\(\[locations\[0\]\.latitude, locations\[0\]\.longitude\], 8\)/);
+  assert.match(component, /map\.setView\(\[locations\[0\]\.latitude, locations\[0\]\.longitude\], 13\)/);
   assert.match(component, /map\.fitBounds/);
   for (const layer of ['MapContainer', 'TileLayer', 'CircleMarker', 'Tooltip', 'Popup']) assert.ok(component.includes(layer));
   assert.match(component, /openstreetmap\.org\/copyright/);
@@ -44,6 +46,7 @@ test('Family map retains its single API owner, five-second polling, viewport fit
 test('Family map uses a full workspace with overlay stats and a data-backed distribution panel', () => {
   const page = read('src/features/my-life/pages/FamilyMapPage.tsx');
   const component = read('src/features/admin/components/family-tree/FamilyMapTab.tsx');
+  const service = read('src/features/admin/services/familyMapService.ts');
   const css = read('src/features/admin/components/family-tree/FamilyMapTab.css');
   const modal = read('src/shared/components/ui/Modal.tsx');
   assert.match(page, /contentScroll="hidden"/);
@@ -67,11 +70,16 @@ test('Family map uses a full workspace with overlay stats and a data-backed dist
   assert.match(modal, /reducedMotion \? \{ duration: 0\.01 \}/);
   assert.match(component, /void load\(controller\.signal\);[\s\S]*?\}, \[load\]\);/);
   assert.match(component, /\}, \[data\?\.pendingGeocodingMembers, load\]\);/);
+  assert.match(service, /noAddressMembers: number/);
+  assert.match(service, /failedGeocodingMembers: number/);
+  assert.match(component, /no_address_status/);
+  assert.match(component, /pending_status/);
+  assert.match(component, /failed_status/);
 });
 
 test('Vietnamese and English family map translations include every rendered key', () => {
   const vi = JSON.parse(read('src/shared/locales/vi/admin.json')).family_map;
   const en = JSON.parse(read('src/shared/locales/en/admin.json')).family_map;
-  const required = ['title', 'description', 'workspace_title', 'open_distribution', 'compact_total', 'compact_located', 'compact_unlocated', 'compact_regions', 'statistics', 'total', 'located', 'unlocated', 'regions', 'loading', 'error', 'retry', 'empty', 'no_locations', 'unknown_location', 'update_address', 'distribution', 'member_count', 'generation', 'more_members', 'view_members', 'locating'];
+  const required = ['title', 'description', 'workspace_title', 'open_distribution', 'compact_total', 'compact_located', 'compact_unlocated', 'compact_regions', 'statistics', 'total', 'located', 'unlocated', 'regions', 'loading', 'error', 'retry', 'empty', 'no_locations', 'unknown_location', 'update_address', 'distribution', 'member_count', 'generation', 'more_members', 'view_members', 'locating', 'geocoding_status', 'no_address_status', 'pending_status', 'failed_status'];
   for (const locale of [vi, en]) for (const key of required) assert.equal(typeof locale[key], 'string', `missing ${key}`);
 });

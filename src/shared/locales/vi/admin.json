@@ -348,7 +348,11 @@
     "generation": "Đời {{count}}",
     "more_members": "+ {{count}} thành viên khác",
     "view_members": "Thành viên tại khu vực",
-    "locating": "Đang xác định vị trí cho một số địa chỉ đã cập nhật…"
+    "locating": "Đang xác định vị trí cho một số địa chỉ đã cập nhật…",
+    "geocoding_status": "Trạng thái xác định vị trí",
+    "no_address_status": "Chưa có địa chỉ: {{count}}",
+    "pending_status": "Đang xác định: {{count}}",
+    "failed_status": "Chưa tìm thấy vị trí: {{count}}"
   },
   "section_family_relations": "Quan hệ gia đình & Con cái",
   "section_contact_address": "Thông tin liên hệ & Nơi ở",

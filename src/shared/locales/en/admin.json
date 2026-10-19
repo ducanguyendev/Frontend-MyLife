@@ -296,7 +296,11 @@
     "generation": "Generation {{count}}",
     "more_members": "+ {{count}} more members",
     "view_members": "Members in this area",
-    "locating": "Identifying locations for some updated addresses…"
+    "locating": "Identifying locations for some updated addresses…",
+    "geocoding_status": "Geocoding status",
+    "no_address_status": "No address: {{count}}",
+    "pending_status": "Locating: {{count}}",
+    "failed_status": "Location not found: {{count}}"
   },
   "section_family_relations": "Family Relations & Children",
   "section_contact_address": "Contact Information & Address",
