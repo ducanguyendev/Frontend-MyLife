@@ -29,4 +29,4 @@
 - Layout tests cover separate couple-owned trunks, midpoint alignment, child-specific drops, single-parent data, progressive disclosure, and large sibling groups.
 - Manual browser review of the named real family at 1920, 1536, 1440, 1366, 1024, 768, and 390px could not be run because this workspace has no browser surface or mounted real-family session. Review the Hồng Sơn/Nhung and Mai Anh branches, focus on Minh Đức, light/dark mode, and PNG at those sizes when a browser session is available.
 - Backend, database schema, mobile repository, and unrelated frontend modules were not changed. `FamilyChartView` and renderer configuration were left untouched.
-- Implementation commit: to be recorded after commit. Push status: to be recorded after push.
+- Implementation commit: `7cb4779` (`feat: refine premium family tree layout and branch visuals`). Push status: successfully pushed to `origin/feature_minhduc`.
