@@ -3,8 +3,13 @@
   --family-tree-view-surface: var(--secondary-bg, #fff);
   --family-tree-view-accent: #6e8c78;
   --family-tree-view-border: color-mix(in srgb, var(--custom-border, #d8dce3) 68%, #f1eadf);
-  --family-tree-view-line: color-mix(in srgb, var(--secondary-text, #64748b) 34%, #ece5da);
-  --family-tree-view-focus: color-mix(in srgb, var(--family-tree-view-accent) 66%, #c3d6cb);
+  --family-line-default: color-mix(in srgb, var(--secondary-text, #64748b) 34%, #e7e1d5);
+  --family-line-muted: var(--family-line-default);
+  --family-line-focus: color-mix(in srgb, var(--family-tree-view-accent) 58%, #bbcbbf);
+  --family-line-width: 1.5px;
+  --family-line-focus-width: 1.9px;
+  --family-tree-view-line: var(--family-line-default);
+  --family-tree-view-focus: var(--family-line-focus);
   position: relative;
   display: flex;
   width: 100%;
@@ -16,13 +21,24 @@
   border-radius: 24px;
   background:
     radial-gradient(ellipse at 50% -8%, color-mix(in srgb, var(--family-tree-view-accent) 7%, transparent), transparent 58%),
-    radial-gradient(circle, color-mix(in srgb, var(--family-tree-view-line) 36%, transparent) 1px, transparent 1.2px) 0 0 / 28px 28px,
+    radial-gradient(circle, color-mix(in srgb, var(--family-tree-view-line) 23%, transparent) 1px, transparent 1.2px) 0 0 / 30px 30px,
     var(--family-tree-view-bg);
   color: var(--primary-text);
   box-shadow: inset 0 1px rgb(255 255 255 / 42%), 0 14px 36px rgb(47 43 35 / 5%);
 }
 
 .family-tree-view-shell:fullscreen { width: 100vw; height: 100vh; min-height: 100vh; border: 0; border-radius: 0; }
+
+.dark .family-tree-view-shell,
+[data-theme="dark"] .family-tree-view-shell {
+  --family-line-default: color-mix(in srgb, var(--secondary-text, #a8b4aa) 48%, #59675e);
+  --family-line-muted: var(--family-line-default);
+  --family-line-focus: color-mix(in srgb, var(--family-tree-view-accent) 66%, #7e9d86);
+  background:
+    radial-gradient(ellipse at 50% -8%, color-mix(in srgb, var(--family-tree-view-accent) 9%, transparent), transparent 58%),
+    radial-gradient(circle, color-mix(in srgb, var(--family-tree-view-line) 20%, transparent) 1px, transparent 1.2px) 0 0 / 30px 30px,
+    var(--family-tree-view-bg);
+}
 
 .family-tree-view__toolbar {
   position: absolute;
@@ -81,12 +97,12 @@
 .family-tree-view__viewport.is-still .family-tree-view__scene { transition: none; }
 .family-tree-view__scene { position: absolute; top: 0; left: 0; transform-origin: top left; transition: transform 420ms cubic-bezier(.2,.7,.2,1); }
 .family-tree-view__links { position: absolute; inset: 0; overflow: visible; pointer-events: none; }
-.family-tree-link { fill: none; stroke: var(--family-tree-view-line); stroke-width: 1.6px; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; transition: opacity 280ms ease, stroke 280ms ease, stroke-width 280ms ease; }
-.family-tree-link.is-related { stroke: var(--family-tree-view-focus); stroke-width: 2px; opacity: 1; }
-.family-tree-link.is-dimmed { opacity: .28; }
+.family-tree-link { fill: none; stroke: var(--family-line-default); stroke-width: var(--family-line-width); stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; transition: opacity 320ms ease, stroke 320ms ease, stroke-width 320ms ease; }
+.family-tree-link.is-related { stroke: var(--family-line-focus); stroke-width: var(--family-line-focus-width); opacity: 1; }
+.family-tree-link.is-dimmed { stroke: var(--family-line-muted); opacity: .3; }
 .family-tree-link--spouse { stroke: color-mix(in srgb, var(--family-tree-view-accent) 22%, var(--family-tree-view-line)); }
 .family-tree-link--spouse text { fill: var(--family-tree-view-accent); stroke: var(--family-tree-view-bg); stroke-width: 5px; paint-order: stroke; font-size: 13px; }
-.family-tree-link--extended { stroke: color-mix(in srgb, var(--family-tree-view-line) 72%, transparent); stroke-dasharray: 4 7; stroke-width: 1.3px; }
+.family-tree-link--extended { stroke: var(--family-line-muted); stroke-dasharray: 4 7; stroke-width: 1.3px; }
 .family-tree-view__generation { position: absolute; z-index: 3; padding: 5px 10px; border: 1px solid var(--family-tree-view-border); border-radius: 999px; background: color-mix(in srgb, var(--family-tree-view-surface) 88%, transparent); color: var(--secondary-text); font-size: 10px; font-weight: 760; letter-spacing: .11em; text-transform: uppercase; pointer-events: none; }
 .family-tree-view__hint { position: absolute; right: 18px; bottom: 16px; padding: 7px 11px; border: 1px solid var(--family-tree-view-border); border-radius: 999px; background: color-mix(in srgb, var(--family-tree-view-surface) 88%, transparent); color: var(--secondary-text); font-size: 10px; opacity: .72; pointer-events: none; }
 .family-tree-view__status { position: absolute; right: 16px; top: 76px; padding: 8px 12px; border: 1px solid var(--family-tree-view-border); border-radius: 999px; background: var(--family-tree-view-surface); color: var(--secondary-text); font-size: 11px; box-shadow: 0 5px 16px rgb(15 23 42 / 8%); }
@@ -95,30 +111,28 @@
   position: absolute;
   z-index: 2;
   display: flex;
-  width: 218px;
-  height: 166px;
+  width: 232px;
+  height: 178px;
   flex-direction: column;
   align-items: center;
-  padding: 13px 14px 11px;
+  padding: 12px 14px 11px;
   border: 1px solid var(--family-tree-view-border);
   border-radius: 22px;
   background: var(--family-tree-view-surface);
   box-shadow: 0 2px 6px rgb(53 49 40 / 4%), 0 10px 25px rgb(53 49 40 / 9%);
-  transition: transform 280ms cubic-bezier(.2,.7,.2,1), box-shadow 280ms ease, border-color 280ms ease, opacity 280ms ease, filter 280ms ease;
+  transition: left 320ms cubic-bezier(.2,.7,.2,1), top 320ms cubic-bezier(.2,.7,.2,1), transform 280ms cubic-bezier(.2,.7,.2,1), box-shadow 280ms ease, border-color 280ms ease, filter 320ms ease;
   user-select: text;
 }
 .family-person-card:hover { z-index: 4; transform: translateY(-3px); box-shadow: 0 5px 12px rgb(53 49 40 / 6%), 0 18px 38px rgb(53 49 40 / 13%); }
 .family-person-card.is-focused { border-color: color-mix(in srgb, var(--family-tree-view-accent) 58%, var(--family-tree-view-border)); box-shadow: 0 0 0 4px color-mix(in srgb, var(--family-tree-view-accent) 11%, transparent), 0 12px 30px rgb(53 49 40 / 11%); }
 .family-person-card.is-deceased { background: color-mix(in srgb, var(--family-tree-view-surface) 94%, var(--secondary-text) 6%); }
-.family-person-card__portrait { display: grid; width: 64px; height: 64px; flex: none; place-items: center; margin-bottom: 6px; padding: 3px; border: 1px solid color-mix(in srgb, var(--family-tree-view-accent) 30%, var(--family-tree-view-border)); border-radius: 50%; background: var(--family-tree-view-surface); cursor: pointer; }
+.family-person-card__portrait { display: grid; width: 72px; height: 72px; flex: none; place-items: center; margin-bottom: 5px; padding: 3px; border: 1px solid color-mix(in srgb, var(--family-tree-view-accent) 30%, var(--family-tree-view-border)); border-radius: 50%; background: var(--family-tree-view-surface); box-shadow: 0 2px 8px rgb(53 49 40 / 7%); cursor: pointer; }
 .family-person-card__portrait:focus-visible,.family-person-card__name:focus-visible,.family-person-card__action-trigger:focus-visible,.family-person-card__menu button:focus-visible,.family-person-card__expand:focus-visible { outline: 2px solid var(--family-tree-view-accent); outline-offset: 3px; }
 .family-person-card__avatar { width: 100%; height: 100%; overflow: hidden; border-radius: 50%; object-fit: cover; }
 .family-person-card__copy { display: flex; width: 100%; min-height: 0; flex: 1; flex-direction: column; align-items: center; }
-.family-person-card__name { display: -webkit-box; max-width: 100%; overflow: hidden; padding: 0; border: 0; background: transparent; color: var(--primary-text); cursor: pointer; font-size: 13px; font-weight: 760; line-height: 1.2; text-align: center; overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.family-person-card__name { display: -webkit-box; max-width: 100%; overflow: hidden; padding: 0; border: 0; background: transparent; color: var(--primary-text); cursor: pointer; font-size: 14px; font-weight: 720; line-height: 1.2; text-align: center; overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 .family-person-card__role { max-width: 100%; margin-top: 3px; overflow: hidden; color: var(--secondary-text); font-size: 10px; line-height: 1.15; text-overflow: ellipsis; white-space: nowrap; }
-.family-person-card__meta { display: inline-flex; align-items: center; gap: 6px; margin-top: auto; padding-top: 6px; color: var(--secondary-text); font-size: 9px; font-weight: 650; }
-.family-person-card__meta span:nth-child(3) { display: inline-flex; align-items: center; gap: 3px; }
-.family-person-card__memorial { display: inline-flex; align-items: center; gap: 4px; margin-top: 4px; color: var(--secondary-text); font-size: 9px; opacity: .76; }
+.family-person-card__meta { display: block; max-width: 100%; margin-top: auto; padding-top: 7px; overflow: hidden; color: var(--secondary-text); font-size: 9px; font-weight: 620; line-height: 1.2; text-overflow: ellipsis; white-space: nowrap; }
 .family-person-card__actions { position: absolute; z-index: 5; top: 6px; right: 6px; visibility: hidden; opacity: 0; transition: opacity 180ms ease, visibility 180ms ease; }
 .family-person-card:hover .family-person-card__actions,.family-person-card:focus-within .family-person-card__actions,.family-person-card__actions:has([aria-expanded="true"]) { visibility: visible; opacity: 1; }
 .family-person-card__action-trigger { display: grid; width: 28px; height: 28px; place-items: center; border: 1px solid var(--family-tree-view-border); border-radius: 50%; background: var(--family-tree-view-surface); color: var(--secondary-text); cursor: pointer; }
@@ -126,14 +140,11 @@
 .family-person-card__menu button { display: flex; min-height: 34px; align-items: center; gap: 8px; padding: 0 8px; border: 0; border-radius: 8px; background: transparent; color: var(--secondary-text); cursor: pointer; font-size: 10px; text-align: left; }
 .family-person-card__menu button:hover { background: color-mix(in srgb, var(--family-tree-view-accent) 9%, transparent); color: var(--primary-text); }
 .family-person-card__menu button.is-delete:hover { background: color-mix(in srgb, var(--error-color, #dc2626) 10%, transparent); color: var(--error-color, #dc2626); }
-.family-person-card__expand { position: absolute; z-index: 5; right: 50%; bottom: -14px; display: inline-flex; min-height: 27px; align-items: center; justify-content: center; gap: 5px; padding: 0 10px; transform: translateX(50%); border: 1px solid color-mix(in srgb, var(--family-tree-view-accent) 24%, var(--family-tree-view-border)); border-radius: 999px; background: var(--family-tree-view-surface); box-shadow: 0 3px 10px rgb(53 49 40 / 9%); color: var(--family-tree-view-accent); cursor: pointer; font-size: 9px; font-weight: 730; white-space: nowrap; transition: background 220ms ease, transform 220ms ease; }
+.family-person-card__expand { position: absolute; z-index: 5; right: 50%; bottom: -13px; display: inline-flex; min-width: 34px; min-height: 27px; align-items: center; justify-content: center; padding: 0 8px; transform: translateX(50%); border: 1px solid color-mix(in srgb, var(--family-tree-view-accent) 24%, var(--family-tree-view-border)); border-radius: 999px; background: var(--family-tree-view-surface); box-shadow: 0 3px 10px rgb(53 49 40 / 9%); color: var(--family-tree-view-accent); cursor: pointer; font-size: 10px; font-weight: 730; white-space: nowrap; transition: background 220ms ease, transform 220ms ease; }
 .family-person-card__expand:hover { background: color-mix(in srgb, var(--family-tree-view-accent) 8%, var(--family-tree-view-surface)); }
-.family-person-card__expand svg { transition: transform 260ms ease; }
-.family-person-card__expand svg.is-rotated { transform: rotate(45deg); }
-.family-person-card.is-dimmed { opacity: .44; filter: saturate(.6); }
-.family-person-card.is-related { opacity: 1; }
+.family-person-card.is-dimmed { filter: saturate(.72); }
 
-.family-tree-view-shell.is-exporting .family-tree-view__toolbar,.family-tree-view-shell.is-exporting .family-tree-view__hint,.family-tree-view-shell.is-exporting .family-tree-view__status { display: none; }
+.family-tree-view-shell.is-exporting .family-tree-view__toolbar,.family-tree-view-shell.is-exporting .family-tree-view__hint,.family-tree-view-shell.is-exporting .family-tree-view__status,.family-tree-view-shell.is-exporting .family-person-card__actions,.family-tree-view-shell.is-exporting .family-person-card__expand { display: none; }
 @media (pointer: coarse) { .family-person-card__actions { visibility: visible; opacity: 1; } }
 @media (max-width: 720px) {
   .family-tree-view-shell { height: max(600px, 82vh); min-height: 580px; border-radius: 18px; }

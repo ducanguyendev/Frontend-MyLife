@@ -1,12 +1,12 @@
 import type { FamilyMember } from "../types";
 import type { FamilyViewLayout, FamilyViewLink, FamilyViewNode } from "./familyTreeTypes";
 
-export const FAMILY_CARD_WIDTH = 218;
-export const FAMILY_CARD_HEIGHT = 166;
-const PARTNER_GAP = 26;
-const UNIT_GAP = 52;
-const FAMILY_GAP = 76;
-const GENERATION_GAP = 56;
+export const FAMILY_CARD_WIDTH = 232;
+export const FAMILY_CARD_HEIGHT = 178;
+const PARTNER_GAP = 18;
+const UNIT_GAP = 40;
+const FAMILY_GAP = 32;
+const GENERATION_GAP = 52;
 const CANVAS_PADDING = 72;
 
 const pairKey = (ids: number[]) => [...new Set(ids)].sort((a, b) => a - b).join(":") || "root";
@@ -23,6 +23,18 @@ interface FamilyUnit {
 export function layoutFamilyView(members: FamilyMember[], showExtendedRelations = false): FamilyViewLayout {
   if (!members.length) return { nodes: [], links: [], width: 0, height: 0 };
   const visibleIds = new Set(members.map(member => member.id));
+  const parentsByChild = new Map<number, Set<number>>();
+  const addParent = (childId: number, parentId: number | undefined) => {
+    if (parentId == null || parentId === childId || !visibleIds.has(parentId)) return;
+    const parentIds = parentsByChild.get(childId) ?? new Set<number>();
+    parentIds.add(parentId);
+    parentsByChild.set(childId, parentIds);
+  };
+  for (const member of members) {
+    addParent(member.id, member.fatherId);
+    addParent(member.id, member.motherId);
+    for (const childId of member.childIds ?? []) if (visibleIds.has(childId) && childId !== member.id) addParent(childId, member.id);
+  }
   const generations = [...new Set(members.map(member => member.generation))].sort((a, b) => a - b);
   const generationIndex = new Map(generations.map((generation, index) => [generation, index]));
   const positions = new Map<number, { x: number; y: number }>();
@@ -40,7 +52,7 @@ export function layoutFamilyView(members: FamilyMember[], showExtendedRelations 
       const spouse = person.spouseId == null ? undefined : remaining.get(person.spouseId);
       const ids = spouse ? [person.id, spouse.id].sort((a, b) => a - b) : [person.id];
       ids.forEach(id => remaining.delete(id));
-      const parents = [person.fatherId, person.motherId].filter((id): id is number => id != null && visibleIds.has(id));
+      const parents = [...(parentsByChild.get(person.id) ?? [])];
       const parentKey = pairKey(parents);
       const parentCenters = parents.map(id => positions.get(id)).filter((value): value is { x: number; y: number } => !!value)
         .map(value => value.x + FAMILY_CARD_WIDTH / 2);
@@ -98,19 +110,19 @@ export function layoutFamilyView(members: FamilyMember[], showExtendedRelations 
   const nodeById = new Map(nodes.map(node => [node.member.id, node]));
   const links: FamilyViewLink[] = [];
 
-  // Couple connection remains a short center mark; child groups share one trunk and one local sibling rail.
+  // Couple connection stays short and centered; each parent unit owns one local shared trunk and rail.
   for (const key of spousePairs) {
     const [firstId, secondId] = key.split(":").map(Number);
     const first = nodeById.get(firstId); const second = nodeById.get(secondId);
     if (!first || !second || first.y !== second.y) continue;
-    const x1 = first.x + first.width; const x2 = second.x;
+    const x1 = first.x + first.width + 3; const x2 = second.x - 3;
     const y = first.y + first.height / 2;
     links.push({ id: `spouse-${key}`, path: `M ${x1} ${y} L ${x2} ${y}`, kind: "spouse", memberIds: [firstId, secondId], labelX: (x1 + x2) / 2, labelY: y });
   }
 
   const childGroups = new Map<string, FamilyMember[]>();
   for (const child of members) {
-    const parents = [child.fatherId, child.motherId].filter((id): id is number => id != null && visibleIds.has(id));
+    const parents = [...(parentsByChild.get(child.id) ?? [])];
     if (!parents.length) continue;
     const key = pairKey(parents);
     const group = childGroups.get(key) ?? [];
@@ -127,10 +139,32 @@ export function layoutFamilyView(members: FamilyMember[], showExtendedRelations 
     if (!childNodes.length) continue;
     const childCenters = childNodes.map(node => node.x + node.width / 2).sort((a, b) => a - b);
     const railY = childNodes[0].y - 30;
-    const path = childNodes.length === 1
-      ? `M ${sourceX} ${sourceY} C ${sourceX} ${(sourceY + railY) / 2}, ${childCenters[0]} ${(sourceY + railY) / 2}, ${childCenters[0]} ${childNodes[0].y}`
-      : `M ${sourceX} ${sourceY} L ${sourceX} ${railY} M ${childCenters[0]} ${railY} L ${childCenters.at(-1)} ${railY} ${childCenters.map((x, index) => `M ${x} ${railY} L ${x} ${childNodes[index].y}`).join(" ")}`;
-    links.push({ id: `family-${key}`, path, kind: "family", memberIds: [...parentIds, ...childNodes.map(node => node.member.id)] });
+    if (childNodes.length === 1) {
+      const child = childNodes[0];
+      const childCenter = child.x + child.width / 2;
+      links.push({
+        id: `family-${key}`,
+        path: `M ${sourceX} ${sourceY} C ${sourceX} ${(sourceY + child.y) / 2}, ${childCenter} ${(sourceY + child.y) / 2}, ${childCenter} ${child.y}`,
+        kind: "family",
+        memberIds: [...parentIds, child.member.id],
+      });
+      continue;
+    }
+    links.push({
+      id: `family-${key}`,
+      path: `M ${sourceX} ${sourceY} L ${sourceX} ${railY} M ${childCenters[0]} ${railY} L ${childCenters.at(-1)} ${railY}`,
+      kind: "family",
+      memberIds: parentIds,
+    });
+    childNodes.forEach(child => {
+      const childCenter = child.x + child.width / 2;
+      links.push({
+        id: `family-child-${key}-${child.member.id}`,
+        path: `M ${childCenter} ${railY} L ${childCenter} ${child.y}`,
+        kind: "family-child",
+        memberIds: [child.member.id],
+      });
+    });
   }
 
   if (showExtendedRelations) {

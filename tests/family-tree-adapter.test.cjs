@@ -43,7 +43,7 @@ test('focused family context is the default at every size; explicit overview sho
   assert.equal(getVisibleFamilyMembers(large, 1, new Set(), true).length, large.length);
 });
 
-test('large family view starts at focus context and expands descendants by one branch level', () => {
+test('medium family view reveals one nearby descendant generation and keeps deeper descendants collapsed', () => {
   const people = [
     person(1, { generation: 1, spouseId: 2 }), person(2, { generation: 1, spouseId: 1 }),
     person(3, { generation: 2, fatherId: 1, motherId: 2, childIds: [5, 6] }),
@@ -52,29 +52,67 @@ test('large family view starts at focus context and expands descendants by one b
     person(7, { generation: 2, spouseId: 4 }),
     person(8, { generation: 4, fatherId: 5 }),
     ...Array.from({ length: 12 }, (_, index) => person(index + 9, { generation: 4 })),
+    person(21, { generation: 5, fatherId: 8 }),
   ];
   const index = buildFamilyTreeIndex(people);
   const visible = getVisibleFamilyMembers(people, 3, new Set(), false, index);
   const ids = new Set(visible.map(member => member.id));
   assert.ok([1, 2, 3, 4, 5, 6].every(id => ids.has(id)), 'focus, parents, sibling and children provide context');
-  assert.ok(!ids.has(8), 'distant descendants stay collapsed');
+  assert.ok(ids.has(8), 'one nearby descendant generation is available in a medium tree');
+  assert.ok(!ids.has(21), 'deeper descendants stay collapsed');
   assert.equal(getHiddenDescendantCount(people[2], index, ids), 1, 'hidden descendants are counted');
-  const expanded = getVisibleFamilyMembers(people, 3, new Set([5]), false, index);
-  assert.ok(expanded.some(member => member.id === 8), 'expanding a child reveals the next descendant generation');
+  const expanded = getVisibleFamilyMembers(people, 3, new Set([8]), false, index);
+  assert.ok(expanded.some(member => member.id === 21), 'expanding a child reveals its next descendant generation');
 });
 
-test('hover focus highlights the immediate household, grandparents, siblings and their partners', () => {
+test('small trees can reveal the focused descendant branch without showing unrelated members', () => {
+  const people = [
+    person(1, { generation: 1, childIds: [2] }), person(2, { generation: 2, fatherId: 1, childIds: [3] }),
+    person(3, { generation: 3, fatherId: 2 }), person(4, { generation: 1 }), person(5, { generation: 2 }),
+  ];
+  const visible = new Set(getVisibleFamilyMembers(people, 1, new Set()).map(member => member.id));
+  assert.deepEqual(Array.from(visible).sort((a, b) => a - b), [1, 2, 3]);
+});
+
+test('large trees keep the focused branch compact until the user expands deeper relatives', () => {
+  const people = Array.from({ length: 36 }, (_, index) => {
+    const id = index + 1;
+    return person(id, { generation: id, fatherId: id > 1 ? id - 1 : undefined, childIds: id < 36 ? [id + 1] : [] });
+  });
+  const visible = new Set(getVisibleFamilyMembers(people, 1, new Set()).map(member => member.id));
+  assert.ok(visible.has(2));
+  assert.ok(!visible.has(3));
+  const expanded = new Set(getVisibleFamilyMembers(people, 1, new Set([2])).map(member => member.id));
+  assert.ok(expanded.has(3));
+  assert.ok(!expanded.has(4));
+});
+
+test('large sibling groups reveal a focused neighborhood and keep the rest behind the parent branch control', () => {
+  const people = [person(1, { generation: 1, childIds: Array.from({ length: 40 }, (_, index) => index + 2) })];
+  people.push(...Array.from({ length: 40 }, (_, index) => person(index + 2, { generation: 2, fatherId: 1 })));
+  const visible = getVisibleFamilyMembers(people, 2, new Set());
+  const visibleIds = new Set(visible.map(member => member.id));
+  const visibleSiblings = people.slice(1).filter(member => visibleIds.has(member.id));
+  assert.equal(visibleSiblings.length, 12);
+  assert.ok(getHiddenDescendantCount(people[0], buildFamilyTreeIndex(people), visibleIds) > 0);
+  const expanded = getVisibleFamilyMembers(people, 2, new Set([1]));
+  assert.equal(expanded.length, people.length);
+});
+
+test('hover focus highlights actual parents, spouse and children without lighting siblings or other branches', () => {
   const people = [
     person(1, { generation: 1 }), person(2, { generation: 1 }),
     person(3, { generation: 2, fatherId: 1, motherId: 2 }), person(4, { generation: 2, fatherId: 1, motherId: 2 }),
-    person(5, { generation: 3, fatherId: 3, motherId: 4, childIds: [8] }),
+    person(5, { generation: 3, fatherId: 3, motherId: 4, spouseId: 12, childIds: [8] }),
     person(6, { generation: 3, fatherId: 3, motherId: 4, spouseId: 7 }), person(7, { generation: 3, spouseId: 6 }),
-    person(8, { generation: 4, fatherId: 5, spouseId: 9 }), person(9, { generation: 4, spouseId: 8 }), person(10),
+    person(8, { generation: 4, fatherId: 5, motherId: 12, spouseId: 9 }), person(9, { generation: 4, spouseId: 8 }), person(10),
     person(11, { horizontalRelations: [{ memberId: 5, relationType: 'cousin' }] }),
+    person(12, { generation: 3, spouseId: 5 }),
   ];
   const focused = getRelatedFamilyMemberIds(people, 5);
-  for (const id of [1, 2, 3, 4, 5, 6, 7, 8, 9]) assert.ok(focused.has(id), `member ${id} belongs to the visible family context`);
-  assert.ok(!focused.has(10));
-  assert.ok(!focused.has(11));
+  for (const id of [3, 4, 5, 8, 12]) assert.ok(focused.has(id), `member ${id} is a direct household relation`);
+  for (const id of [1, 2, 6, 7, 9, 10, 11]) assert.ok(!focused.has(id), `member ${id} is outside the direct household highlight`);
+  assert.ok(getRelatedFamilyMemberIds(people, 12).has(8), 'hovering either spouse highlights their child');
+  assert.ok(!getRelatedFamilyMemberIds(people, 12).has(6), 'hovering a spouse does not brighten a sibling');
   assert.ok(getRelatedFamilyMemberIds(people, 5, true).has(11));
 });

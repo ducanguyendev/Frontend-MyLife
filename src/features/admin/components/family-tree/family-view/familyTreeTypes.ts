@@ -12,7 +12,7 @@ export interface FamilyViewNode {
 export interface FamilyViewLink {
   id: string;
   path: string;
-  kind: "family" | "spouse" | "extended";
+  kind: "family" | "family-child" | "spouse" | "extended";
   memberIds: number[];
   labelX?: number;
   labelY?: number;

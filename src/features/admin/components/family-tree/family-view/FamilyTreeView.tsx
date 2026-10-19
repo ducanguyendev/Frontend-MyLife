@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Download, Expand, Focus, GitBranch, Shrink, UsersRound, ZoomIn, ZoomOut } from "lucide-react";
 import { toPng } from "html-to-image";
-import { useReducedMotion } from "framer-motion";
+import { AnimatePresence, useReducedMotion } from "framer-motion";
 import { useLanguage } from "@/shared/hooks/useLanguage";
 import { adaptFamilyMembers, buildFamilyTreeIndex, chooseInitialFocus, getHiddenDescendantCount, getRelatedFamilyMemberIds, getVisibleFamilyMembers } from "../familyTreeAdapter";
 import type { FamilyMember } from "../types";
@@ -48,7 +48,7 @@ export const FamilyTreeView: React.FC<FamilyTreeViewProps> = ({ members, searchF
   const visibleIds = useMemo(() => new Set(visibleMembers.map(member => member.id)), [visibleMembers]);
   const hiddenCounts = useMemo(() => new Map(visibleMembers.map(member => [member.id, getHiddenDescendantCount(member, treeIndex, visibleIds)])), [visibleMembers, treeIndex, visibleIds]);
   const layout = useMemo(() => layoutFamilyView(visibleMembers, showExtendedRelations), [visibleMembers, showExtendedRelations]);
-  const activeMemberId = hoveredMemberId;
+  const activeMemberId = hoveredMemberId ?? focusedMemberId;
   const relatedMemberIds = useMemo(() => getRelatedFamilyMemberIds(treeMembers, activeMemberId, showExtendedRelations), [treeMembers, activeMemberId, showExtendedRelations]);
 
   const fitView = useCallback((animate = true) => {
@@ -57,7 +57,9 @@ export const FamilyTreeView: React.FC<FamilyTreeViewProps> = ({ members, searchF
     const bounds = viewport.getBoundingClientRect();
     const toolbarHeight = shellRef.current?.querySelector(".family-tree-view__toolbar")?.getBoundingClientRect().height ?? 64;
     const availableHeight = Math.max(160, bounds.height - toolbarHeight - 34);
-    const scale = clampScale(Math.min(Math.max(.68, (bounds.width - 48) / layout.width), availableHeight / layout.height, 1));
+    const minimumScale = bounds.width <= 720 ? .86 : bounds.width <= 1024 ? .8 : .68;
+    const fitScale = Math.min((bounds.width - 48) / layout.width, availableHeight / layout.height, 1);
+    const scale = clampScale(Math.max(minimumScale, fitScale));
     const focusedNode = layout.nodes.find(node => node.member.id === focusedMemberId);
     const focusedParentKey = focusedNode ? [focusedNode.member.fatherId, focusedNode.member.motherId].filter(id => id != null).sort((a, b) => a - b).join(":") : "";
     const focusCluster = focusedNode && focusedParentKey
@@ -164,9 +166,11 @@ export const FamilyTreeView: React.FC<FamilyTreeViewProps> = ({ members, searchF
   };
   const downloadPng = async () => {
     if (!shellRef.current) return;
+    setHoveredMemberId(null);
     fitView(false);
     setIsExporting(true);
     await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+    if (!reduceMotion) await new Promise<void>(resolve => window.setTimeout(resolve, 340));
     try {
       const dataUrl = await toPng(shellRef.current, { pixelRatio: members.length > 100 ? 1.5 : 2, skipFonts: true });
       const anchor = document.createElement("a"); anchor.download = "mylife-family-tree.png"; anchor.href = dataUrl; anchor.click();
@@ -198,13 +202,16 @@ export const FamilyTreeView: React.FC<FamilyTreeViewProps> = ({ members, searchF
       tabIndex={0} onKeyDown={onViewportKeyDown} onWheel={onWheel} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerEnd} onPointerCancel={onPointerEnd}>
       <div ref={sceneRef} className="family-tree-view__scene" style={sceneStyle}>
         <FamilyBranch links={layout.links} width={layout.width} height={layout.height} activeMemberId={activeMemberId} relatedMemberIds={relatedMemberIds} />
-        {layout.nodes.map(node => {
-          const member = node.member;
-          const related = activeMemberId == null || relatedMemberIds.has(member.id);
-          return <FamilyPersonCard key={member.id} member={member} x={node.x} y={node.y} focused={member.id === focusedMemberId}
-            highlighted={activeMemberId != null && related} dimmed={activeMemberId != null && !related} hiddenCount={hiddenCounts.get(member.id) ?? 0} expanded={expandedIds.has(member.id)} onFocus={focusMember}
-            onHover={setHoveredMemberId} onExpand={toggleExpanded} onView={onView} onEdit={onEdit} onDelete={onDelete} />;
-        })}
+        <AnimatePresence initial={false}>
+          {layout.nodes.map(node => {
+            const member = node.member;
+            const related = activeMemberId == null || relatedMemberIds.has(member.id);
+            return <FamilyPersonCard key={member.id} member={member} x={node.x} y={node.y} focused={member.id === focusedMemberId}
+              highlighted={activeMemberId != null && related} dimmed={activeMemberId != null && !related} reducedMotion={Boolean(reduceMotion)}
+              hiddenCount={hiddenCounts.get(member.id) ?? 0} expanded={expandedIds.has(member.id)} onFocus={focusMember}
+              onHover={setHoveredMemberId} onExpand={toggleExpanded} onView={onView} onEdit={onEdit} onDelete={onDelete} />;
+          })}
+        </AnimatePresence>
       </div>
       {generations.map(generation => {
         const row = layout.nodes.filter(node => node.generation === generation);
