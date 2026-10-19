@@ -65,5 +65,5 @@ References: [Family Chart React quick start and data format](https://github.com/
 ## Git
 
 - Branch: `feature_minhduc`.
-- Commit SHA: to be recorded after commit; this report will include the implementation commit SHA in the follow-up report update.
-- Push: requested to `origin/feature_minhduc`; result will be recorded after push.
+- Implementation commit: `9faac64` (`feat: rebuild family tree as immersive genealogy view`).
+- Push result: `9faac64` pushed successfully to `origin/feature_minhduc`.
