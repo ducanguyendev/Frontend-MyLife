@@ -17,14 +17,16 @@ import {
   DeleteConfirmModal,
 } from "./family-tree";
 import { useFamilyMembers } from './family-tree/useFamilyMembers';
-import { FAMILY_TREE_RENDERER, IS_DEVELOPMENT_BUILD, IS_FAMILY_CHART_DEV_POC } from './family-tree/familyTreeRendererConfig';
+import { FAMILY_TREE_RENDERER, IS_DEVELOPMENT_BUILD, IS_FAMILY_CHART_DEV_POC, IS_MEMOIR_DEV_POC } from './family-tree/familyTreeRendererConfig';
 import { FamilyChartErrorBoundary } from './family-tree/FamilyChartErrorBoundary';
+import { FamilyTreeRendererErrorBoundary } from './family-tree/FamilyTreeRendererErrorBoundary';
 
 import { filterFamilyMembers } from './family-tree/memberSearch';
 const FamilyMindmap = lazy(() => import('./family-tree/FamilyMindmap').then(module => ({ default: module.FamilyMindmap })));
 const FamilyTreeView = lazy(() => import('./family-tree/family-view/FamilyTreeView').then(module => ({ default: module.FamilyTreeView })));
 // Keep the library evaluation limited to development/POC; the validated custom view remains the production renderer.
 const FamilyChartView = IS_FAMILY_CHART_DEV_POC ? lazy(() => import('./family-tree/FamilyChartView').then(module => ({ default: module.FamilyChartView }))) : null;
+const MemoirFamilyTreeView = IS_MEMOIR_DEV_POC ? lazy(() => import('./family-tree/MemoirFamilyTreeView').then(module => ({ default: module.MemoirFamilyTreeView }))) : null;
 
 export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast }) => {
   const { t } = useLanguage();
@@ -32,6 +34,7 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
   const { members, setMembers, loading, loadError, fetchMembers } = useFamilyMembers();
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
   const [familyChartFailed, setFamilyChartFailed] = useState(false);
+  const [memoirTreeFailed, setMemoirTreeFailed] = useState(false);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -60,6 +63,10 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
   const handleFamilyChartError = useCallback((error: Error) => {
     if (IS_DEVELOPMENT_BUILD) console.warn("[FamilyChart] POC failed; using stable FamilyTreeView fallback.", error);
     setFamilyChartFailed(true);
+  }, []);
+  const handleMemoirTreeError = useCallback((error: Error) => {
+    if (IS_DEVELOPMENT_BUILD) console.warn("[MemoirTree] POC failed; using stable FamilyTreeView fallback.", error);
+    setMemoirTreeFailed(true);
   }, []);
 
   const filteredMembers = useMemo(() => filterFamilyMembers(members, searchQuery, generationFilter), [members, searchQuery, generationFilter]);
@@ -332,7 +339,25 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
               />
             ) : (
               <Suspense fallback={<div role="status">{t("admin.library_ui.loading")}</div>}>
-              {FAMILY_TREE_RENDERER === "family-chart" && FamilyChartView && !familyChartFailed ? <FamilyChartErrorBoundary
+              {FAMILY_TREE_RENDERER === "memoir" && MemoirFamilyTreeView && !memoirTreeFailed ? <FamilyTreeRendererErrorBoundary
+                onError={handleMemoirTreeError}
+                fallback={<FamilyTreeView
+                  members={members}
+                  searchFocusMemberId={searchQuery.trim() ? filteredMembers[0]?.id ?? null : null}
+                  generationFilterId={generationFilter === "all" ? null : Number(generationFilter)}
+                  onView={handleViewMember}
+                  onEdit={handleOpenModal}
+                  onDelete={setMemberToDelete}
+                />}
+              ><MemoirFamilyTreeView
+                members={members}
+                searchFocusMemberId={searchQuery.trim() ? filteredMembers[0]?.id ?? null : null}
+                generationFilterId={generationFilter === "all" ? null : Number(generationFilter)}
+                onView={handleViewMember}
+                onEdit={handleOpenModal}
+                onDelete={setMemberToDelete}
+                onRuntimeError={handleMemoirTreeError}
+              /></FamilyTreeRendererErrorBoundary> : FAMILY_TREE_RENDERER === "family-chart" && FamilyChartView && !familyChartFailed ? <FamilyChartErrorBoundary
                 onError={handleFamilyChartError}
                 fallback={<FamilyTreeView
                   members={members}

@@ -135,8 +135,9 @@ test('React Flow remains retained as an internal rollback path', () => {
   assert.match(manager, /const FamilyTreeView = lazy/);
   assert.match(manager, /FAMILY_TREE_RENDERER === "react-flow" \? <FamilyMindmap/);
   assert.match(manager, /: <FamilyTreeView/);
-  assert.match(rendererConfig, /requestedRenderer === "react-flow"/);
-  assert.match(rendererConfig, /IS_FAMILY_CHART_DEV_POC \? "family-chart" : "family-view"/);
+  assert.match(rendererConfig, /configuredRenderer === "react-flow"/);
+  assert.match(rendererConfig, /resolveFamilyTreeRenderer\(IS_DEVELOPMENT_BUILD, requestedRenderer\)/);
+  assert.match(rendererConfig, /configuredRenderer === "memoir"\) return isDevelopment \? "memoir" : "family-view"/);
 });
 
 test('family tree uses warm connector tokens, compact progressive controls, and presence animations', () => {

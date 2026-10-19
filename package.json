@@ -31,9 +31,11 @@
     "test:roles": "node --test tests/family-role.test.cjs",
     "test:optimization": "node --test tests/optimization.test.cjs",
     "test:family-chart": "node --test tests/family-chart-adapter.test.cjs",
-    "test:family-tree": "node --test tests/family-tree-adapter.test.cjs tests/family-tree-view.test.cjs"
+    "test:family-tree": "node --test tests/family-tree-adapter.test.cjs tests/family-tree-view.test.cjs",
+    "test:memoir-tree": "node --test tests/memoir-tree-adapter.test.cjs"
   },
   "dependencies": {
+    "@memoir/tree": "^0.8.0",
     "@radix-ui/react-select": "^2.4.1",
     "@tailwindcss/vite": "^4.3.3",
     "@xyflow/react": "^12.11.6",

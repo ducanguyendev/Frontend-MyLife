@@ -43,8 +43,9 @@ function familySetup(request) {
     '@/shared/components/SearchBar': { SearchBar: 'SearchBar' },
     '@/shared/api/apiClient': { apiClient }, '../services/featureMessages': messages,
     './family-tree/memberSearch': search, './family-tree': Object.fromEntries(names.map(name => [name,name])),
-    './family-tree/familyTreeRendererConfig': { FAMILY_TREE_RENDERER: 'family-chart', IS_FAMILY_CHART_DEV_POC: true },
+    './family-tree/familyTreeRendererConfig': { FAMILY_TREE_RENDERER: 'family-chart', IS_FAMILY_CHART_DEV_POC: true, IS_MEMOIR_DEV_POC: false, IS_DEVELOPMENT_BUILD: true },
     './family-tree/FamilyChartErrorBoundary': { FamilyChartErrorBoundary: 'FamilyChartErrorBoundary' },
+    './family-tree/FamilyTreeRendererErrorBoundary': { FamilyTreeRendererErrorBoundary: 'FamilyTreeRendererErrorBoundary' },
     './family-tree/useFamilyMembers': familyMembersHook,
   }, { document: { addEventListener() {}, removeEventListener() {}, getElementById: () => ({ focus() {} }) } });
   const render = () => h.render(FamilyTreeManager, { showToast: value => toast.push(value) }); render(); h.mount(); return { h, render, toast };
