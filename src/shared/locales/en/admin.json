@@ -193,6 +193,8 @@
   "role_placeholder": "Ex: Head of Clan, Member...",
   "field_phone": "Phone number",
   "field_address": "Address",
+  "address_autocomplete_placeholder": "Enter an address...",
+  "address_autocomplete_unavailable": "Address suggestions are unavailable. You can still enter an address manually.",
   "member_avatar_label": "Member avatar",
   "member_avatar_choose": "Choose image",
   "member_avatar_remove": "Remove image",

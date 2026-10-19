@@ -249,6 +249,8 @@
   "role_placeholder": "VD: Trưởng tộc, Thành viên...",
   "field_phone": "Số điện thoại",
   "field_address": "Địa chỉ",
+  "address_autocomplete_placeholder": "Nhập địa chỉ...",
+  "address_autocomplete_unavailable": "Không tải được gợi ý địa chỉ. Bạn vẫn có thể nhập thủ công.",
   "field_father": "Cha",
   "field_mother": "Mẹ",
   "field_spouse": "Vợ/Chồng",
