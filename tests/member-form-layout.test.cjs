@@ -44,3 +44,17 @@ test('form sibling chips contain only member name, generation badge and explicit
   assert.match(details, /getSiblingDisplayLabelKey/);
   assert.match(details, /getSiblingKind/);
 });
+
+test('basic information keeps birth date left, required status right and full-width conditional death date', () => {
+  const start = form.indexOf('{/* Ngày sinh */}');
+  const end = form.indexOf('</div>\n              </motion.div>', start);
+  const basicGrid = form.slice(start, end);
+  assert.ok(start >= 0 && end > start);
+  assert.match(basicGrid, /<DateInput[\s\S]*?label=\{t\("admin\.field_dob"/);
+  assert.match(basicGrid, /<Select[\s\S]*?label=\{t\("admin\.member_life_status\.label"\)\}[\s\S]*?floatingLabel[\s\S]*?required/);
+  assert.match(basicGrid, /className="md:col-span-2"[\s\S]*?<DateInput/);
+  assert.match(basicGrid, /editingMember\.lifeStatus === "DECEASED" &&/);
+  assert.match(form, /deathDate:\s*lifeStatus === "LIVING"\s*\?\s*null/);
+  assert.match(form, /grid-cols-1 md:grid-cols-2 gap-3\.5/);
+  assert.match(form, /from "@\/shared\/components\/ui";[\s\S]*?DateInput/);
+});

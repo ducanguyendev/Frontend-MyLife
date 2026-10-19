@@ -1,10 +1,16 @@
-import React from 'react';
-import { Calendar } from 'lucide-react';
+﻿import React from 'react';
+import { createPortal } from 'react-dom';
+import { DayPicker } from 'react-day-picker';
+import { format } from 'date-fns';
+import { enUS, vi } from 'date-fns/locale';
+import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Input, type InputProps } from './Input';
+import { useLanguage } from '@/shared/hooks/useLanguage';
 
 export interface DateInputProps extends Omit<InputProps, 'type' | 'inputMode'> {
   value: string;
   onValueChange?: (value: string) => void;
+  disableFuture?: boolean;
 }
 
 /**
@@ -91,7 +97,7 @@ export const validateCalendarDate = (
   if (month < 1 || month > 12) return { valid: false, error: 'month' };
   if (day < 1 || day > 31) return { valid: false, error: 'day' };
 
-  // setFullYear avoids JavaScript's special 1900 offset for constructor years 0–99.
+  // setFullYear avoids JavaScript's special 1900 offset for constructor years 0â€“99.
   const date = new Date(0);
   date.setFullYear(year, month - 1, day);
   date.setHours(0, 0, 0, 0);
@@ -205,157 +211,211 @@ export const validateDob = (
   return { valid: true, backendDate, date: dateObj };
 };
 
+export const parseDateInput = (value: string): Date | undefined => {
+  const result = validateCalendarDate(value, { allowFuture: true });
+  return result.valid ? result.date : undefined;
+};
+
+const dateToInputValue = (date: Date) =>
+  `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
+
+const weekdayLabel = (language: 'vi' | 'en') => (date: Date) =>
+  language === 'vi'
+    ? ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][date.getDay()]
+    : format(date, 'EEE', { locale: enUS });
+
 export const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(
-  (
-    {
-      value,
-      onChange,
-      onValueChange,
-      leftIcon,
-      rightIcon,
-      placeholder = 'DD/MM/YYYY',
-      maxLength = 10,
-      onKeyDown,
-      onPaste,
-      ...props
-    },
-    ref
-  ) => {
-    const hiddenPickerRef = React.useRef<HTMLInputElement>(null);
+  ({ value, onChange, onValueChange, leftIcon, rightIcon, placeholder = 'DD/MM/YYYY', maxLength = 10,
+    onKeyDown, onPaste, disableFuture = false, disabled, name, ...props }, forwardedRef) => {
+    const { language, t } = useLanguage();
+    const [isOpen, setIsOpen] = React.useState(false);
+    const [month, setMonth] = React.useState(() => parseDateInput(value) ?? new Date());
+    const [popupPosition, setPopupPosition] = React.useState<React.CSSProperties>({});
+    const rootRef = React.useRef<HTMLDivElement>(null);
+    const popupRef = React.useRef<HTMLDivElement>(null);
+    const buttonRef = React.useRef<HTMLButtonElement>(null);
+    const inputRef = React.useRef<HTMLInputElement>(null);
+    const locale = language === 'vi' ? vi : enUS;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const selectedDate = parseDateInput(value);
 
-    const handleOpenPicker = (e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      if (hiddenPickerRef.current) {
-        if ('showPicker' in hiddenPickerRef.current) {
-          try {
-            hiddenPickerRef.current.showPicker();
-            return;
-          } catch {
-            // Fallback to click
-          }
-        }
-        hiddenPickerRef.current.focus();
-        hiddenPickerRef.current.click();
-      }
-    };
+    const setInputRef = React.useCallback((node: HTMLInputElement | null) => {
+      inputRef.current = node;
+      if (typeof forwardedRef === 'function') forwardedRef(node);
+      else if (forwardedRef) forwardedRef.current = node;
+    }, [forwardedRef]);
 
-    const handlePickerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const isoVal = e.target.value; // "YYYY-MM-DD"
-      if (isoVal) {
-        const formatted = formatBackendToDob(isoVal);
-        onValueChange?.(formatted);
+    const updatePosition = React.useCallback(() => {
+      const anchor = rootRef.current?.getBoundingClientRect();
+      if (!anchor) return;
+      const width = Math.min(328, window.innerWidth - 24);
+      const estimatedHeight = 370;
+      const below = window.innerHeight - anchor.bottom;
+      const top = below >= estimatedHeight || below >= anchor.top
+        ? Math.max(8, Math.min(anchor.bottom + 6, window.innerHeight - estimatedHeight - 8))
+        : Math.max(8, anchor.top - estimatedHeight - 6);
+      const left = Math.max(12, Math.min(anchor.left, window.innerWidth - width - 12));
+      setPopupPosition({ position: 'fixed', top, left, width, maxHeight: window.innerHeight - 16, overflowY: 'auto', zIndex: 60 });
+    }, []);
 
-        if (onChange) {
-          const syntheticEvent = {
-            ...e,
-            target: { ...e.target, name: props.name || '', value: formatted },
-            currentTarget: { ...e.currentTarget, name: props.name || '', value: formatted },
-          } as unknown as React.ChangeEvent<HTMLInputElement>;
-          onChange(syntheticEvent);
-        }
-      }
-    };
+    React.useEffect(() => {
+      if (!isOpen) return;
+      updatePosition();
+      const onPointerDown = (event: PointerEvent) => {
+        const target = event.target as Node;
+        if (!rootRef.current?.contains(target) && !popupRef.current?.contains(target)) setIsOpen(false);
+      };
+      window.addEventListener('resize', updatePosition);
+      window.addEventListener('scroll', updatePosition, true);
+      document.addEventListener('pointerdown', onPointerDown);
+      const frame = requestAnimationFrame(() => popupRef.current?.querySelector<HTMLElement>('[tabindex="0"]')?.focus());
+      return () => {
+        cancelAnimationFrame(frame);
+        window.removeEventListener('resize', updatePosition);
+        window.removeEventListener('scroll', updatePosition, true);
+        document.removeEventListener('pointerdown', onPointerDown);
+      };
+    }, [isOpen, updatePosition]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const raw = e.target.value;
-      const formatted = formatDateInput(raw, String(value ?? ''));
-      e.target.value = formatted;
-
+    const emitValue = (formatted: string) => {
       onValueChange?.(formatted);
-      onChange?.(e);
+      if (onChange) {
+        const target = inputRef.current ?? ({ name: name || '', value: formatted } as HTMLInputElement);
+        target.name = name || '';
+        target.value = formatted;
+        onChange({ target, currentTarget: target } as React.ChangeEvent<HTMLInputElement>);
+      }
     };
 
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (
-        e.key === 'Backspace' ||
-        e.key === 'Delete' ||
-        e.key === 'Tab' ||
-        e.key === 'Enter' ||
-        e.key === 'ArrowLeft' ||
-        e.key === 'ArrowRight' ||
-        e.ctrlKey ||
-        e.metaKey
-      ) {
-        onKeyDown?.(e);
+    const handleOpenPicker = (event: React.MouseEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (disabled) return;
+      setMonth(parseDateInput(value) ?? new Date());
+      setIsOpen(open => !open);
+    };
+
+    const handleSelectDate = (date?: Date) => {
+      if (!date) return;
+      emitValue(dateToInputValue(date));
+      setMonth(date);
+      setIsOpen(false);
+      requestAnimationFrame(() => buttonRef.current?.focus());
+    };
+
+    const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      const formatted = formatDateInput(event.target.value, String(value ?? ''));
+      event.target.value = formatted;
+      onValueChange?.(formatted);
+      onChange?.(event);
+    };
+
+    const handlePaste = (event: React.ClipboardEvent<HTMLInputElement>) => {
+      event.preventDefault();
+      const target = event.target as HTMLInputElement;
+      target.value = formatDateInput(event.clipboardData.getData('text'), '');
+      onValueChange?.(target.value);
+      onChange?.({ target, currentTarget: target } as React.ChangeEvent<HTMLInputElement>);
+      onPaste?.(event);
+    };
+
+    const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+      if (['Backspace', 'Delete', 'Tab', 'Enter', 'ArrowLeft', 'ArrowRight'].includes(event.key) || event.ctrlKey || event.metaKey) {
+        onKeyDown?.(event);
         return;
       }
-
-      if (!/^[0-9/]$/.test(e.key)) {
-        e.preventDefault();
-        return;
-      }
-
-      onKeyDown?.(e);
+      if (!/^[0-9/]$/.test(event.key)) event.preventDefault();
+      onKeyDown?.(event);
     };
 
-    const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
-      e.preventDefault();
-      const pasted = e.clipboardData.getData('text');
-      const formatted = formatDateInput(pasted, '');
-
-      const target = e.target as HTMLInputElement;
-      target.value = formatted;
-      const syntheticEvent = {
-        ...e,
-        target,
-        currentTarget: target,
-      } as unknown as React.ChangeEvent<HTMLInputElement>;
-
-      onValueChange?.(formatted);
-      onChange?.(syntheticEvent);
-      onPaste?.(e);
+    const handlePopupKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      event.stopPropagation();
+      setIsOpen(false);
+      requestAnimationFrame(() => buttonRef.current?.focus());
     };
 
-    const defaultPickerButton = (
-      <button
-        type="button"
-        onClick={handleOpenPicker}
-        title="Chọn từ lịch"
-        className="p-1 rounded-lg text-secondary-text hover:text-accent hover:bg-secondary-bg/60 transition-colors cursor-pointer flex items-center justify-center focus:outline-none"
-        tabIndex={-1}
-        aria-label="Open date picker"
-      >
+    const chooseCalendarLabel = t('common.date_picker.choose_date', {
+      defaultValue: language === 'vi' ? 'Chọn ngày từ lịch' : 'Choose date from calendar',
+    });
+    const previousMonthLabel = t('common.date_picker.previous_month', {
+      defaultValue: language === 'vi' ? 'Tháng trước' : 'Previous month',
+    });
+    const nextMonthLabel = t('common.date_picker.next_month', {
+      defaultValue: language === 'vi' ? 'Tháng sau' : 'Next month',
+    });
+
+    const calendarButton = rightIcon !== undefined ? rightIcon : (
+      <button ref={buttonRef} type="button" onClick={handleOpenPicker} title={chooseCalendarLabel}
+        disabled={disabled} aria-label={chooseCalendarLabel} aria-haspopup="dialog" aria-expanded={isOpen}
+        className="flex cursor-pointer items-center justify-center rounded-lg p-1 text-secondary-text transition-colors hover:bg-secondary-bg/60 hover:text-accent    disabled:cursor-not-allowed">
         <Calendar size={18} />
       </button>
     );
 
     return (
-      <div className="relative w-full">
-        <Input
-          ref={ref}
-          type="text"
-          inputMode="numeric"
-          value={value}
-          onChange={handleChange}
-          onKeyDown={handleKeyDown}
-          onPaste={handlePaste}
-          placeholder={placeholder}
-          maxLength={maxLength}
-          leftIcon={leftIcon}
-          rightIcon={rightIcon !== undefined ? rightIcon : defaultPickerButton}
-          {...props}
-        />
-        <input
-          ref={hiddenPickerRef}
-          type="date"
-          tabIndex={-1}
-          aria-hidden="true"
-          value={formatDobToBackend(String(value ?? '')) || ''}
-          onChange={handlePickerChange}
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            right: 0,
-            width: 1,
-            height: 1,
-            opacity: 0,
-            pointerEvents: 'none',
-            border: 0,
-            padding: 0,
-            margin: 0,
-          }}
-        />
+      <div ref={rootRef} className="relative w-full">
+        <Input ref={setInputRef} type="text" inputMode="numeric" value={value} onChange={handleInputChange}
+          onKeyDown={handleKeyDown} onPaste={handlePaste} placeholder={placeholder} maxLength={maxLength}
+          leftIcon={leftIcon} rightIcon={calendarButton} disabled={disabled} name={name} {...props} />
+        {isOpen && typeof document !== 'undefined' && createPortal(
+          <div ref={popupRef} style={popupPosition} role="dialog" aria-label={t('common.date_picker.calendar', {
+            defaultValue: language === 'vi' ? 'Lịch chọn ngày' : 'Date picker calendar',
+          })} onKeyDown={handlePopupKeyDown}
+            className="rounded-2xl border border-custom-border bg-secondary-bg p-3 text-primary-text shadow-[0_8px_24px_rgb(0_0_0/0.12)]">
+            <DayPicker
+              mode="single" selected={selectedDate} onSelect={handleSelectDate}
+              month={month} onMonthChange={setMonth} locale={locale} weekStartsOn={1}
+              captionLayout="dropdown" startMonth={new Date(today.getFullYear() - 200, 0)}
+              endMonth={disableFuture ? today : new Date(today.getFullYear() + 100, 11)}
+              disabled={disableFuture ? { after: today } : undefined}
+              formatters={{
+                formatCaption: date => language === 'vi'
+                  ? `Tháng ${date.getMonth() + 1}, ${date.getFullYear()}`
+                  : format(date, 'MMMM yyyy', { locale: enUS }),
+                formatWeekdayName: weekdayLabel(language),
+              }}
+              labels={{
+                labelNext: () => nextMonthLabel,
+                labelPrevious: () => previousMonthLabel,
+                labelMonthDropdown: () => t('common.date_picker.month', { defaultValue: language === 'vi' ? 'Tháng' : 'Month' }),
+                labelYearDropdown: () => t('common.date_picker.year', { defaultValue: language === 'vi' ? 'Năm' : 'Year' }),
+              }}
+              components={{
+                PreviousMonthButton: buttonProps => <button {...buttonProps} aria-label={previousMonthLabel}><ChevronLeft size={16} /></button>,
+                NextMonthButton: buttonProps => <button {...buttonProps} aria-label={nextMonthLabel}><ChevronRight size={16} /></button>,
+              }}
+              classNames={{
+                root: 'w-full', months: 'w-full', month: 'w-full',
+                month_caption: 'relative flex h-9 items-center justify-center gap-1', caption_label: 'hidden',
+                dropdowns: 'flex items-center justify-center gap-1', dropdown_root: 'relative inline-flex items-center',
+                dropdown: 'h-8 appearance-none rounded-lg border border-custom-border bg-primary-bg px-2 text-xs font-semibold text-primary-text outline-none focus-visible:border-[var(--focus-border)]  ',
+                nav: 'absolute inset-x-0 top-0 flex h-9 items-center justify-between',
+                button_previous: 'z-10 rounded-lg p-1.5 text-secondary-text transition-colors hover:bg-primary-bg hover:text-primary-text  ',
+                button_next: 'z-10 rounded-lg p-1.5 text-secondary-text transition-colors hover:bg-primary-bg hover:text-primary-text  ',
+                month_grid: 'w-full border-collapse', weekdays: '', weekday: 'h-8 text-center text-[10px] font-semibold uppercase text-secondary-text',
+                week: '', day: 'h-9 w-9 p-0 text-center',
+                day_button: 'mx-auto flex size-9 items-center justify-center rounded-full text-xs text-primary-text transition-colors duration-150 hover:bg-primary-bg   ',
+                selected: '[&>button]:bg-accent [&>button]:font-semibold [&>button]:text-white [&>button]:hover:bg-accent',
+                today: '[&>button]:text-accent [&>button]:bg-[var(--focus-surface)] [&>button]:font-semibold',
+                outside: 'text-secondary-text/40', disabled: 'cursor-not-allowed text-secondary-text/35 [&>button]:pointer-events-none [&>button]:opacity-40',
+                hidden: 'invisible', footer: 'mt-2',
+              }}
+            />
+            <div className="mt-2 flex items-center justify-between border-t border-custom-border pt-2">
+              <button type="button" onClick={() => handleSelectDate(today)}
+                className="rounded-lg px-2 py-1.5 text-xs font-semibold text-accent transition-colors hover:bg-primary-bg  ">
+                {t('common.date_picker.today', { defaultValue: language === 'vi' ? 'Hôm nay' : 'Today' })}
+              </button>
+              <button type="button" onClick={() => { emitValue(''); setIsOpen(false); requestAnimationFrame(() => buttonRef.current?.focus()); }}
+                className="rounded-lg px-2 py-1.5 text-xs font-medium text-secondary-text transition-colors hover:bg-primary-bg hover:text-primary-text  ">
+                {t('common.date_picker.clear', { defaultValue: language === 'vi' ? 'Xóa' : 'Clear' })}
+              </button>
+            </div>
+          </div>, document.body,
+        )}
       </div>
     );
   }

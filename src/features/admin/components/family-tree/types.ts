@@ -45,7 +45,6 @@ export interface LibraryPhoto {
   id: number;
   albumId: number;
   title: string;
-  category: string;
   driveFileId?: string;
   year: string;
   url: string;

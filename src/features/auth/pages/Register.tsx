@@ -372,6 +372,7 @@ export const Register: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Ngày sinh */}
             <DateInput
+              disableFuture
               label={t('common.registerPage.dateOfBirth', { defaultValue: 'Ngày sinh' })}
               name="dateOfBirth"
               value={dateOfBirth}

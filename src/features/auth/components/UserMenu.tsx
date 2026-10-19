@@ -166,7 +166,6 @@ export const UserMenu: React.FC<UserMenuProps> = ({ onOpenProfile, onSwitchAccou
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-bold text-primary-text truncate">{userDisplayName}</p>
-                  <p className="mt-0.5 text-[10px] text-secondary-text truncate">{user.email}</p>
                   <span className="inline-flex items-center gap-1 mt-0.5 text-[10px] font-semibold text-accent bg-accent/15 px-2 py-0.5 rounded-full">
                     <Shield size={10} />
                     {isAdmin

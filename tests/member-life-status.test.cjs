@@ -5,13 +5,23 @@ const path = require('node:path');
 
 const read = file => fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
 
-test('member life status form defaults to living and conditionally edits a validated death date', () => {
+test('member life status requires an explicit shared-select choice and conditionally edits a validated death date', () => {
   const manager = read('src/features/admin/components/FamilyTreeManager.tsx');
   const form = read('src/features/admin/components/family-tree/MemberFormModal.tsx');
-  assert.match(manager, /lifeStatus:\s*"LIVING"/);
+  assert.match(manager, /lifeStatus:\s*undefined/);
+  assert.doesNotMatch(manager, /lifeStatus:\s*member\.lifeStatus === "DECEASED" \? "DECEASED" : "LIVING"/);
   assert.match(form, /admin\.member_life_status\.label/);
+  assert.match(form, /appearance="simple"[\s\S]*?floatingLabel[\s\S]*?required[\s\S]*?error=\{errors\.lifeStatus/);
+  assert.match(form, /value=\{editingMember\.lifeStatus \|\| undefined\}/);
+  assert.match(form, /newErrors\.lifeStatus = "admin\.member_life_status\.invalid_status"/);
+  const statusSelectStart = form.indexOf('label={t("admin.member_life_status.label")}');
+  const statusSelectEnd = form.indexOf('</Select>', statusSelectStart);
+  const statusSelect = form.slice(statusSelectStart, statusSelectEnd);
+  assert.ok(statusSelectStart >= 0 && statusSelectEnd > statusSelectStart);
+  assert.doesNotMatch(statusSelect, /<label\b/);
   assert.match(form, /value="DECEASED"/);
-  assert.match(form, /editingMember\.lifeStatus === "DECEASED" && <DateInput/);
+  assert.match(form, /editingMember\.lifeStatus === "DECEASED" && <div className="md:col-span-2">[\s\S]*?<DateInput/);
+  assert.match(form, /className="md:col-span-2"[\s\S]*?<DateInput/);
   assert.match(form, /deathDate:\s*lifeStatus === "LIVING"\s*\?\s*null/);
   assert.match(form, /death_date_required/);
   assert.match(form, /death_date_future/);
@@ -37,6 +47,7 @@ test('life status and anniversary translations are present in both locales', () 
   for (const locale of ['vi', 'en']) {
     const admin = JSON.parse(read(`src/shared/locales/${locale}/admin.json`));
     assert.ok(admin.member_life_status.label);
+    assert.equal(admin.member_life_status.invalid_status, locale === 'vi' ? 'Vui lòng chọn tình trạng.' : 'Please select a status.');
     assert.ok(admin.member_life_status.living);
     assert.ok(admin.member_life_status.deceased);
     assert.ok(admin.member_life_status.invalid_status);

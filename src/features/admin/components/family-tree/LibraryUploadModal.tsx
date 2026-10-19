@@ -3,18 +3,17 @@ import { X } from 'lucide-react';
 import { useLanguage } from '@/shared/hooks/useLanguage';
 import { Button, Modal, SelectItem } from '@/shared/components/ui';
 import { getFeatureErrorKey } from '../../services/featureMessages';
-import { type LibraryAlbum, type LibraryCategory, type LibraryPhotoMetadata } from '../../services/libraryService';
+import { type LibraryAlbum, type LibraryPhotoMetadata } from '../../services/libraryService';
 import { LibraryPhotoFormFields, libraryDisplayDateError, libraryFieldClass, LibrarySelectField } from './LibraryPhotoFormFields';
 
-export function LibraryUploadModal({ albums, categories, initialAlbumId, initialCategory, onClose, onSubmit }: {
-  albums: LibraryAlbum[]; categories: LibraryCategory[]; initialAlbumId?: number; initialCategory: string;
+export function LibraryUploadModal({ albums, initialAlbumId, onClose, onSubmit }: {
+  albums: LibraryAlbum[]; initialAlbumId?: number;
   onClose: () => void; onSubmit: (albumId: number, files: File[], metadata: LibraryPhotoMetadata) => Promise<void>;
 }) {
   const { t, language } = useLanguage();
   const [albumId, setAlbumId] = useState(initialAlbumId ? String(initialAlbumId) : '');
   const [files, setFiles] = useState<File[]>([]);
-  const [metadata, setMetadata] = useState<LibraryPhotoMetadata>({ category: categories.some(c => c.slug === initialCategory)
-    ? initialCategory : categories[0]?.slug ?? '' });
+  const [metadata, setMetadata] = useState<LibraryPhotoMetadata>({});
   const [previews, setPreviews] = useState<{ file: File; previewUrl: string }[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,8 +27,6 @@ export function LibraryUploadModal({ albums, categories, initialAlbumId, initial
     event.preventDefault();
     if (isUploading) return;
     if (!albumId || !albums.some(album => album.id === Number(albumId))) { setError('admin.library_ui.album_required'); return; }
-    if (categories.length === 0) { setError('admin.library_ui.create_category_first'); return; }
-    if (!categories.some(category => category.slug === metadata.category)) { setError('admin.library_ui.category_required'); return; }
     const dateError = libraryDisplayDateError(metadata.displayDate ?? '');
     if (dateError) { setError(dateError); return; }
     if (files.length === 0) { setError('admin.library_ui.images_required'); return; }
@@ -44,8 +41,8 @@ export function LibraryUploadModal({ albums, categories, initialAlbumId, initial
   return <Modal isOpen onClose={() => { if (!isUploading) onClose(); }} title={t('admin.library_ui.upload')}
     description={t('admin.library_ui.upload_hint')} maxWidth="lg" closeOnBackdropClick={!isUploading} closeOnEsc={!isUploading}>
     <form onSubmit={submit} noValidate className="space-y-4">
-      {categories.length === 0 && <p role="status" className="text-sm text-secondary-text">{t('admin.library_ui.create_category_first')}</p>}
       <LibrarySelectField label={t('admin.library_ui.field_album')} value={albumId || undefined} disabled={isUploading}
+        appearance="simple"
         placeholder={t('admin.library_ui.choose_album')} onValueChange={setAlbumId}>
           {albums.map(album => <SelectItem key={album.id} value={String(album.id)}>{album.name}</SelectItem>)}
       </LibrarySelectField>
@@ -64,11 +61,11 @@ export function LibraryUploadModal({ albums, categories, initialAlbumId, initial
             <p className="text-[11px] text-secondary-text">{new Intl.NumberFormat(language, { maximumFractionDigits: 1 }).format(preview.file.size / (preview.file.size >= 1024 * 1024 ? 1024 * 1024 : 1024))} {preview.file.size >= 1024 * 1024 ? 'MB' : 'KB'}</p></div>
         </div>)}
       </div>}
-      <LibraryPhotoFormFields value={metadata} onChange={setMetadata} disabled={isUploading} categories={categories} />
+      <LibraryPhotoFormFields value={metadata} onChange={setMetadata} disabled={isUploading} />
       {error && <p role="alert" className="text-sm text-error">{t(error)}</p>}
       <div className="flex justify-end gap-3 pt-2">
         <Button type="button" variant="secondary" disabled={isUploading} onClick={onClose}>{t('admin.library_ui.cancel')}</Button>
-        <Button type="submit" isLoading={isUploading} disabled={categories.length === 0}>{t('admin.library_ui.upload')}</Button>
+        <Button type="submit" isLoading={isUploading} disabled={albums.length === 0}>{t('admin.library_ui.upload')}</Button>
       </div>
     </form>
   </Modal>;

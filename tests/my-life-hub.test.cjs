@@ -16,6 +16,7 @@ const hub = read('src/features/my-life/pages/MyLifeHubPage.tsx');
 const modules = read('src/features/my-life/config/myLifeModules.ts');
 const card = read('src/features/my-life/components/MyLifeModuleCard.tsx');
 const hubCss = read('src/features/my-life/pages/MyLifeHubPage.css');
+const globalStyles = read('src/index.css');
 
 test('five canonical workspace routes reuse the USER guard', () => {
   for (const [route, page] of [
@@ -44,7 +45,8 @@ test('hub renders four configured real modules with semantic route links', () =>
   }
   assert.equal((modules.match(/id: '/g) || []).length, 4);
   assert.match(card, /<Link[\s\S]*to=\{module\.route\}/);
-  assert.match(card, /focus-visible:outline/);
+  assert.match(globalStyles, /:where\(button, \[tabindex\], input, select, textarea\)[\s\S]*?:focus-visible/);
+  assert.match(globalStyles, /box-shadow: inset 0 0 0 1px var\(--focus-border\)/);
   assert.match(card, /duration-\[240ms\]/);
   assert.doesNotMatch(modules, /Finance|Tasks|Goals/);
 });
@@ -104,7 +106,7 @@ test('FamilyTreeManager retains member views and CRUD but has no cross-module ta
   assert.match(manager, /MemberFormModal/);
   assert.match(manager, /MemberDetailModal/);
   assert.doesNotMatch(manager, /FamilyTab|activeTab|AnniversaryTab|LibraryTab|FamilyMapTab|role="tablist"/);
-  assert.match(read('src/features/my-life/pages/AnniversariesPage.tsx'), /<AnniversaryTab showToast=\{showToast\} members=\{members\}/);
+  assert.match(read('src/features/my-life/pages/AnniversariesPage.tsx'), /<AnniversaryTab showToast=\{showToast\} \/>/);
   assert.match(read('src/features/my-life/pages/LibraryPage.tsx'), /<LibraryTab showToast=\{showToast\} \/>/);
   assert.match(read('src/features/my-life/pages/FamilyMapPage.tsx'), /<FamilyMapTab \/>/);
 });
@@ -112,7 +114,7 @@ test('FamilyTreeManager retains member views and CRUD but has no cross-module ta
 test('FamilyTree Back and breadcrumb use MyLife; feature API wrappers share one member hook', () => {
   assert.match(familyTreePage, /backTo="\/mylife"/);
   assert.match(familyTreePage, /FamilyTreeManager showToast/);
-  assert.match(read('src/features/my-life/pages/AnniversariesPage.tsx'), /useFamilyMembers\(\)/);
+  assert.doesNotMatch(read('src/features/my-life/pages/AnniversariesPage.tsx'), /useFamilyMembers\(\)/);
   assert.match(manager, /useFamilyMembers\(\)/);
   assert.match(read('src/features/admin/components/family-tree/useFamilyMembers.ts'), /requestRaw\('\/api\/family-tree'/);
 });

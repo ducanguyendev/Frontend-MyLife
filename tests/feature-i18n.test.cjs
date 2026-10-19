@@ -178,14 +178,13 @@ test('actual FamilyTree error code translates; raw backend message is never show
 for (const locale of ['vi', 'en']) {
   test(`${locale}: actual Library callbacks localize album/photo CRUD and upload success`, async () => {
     const i18n = await translator(locale); const t = i18n.t.bind(i18n); const h = harness(); const toasts = [];
-    const photo = { id: 15, albumId: 1, title: 'Photo', category: 'hoat-hinh', fileName: 'photo.webp', url: 'primary', driveFileId: 'fixture-id' };
+    const photo = { id: 15, albumId: 1, title: 'Photo', fileName: 'photo.webp', url: 'primary', driveFileId: 'fixture-id' };
     const album = { id: 1, name: 'Family', photos: [photo] };
-    const libraryService = { getCategories: async () => [{ id: 1, name: 'Hoạt hình', slug: 'hoat-hinh', isDefault: false }],
-      createCategory: async () => ({ id: 5, name: 'Du lịch', slug: 'du-lich', isDefault: false }),
-      updateCategory: async (id, name) => ({ id, name, slug: 'du-lich', isDefault: false }), deleteCategory: async () => {},
-      getAlbums: async () => [album], getAlbum: async () => album,
+    let uploadMetadata; let updateMetadata;
+    const libraryService = { getOverview: async () => ({ categories: [{ id: 1, name: 'Hoạt hình', slug: 'hoat-hinh', isDefault: false }], albums: [album] }),
       createAlbum: async () => album, updateAlbum: async () => album, deleteAlbum: async () => {},
-      uploadPhotos: async () => [], updatePhoto: async () => {}, deletePhoto: async () => {} };
+      uploadPhotos: async (_albumId, _files, metadata) => { uploadMetadata = metadata; return []; },
+      updatePhoto: async (_id, metadata) => { updateMetadata = metadata; }, deletePhoto: async () => {} };
     const { LibraryTab } = load('src/features/admin/components/family-tree/LibraryTab.tsx', {
       react: { ...h.hooks, default: h.hooks }, 'react/jsx-runtime': { jsx: h.jsx, jsxs: h.jsx },
       'lucide-react': new Proxy({}, { get: (_, key) => key }), '@/shared/hooks/useLanguage': { useLanguage: () => ({ t }) },
@@ -193,13 +192,12 @@ for (const locale of ['vi', 'en']) {
       '../../services/libraryService': { libraryService }, './PhotoLightboxModal': { PhotoLightboxModal: 'Lightbox' },
       './LibraryAlbumModal': { LibraryAlbumModal: 'AlbumModal' }, './LibraryUploadModal': { LibraryUploadModal: 'UploadModal' },
       './LibraryPhotoEditModal': { LibraryPhotoEditModal: 'PhotoModal' },
-      './LibraryCategoryModal': { LibraryCategoryModal: 'CategoryModal' }, './LibraryImage': { LibraryImage: 'LibraryImage' }, './LibraryTab.css': {},
-      './LibraryPhotoFormFields': { libraryFieldClass: '', libraryCategoryLabel: category => category.name },
+      './LibraryImage': { LibraryImage: 'LibraryImage' }, './LibraryTab.css': {},
     });
     const render = () => h.render(LibraryTab, { showToast: text => toasts.push(text) });
     render(); await h.mount();
-    find(render(), 'Select', props => props['aria-label'] === t('admin.library_ui.category_filter')).onValueChange('hoat-hinh');
-    assert.ok(nodes(render()).some(node => node.props?.['aria-label'] === t('admin.library_ui.edit_category')));
+    find(render(), 'Select', props => props['aria-label'] === t('admin.library_ui.album_filter')).onValueChange('1');
+    assert.equal(nodes(render()).some(node => /category|danh mục/i.test(String(node.props?.['aria-label'] ?? node.props?.children ?? ''))), false);
     find(render(), 'Button', props => props.children === t('admin.library_ui.create_album')).onClick();
     await find(render(), 'AlbumModal').onSubmit({ name: 'Family' });
     assert.equal(toasts.at(-1), t('admin.library_ui.album_created'));
@@ -207,11 +205,13 @@ for (const locale of ['vi', 'en']) {
     await find(render(), 'AlbumModal').onSubmit({ name: 'Renamed' });
     assert.equal(toasts.at(-1), t('admin.library_ui.album_updated'));
     find(render(), 'Button', props => props.children === t('admin.library_ui.upload')).onClick();
-    await find(render(), 'UploadModal').onSubmit(1, [], { category: 'hoat-hinh' });
+    await find(render(), 'UploadModal').onSubmit(1, [], { title: 'Album photo' });
+    assert.equal(Object.hasOwn(uploadMetadata, 'category'), false);
     assert.equal(toasts.at(-1), t('admin.library_ui.photo_uploaded'));
     assert.ok(!nodes(render()).some(node => node.type === 'Lightbox'));
     find(render(), 'button', props => props['aria-label']?.endsWith(': Photo')).onClick();
-    find(render(), 'Lightbox').onEdit(photo); await find(render(), 'PhotoModal').onSubmit({ category: 'hoat-hinh' });
+    find(render(), 'Lightbox').onEdit(photo); await find(render(), 'PhotoModal').onSubmit({ title: 'Edited' });
+    assert.equal(Object.hasOwn(updateMetadata, 'category'), false);
     assert.equal(toasts.at(-1), t('admin.library_ui.photo_updated'));
     find(render(), 'button', props => props['aria-label']?.endsWith(': Photo')).onClick();
     find(render(), 'Lightbox').onDelete(photo);
@@ -220,23 +220,7 @@ for (const locale of ['vi', 'en']) {
     find(render(), 'button', props => props['aria-label'] === t('admin.library_ui.delete_album')).onClick();
     find(render(), 'Button', props => props.variant === 'danger').onClick(); await flush();
     assert.equal(toasts.at(-1), t('admin.library_ui.album_deleted'));
-    find(render(), 'Button', props => props.children === t('admin.library_ui.create_category')).onClick();
-    await find(render(), 'CategoryModal').onSubmit('Du lịch');
-    assert.equal(toasts.at(-1), t('admin.library_ui.category_created'));
-    find(render(), 'button', props => props['aria-label'] === t('admin.library_ui.edit_category')).onClick();
-    assert.equal(find(render(), 'CategoryModal').category.name, 'Du lịch');
-    await find(render(), 'CategoryModal').onSubmit('Du lịch gia đình');
-    assert.equal(toasts.at(-1), t('admin.library_ui.category_updated'));
-    const selectedCategory = find(render(), 'Select', props => props['aria-label'] === t('admin.library_ui.category_filter'));
-    assert.equal(selectedCategory.value, 'du-lich');
-    find(render(), 'Button', props => props.children === t('admin.library_ui.upload')).onClick();
-    assert.equal(find(render(), 'UploadModal').initialCategory, 'du-lich');
-    find(render(), 'UploadModal').onClose();
-    find(render(), 'button', props => props['aria-label'] === t('admin.library_ui.delete_category')).onClick();
-    find(render(), 'Button', props => props.variant === 'danger').onClick(); await flush();
-    assert.equal(toasts.at(-1), t('admin.library_ui.category_deleted'));
-    assert.ok(!nodes(render()).some(node => node.props?.['aria-label'] === t('admin.library_ui.edit_category') || node.props?.['aria-label'] === t('admin.library_ui.delete_category')));
-    assert.equal(find(render(), 'Select', props => props['aria-label'] === t('admin.library_ui.category_filter')).value, 'all');
+    assert.equal(nodes(render()).some(node => /create category|tạo danh mục|category_filter/i.test(String(node.props?.children ?? node.props?.['aria-label'] ?? ''))), false);
   });
 }
 
@@ -292,7 +276,10 @@ test('Member form validations, including birth date, follow current locale witho
   const jsxMock = { jsx: h.jsx, jsxs: h.jsx };
   const dateHelpers = load('src/shared/components/ui/DateInput.tsx', {
     react: { ...h.hooks, default: h.hooks }, 'react/jsx-runtime': jsxMock,
-    'lucide-react': { Calendar: 'Calendar' }, './Input': { Input: 'Input' },
+    'react-dom': { createPortal: node => node }, 'react-day-picker': { DayPicker: 'DayPicker' },
+    'date-fns': { format: () => '' }, 'date-fns/locale': { enUS: {}, vi: {} },
+    'lucide-react': { Calendar: 'Calendar', ChevronLeft: 'ChevronLeft', ChevronRight: 'ChevronRight' }, './Input': { Input: 'Input' },
+    '@/shared/hooks/useLanguage': { useLanguage: () => ({ t, language: i18n.language }) },
   });
   const { MemberFormModal } = load('src/features/admin/components/family-tree/MemberFormModal.tsx', {
     react: { ...h.hooks, default: h.hooks }, 'react/jsx-runtime': jsxMock,

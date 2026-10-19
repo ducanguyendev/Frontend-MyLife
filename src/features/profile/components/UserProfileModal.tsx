@@ -5,7 +5,7 @@ import { useBodyScrollLock } from '@/shared/hooks/useBodyScrollLock';
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { authService } from '@/features/auth/services/authService';
 import { getApiErrorMessage } from '@/shared/api/apiClient';
-import { DateInput, Input, PasswordInput, formatBackendToDob, validateCalendarDate } from '@/shared/components/ui';
+import { DateInput, Input, PasswordInput, Select, SelectItem, formatBackendToDob, validateCalendarDate } from '@/shared/components/ui';
 import { getDisplayNameInitials, getUserDisplayName, normalizeNameWhitespace } from '@/shared/utils/userDisplayName';
 import {
   X, Mail, Shield, LogOut, ArrowLeftRight, CheckCircle2,
@@ -622,6 +622,14 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                      <div className="flex justify-center p-4"><Loader2 size={24} className="animate-spin text-accent" /></div>
                   ) : (
                     <>
+                    {/* Original account name is informational and never submitted for editing. */}
+                    <Input
+                      label={t('common.userProfile.fullName', { defaultValue: 'Full name' })}
+                      value={fullName}
+                      readOnly
+                      className="read-only:cursor-default read-only:text-secondary-text"
+                    />
+
                     {/* Display Name */}
                     <Input
                       label={t('common.userProfile.displayName', { defaultValue: 'Display name' })}
@@ -662,35 +670,21 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     </div>
 
                     {/* Gender Selector */}
-                    <div>
-                      <label className="block text-[11px] font-semibold text-secondary-text mb-1.5 ml-1 uppercase tracking-wider">
-                        {t('common.userProfile.gender', { defaultValue: 'Gender' })}
-                      </label>
-                      <div className="grid grid-cols-3 gap-2">
-                        {[
-                          { val: 'Nam', label: t('common.genderMale', { defaultValue: 'Nam' }) },
-                          { val: 'Nữ', label: t('common.genderFemale', { defaultValue: 'Nữ' }) },
-                          { val: 'Khác', label: t('common.genderOther', { defaultValue: 'Khác' }) },
-                        ].map((opt) => (
-                          <button
-                            key={opt.val}
-                            type="button"
-                            onClick={() => {
-                              setGender(opt.val);
-                              if (fieldErrors.gender) setFieldErrors((prev) => ({ ...prev, gender: undefined }));
-                            }}
-                            className={`py-2.5 rounded-xl border border-custom-border text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                              gender === opt.val
-                                ? 'bg-accent text-primary-bg font-semibold shadow-sm'
-                                : 'text-secondary-text hover:text-primary-text hover:bg-secondary-bg'
-                            }`}
-                          >
-                            {gender === opt.val && <Check size={13} className="stroke-[3]" />}
-                            {opt.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
+                    <Select
+                      appearance="simple"
+                      label={t('common.userProfile.gender', { defaultValue: 'Gender' })}
+                      value={gender || undefined}
+                      floatingLabel
+                      error={fieldErrors.gender}
+                      onValueChange={(value) => {
+                        setGender(value);
+                        if (fieldErrors.gender) setFieldErrors((prev) => ({ ...prev, gender: undefined }));
+                      }}
+                    >
+                      <SelectItem value="Nam">{t('common.genderMale', { defaultValue: 'Nam' })}</SelectItem>
+                      <SelectItem value="Nữ">{t('common.genderFemale', { defaultValue: 'Nữ' })}</SelectItem>
+                      <SelectItem value="Khác">{t('common.genderOther', { defaultValue: 'Khác' })}</SelectItem>
+                    </Select>
 
                     <div className="flex gap-2 mt-2">
                       <button

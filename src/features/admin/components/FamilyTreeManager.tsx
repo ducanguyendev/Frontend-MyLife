@@ -66,7 +66,6 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
       setEditingMember({
         ...member,
         dateOfBirth: member.dateOfBirth ? member.dateOfBirth.split("T")[0] : "",
-        lifeStatus: member.lifeStatus === "DECEASED" ? "DECEASED" : "LIVING",
         deathDate: member.deathDate ? member.deathDate.split("T")[0] : null,
         childIds: member.childIds || [],
       });
@@ -76,7 +75,7 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
         generation: undefined,
         gender: undefined,
         dateOfBirth: "",
-        lifeStatus: "LIVING",
+        lifeStatus: undefined,
         deathDate: null,
         role: "",
         address: "",

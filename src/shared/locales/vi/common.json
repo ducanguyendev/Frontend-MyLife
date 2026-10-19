@@ -4,6 +4,16 @@
   "render_error": "Đã xảy ra lỗi khi hiển thị trang.",
   "rate_limited": "Bạn thao tác quá nhanh. Vui lòng thử lại sau.",
   "loading": "Đang tải...",
+  "date_picker": {
+    "choose_date": "Chọn ngày từ lịch",
+    "calendar": "Lịch chọn ngày",
+    "previous_month": "Tháng trước",
+    "next_month": "Tháng sau",
+    "month": "Tháng",
+    "year": "Năm",
+    "today": "Hôm nay",
+    "clear": "Xóa"
+  },
   "themeSwitch": {
     "toLight": "Chuyển sang chế độ sáng",
     "toDark": "Chuyển sang chế độ tối"

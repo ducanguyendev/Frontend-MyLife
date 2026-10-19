@@ -4,6 +4,16 @@
   "render_error": "Something went wrong while displaying this page.",
   "rate_limited": "Too many requests. Please try again later.",
   "loading": "Loading...",
+  "date_picker": {
+    "choose_date": "Choose date from calendar",
+    "calendar": "Date picker calendar",
+    "previous_month": "Previous month",
+    "next_month": "Next month",
+    "month": "Month",
+    "year": "Year",
+    "today": "Today",
+    "clear": "Clear"
+  },
   "themeSwitch": {
     "toLight": "Switch to light mode",
     "toDark": "Switch to dark mode"

@@ -4,7 +4,6 @@ export interface LibraryCategory { id: number; name: string; slug: string; isDef
 
 export interface LibraryPhotoMetadata {
   title?: string | null;
-  category: string;
   displayDate?: string | null;
   description?: string | null;
   author?: string | null;
@@ -12,6 +11,7 @@ export interface LibraryPhotoMetadata {
 
 export interface LibraryPhotoDto extends LibraryPhotoMetadata {
   id: number;
+  category: string;
   driveFileId: string;
   url: string;
   fileName: string;
@@ -35,6 +35,7 @@ export interface LibraryAlbum {
 }
 
 export interface LibraryAlbumDetail extends LibraryAlbum { photos: LibraryPhotoDto[] }
+export interface LibraryOverview { categories: LibraryCategory[]; albums: LibraryAlbumDetail[] }
 export interface AlbumMetadata { name: string; description?: string | null }
 
 export const libraryService = {
@@ -44,22 +45,18 @@ export const libraryService = {
   deleteCategory: (id: number) => apiClient.delete<void>(`/api/library/categories/${id}`),
   getAlbums: (signal?: AbortSignal) => apiClient.get<LibraryAlbum[]>('/api/library/albums', { signal }),
   getAlbum: (id: number, signal?: AbortSignal) => apiClient.get<LibraryAlbumDetail>(`/api/library/albums/${id}`, { signal }),
+  getOverview: (signal?: AbortSignal) => apiClient.get<LibraryOverview>('/api/library/overview', { signal }),
   createAlbum: (metadata: AlbumMetadata) => apiClient.post<LibraryAlbum>('/api/library/albums', metadata),
   updateAlbum: (id: number, metadata: AlbumMetadata) => apiClient.put<LibraryAlbum>(`/api/library/albums/${id}`, metadata),
   deleteAlbum: (id: number) => apiClient.delete<void>(`/api/library/albums/${id}`),
   async uploadPhotos(albumId: number, files: File[], metadata: LibraryPhotoMetadata): Promise<LibraryPhotoDto[]> {
-    if (!metadata.category || metadata.category === 'all') throw new Error('Select a user-created Library category before uploading.');
     const form = new FormData();
     files.forEach(file => form.append('files', file));
-    form.append('category', metadata.category);
     for (const key of ['title', 'displayDate', 'description', 'author'] as const) {
       form.append(key, metadata[key]?.trim() ?? '');
     }
     return apiClient.post<LibraryPhotoDto[]>(`/api/library/albums/${albumId}/photos`, form);
   },
-  updatePhoto: (id: number, metadata: LibraryPhotoMetadata) => {
-    if (!metadata.category || metadata.category === 'all') return Promise.reject(new Error('Select a user-created Library category before saving.'));
-    return apiClient.put<LibraryPhotoDto>(`/api/library/photos/${id}`, metadata);
-  },
+  updatePhoto: (id: number, metadata: LibraryPhotoMetadata) => apiClient.put<LibraryPhotoDto>(`/api/library/photos/${id}`, metadata),
   deletePhoto: (id: number) => apiClient.delete<void>(`/api/library/photos/${id}`),
 };

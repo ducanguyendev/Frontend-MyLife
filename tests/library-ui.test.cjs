@@ -56,7 +56,10 @@ async function setup() {
   const dateRuntime = { forwardRef: render => render, useRef: initial => ({ current: initial }) };
   const dateHelpers = load('../../../../shared/components/ui/DateInput.tsx', {
     react: Object.assign(dateRuntime, { default: dateRuntime }), 'react/jsx-runtime': { jsx: (type, props) => ({ type, props }), jsxs: (type, props) => ({ type, props }) },
-    'lucide-react': { Calendar: 'Calendar' }, './Input': { Input: 'Input' },
+    'react-dom': { createPortal: node => node }, 'react-day-picker': { DayPicker: 'DayPicker' },
+    'date-fns': { format: () => '' }, 'date-fns/locale': { enUS: {}, vi: {} },
+    'lucide-react': { Calendar: 'Calendar', ChevronLeft: 'ChevronLeft', ChevronRight: 'ChevronRight' },
+    './Input': { Input: 'Input' }, '@/shared/hooks/useLanguage': { useLanguage: () => ({ language: 'vi', t: (_key, options) => options.defaultValue }) },
   });
   const selectItem = function SelectItem() {};
   mocks['@/shared/components/ui'] = { Button: 'Button', Modal: 'Modal', Select: 'Select', SelectItem: selectItem, DateInput: 'DateInput',
@@ -82,10 +85,9 @@ const categories = [ { id: 1, slug: 'hoat-hinh', name: 'Hoạt hình', isDefault
   { id: 5, slug: 'du-lich', name: 'Du lịch', isDefault: false } ];
 const file = (name, type = 'image/jpeg', size = 1024) => ({ name, type, size });
 
-test('album/category blank names stay open, make no request, and errors follow a locale switch', async () => {
+test('blank album names stay open, make no request, and errors follow a locale switch', async () => {
   for (const [componentFile, componentName, key] of [
     ['LibraryAlbumModal.tsx', 'LibraryAlbumModal', 'name_required'],
-    ['LibraryCategoryModal.tsx', 'LibraryCategoryModal', 'category_name_required'],
   ]) {
     const h = await setup(); let requests = 0; let closed = 0;
     const Component = load(componentFile, h.mocks)[componentName];
@@ -112,14 +114,14 @@ test('upload previews use object URLs and revoke all URLs on replace, remove and
     createObjectURL: file => { const url = `blob:${created.length}`; created.push({ file, url }); return url; },
     revokeObjectURL: url => revoked.push(url),
   } });
-  const render = () => h.render(LibraryUploadModal, { albums: [{ id: 1 }], categories, initialAlbumId: 1,
-    initialCategory: 'du-lich', onClose() { h.unmount(); }, onSubmit: async (_, files) => { uploaded = files; } });
+  const render = () => h.render(LibraryUploadModal, { albums: [{ id: 1 }], initialAlbumId: 1,
+    onClose() { h.unmount(); }, onSubmit: async (_, files) => { uploaded = files; } });
   let tree = render(); tree = render();
   const selected = [file('A.jpg'), file('B.png', 'image/png'), file('Dog.webp', 'image/webp'), file('C.gif', 'image/gif')];
   find(tree, 'input').onChange({ target: { files: selected, value: '' } }); render(); tree = render();
   assert.equal(nodes(tree).filter(node => node.type === 'img').length, 4);
   assert.deepEqual(created.map(entry => entry.file.name), selected.map(file => file.name));
-  assert.equal(find(tree, h.fields.LibraryPhotoFormFields).value.category, 'du-lich');
+  assert.equal(Object.keys(find(tree, h.fields.LibraryPhotoFormFields).value).length, 0);
   find(tree, 'button', props => props['aria-label'].includes('B.png')).onClick(); render(); tree = render();
   assert.deepEqual(revoked, ['blob:0', 'blob:1', 'blob:2', 'blob:3']);
   assert.equal(nodes(tree).filter(node => node.type === 'img').length, 3);
@@ -140,9 +142,9 @@ test('upload rejects empty/21/zero-byte/oversize/MIME files and accepts exact li
   ]) {
     const h = await setup(); let requests = 0;
     const Component = load('LibraryUploadModal.tsx', h.mocks, { URL: { createObjectURL: () => 'blob:x', revokeObjectURL() {} } }).LibraryUploadModal;
-    const render = () => h.render(Component, { albums: [{ id: 1 }], categories, initialAlbumId: 1, initialCategory: 'all', onClose() {}, onSubmit: async () => requests++ });
+    const render = () => h.render(Component, { albums: [{ id: 1 }], initialAlbumId: 1, onClose() {}, onSubmit: async () => requests++ });
     let tree = render(); find(tree, 'input').onChange({ target: { files: selected, value: '' } }); tree = render();
-    assert.equal(find(tree, h.fields.LibraryPhotoFormFields).value.category, 'hoat-hinh');
+    assert.equal(Object.keys(find(tree, h.fields.LibraryPhotoFormFields).value).length, 0);
     await find(tree, 'form').onSubmit(event); tree = render();
     if (key) {
       assert.equal(requests, 0); assert.equal(find(tree, 'p', props => props.role === 'alert').children, h.i18n.t(`admin.library_ui.${key}`));
@@ -153,29 +155,27 @@ test('upload rejects empty/21/zero-byte/oversize/MIME files and accepts exact li
   }
 });
 
-test('category/date controls keep rounded sizing and dynamic custom names retain their original language', async () => {
+test('photo fields keep rounded sizing and a localized date control without category selection', async () => {
   const h = await setup(); const f = h.fields;
   const text = f.LibraryTextField({ label: 'Date' });
   assert.ok(find(text, 'input').className.includes('rounded-2xl'));
   assert.ok(f.libraryFieldClass.includes('min-h-[56px]')); assert.ok(f.libraryFieldClass.includes('rounded-2xl'));
-  const fields = f.LibraryPhotoFormFields({ value: { category: 'hoat-hinh' }, onChange() {}, disabled: false, categories });
+  const fields = f.LibraryPhotoFormFields({ value: {}, onChange() {}, disabled: false });
   const date = find(fields, 'DateInput');
   assert.equal(date.label, h.i18n.t('admin.library_ui.field_date'));
   assert.equal(date.placeholder, 'DD/MM/YYYY');
   assert.equal(f.libraryDisplayDateError('31/02/2026'), 'admin.library_ui.date_invalid');
   assert.equal(f.libraryDisplayDateError('31/12/9999'), 'admin.library_ui.date_future');
   assert.equal(f.libraryDisplayDateError(''), null);
-  await h.i18n.changeLanguage('en');
-  assert.equal(f.libraryCategoryLabel(categories[1]), 'Du lịch');
-  assert.equal(f.libraryCategoryLabel(categories[0]), 'Hoạt hình');
+  assert.equal(nodes(fields).some(node => node.type === f.LibrarySelectField), false);
 });
 
 test('upload and photo edit both block invalid display dates before calling their handlers', async () => {
   {
     const h = await setup(); let requests = 0;
     const Component = load('LibraryUploadModal.tsx', h.mocks, { URL: { createObjectURL: () => 'blob:x', revokeObjectURL() {} } }).LibraryUploadModal;
-    const render = () => h.render(Component, { albums: [{ id: 1 }], categories, initialAlbumId: 1,
-      initialCategory: 'hoat-hinh', onClose() {}, onSubmit: async () => requests++ });
+    const render = () => h.render(Component, { albums: [{ id: 1 }], initialAlbumId: 1,
+      onClose() {}, onSubmit: async () => requests++ });
     let tree = render(); find(tree, 'input').onChange({ target: { files: [file('a.jpg')], value: '' } }); tree = render();
     const fieldProps = find(tree, h.fields.LibraryPhotoFormFields);
     find(h.fields.LibraryPhotoFormFields(fieldProps), 'DateInput').onValueChange('31/02/2026'); tree = render();
@@ -187,8 +187,8 @@ test('upload and photo edit both block invalid display dates before calling thei
   {
     const h = await setup(); let requests = 0;
     const Component = load('LibraryPhotoEditModal.tsx', h.mocks).LibraryPhotoEditModal;
-    const render = () => h.render(Component, { photo: { id: 1, title: 'Photo', category: 'hoat-hinh', year: '09/10/2020' },
-      categories, onClose() {}, onSubmit: async () => requests++ });
+    const render = () => h.render(Component, { photo: { id: 1, title: 'Photo', year: '09/10/2020' },
+      onClose() {}, onSubmit: async () => requests++ });
     let tree = render();
     const fieldProps = find(tree, h.fields.LibraryPhotoFormFields);
     find(h.fields.LibraryPhotoFormFields(fieldProps), 'DateInput').onValueChange('31/12/9999'); tree = render();
@@ -198,41 +198,32 @@ test('upload and photo edit both block invalid display dates before calling thei
     h.unmount();
   }
 });
-test('upload blocks zero-category registries and defaults to the first user-created category', async () => {
-  for (const [albumId, registry, expected] of [
-    [undefined, categories, 'album_required'], [99, categories, 'album_required'], [1, [], 'create_category_first'],
-  ]) {
+test('upload requires a valid album but does not require a category registry', async () => {
+  for (const [albumId, expected] of [[undefined, 'album_required'], [99, 'album_required']]) {
     const h = await setup(); let requests = 0;
     const Component = load('LibraryUploadModal.tsx', h.mocks, { URL: { createObjectURL: () => 'blob:x', revokeObjectURL() {} } }).LibraryUploadModal;
-    const render = () => h.render(Component, { albums: [{ id: 1 }], categories: registry, initialAlbumId: albumId,
-      initialCategory: 'all', onClose() {}, onSubmit: async () => requests++ });
+    const render = () => h.render(Component, { albums: [{ id: 1 }], initialAlbumId: albumId,
+      onClose() {}, onSubmit: async () => requests++ });
     await find(render(), 'form').onSubmit(event);
     assert.equal(find(render(), 'p', props => props.role === 'alert').children, h.i18n.t(`admin.library_ui.${expected}`));
-    if (registry.length === 0) assert.equal(find(render(), 'Button', props => props.type === 'submit').disabled, true);
     assert.equal(requests, 0); h.unmount();
   }
-  const h = await setup();
-  const Component = load('LibraryUploadModal.tsx', h.mocks, { URL: { createObjectURL() {}, revokeObjectURL() {} } }).LibraryUploadModal;
-  const tree = h.render(Component, { albums: [{ id: 1 }], categories: [categories[1]], initialAlbumId: 1,
-    initialCategory: 'all', onClose() {}, onSubmit: async () => {} });
-  assert.equal(find(tree, h.fields.LibraryPhotoFormFields).value.category, 'du-lich'); h.unmount();
+  const h = await setup(); let requests = 0;
+  const Component = load('LibraryUploadModal.tsx', h.mocks, { URL: { createObjectURL: () => 'blob:x', revokeObjectURL() {} } }).LibraryUploadModal;
+  const render = () => h.render(Component, { albums: [{ id: 1 }], initialAlbumId: 1, onClose() {}, onSubmit: async () => requests++ });
+  let tree = render(); find(tree, 'input').onChange({ target: { files: [file('photo.jpg')], value: '' } }); tree = render();
+  await find(tree, 'form').onSubmit(event);
+  assert.equal(requests, 1); assert.equal(Object.keys(find(render(), h.fields.LibraryPhotoFormFields).value).length, 0); h.unmount();
 });
 
-test('Library category filters keep virtual View all first and render only user-created category names', () => {
+test('Library flow is album-only while keeping overview loading and client-side album filtering', () => {
   const source = readFileSync(join(__dirname, '../src/features/admin/components/family-tree/LibraryTab.tsx'), 'utf8');
-  const header = source.slice(source.indexOf('{/* Header */}'), source.indexOf('{/* Category Filters */}'));
-  const filters = source.slice(source.indexOf('{/* Category Filters */}'), source.indexOf('{/* Gallery Grid */}'));
-  assert.equal((source.match(/t\('admin\.library_ui\.create_category'\)/g) || []).length, 1);
-  assert.match(header, /setCategoryDialog\('create'\)/);
-  assert.doesNotMatch(filters, /create_category|setCategoryDialog\('create'\)/);
-  assert.match(source, /currentCategories\.filter\(category => !category\.isDefault && category\.slug !== 'all'\)/);
-  assert.match(source, /\{ id: 'all', slug: 'all', label: t\('admin\.all_categories'\) \}/);
-  assert.match(source, /libraryCategory === "all" \|\| photo\.category === libraryCategory/);
-  assert.match(source, /current => isCreate \? \[\.\.\.current, category\]/);
-  assert.match(source, /if \(isCreate\) setLibraryCategory\(category\.slug\)/);
-  assert.match(header, /flex flex-wrap items-center/);
-  assert.match(filters, /Select aria-label=\{t\('admin\.library_ui\.category_filter'\)\}/);
-  assert.match(filters, /categoryFilters\.map\(category => <SelectItem/);
+  assert.match(source, /libraryService\.getOverview\(controller\.signal\)/);
+  assert.match(source, /selectedAlbum === 'all' \|\| photo\.albumId === selectedAlbum/);
+  assert.doesNotMatch(source, /[Cc]ategories|[Cc]ategory|libraryCategory|categoryDialog/);
+  assert.match(source, /setAlbumDialog\('create'\)/);
+  assert.match(source, /kind: 'album' \| 'photo'/);
+  assert.match(source, /variant="primary"[\s\S]*?onClick=\{\(\) => setUploadOpen\(true\)\}/);
 });
 
 test('Library is a single-title workspace with a compact toolbar and gallery-owned scrolling', () => {
@@ -244,36 +235,27 @@ test('Library is a single-title workspace with a compact toolbar and gallery-own
   assert.match(source, /library-workspace flex min-h-0 flex-1 flex-col overflow-hidden/);
   assert.match(source, /library-gallery custom-scrollbar min-h-0 flex-1 overflow-y-auto/);
   assert.match(source, /variant="primary"[\s\S]*?onClick=\{\(\) => setUploadOpen\(true\)\}/);
-  assert.match(source, /variant="secondary"[\s\S]*?setCategoryDialog\('create'\)/);
+  assert.match(source, /variant="secondary"[\s\S]*?setAlbumDialog\('create'\)/);
   assert.match(source, /library-media-card__image/);
   assert.match(css, /transform 320ms/);
   assert.match(css, /prefers-reduced-motion: reduce/);
   assert.match(source, /role="status"[\s\S]*?library_ui\.loading/);
   assert.match(source, /role="alert"[\s\S]*?onClick=\{refresh\}/);
-  assert.match(source, /library_ui\.empty[\s\S]*?library_ui\.no_matches/);
+  assert.match(source, /library_ui\.no_albums[\s\S]*?library_ui\.no_matches/);
 });
 
-test('legacy photo category stays visible for editing without silently selecting a replacement', async () => {
+test('editing a legacy photo exposes only shared non-category metadata fields', async () => {
   const h = await setup();
-  const fields = h.fields.LibraryPhotoFormFields({ value: { category: 'photos' }, onChange() {}, disabled: false, categories });
-  const select = find(fields, h.fields.LibrarySelectField);
-  const options = nodes(select.children).filter(node => node.type === h.selectItem);
-  const legacy = options.find(option => option.props.value === 'photos');
-  assert.ok(legacy); assert.equal(legacy.props.disabled, true);
-  assert.equal(legacy.props.children, h.i18n.t('admin.library_ui.legacy_category', { category: 'photos' }));
-  assert.deepEqual(Array.from(options.filter(option => !option.props.disabled), option => option.props.value), ['hoat-hinh', 'du-lich']);
-
   let requests = 0;
   const { LibraryPhotoEditModal } = load('LibraryPhotoEditModal.tsx', h.mocks);
-  const render = () => h.render(LibraryPhotoEditModal, { photo: { id: 9, title: 'Legacy', category: 'photos', year: '', desc: '', author: '' },
-    categories, onClose() {}, onSubmit: async () => requests++ });
+  const render = () => h.render(LibraryPhotoEditModal, { photo: { id: 9, title: 'Legacy', year: '', desc: '', author: '' },
+    onClose() {}, onSubmit: async metadata => { assert.equal(Object.hasOwn(metadata, 'category'), false); requests++; } });
   let tree = render(); await find(tree, 'form').onSubmit(event); tree = render();
-  assert.equal(requests, 0);
-  assert.equal(find(tree, 'p', props => props.role === 'alert').children, h.i18n.t('admin.library_ui.category_required'));
-  const fieldProps = find(tree, h.fields.LibraryPhotoFormFields);
-  find(h.fields.LibraryPhotoFormFields(fieldProps), h.fields.LibrarySelectField).onValueChange('hoat-hinh');
-  tree = render(); await find(tree, 'form').onSubmit(event);
   assert.equal(requests, 1);
+  const fieldProps = find(tree, h.fields.LibraryPhotoFormFields);
+  assert.deepEqual(Object.keys(fieldProps.value), ['title', 'displayDate', 'description', 'author']);
+  assert.equal(fieldProps.value.title, 'Legacy');
+  assert.equal(nodes(h.fields.LibraryPhotoFormFields(fieldProps)).some(node => node.type === h.fields.LibrarySelectField), false);
 });
 
 test('managed Library image uses only the MyLife proxy and shows placeholder after one failed request', async () => {

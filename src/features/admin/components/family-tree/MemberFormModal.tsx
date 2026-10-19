@@ -40,6 +40,7 @@ interface FormErrors {
   fullName?: string;
   role?: string;
   generation?: string;
+  lifeStatus?: string;
   phoneNumber?: string;
   dateOfBirth?: string;
   deathDate?: string;
@@ -351,8 +352,11 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
       }
     }
 
-    const lifeStatus = editingMember.lifeStatus === "DECEASED" ? "DECEASED" : "LIVING";
-    if (lifeStatus === "DECEASED") {
+    const lifeStatus = editingMember.lifeStatus;
+    if (lifeStatus !== "LIVING" && lifeStatus !== "DECEASED") {
+      newErrors.lifeStatus = "admin.member_life_status.invalid_status";
+      if (!sectionToOpen) sectionToOpen = "basic";
+    } else if (lifeStatus === "DECEASED") {
       const rawDeathDate = (editingMember.deathDate || "").trim();
       if (!rawDeathDate) {
         newErrors.deathDate = "admin.member_life_status.death_date_required";
@@ -621,28 +625,33 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                   <Select
                     appearance="simple"
                     label={t("admin.member_life_status.label")}
-                    value={editingMember.lifeStatus === "DECEASED" ? "DECEASED" : "LIVING"}
+                    value={editingMember.lifeStatus || undefined}
+                    floatingLabel
+                    required
+                    error={errors.lifeStatus ? t(errors.lifeStatus) : undefined}
                     onValueChange={(value) => {
                       const lifeStatus = value === "DECEASED" ? "DECEASED" : "LIVING";
                       onChange({ ...editingMember, lifeStatus, deathDate: lifeStatus === "LIVING" ? null : editingMember.deathDate ?? null });
-                      if (errors.deathDate) setErrors((prev) => ({ ...prev, deathDate: undefined }));
+                      if (errors.lifeStatus || errors.deathDate) setErrors((prev) => ({ ...prev, lifeStatus: undefined, deathDate: undefined }));
                     }}
                   >
                     <SelectItem value="LIVING">{t("admin.member_life_status.living")}</SelectItem>
                     <SelectItem value="DECEASED">{t("admin.member_life_status.deceased")}</SelectItem>
                   </Select>
-                  {editingMember.lifeStatus === "DECEASED" && <DateInput
-                    disableFuture
-                    label={t("admin.member_life_status.death_date")}
-                    value={editingMember.deathDate ? (editingMember.deathDate.includes("-") ? formatBackendToDob(editingMember.deathDate) : editingMember.deathDate) : ""}
-                    error={errors.deathDate ? t(errors.deathDate) : undefined}
-                    onChange={(e) => {
-                      const raw = e.target.value;
-                      const backend = formatDobToBackend(raw);
-                      onChange({ ...editingMember, deathDate: backend || raw });
-                      if (errors.deathDate) setErrors((prev) => ({ ...prev, deathDate: undefined }));
-                    }}
-                  />}
+                  {editingMember.lifeStatus === "DECEASED" && <div className="md:col-span-2">
+                    <DateInput
+                      disableFuture
+                      label={t("admin.member_life_status.death_date")}
+                      value={editingMember.deathDate ? (editingMember.deathDate.includes("-") ? formatBackendToDob(editingMember.deathDate) : editingMember.deathDate) : ""}
+                      error={errors.deathDate ? t(errors.deathDate) : undefined}
+                      onChange={(e) => {
+                        const raw = e.target.value;
+                        const backend = formatDobToBackend(raw);
+                        onChange({ ...editingMember, deathDate: backend || raw });
+                        if (errors.deathDate) setErrors((prev) => ({ ...prev, deathDate: undefined }));
+                      }}
+                    />
+                  </div>}
                 </div>
               </motion.div>
             )}

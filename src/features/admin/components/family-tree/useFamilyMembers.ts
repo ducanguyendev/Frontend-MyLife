@@ -12,15 +12,10 @@ export function useFamilyMembers() {
     setLoading(true);
     setLoadError(null);
     try {
-      const response = await apiClient.requestRaw('/api/family-tree', { signal });
+      const result = await fetchFamilyMembers(signal);
       if (signal?.aborted) return;
-      if (response.ok) {
-        const json = await response.json();
-        if (!signal?.aborted) setMembers(json.data || []);
-      } else {
-        const error = await response.json().catch(() => null);
-        if (!signal?.aborted) setLoadError(getFeatureErrorKey(error, 'member_load', response.status));
-      }
+      if ('errorKey' in result) setLoadError(result.errorKey);
+      else setMembers(result.members);
     } catch (failure) {
       if (!signal?.aborted) setLoadError(getFeatureErrorKey(failure, 'member_load'));
     } finally {
@@ -35,4 +30,19 @@ export function useFamilyMembers() {
   }, [fetchMembers]);
 
   return { members, setMembers, loading, loadError, fetchMembers };
+}
+
+export async function fetchFamilyMembers(signal?: AbortSignal): Promise<{ members: FamilyMember[] } | { errorKey: string }> {
+  try {
+    const response = await apiClient.requestRaw('/api/family-tree', { signal });
+    if (!response.ok) {
+      const error = await response.json().catch(() => null);
+      return { errorKey: getFeatureErrorKey(error, 'member_load', response.status) };
+    }
+    const json = await response.json();
+    return { members: Array.isArray(json.data) ? json.data as FamilyMember[] : [] };
+  } catch (failure) {
+    if (signal?.aborted) return { members: [] };
+    return { errorKey: getFeatureErrorKey(failure, 'member_load') };
+  }
 }
