@@ -48,8 +48,8 @@ The existing React Flow view now opens on a focused family context for larger tr
 34. **Database:** unchanged; no migrations.
 35. **API:** unchanged; uses the existing family member collection.
 36. **Other modules:** Anniversary, Library, Map, Profile and Home Header were not changed by this task.
-37. **Commit SHA:** Pending final commit.
-38. **Push:** Pending final push to `origin/feature_minhduc`; no force push.
+37. **Commit SHA:** `e297b8a` (`feat: redesign family tree around focused branches`).
+38. **Push:** `git push origin feature_minhduc` was attempted and the sandbox blocked network access. The elevated push request was rejected by automatic review because it treats the transfer as publishing private repository contents to GitHub without explicit approval for that specific transfer. No push completed; no force push was attempted.
 
 ## QA limits
 
