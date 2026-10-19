@@ -29,7 +29,8 @@
     "test:family-map": "node --test tests/family-map.test.cjs",
     "preview": "vite preview",
     "test:roles": "node --test tests/family-role.test.cjs",
-    "test:optimization": "node --test tests/optimization.test.cjs"
+    "test:optimization": "node --test tests/optimization.test.cjs",
+    "test:family-chart": "node --test tests/family-chart-adapter.test.cjs"
   },
   "dependencies": {
     "@radix-ui/react-select": "^2.4.1",

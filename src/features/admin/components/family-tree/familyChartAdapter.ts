@@ -17,6 +17,62 @@ export type FamilyChartPersonData = Datum["data"] & {
 
 export type FamilyChartPerson = Omit<Datum, "data"> & { data: FamilyChartPersonData };
 
+type UnknownRecord = Record<string, unknown>;
+
+const asRecord = (value: unknown): UnknownRecord | null =>
+  value !== null && typeof value === "object" ? value as UnknownRecord : null;
+
+const DEFAULT_CARD_LABELS = {
+  view: "View details",
+  edit: "Edit",
+  delete: "Delete",
+  focus: "View this branch",
+  expand: "Show descendants",
+  collapse: "Collapse",
+};
+
+const PLACEHOLDER_CARD = '<article class="mylife-fc-card mylife-fc-card--placeholder" aria-hidden="true"></article>';
+
+/** Build the library's innerHTML card defensively; family-chart can pass synthetic nodes here. */
+export function createFamilyChartCardHtml(value: unknown): string {
+  const treeDatum = asRecord(value);
+  const datum = asRecord(treeDatum?.data);
+  if (!datum || datum.unknown || datum.to_add || datum._new_rel_data) return PLACEHOLDER_CARD;
+
+  const data = asRecord(datum.data);
+  if (!data) return PLACEHOLDER_CARD;
+
+  const labels = asRecord(data.labels);
+  const label = (key: keyof typeof DEFAULT_CARD_LABELS): string =>
+    escapeFamilyChartHtml(labels?.[key] ?? DEFAULT_CARD_LABELS[key]);
+  const rawName = typeof data.name === "string" ? data.name : "";
+  const name = escapeFamilyChartHtml(rawName);
+  const role = escapeFamilyChartHtml(data.role ?? "");
+  const generation = escapeFamilyChartHtml(labels?.generation ?? "");
+  const year = escapeFamilyChartHtml(data.birthYear ?? "");
+  const memorial = escapeFamilyChartHtml(data.memorial ?? "");
+  const avatar = escapeFamilyChartHtml(safeFamilyChartImageUrl(data.avatar));
+  const initial = escapeFamilyChartHtml(rawName.trim().slice(0, 1).toLocaleUpperCase() || "?");
+  const hiddenCountValue = Number(data.hiddenCount);
+  const hiddenCount = Number.isFinite(hiddenCountValue) && hiddenCountValue > 0 ? hiddenCountValue : 0;
+  const expanded = data.expanded === true;
+  const deceased = data.deceased === true;
+  const id = escapeFamilyChartHtml(datum.id ?? "");
+
+  return `<article class="mylife-fc-card${deceased ? " is-deceased" : ""}" data-member-id="${id}">
+    <div class="mylife-fc-card__portrait">${avatar ? `<img src="${avatar}" alt="${name}" />` : `<span>${initial}</span>`}</div>
+    <button type="button" class="mylife-fc-card__name" data-family-chart-action="focus" title="${label("focus")}: ${name}">${name}</button>
+    <div class="mylife-fc-card__role">${role}</div>
+    <div class="mylife-fc-card__meta"><span>${generation}</span>${year ? `<span>${year}</span>` : ""}${deceased ? `<span class="mylife-fc-card__memorial">${memorial}</span>` : ""}</div>
+    <div class="mylife-fc-card__actions">
+      <button type="button" data-family-chart-action="view" title="${label("view")}">${label("view")}</button>
+      <button type="button" data-family-chart-action="edit" title="${label("edit")}">${label("edit")}</button>
+      <button type="button" data-family-chart-action="delete" title="${label("delete")}">•••</button>
+      ${hiddenCount > 0 ? `<button type="button" class="mylife-fc-card__expand" data-family-chart-action="expand" title="${expanded ? label("collapse") : label("expand")}">${expanded ? "−" : `+${hiddenCount}`}</button>` : ""}
+    </div>
+  </article>`;
+}
+
 const safeGender = (gender?: string): "M" | "F" => {
   const normalized = gender?.trim().toLocaleLowerCase();
   return normalized && ["f", "female", "nu", "nữ"].some(value => normalized === value || normalized.includes(value)) ? "F" : "M";

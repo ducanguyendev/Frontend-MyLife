@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, lazy, Suspense } from "react";
+import React, { useState, useEffect, useMemo, useCallback, lazy, Suspense } from "react";
 import {
   Loader2, LayoutGrid, Table2, Network
 } from "lucide-react";
@@ -17,7 +17,8 @@ import {
   DeleteConfirmModal,
 } from "./family-tree";
 import { useFamilyMembers } from './family-tree/useFamilyMembers';
-import { FAMILY_TREE_RENDERER, IS_FAMILY_CHART_DEV_POC } from './family-tree/familyTreeRendererConfig';
+import { FAMILY_TREE_RENDERER, IS_DEVELOPMENT_BUILD, IS_FAMILY_CHART_DEV_POC } from './family-tree/familyTreeRendererConfig';
+import { FamilyChartErrorBoundary } from './family-tree/FamilyChartErrorBoundary';
 
 import { filterFamilyMembers } from './family-tree/memberSearch';
 const FamilyMindmap = lazy(() => import('./family-tree/FamilyMindmap').then(module => ({ default: module.FamilyMindmap })));
@@ -30,6 +31,7 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
 
   const { members, setMembers, loading, loadError, fetchMembers } = useFamilyMembers();
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
+  const [familyChartFailed, setFamilyChartFailed] = useState(false);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -55,6 +57,10 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
   const [memberToViewId, setMemberToViewId] = useState<number | null>(null);
   const memberToView = members.find(member => member.id === memberToViewId) ?? null;
   const handleViewMember = (member: FamilyMember) => setMemberToViewId(member.id);
+  const handleFamilyChartError = useCallback((error: Error) => {
+    if (IS_DEVELOPMENT_BUILD) console.warn("[FamilyChart] POC failed; using stable FamilyTreeView fallback.", error);
+    setFamilyChartFailed(true);
+  }, []);
 
   const filteredMembers = useMemo(() => filterFamilyMembers(members, searchQuery, generationFilter), [members, searchQuery, generationFilter]);
 
@@ -326,14 +332,25 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
               />
             ) : (
               <Suspense fallback={<div role="status">{t("admin.library_ui.loading")}</div>}>
-              {FAMILY_TREE_RENDERER === "family-chart" && FamilyChartView ? <FamilyChartView
+              {FAMILY_TREE_RENDERER === "family-chart" && FamilyChartView && !familyChartFailed ? <FamilyChartErrorBoundary
+                onError={handleFamilyChartError}
+                fallback={<FamilyTreeView
+                  members={members}
+                  searchFocusMemberId={searchQuery.trim() ? filteredMembers[0]?.id ?? null : null}
+                  generationFilterId={generationFilter === "all" ? null : Number(generationFilter)}
+                  onView={handleViewMember}
+                  onEdit={handleOpenModal}
+                  onDelete={setMemberToDelete}
+                />}
+              ><FamilyChartView
                 members={members}
                 searchFocusMemberId={searchQuery.trim() ? filteredMembers[0]?.id ?? null : null}
                 generationFilterId={generationFilter === "all" ? null : Number(generationFilter)}
                 onView={handleViewMember}
                 onEdit={handleOpenModal}
                 onDelete={setMemberToDelete}
-              /> : FAMILY_TREE_RENDERER === "react-flow" ? <FamilyMindmap
+                onRuntimeError={handleFamilyChartError}
+              /></FamilyChartErrorBoundary> : FAMILY_TREE_RENDERER === "react-flow" ? <FamilyMindmap
                 members={members}
                 searchFocusMemberId={searchQuery.trim() ? filteredMembers[0]?.id ?? null : null}
                 generationFilterId={generationFilter === "all" ? null : Number(generationFilter)}

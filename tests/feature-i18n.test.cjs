@@ -116,6 +116,7 @@ async function familySetup(locale, response = { success: true, message: 'Family 
     './family-tree/memberSearch': searchHelpers,
     './family-tree/useFamilyMembers': familyMembersHook,
     './family-tree/familyTreeRendererConfig': { FAMILY_TREE_RENDERER: 'family-chart', IS_FAMILY_CHART_DEV_POC: true },
+    './family-tree/FamilyChartErrorBoundary': { FamilyChartErrorBoundary: 'FamilyChartErrorBoundary' },
     './family-tree': { ...Object.fromEntries(stubNames.map(name => [name, name])), removeVietnameseTones: name => name },
   });
   const render = () => hooks.render(FamilyTreeManager, { showToast: (text, ok) => toasts.push({ text, ok }) });
