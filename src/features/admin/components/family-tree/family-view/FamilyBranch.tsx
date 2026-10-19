@@ -15,7 +15,10 @@ export const FamilyBranch = memo(function FamilyBranch({ links, width, height, a
       const related = activeMemberId == null || link.memberIds.some(id => relatedMemberIds.has(id));
       return <g key={link.id} className={`family-tree-link family-tree-link--${link.kind}${related ? " is-related" : " is-dimmed"}`}>
         <path d={link.path} />
-        {link.kind === "spouse" && <text x={link.labelX} y={link.labelY} textAnchor="middle" dominantBaseline="central">♥</text>}
+        {link.kind === "spouse" && <>
+          <circle cx={link.labelX} cy={link.labelY} r={9} />
+          <text x={link.labelX} y={link.labelY} textAnchor="middle" dominantBaseline="central">♥</text>
+        </>}
       </g>;
     })}
   </svg>;

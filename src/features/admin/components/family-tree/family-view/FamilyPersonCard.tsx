@@ -36,9 +36,12 @@ export const FamilyPersonCard = memo(function FamilyPersonCard({
   const deathYear = deathDate && Number.isFinite(deathDate.getTime()) ? deathDate.getFullYear() : undefined;
   const role = t(`admin.role_${member.role?.toLowerCase() || "member"}`, { defaultValue: member.role || t("admin.role_member", { defaultValue: "Member" }) });
   const rawGender = member.gender?.trim().toLocaleLowerCase();
+  const genderKind = rawGender && (rawGender.includes("nữ") || rawGender === "nu" || rawGender === "female") ? "female"
+    : rawGender && (rawGender.includes("nam") || rawGender === "male") ? "male"
+      : rawGender ? "other" : "unknown";
   const genderKey = rawGender && (rawGender.includes("nữ") || rawGender === "nu" || rawGender === "female") ? "gender_nữ"
     : rawGender && (rawGender.includes("nam") || rawGender === "male") ? "gender_nam"
-      : rawGender ? "gender_khác" : undefined;
+      : rawGender ? "gender_other" : undefined;
   const gender = genderKey ? t(`admin.${genderKey}`, { defaultValue: member.gender }) : undefined;
   const generation = t("admin.mindmap_generation", { generation: member.generation, defaultValue: `Đời ${member.generation}` });
   const metadata = [generation, gender, birthYear, member.lifeStatus === "DECEASED" ? `†${deathYear ? ` ${deathYear}` : ""}` : undefined]
@@ -59,6 +62,7 @@ export const FamilyPersonCard = memo(function FamilyPersonCard({
   return <motion.article ref={cardRef} initial={{ opacity: 0 }} animate={{ opacity: dimmed ? 0.6 : 1 }} exit={{ opacity: 0 }}
     transition={{ duration: reducedMotion ? 0.01 : 0.32, ease: "easeOut" }} aria-hidden={!isPresent}
     className={`family-person-card${focused ? " is-focused" : ""}${highlighted ? " is-related" : ""}${dimmed ? " is-dimmed" : ""}${member.lifeStatus === "DECEASED" ? " is-deceased" : ""}`}
+    data-gender={genderKind}
     onMouseEnter={() => onHover(member.id)} onMouseLeave={() => onHover(null)}
     style={{ left: x, top: y, pointerEvents: isPresent ? undefined : "none" }}
   >
@@ -81,6 +85,8 @@ export const FamilyPersonCard = memo(function FamilyPersonCard({
         <button role="menuitem" className="is-delete" onClick={() => { setMenuOpen(false); onDelete(member); }}><Trash2 size={14} />{t("admin.delete", { defaultValue: "Delete" })}</button>
       </div>}
     </div>
+    <button type="button" className="family-person-card__edit" aria-label={`${t("admin.edit", { defaultValue: "Edit" })}: ${name}`}
+      title={t("admin.edit", { defaultValue: "Edit" })} onClick={() => { onFocus(member.id); onEdit(member); }}><Pencil size={13} /></button>
     {hiddenCount > 0 && <button type="button" className="family-person-card__expand" aria-expanded={expanded}
       aria-label={`${expanded ? collapseLabel : expandLabel}: ${name}`} title={expanded ? collapseLabel : expandLabel}
       onClick={() => onExpand(member.id)}><span>{expanded ? "−" : `+${hiddenCount}`}</span></button>}

@@ -12,16 +12,36 @@ const viewSource = readFileSync(join(__dirname, '../src/features/admin/component
 const { outputText } = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true } });
 const layoutModule = {};
 new vm.Script(outputText).runInNewContext({ exports: layoutModule });
-const { layoutFamilyView, FAMILY_CARD_WIDTH, FAMILY_CARD_HEIGHT } = layoutModule;
+const { layoutFamilyView, buildFamilyUnits, FAMILY_CARD_WIDTH, FAMILY_CARD_HEIGHT } = layoutModule;
 const person = (id, values = {}) => ({ id, fullName: `Member ${id}`, generation: 1, createdAt: '', updatedAt: '', ...values });
 
 test('spouses form an adjacent household and use one compact heart connector', () => {
   const layout = layoutFamilyView([person(1, { spouseId: 2 }), person(2, { spouseId: 1 })]);
   const first = layout.nodes.find(node => node.member.id === 1);
   const second = layout.nodes.find(node => node.member.id === 2);
-  assert.equal(second.x - (first.x + FAMILY_CARD_WIDTH), 18);
+  assert.equal(second.x - (first.x + FAMILY_CARD_WIDTH), 20);
   assert.equal(layout.links.filter(link => link.kind === 'spouse').length, 1);
   assert.ok(layout.links.find(link => link.kind === 'spouse').labelX);
+});
+
+test('one-sided spouse references still create one adjacent couple unit', () => {
+  const members = [person(2, { gender: 'Female' }), person(1, { spouseId: 2, gender: 'Male' })];
+  const units = buildFamilyUnits(members);
+  const layout = layoutFamilyView(members);
+  assert.equal(units.length, 1);
+  assert.deepEqual(Array.from(units[0].memberIds), [1, 2]);
+  assert.equal(layout.links.filter(link => link.kind === 'spouse').length, 1);
+  const first = layout.nodes.find(node => node.member.id === 1);
+  const second = layout.nodes.find(node => node.member.id === 2);
+  assert.equal(second.x - first.x - FAMILY_CARD_WIDTH, 20);
+});
+
+test('single member produces one compact card without phantom relationships', () => {
+  const layout = layoutFamilyView([person(1, { gender: 'Other', lifeStatus: 'DECEASED', deathDate: '1990-01-01' })]);
+  assert.equal(layout.nodes.length, 1);
+  assert.equal(layout.nodes[0].width, 196);
+  assert.equal(layout.nodes[0].height, 94);
+  assert.equal(layout.links.length, 0);
 });
 
 test('shared parent pair produces one family trunk and a local sibling rail', () => {
@@ -31,7 +51,7 @@ test('shared parent pair produces one family trunk and a local sibling rail', ()
   ]);
   const familyLinks = layout.links.filter(link => link.kind === 'family');
   assert.equal(familyLinks.length, 1);
-  assert.deepEqual(Array.from(familyLinks[0].memberIds).sort((a, b) => a - b), [1, 2]);
+  assert.deepEqual(Array.from(familyLinks[0].memberIds).sort((a, b) => a - b), [1, 2, 3, 4, 5]);
   const childLinks = layout.links.filter(link => link.kind === 'family-child');
   assert.equal(childLinks.length, 3);
   assert.deepEqual(Array.from(childLinks, link => link.memberIds[0]).sort((a, b) => a - b), [3, 4, 5]);
@@ -61,7 +81,7 @@ test('single-parent family keeps a valid shared child origin', () => {
   ]);
   assert.equal(layout.links.filter(link => link.kind === 'family').length, 1);
   assert.equal(layout.links.filter(link => link.kind === 'family-child').length, 2);
-  assert.deepEqual(Array.from(layout.links.find(link => link.kind === 'family').memberIds), [1]);
+  assert.deepEqual(Array.from(layout.links.find(link => link.kind === 'family').memberIds).sort((a, b) => a - b), [1, 2, 3]);
 });
 
 test('parent childIds can anchor a local connector without manufacturing an additional parent', () => {
@@ -90,9 +110,43 @@ test('couple descendant trunks start at the couple midpoint and each child drop 
     const trunk = layout.links.find(link => link.id === `family-${parentIds.join(':')}`);
     assert.ok(trunk);
     assert.match(trunk.path, new RegExp(`^M ${sourceX} `));
-    assert.ok(Math.abs(sourceX - childCenter) < 8, 'the sibling rail stays centered on its own couple');
+    assert.ok(Math.abs(sourceX - childCenter) < 8, `the sibling rail stays centered on its own couple (${sourceX} vs ${childCenter})`);
     assert.deepEqual(Array.from(layout.links.filter(link => link.kind === 'family-child' && childIds.includes(link.memberIds[0])), link => link.memberIds[0]).sort((a, b) => a - b), childIds);
   }
+});
+
+test('married child units stay adjacent below their parents across multiple generations', () => {
+  const layout = layoutFamilyView([
+    person(1, { generation: 1, spouseId: 2 }), person(2, { generation: 1, spouseId: 1 }),
+    person(3, { generation: 2, fatherId: 1, motherId: 2, spouseId: 4 }), person(4, { generation: 2, spouseId: 3 }),
+    person(5, { generation: 2, fatherId: 1, motherId: 2 }),
+    person(6, { generation: 3, fatherId: 3, motherId: 4, lifeStatus: 'DECEASED' }),
+    person(7, { generation: 3, fatherId: 3, motherId: 4 }),
+    person(8, { generation: 3, fatherId: 5, gender: 'Female' }),
+  ]);
+  const units = buildFamilyUnits([
+    person(1, { generation: 1, spouseId: 2 }), person(2, { generation: 1, spouseId: 1 }),
+    person(3, { generation: 2, fatherId: 1, motherId: 2, spouseId: 4 }), person(4, { generation: 2, spouseId: 3 }),
+  ]);
+  assert.ok(units.find(unit => unit.key === '1:2').children.some(child => child.key === '3:4'));
+  const node = id => layout.nodes.find(item => item.member.id === id);
+  assert.equal(node(4).x - node(3).x - FAMILY_CARD_WIDTH, 20);
+  assert.equal(node(3).y, node(4).y);
+  assert.equal(node(6).y, node(7).y);
+  assert.ok(node(6).y > node(3).y);
+  assert.equal(layout.links.filter(link => link.kind === 'spouse').length, 2);
+  assert.equal(layout.links.filter(link => link.kind === 'family-child' && [6, 7].includes(link.memberIds[0])).length, 2);
+  assert.ok(layout.nodes.every(item => Number.isFinite(item.x) && Number.isFinite(item.y)));
+});
+
+test('compact cards show gender borders, avatar/detail, edit action, and retain the member menu', () => {
+  assert.match(styles, /\.family-person-card\s*\{[^}]*width:\s*196px;[^}]*height:\s*94px/s);
+  assert.match(styles, /data-gender="male"\]\s*\{[^}]*#12b7df/s);
+  assert.match(styles, /data-gender="female"\]\s*\{[^}]*#ff6f91/s);
+  assert.match(cardSource, /onClick=\{\(\) => \{ onFocus\(member\.id\); onView\(member\); \}\}/);
+  assert.match(cardSource, /className="family-person-card__edit"/);
+  assert.match(cardSource, /family-person-card__action-trigger/);
+  assert.match(cardSource, /MemberAvatarImage/);
 });
 
 test('two sibling branches retain separate family trunks and extended relations are optional', () => {
@@ -119,7 +173,7 @@ test('large expanded datasets produce finite non-overlapping cards and connector
   assert.equal(layout.nodes.length, 200);
   assert.ok(layout.nodes.every(node => Number.isFinite(node.x) && Number.isFinite(node.y)));
   assert.ok(layout.links.every(link => link.path.length > 0));
-  assert.equal(layout.height, FAMILY_CARD_HEIGHT * 4 + 52 * 3 + 144);
+  assert.equal(layout.height, FAMILY_CARD_HEIGHT * 4 + 88 * 3 + 144);
   const rows = new Map();
   for (const node of layout.nodes) { const row = rows.get(node.y) ?? []; row.push(node); rows.set(node.y, row); }
   for (const row of rows.values()) {
