@@ -1,9 +1,10 @@
 .family-mindmap-shell {
   --family-tree-canvas: var(--primary-bg, #faf9f6);
   --family-tree-card: var(--secondary-bg, #fff);
-  --family-tree-line: color-mix(in srgb, var(--secondary-text, #64748b) 48%, transparent);
-  --family-tree-line-muted: color-mix(in srgb, var(--secondary-text, #64748b) 22%, transparent);
-  --family-tree-card-border: color-mix(in srgb, var(--custom-border, #d8dce3) 82%, transparent);
+  --family-tree-line: color-mix(in srgb, var(--secondary-text, #64748b) 38%, #eee9df);
+  --family-tree-line-muted: color-mix(in srgb, var(--secondary-text, #64748b) 28%, #eee9df);
+  --family-tree-focus-line: color-mix(in srgb, var(--accent-color, #527a68) 70%, #c8d6cc);
+  --family-tree-card-border: color-mix(in srgb, var(--custom-border, #d8dce3) 72%, #f5f0e8);
   --family-tree-minimap-node: var(--accent-color, #527a68);
   --family-tree-minimap-mask: color-mix(in srgb, var(--primary-bg, #faf9f6) 68%, transparent);
   position: relative;
@@ -13,7 +14,7 @@
   overflow: hidden;
   border: 1px solid var(--family-tree-card-border);
   border-radius: 20px;
-  background: var(--family-tree-canvas);
+  background: radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--accent-color, #527a68) 4%, transparent), transparent 62%), var(--family-tree-canvas);
   color: var(--primary-text);
 }
 
@@ -26,7 +27,7 @@
 }
 
 .family-mindmap-shell .react-flow {
-  background: var(--family-tree-canvas);
+  background: transparent;
 }
 
 .family-mindmap-shell .react-flow__background pattern circle {
@@ -67,17 +68,17 @@
   height: 136px;
   overflow: visible;
   border: 1px solid var(--family-tree-card-border);
-  border-radius: 18px;
+  border-radius: 20px;
   background: var(--family-tree-card);
-  box-shadow: 0 5px 16px rgb(15 23 42 / 7%);
-  transition: transform 280ms ease, border-color 280ms ease, box-shadow 280ms ease;
+  box-shadow: 0 2px 5px rgb(53 49 40 / 4%), 0 10px 26px rgb(53 49 40 / 8%);
+  transition: transform 320ms cubic-bezier(.2,.7,.2,1), border-color 320ms ease, box-shadow 320ms ease;
 }
 
 .family-mindmap-card:hover,
 .family-mindmap-card:focus-within {
   transform: translateY(-2px);
   border-color: color-mix(in srgb, var(--accent-color, #527a68) 55%, var(--family-tree-card-border));
-  box-shadow: 0 9px 24px rgb(15 23 42 / 12%);
+  box-shadow: 0 4px 9px rgb(53 49 40 / 5%), 0 15px 34px rgb(53 49 40 / 12%);
 }
 
 .family-mindmap-card--deceased {
@@ -108,8 +109,8 @@
 
 .family-mindmap-card__avatar-wrap {
   display: block;
-  width: 54px;
-  height: 54px;
+  width: 58px;
+  height: 58px;
   flex: none;
   margin-bottom: 4px;
   padding: 2px;
@@ -132,7 +133,7 @@
   max-width: 100%;
   overflow: hidden;
   color: var(--primary-text);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 720;
   line-height: 1.25;
   overflow-wrap: anywhere;
@@ -302,26 +303,35 @@
 }
 
 .family-mindmap-shell .react-flow__edge {
-  transition: opacity 280ms ease;
+  transition: opacity 300ms ease;
+}
+
+.family-mindmap-shell .react-flow__edge-path {
+  fill: none;
+  stroke: var(--family-tree-line);
+  stroke-width: 1.35px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  transition: stroke 300ms ease, stroke-width 300ms ease, opacity 300ms ease;
 }
 
 .family-mindmap-shell .react-flow__edge.is-family-dimmed {
-  opacity: .25;
+  opacity: .38;
 }
 
 .family-mindmap-shell .family-mindmap-edge--horizontal .react-flow__edge-path {
   stroke: var(--family-tree-line-muted);
-  stroke-dasharray: 5 6;
+  stroke-dasharray: 3 5;
 }
 
 .family-mindmap-shell .family-mindmap-edge--spouse .react-flow__edge-path {
-  stroke: color-mix(in srgb, var(--accent-color, #527a68) 55%, var(--family-tree-line));
-  stroke-width: 1.5px;
+  stroke: color-mix(in srgb, var(--accent-color, #527a68) 24%, var(--family-tree-line));
 }
 
 .family-mindmap-shell .family-mindmap-edge.is-family-related .react-flow__edge-path {
-  stroke: var(--accent-color, #527a68);
-  stroke-width: 2px;
+  stroke: var(--family-tree-focus-line);
+  stroke-width: 1.8px;
 }
 
 .family-mindmap-spouse-mark {
@@ -372,13 +382,14 @@
 
 .family-mindmap-branch__line {
   stroke: var(--family-tree-line);
-  stroke-width: 1.7px;
+  stroke-width: 1.35px;
+  stroke-linecap: round;
   vector-effect: non-scaling-stroke;
 }
 
 .react-flow__node-familyBranch.is-family-related .family-mindmap-branch__line {
-  stroke: var(--accent-color, #527a68);
-  stroke-width: 2px;
+  stroke: var(--family-tree-focus-line);
+  stroke-width: 1.8px;
 }
 
 .react-flow__node-familyBranch.is-family-dimmed .family-mindmap-branch__line {
@@ -389,13 +400,13 @@
   display: inline-flex;
   align-items: center;
   width: max-content;
-  height: 22px;
-  padding: 0 7px;
-  border: 1px solid color-mix(in srgb, var(--custom-border, #d7d9dd) 55%, transparent);
+  height: 24px;
+  padding: 0 9px;
+  border: 1px solid color-mix(in srgb, var(--custom-border, #d7d9dd) 48%, transparent);
   border-radius: 999px;
-  background: color-mix(in srgb, var(--secondary-bg, #fff) 78%, transparent);
+  background: color-mix(in srgb, var(--secondary-bg, #fff) 84%, transparent);
   color: var(--secondary-text);
-  opacity: .78;
+  opacity: .9;
   pointer-events: none;
 }
 
@@ -414,13 +425,13 @@
 .family-mindmap-toolbar {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   margin: 14px !important;
-  padding: 5px;
+  padding: 6px;
   border: 1px solid var(--family-tree-card-border);
   border-radius: 14px;
   background: color-mix(in srgb, var(--family-tree-card) 94%, transparent);
-  box-shadow: 0 5px 20px rgb(15 23 42 / 8%);
+  box-shadow: 0 3px 8px rgb(53 49 40 / 5%), 0 12px 28px rgb(53 49 40 / 9%);
   backdrop-filter: blur(12px);
 }
 
@@ -433,11 +444,11 @@
   gap: 7px;
   padding: 0 9px;
   border: 0;
-  border-radius: 10px;
+  border-radius: 11px;
   background: transparent;
   color: var(--secondary-text);
   cursor: pointer;
-  transition: color 180ms ease, background-color 180ms ease;
+  transition: color 220ms ease, background-color 220ms ease, transform 220ms ease;
 }
 
 .family-mindmap-icon-button:hover,
@@ -445,6 +456,8 @@
   background: color-mix(in srgb, var(--accent-color, #527a68) 11%, transparent);
   color: var(--accent-color, #527a68);
 }
+
+.family-mindmap-icon-button:hover { transform: translateY(-1px); }
 
 .family-mindmap-icon-button:focus-visible {
   outline: 2px solid var(--accent-color, #527a68);
@@ -470,6 +483,8 @@
 }
 
 .family-mindmap-icon-button--export {
+  border-radius: 10px;
+  box-shadow: 0 2px 7px color-mix(in srgb, var(--accent-color, #527a68) 24%, transparent);
   background: var(--accent-color, #527a68);
   color: var(--primary-bg, white);
 }
@@ -481,7 +496,7 @@
 }
 
 .family-mindmap-legend {
-  top: 66px !important;
+  top: 70px !important;
   left: 14px !important;
   margin: 0 !important;
   padding: 11px 13px;
@@ -625,7 +640,7 @@
   }
 
   .family-mindmap-legend {
-    top: 104px !important;
+    top: 108px !important;
     left: 10px !important;
   }
 }

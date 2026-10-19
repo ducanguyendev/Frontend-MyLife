@@ -12,7 +12,7 @@ test('portrait node renders avatar, name, role, generation and a subtle deceased
   assert.match(source, /family-mindmap-card__role/);
   assert.match(source, /mindmap_generation/);
   assert.match(source, /family-mindmap-card__memorial/);
-  assert.match(css, /family-mindmap-card__avatar-wrap[\s\S]*?width:\s*54px/);
+  assert.match(css, /family-mindmap-card__avatar-wrap[\s\S]*?width:\s*58px/);
 });
 
 test('member actions remain available and are visually hidden until hover or keyboard focus', () => {

@@ -101,6 +101,14 @@ test('one child has no sibling bar and connects directly under the parent-pair m
   assert.equal(edgesOf(graph, 'childDrop').length, 1);
 });
 
+test('each child drop belongs only to its child so hover focus stays even across siblings', () => {
+  const graph = buildFamilyMindmapGraph(family([3, 4, 5]));
+  const drops = edgesOf(graph, 'childDrop');
+  assert.equal(drops.length, 3);
+  for (const edge of drops) assert.deepEqual(Array.from(edge.data.familyIds), [Number(edge.target)]);
+  assert.ok(graph.edges.every(edge => edge.style == null), 'connector stroke system is controlled by shared CSS');
+});
+
 test('single parent trunk leaves its bottom center without inventing a spouse', () => {
   const people = [member(1, { generation: 1 }), member(2, { generation: 2, motherId: 1 }), member(3, { generation: 2, motherId: 1 })];
   const graph = buildFamilyMindmapGraph(people);

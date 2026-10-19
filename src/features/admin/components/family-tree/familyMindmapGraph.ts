@@ -62,7 +62,6 @@ function makeEdge(
         : direction === "TB" ? "parent-target" : "parent-target-left",
     ...handles,
     className: `family-mindmap-edge family-mindmap-edge--${relationType}`,
-    style: { stroke: "var(--family-tree-line)", strokeWidth: relationType === "familyStem" || relationType === "childDrop" ? 1.7 : 1.4 },
     data: { relationType, familyIds, ...dataExtra },
   };
 }
@@ -170,13 +169,13 @@ export function buildFamilyMindmapGraph(members: FamilyMember[], options: GraphO
         targetHandle: direction === "TB" ? "branch-parent-target" : "branch-parent-target-left",
       }));
       for (const childId of hub.childIds) {
-        edges.push(makeEdge(`child-drop-${hub.branchId}-${childId}`, hub.branchId, childId, "childDrop", familyIds, direction, {}, {
+        edges.push(makeEdge(`child-drop-${hub.branchId}-${childId}`, hub.branchId, childId, "childDrop", [childId], direction, {}, {
           sourceHandle: `branch-child-${childId}`,
         }));
       }
     } else {
       for (const childId of hub.childIds) {
-        edges.push(makeEdge(`child-drop-${hub.id}-${childId}`, hub.id, childId, "childDrop", familyIds, direction, {}, {
+        edges.push(makeEdge(`child-drop-${hub.id}-${childId}`, hub.id, childId, "childDrop", [childId], direction, {}, {
           sourceHandle: direction === "TB" ? "union-child-source" : "union-child-source-right",
         }));
       }

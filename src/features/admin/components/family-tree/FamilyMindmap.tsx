@@ -1,5 +1,7 @@
 import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
 import {
+  Background,
+  BackgroundVariant,
   BaseEdge,
   EdgeLabelRenderer,
   Handle,
@@ -100,11 +102,7 @@ const FamilyTreeEdge = memo((props: EdgeProps<FamilyMindmapEdge>) => {
   let path: string;
   if (spouse) path = getStraightPath(props)[0];
   else if (horizontal) path = getSmoothStepPath({ ...props, borderRadius: 8, offset: 18 })[0];
-  else if (props.sourcePosition === Position.Bottom || props.sourcePosition === Position.Top) {
-    path = `M ${props.sourceX},${props.sourceY} L ${props.sourceX},${props.targetY} L ${props.targetX},${props.targetY}`;
-  } else {
-    path = `M ${props.sourceX},${props.sourceY} L ${props.targetX},${props.sourceY} L ${props.targetX},${props.targetY}`;
-  }
+  else path = getSmoothStepPath({ ...props, borderRadius: 10, offset: 16 })[0];
   return <>
     <BaseEdge id={props.id} path={path} style={props.style} />
     {spouse && <EdgeLabelRenderer><span className="family-mindmap-spouse-mark" style={{ transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)` }} aria-hidden="true">♥</span></EdgeLabelRenderer>}
@@ -176,8 +174,14 @@ const FamilyMindmapInner: React.FC<FamilyMindmapProps> = ({ members, searchFocus
     for (const member of treeMembers) {
       if (member.childIds?.includes(activeMemberId) || member.fatherId === activeMemberId || member.motherId === activeMemberId || member.spouseId === activeMemberId) related.add(member.id);
     }
+    if (showExtendedRelations) {
+      for (const relation of active.horizontalRelations ?? []) related.add(Number(relation.memberId));
+      for (const member of treeMembers) {
+        if (member.horizontalRelations?.some(relation => Number(relation.memberId) === activeMemberId)) related.add(member.id);
+      }
+    }
     return related;
-  }, [activeMemberId, treeMembers]);
+  }, [activeMemberId, treeMembers, showExtendedRelations]);
   const visibleNodes = useMemo(() => graph.nodes.map(node => {
     if (activeMemberId == null) return node;
     const familyIds = node.type === "member"
@@ -300,6 +304,7 @@ const FamilyMindmapInner: React.FC<FamilyMindmapProps> = ({ members, searchFocus
       proOptions={{ hideAttribution: true }}
       aria-label={label(t, "admin.mindmap_canvas", "Sơ đồ gia phả")}
     >
+      <Background variant={BackgroundVariant.Dots} gap={24} size={1} color="var(--family-tree-line-muted)" />
       <Panel position="top-left" className="family-mindmap-ui family-mindmap-toolbar">
         {focusHistory.length > 0 && <button type="button" className="family-mindmap-icon-button family-mindmap-branch-back" onClick={restoreFocus}>{label(t, "admin.mindmap_previous_branch", "← Nhánh trước")}</button>}
         <button type="button" className="family-mindmap-icon-button" aria-label={label(t, "admin.mindmap_zoom_out", "Thu nhỏ")}
