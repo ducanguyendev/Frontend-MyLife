@@ -59,8 +59,8 @@ export function adaptMembersToShadcnFamilyTree(members: FamilyMember[]): ShadcnF
 
   const people = members.map(source => {
     const gender = source.gender?.trim().toLocaleLowerCase();
-    const sex = gender && (gender === "male" || gender.includes("nam")) ? "male"
-      : gender && (gender === "female" || gender === "nu" || gender.includes("nữ")) ? "female" : "unknown";
+    const sex = gender && (gender === "male" || gender === "m" || gender.includes("nam")) ? "male"
+      : gender && (gender === "female" || gender === "f" || gender === "nu" || gender.includes("nữ")) ? "female" : "unknown";
     return {
       id: String(source.id),
       name: source.fullName,

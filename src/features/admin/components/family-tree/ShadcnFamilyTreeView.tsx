@@ -195,7 +195,7 @@ export function ShadcnFamilyTreeView({ members, searchFocusMemberId, generationF
         <svg className="shadcn-family-tree__links" width={layout.width} height={layout.height} aria-hidden="true">
           {layout.links.map(link => {
             const related = activeId == null || link.memberIds.some(id => relatedIds.has(id));
-            return <g key={link.id} className={`shadcn-family-tree__link shadcn-family-tree__link--${link.kind}${related ? " is-related" : " is-dimmed"}`}><path d={link.path} />{link.kind === "spouse" && <text x={link.labelX} y={link.labelY} textAnchor="middle" dominantBaseline="central">♥</text>}</g>;
+            return <g key={link.id} className={`shadcn-family-tree__link shadcn-family-tree__link--${link.kind}${related ? " is-related" : " is-dimmed"}`}><path d={link.path} />{link.kind === "spouse" && <><circle cx={link.labelX} cy={link.labelY} r={9} /><text x={link.labelX} y={link.labelY} textAnchor="middle" dominantBaseline="central">♥</text></>}</g>;
           })}
         </svg>
         <AnimatePresence initial={false}>

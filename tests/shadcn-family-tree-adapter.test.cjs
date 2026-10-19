@@ -33,6 +33,14 @@ test('maps MyLife parents and spouse into flat IDs without mutating source recor
   assert.equal(result.people.find(item => item.id === '3').generation, 2);
 });
 
+test('normalizes compact gender values for card accent colors', () => {
+  const result = adapter.adaptMembersToShadcnFamilyTree([
+    person(1, 'Male', { gender: 'M' }),
+    person(2, 'Female', { gender: 'F' }),
+  ]);
+  assert.deepEqual(Array.from(result.people, item => item.sex), ['male', 'female']);
+});
+
 test('drops dangling and self relationships and keeps a valid single-parent union', () => {
   const members = [person(1, 'Parent', { fatherId: 1, motherId: 900, spouseId: 1, childIds: [2, 2, 1, 900] }), person(2, 'Child', { fatherId: 1 })];
   const result = adapter.adaptMembersToShadcnFamilyTree(members);
@@ -92,6 +100,25 @@ test('same generation members share a horizontal lane with stable card sizing', 
   const members = [person(1, 'Parent A', { generation: 1 }), person(2, 'Parent B', { generation: 1 }), person(3, 'Child A', { generation: 2, fatherId: 1, motherId: 2 }), person(4, 'Child B', { generation: 2, fatherId: 1, motherId: 2 }), person(5, 'Grandchild', { generation: 3, fatherId: 3, motherId: 4 })];
   const result = shadcnLayoutModule.layoutShadcnFamilyTree(members);
   for (const generation of [1, 2, 3]) assert.equal(new Set(result.nodes.filter(node => node.generation === generation).map(node => node.y)).size, 1);
+});
+
+test('spouse pairs stay adjacent and married child stays paired with spouse on the same row', () => {
+  const members = [
+    person(1, 'Parent A', { generation: 1, spouseId: 2 }),
+    person(2, 'Parent B', { generation: 1 }),
+    person(3, 'Child', { generation: 2, fatherId: 1, motherId: 2, spouseId: 4 }),
+    person(4, 'Child spouse', { generation: 2 }),
+    person(5, 'Grandchild', { generation: 3, fatherId: 3, motherId: 4 }),
+  ];
+  const result = shadcnLayoutModule.layoutShadcnFamilyTree(members);
+  const first = result.nodes.find(node => node.member.id === 3);
+  const spouse = result.nodes.find(node => node.member.id === 4);
+  assert.equal(first.y, spouse.y);
+  assert.ok(Math.abs(first.x - spouse.x) < 250, 'spouse card is placed in the adjacent couple unit');
+  assert.equal(first.width, 190);
+  assert.equal(first.height, 90);
+  assert.ok(result.links.some(link => link.kind === 'spouse' && link.memberIds.includes(3) && link.memberIds.includes(4)));
+  assert.ok(result.links.some(link => link.kind === 'family' && link.memberIds.includes(3) && link.memberIds.includes(4)), 'child trunk originates from the couple union');
 });
 
 test('generation lanes remain finite and non-overlapping for family sizes from 13 to 200 people', () => {

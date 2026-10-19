@@ -35,8 +35,16 @@ export const ShadcnFamilyTreePersonCard = memo(function ShadcnFamilyTreePersonCa
   const generation = t("admin.mindmap_generation", { generation: member.generation, defaultValue: `Đời ${member.generation}` });
   const actionsLabel = t("admin.member_actions_for", { name: member.fullName, defaultValue: `Thao tác với ${member.fullName}` });
 
+  const rawGender = member.gender?.trim().toLocaleLowerCase();
+  const genderKind = rawGender && (rawGender.includes("nữ") || rawGender === "nu" || rawGender === "female" || rawGender === "f") ? "female"
+    : rawGender && (rawGender.includes("nam") || rawGender === "male" || rawGender === "m") ? "male"
+      : rawGender ? "other" : "unknown";
+  const genderKey = genderKind === "female" ? "gender_nữ" : genderKind === "male" ? "gender_nam" : genderKind === "other" ? "gender_other" : undefined;
+  const gender = genderKey ? t(`admin.${genderKey}`, { defaultValue: member.gender }) : undefined;
+
   return <motion.article
     className={`shadcn-family-tree__person${focused ? " is-focused" : ""}${dimmed ? " is-dimmed" : ""}${member.lifeStatus === "DECEASED" ? " is-deceased" : ""}`}
+    data-gender={genderKind}
     style={{ left: x, top: y }}
     initial={{ opacity: 0, y: 8 }} animate={{ opacity: dimmed ? .54 : 1, y: 0 }} exit={{ opacity: 0 }}
     transition={{ duration: reduceMotion ? .01 : .32, ease: "easeOut" }}
@@ -52,6 +60,7 @@ export const ShadcnFamilyTreePersonCard = memo(function ShadcnFamilyTreePersonCa
       <span className="shadcn-family-tree__role">{role}</span>
       <span className="shadcn-family-tree__meta">
         <span className="shadcn-family-tree__generation-chip">{generation}</span>
+        {gender && <span>{gender}</span>}
         {birthYear && <span>{birthYear}</span>}
         {member.lifeStatus === "DECEASED" && <span>†{deathYear ? ` ${deathYear}` : ""}</span>}
       </span>

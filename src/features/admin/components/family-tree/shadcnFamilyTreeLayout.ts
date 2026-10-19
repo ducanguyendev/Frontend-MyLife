@@ -1,12 +1,12 @@
 import type { FamilyMember } from "./types";
 import type { FamilyViewLayout, FamilyViewLink, FamilyViewNode } from "./family-view/familyTreeTypes";
 
-export const SHADCN_TREE_CARD_WIDTH = 232;
-export const SHADCN_TREE_CARD_HEIGHT = 178;
-const PARTNER_GAP = 18;
+export const SHADCN_TREE_CARD_WIDTH = 190;
+export const SHADCN_TREE_CARD_HEIGHT = 90;
+const PARTNER_GAP = 28;
 const SIBLING_GAP = 40;
 const FAMILY_GAP = 84;
-const GENERATION_GAP = 52;
+const GENERATION_GAP = 72;
 const PADDING = 72;
 
 interface HouseholdUnit { ids: number[]; width: number }
@@ -137,7 +137,9 @@ export function layoutShadcnFamilyTree(members: FamilyMember[], showExtendedRela
       const units: HouseholdUnit[] = [];
       for (const person of [...people].sort((a, b) => a.id - b.id)) {
         if (consumed.has(person.id)) continue;
-        const spouseId = person.spouseId;
+        const spouseId = person.spouseId != null && rowIds.has(person.spouseId)
+          ? person.spouseId
+          : row.find(candidate => candidate.spouseId === person.id && !consumed.has(candidate.id))?.id;
         const spouse = spouseId == null || !rowIds.has(spouseId) || consumed.has(spouseId) ? undefined : byId.get(spouseId);
         const ids = spouse ? [person.id, spouse.id].sort((a, b) => a - b) : [person.id];
         ids.forEach(id => consumed.add(id));
