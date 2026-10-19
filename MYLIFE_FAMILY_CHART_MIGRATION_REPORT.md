@@ -46,4 +46,5 @@ References: [npm package and versions](https://www.npmjs.com/package/family-char
 ## Git
 
 - Branch: `feature_minhduc`.
-- Implementation commit SHA and push result: fill in after commit and push.
+- Implementation commit: `efb2e20ca20e7a7887bf56f8763eff15d204f0b3` (`feat: introduce premium genealogy family chart`).
+- Push result: implementation commit `efb2e20ca20e7a7887bf56f8763eff15d204f0b3` and this report update were pushed successfully to `origin/feature_minhduc`.
