@@ -9,11 +9,83 @@ const FAMILY_GAP = 84;
 const GENERATION_GAP = 52;
 const PADDING = 72;
 
-interface HouseholdUnit { ids: number[]; anchorId: number; width: number; anchorOffset: number }
+interface HouseholdUnit { ids: number[]; width: number }
 interface RowGroup { key: string; parentIds: number[]; units: HouseholdUnit[]; width: number; anchorOffset: number; target: number }
+
+export interface RowGroupPosition { key: string; width: number; target: number }
+export interface FamilyConnectorGeometry {
+  path: string;
+  sourceX: number;
+  sourceY: number;
+  railLeft: number;
+  railRight: number;
+  railY: number;
+  junctionX: number;
+  childCenters: number[];
+}
+
+/** Minimize squared movement from desired centers subject to ordered, non-overlapping groups. */
+export function resolveRowGroupPositions(groups: RowGroupPosition[], gap: number): number[] {
+  if (!groups.length) return [];
+  const ordered = [...groups].sort((a, b) => a.target - b.target || a.key.localeCompare(b.key, undefined, { numeric: true }));
+  const offsets: number[] = [];
+  let occupied = 0;
+  for (const group of ordered) {
+    offsets.push(occupied);
+    occupied += group.width + gap;
+  }
+  const pools: { start: number; end: number; sum: number; count: number }[] = [];
+  ordered.forEach((group, index) => {
+    pools.push({ start: index, end: index, sum: group.target - group.width / 2 - offsets[index], count: 1 });
+    while (pools.length > 1) {
+      const right = pools[pools.length - 1];
+      const left = pools[pools.length - 2];
+      if (left.sum / left.count <= right.sum / right.count) break;
+      pools.splice(-2, 2, { start: left.start, end: right.end, sum: left.sum + right.sum, count: left.count + right.count });
+    }
+  });
+  const starts = Array<number>(ordered.length);
+  for (const pool of pools) {
+    const base = pool.sum / pool.count;
+    for (let index = pool.start; index <= pool.end; index++) starts[index] = base + offsets[index];
+  }
+  const byKey = new Map(ordered.map((group, index) => [group.key, starts[index]]));
+  return groups.map(group => byKey.get(group.key)!);
+}
+
+/** Build a single connected orthogonal trunk and sibling rail for a parent union. */
+export function buildFamilyConnectorGeometry(sourceX: number, sourceY: number, railY: number, centers: number[]): FamilyConnectorGeometry | null {
+  const childCenters = [...centers].sort((a, b) => a - b);
+  if (!childCenters.length) return null;
+  const railLeft = childCenters[0];
+  const railRight = childCenters[childCenters.length - 1];
+  const junctionX = Math.max(railLeft, Math.min(railRight, sourceX));
+  const points = [[sourceX, sourceY], [sourceX, railY]];
+  if (Math.abs(sourceX - junctionX) > .01) points.push([junctionX, railY]);
+  if (childCenters.length > 1) {
+    const railEnd = sourceX <= railLeft ? railRight : railLeft;
+    if (Math.abs(points[points.length - 1][0] - railEnd) > .01) points.push([railEnd, railY]);
+  }
+  const path = points.map(([x, y], index) => `${index ? "L" : "M"} ${x} ${y}`).join(" ");
+  return { path, sourceX, sourceY, railLeft, railRight, railY, junctionX, childCenters };
+}
 
 const pairKey = (ids: number[]) => [...new Set(ids)].sort((a, b) => a - b).join(":") || "root";
 const householdKey = (first: number, second: number) => [first, second].sort((a, b) => a - b).join(":");
+
+/** Anchor a known couple at its midpoint; otherwise use one deterministic parent's center. */
+export function getUnionAnchorX(parents: Array<{ id: number; x: number; width: number }>, coupleKeys: Set<string>): number | null {
+  if (!parents.length) return null;
+  for (let first = 0; first < parents.length; first++) {
+    for (let second = first + 1; second < parents.length; second++) {
+      if (coupleKeys.has(householdKey(parents[first].id, parents[second].id))) {
+        return (parents[first].x + parents[first].width / 2 + parents[second].x + parents[second].width / 2) / 2;
+      }
+    }
+  }
+  const parent = [...parents].sort((a, b) => a.id - b.id)[0];
+  return parent.x + parent.width / 2;
+}
 
 /** Places explicit generation lanes and family clusters, centring sibling anchors over their parent unit. */
 export function layoutShadcnFamilyTree(members: FamilyMember[], showExtendedRelations = false): FamilyViewLayout {
@@ -37,6 +109,7 @@ export function layoutShadcnFamilyTree(members: FamilyMember[], showExtendedRela
     if (spouseId == null || spouseId === member.id || !visibleIds.has(spouseId)) continue;
     spousePairs.set(householdKey(member.id, spouseId), [member.id, spouseId].sort((a, b) => a - b));
   }
+  const coupleKeys = new Set(spousePairs.keys());
 
   const generations = [...new Set(members.map(member => member.generation))].sort((a, b) => a - b);
   const minGeneration = generations[0];
@@ -69,7 +142,7 @@ export function layoutShadcnFamilyTree(members: FamilyMember[], showExtendedRela
         const ids = spouse ? [person.id, spouse.id].sort((a, b) => a - b) : [person.id];
         ids.forEach(id => consumed.add(id));
         const width = ids.length * SHADCN_TREE_CARD_WIDTH + Math.max(0, ids.length - 1) * PARTNER_GAP;
-        units.push({ ids, anchorId: person.id, width, anchorOffset: ids.indexOf(person.id) * (SHADCN_TREE_CARD_WIDTH + PARTNER_GAP) + SHADCN_TREE_CARD_WIDTH / 2 });
+        units.push({ ids, width });
       }
       return units;
     };
@@ -77,20 +150,30 @@ export function layoutShadcnFamilyTree(members: FamilyMember[], showExtendedRela
       const units = makeUnits(group.children);
       if (!units.length) continue;
       const width = units.reduce((sum, unit) => sum + unit.width, 0) + Math.max(0, units.length - 1) * SIBLING_GAP;
-      let offset = 0; const anchors: number[] = [];
-      for (const unit of units) { anchors.push(offset + unit.anchorOffset); offset += unit.width + SIBLING_GAP; }
-      const positionedParents = group.parentIds.map(id => positions.get(id)).filter((position): position is { x: number; y: number } => Boolean(position));
-      const target = positionedParents.length
-        ? positionedParents.reduce((sum, position) => sum + position.x + SHADCN_TREE_CARD_WIDTH / 2, 0) / positionedParents.length
-        : rowGroups.length * (width + FAMILY_GAP);
-      rowGroups.push({ key, parentIds: group.parentIds, units, width, anchorOffset: anchors.reduce((sum, anchor) => sum + anchor, 0) / anchors.length, target });
+      let unitOffset = 0;
+      const childAnchorOffsets: number[] = [];
+      for (const unit of units) {
+        for (const child of group.children) {
+          const cardIndex = unit.ids.indexOf(child.id);
+          if (cardIndex >= 0) childAnchorOffsets.push(unitOffset + cardIndex * (SHADCN_TREE_CARD_WIDTH + PARTNER_GAP) + SHADCN_TREE_CARD_WIDTH / 2);
+        }
+        unitOffset += unit.width + SIBLING_GAP;
+      }
+      const positionedParents = group.parentIds.flatMap(id => {
+        const position = positions.get(id);
+        return position ? [{ id, x: position.x, width: SHADCN_TREE_CARD_WIDTH }] : [];
+      });
+      const target = getUnionAnchorX(positionedParents, coupleKeys)
+        ?? (rowGroups.length * (width + FAMILY_GAP));
+      const childGroupCenter = childAnchorOffsets.length
+        ? (Math.min(...childAnchorOffsets) + Math.max(...childAnchorOffsets)) / 2
+        : width / 2;
+      rowGroups.push({ key, parentIds: group.parentIds, units, width, anchorOffset: childGroupCenter, target });
     }
     if (roots.length) {
       const units = makeUnits(roots);
       const width = units.reduce((sum, unit) => sum + unit.width, 0) + Math.max(0, units.length - 1) * FAMILY_GAP;
-      let offset = 0; const anchors: number[] = [];
-      for (const unit of units) { anchors.push(offset + unit.anchorOffset); offset += unit.width + FAMILY_GAP; }
-      rowGroups.push({ key: "root", parentIds: [], units, width, anchorOffset: anchors.reduce((sum, anchor) => sum + anchor, 0) / Math.max(1, anchors.length), target: 0 });
+      rowGroups.push({ key: "root", parentIds: [], units, width, anchorOffset: width / 2, target: 0 });
     }
     rowGroups.sort((a, b) => a.target - b.target || a.key.localeCompare(b.key, undefined, { numeric: true }));
 
@@ -106,16 +189,18 @@ export function layoutShadcnFamilyTree(members: FamilyMember[], showExtendedRela
       continue;
     }
 
-    let previousRight = Number.NEGATIVE_INFINITY;
-    for (const group of rowGroups) {
-      let startX = group.target - group.anchorOffset;
-      if (startX < previousRight + FAMILY_GAP) startX = previousRight + FAMILY_GAP;
+    const starts = resolveRowGroupPositions(rowGroups.map(group => ({
+      key: group.key,
+      width: group.width,
+      target: group.target + group.width / 2 - group.anchorOffset,
+    })), FAMILY_GAP);
+    for (const [groupIndex, group] of rowGroups.entries()) {
+      const startX = starts[groupIndex];
       let unitX = startX;
       for (const [index, unit] of group.units.entries()) {
         placeUnit(unit, unitX, y);
         unitX += unit.width + (index < group.units.length - 1 ? SIBLING_GAP : 0);
       }
-      previousRight = startX + group.width;
     }
   }
 
@@ -145,7 +230,8 @@ export function layoutShadcnFamilyTree(members: FamilyMember[], showExtendedRela
     const parents = group.parentIds.map(id => byNodeId.get(id)).filter((node): node is FamilyViewNode => Boolean(node));
     const children = group.children.map(child => byNodeId.get(child.id)).filter((node): node is FamilyViewNode => Boolean(node));
     if (!parents.length || !children.length) continue;
-    const sourceX = parents.reduce((sum, node) => sum + node.x + node.width / 2, 0) / parents.length;
+    const sourceX = getUnionAnchorX(parents.map(node => ({ id: node.member.id, x: node.x, width: node.width })), coupleKeys);
+    if (sourceX == null) continue;
     const sourceY = Math.max(...parents.map(node => node.y + node.height));
     const childCenters = children.map(node => node.x + node.width / 2).sort((a, b) => a - b);
     const railY = children[0].y - 30;
@@ -155,10 +241,12 @@ export function layoutShadcnFamilyTree(members: FamilyMember[], showExtendedRela
       links.push({ id: `family-${key}`, path, kind: "family", memberIds: [...group.parentIds, child.member.id] });
       continue;
     }
-    links.push({ id: `family-${key}`, path: `M ${sourceX} ${sourceY} L ${sourceX} ${railY} M ${childCenters[0]} ${railY} L ${childCenters.at(-1)} ${railY}`, kind: "family", memberIds: group.parentIds });
+    const connector = buildFamilyConnectorGeometry(sourceX, sourceY, railY, childCenters);
+    if (!connector) continue;
+    links.push({ id: `family-${key}`, path: connector.path, kind: "family", memberIds: [...group.parentIds, ...children.map(child => child.member.id)] });
     children.forEach(child => {
       const childX = child.x + child.width / 2;
-      links.push({ id: `family-child-${key}-${child.member.id}`, path: `M ${childX} ${railY} L ${childX} ${child.y}`, kind: "family-child", memberIds: [child.member.id] });
+      links.push({ id: `family-child-${key}-${child.member.id}`, path: `M ${childX} ${railY} L ${childX} ${child.y}`, kind: "family-child", memberIds: [...group.parentIds, ...children.map(member => member.member.id)] });
     });
   }
 

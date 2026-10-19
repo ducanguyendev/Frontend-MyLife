@@ -33,7 +33,7 @@
     "test:family-chart": "node --test tests/family-chart-adapter.test.cjs",
     "test:family-tree": "node --test tests/family-tree-adapter.test.cjs tests/family-tree-view.test.cjs",
     "test:memoir-tree": "node --test tests/memoir-tree-adapter.test.cjs",
-    "test:shadcn-family-tree": "node --test tests/shadcn-family-tree-adapter.test.cjs"
+    "test:shadcn-family-tree": "node --test tests/shadcn-family-tree-adapter.test.cjs tests/shadcn-family-tree-layout.test.cjs"
   },
   "dependencies": {
     "@memoir/tree": "^0.8.0",
