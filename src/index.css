@@ -1,0 +1,235 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Press+Start+2P&display=swap');
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: 'Inter', sans-serif;
+  --font-display: 'Inter', sans-serif;
+  
+  --color-primary-bg: var(--primary-bg);
+  --color-secondary-bg: var(--secondary-bg);
+  --color-primary-text: var(--primary-text);
+  --color-secondary-text: var(--secondary-text);
+  --color-custom-border: var(--custom-border);
+  
+  --color-accent: var(--accent-color);
+  --color-accent-hover: var(--accent-hover-color);
+  --color-success: #22c55e;
+  --color-error: #ef4444;
+}
+
+@layer base {
+  /* Light mode is off-white background to match Cofounder */
+  :root {
+    color-scheme: light;
+    --primary-bg: #F5F5F0; 
+    --secondary-bg: #FFFFFF; 
+    --primary-text: #18181b; /* Dark charcoal */
+    --secondary-text: #666666; 
+    --custom-border: #e6e6e2; 
+    --accent-color: #18181b; 
+    --accent-hover-color: #333333; 
+    --focus-border: #a1a1aa;
+    --focus-surface: rgba(113, 113, 122, 0.08);
+    
+    /* Semantic Colors */
+    --color-success: #10b981;
+    --color-success-dark: #059669;
+    --color-warning: #eab308;
+    --color-error: #ef4444;
+    --color-blue-dark: #0b1329;
+    --color-blue-mid: #1e3a8a;
+    --color-blue-light: #3b82f6;
+
+    --hud-opacity: 0.05;
+    --hud-filter: grayscale(0.5) brightness(1.1) contrast(0.9);
+  }
+
+  /* Dark mode is black/dark gray */
+  .dark {
+    color-scheme: dark;
+    --primary-bg: #000000; /* Black background */
+    --secondary-bg: #111111; /* Very dark gray for cards */
+    --primary-text: #ffffff; /* Pure white */
+    --secondary-text: #a1a1aa; /* Zinc 400 for secondary text */
+    --custom-border: #27272a; /* Zinc 800 for borders */
+    --accent-color: #ffffff; /* White */
+    --accent-hover-color: #e5e5e5; 
+    --focus-border: #71717a;
+    --focus-surface: rgba(161, 161, 170, 0.12);
+    
+    /* Semantic Colors */
+    --color-success: #10b981;
+    --color-success-dark: #059669;
+    --color-warning: #eab308;
+    --color-error: #ef4444;
+    --color-blue-dark: #000000;
+    --color-blue-mid: #111111;
+    --color-blue-light: #333333;
+
+    --hud-opacity: 0.15;
+    --hud-filter: grayscale(1) brightness(0.4);
+  }
+
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    filter: invert(0.2);
+  }
+
+  .dark input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.9);
+  }
+
+  /* Disable Edge / Internet Explorer default password reveal and clear icons */
+  input::-ms-reveal,
+  input::-ms-clear,
+  input[type="password"]::-ms-reveal,
+  input[type="password"]::-ms-clear {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    pointer-events: none !important;
+  }
+  
+  body {
+    background-color: var(--primary-bg);
+    color: var(--primary-text);
+    transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+    overflow-x: hidden;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+
+  option {
+    background-color: var(--secondary-bg);
+    color: var(--primary-text);
+  }
+}
+
+@layer utilities {
+  .hero-nav-glass {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  }
+
+  .dark .hero-nav-glass {
+    background: rgba(17, 17, 17, 0.18);
+    border-color: rgba(255, 255, 255, 0.16);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+  }
+
+  .glass-pill {
+    background: color-mix(in srgb, var(--secondary-bg) 88%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--custom-border);
+    box-shadow: 0 2px 12px color-mix(in srgb, var(--primary-text) 5%, transparent);
+  }
+  
+  .dark .glass-pill {
+    background: color-mix(in srgb, var(--secondary-bg) 88%, transparent);
+    border: 1px solid var(--custom-border);
+    box-shadow: 0 2px 12px color-mix(in srgb, var(--primary-text) 7%, transparent);
+  }
+
+  .glass-card {
+    background: rgba(25, 25, 25, 0.3);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+  }
+
+  .glass-nav {
+    background: transparent;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Custom Scrollbar for Modals and Panels */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(140, 140, 140, 0.4);
+    border-radius: 9999px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(140, 140, 140, 0.7);
+  }
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(140, 140, 140, 0.4) transparent;
+  }
+  
+  .text-shadow-sm {
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  .animate-float-delayed {
+    animation: float 6s ease-in-out 3s infinite;
+  }
+  
+  .animate-cloud-slow {
+    animation: cloud-move 60s linear infinite;
+  }
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+@keyframes cloud-move {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(100px); }
+}
+
+
+/* Keyboard focus uses a subtle inner cue, never an outer accent-colored ring. */
+:where(button, [tabindex], input, select, textarea):not([data-ui-control]):focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 1px var(--focus-border);
+}
+
+/* Controls that already have a border use that single border as the focus cue. */
+:where(button, [tabindex], input, select, textarea):not([data-ui-control])[class*="border"]:focus-visible {
+  border-color: var(--focus-border);
+  box-shadow: none;
+}
+
+/* Links use a text cue instead of a rounded focus frame. */
+:where(a):focus-visible {
+  outline: none;
+  text-decoration: underline;
+  text-decoration-color: var(--focus-border);
+  text-underline-offset: 3px;
+}
+
+[data-ui-control]:focus-visible {
+  outline: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}

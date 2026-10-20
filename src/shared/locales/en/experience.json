@@ -1,0 +1,36 @@
+{
+  "title": "Experience Timeline",
+  "subtitle": "Journey",
+  "items": {
+    "exp1": {
+      "role": "Senior Backend & Game Developer",
+      "company": "Apex Interactive Studio",
+      "duration": "2018 - Present",
+      "responsibilities": [
+        "Architected high-performance game servers handling 50k+ concurrent users (CCU).",
+        "Integrated Unity clients with Node.js API services for matchmaking and live leaderboards.",
+        "Optimized SQL queries and database schemas, reducing API gateway latency by 45%."
+      ]
+    },
+    "exp2": {
+      "role": "Game Programmer",
+      "company": "Pixel Perfect Games",
+      "duration": "2015 - 2018",
+      "responsibilities": [
+        "Programmed core gameplay mechanics, AI behaviors, and physics simulations in C# using Unity.",
+        "Collaborated with game designers to prototype and deliver 4 mobile titles.",
+        "Maintained CI/CD pipelines deploying builds automatically to App Store and Google Play."
+      ]
+    },
+    "exp3": {
+      "role": "Junior Software Engineer",
+      "company": "TechFlow Solutions",
+      "duration": "2013 - 2015",
+      "responsibilities": [
+        "Developed RESTful APIs and microservice architectures using Python/Django and Node.js.",
+        "Wrote automated unit and integration tests, increasing overall code coverage to 92%.",
+        "Managed Docker containers and deployed containerized services on AWS."
+      ]
+    }
+  }
+}

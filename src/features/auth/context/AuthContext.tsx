@@ -1,0 +1,181 @@
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import {
+  authService,
+  type AuthenticatedUser,
+  type LoginRequest,
+  type LoginResponse,
+  type UserRole,
+} from '../services/authService';
+import { generateDefaultDisplayName } from '@/shared/utils/userDisplayName';
+
+export interface User {
+  id: number;
+  email: string;
+  fullName?: string;
+  displayName: string;
+  name: string;
+  role: UserRole;
+  roles: UserRole[];
+  avatar?: string;
+  authProvider?: number;
+  loginProviders?: AuthenticatedUser['loginProviders'];
+}
+
+interface AuthContextType {
+  user: User | null;
+  isAuthenticated: boolean;
+  isAdmin: boolean;
+  isUser: boolean;
+  isLoading: boolean;
+  login: (credentials: LoginRequest) => Promise<LoginResponse>;
+  loginWithGoogle: (code: string, redirectUri: string) => Promise<LoginResponse>;
+  logout: () => Promise<void>;
+  switchAccount: () => Promise<void>;
+  updateUser: (user: AuthenticatedUser) => void;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+function isGoogleOAuthPopupCallback(): boolean {
+  if (typeof window === 'undefined' || !window.opener) return false;
+  const params = new URLSearchParams(window.location.search);
+  return params.has('code') || params.has('error');
+}
+
+function toContextUser(user: AuthenticatedUser): User {
+  const fullName = user.fullName?.trim() || '';
+  const displayName = user.displayName?.trim() || generateDefaultDisplayName(fullName) || user.name?.trim() || '';
+  return {
+    id: user.id,
+    email: user.email,
+    fullName,
+    displayName,
+    name: displayName,
+    role: user.role,
+    roles: [user.role],
+    avatar: authService.getDisplayAvatarUrl(user.avatarUrl, user.email, Date.now()) ?? undefined,
+    authProvider: user.authProvider,
+    loginProviders: user.loginProviders,
+  };
+}
+
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(() => !isGoogleOAuthPopupCallback());
+
+  const clearAuthenticatedState = useCallback(() => {
+    authService.clearSessionState();
+    setUser(null);
+  }, []);
+
+  useEffect(() => {
+    // The OAuth redirect loads this SPA inside a popup. Its parent reads the
+    // authorization code from the callback URL, so this transient document
+    // must not call /me, refresh, or logout shared cookies.
+    if (isGoogleOAuthPopupCallback()) return undefined;
+
+    let isMounted = true;
+
+    const verifySession = async () => {
+      authService.prepareSessionCheck();
+
+      try {
+        // apiClient transparently performs one cookie-based refresh after a
+        // /api/me 401. The server response, never localStorage, is the source
+        // of truth for identity and role after every app start.
+        const currentUser = await authService.getUserInfo();
+        if (isMounted) setUser(toContextUser(currentUser));
+      } catch {
+        if (isMounted) clearAuthenticatedState();
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+
+    const handleExpired = () => {
+      if (!isMounted) return;
+      clearAuthenticatedState();
+    };
+
+    const handleAvatarUpdated = (event: Event) => {
+      const { avatarUrl } = (event as CustomEvent<{ avatarUrl?: string | null }>).detail ?? {};
+      setUser((previous) => previous ? { ...previous, avatar: avatarUrl ?? undefined } : null);
+    };
+
+    const handleNameUpdated = (event: Event) => {
+      const { name, displayName } = (event as CustomEvent<{ name?: string; displayName?: string }>).detail ?? {};
+      const updatedName = displayName?.trim() || name?.trim();
+      if (updatedName) {
+        setUser((previous) => previous ? { ...previous, displayName: updatedName, name: updatedName } : null);
+      }
+    };
+
+    window.addEventListener('auth:expired', handleExpired);
+    window.addEventListener('auth:avatarUpdated', handleAvatarUpdated);
+    window.addEventListener('auth:nameUpdated', handleNameUpdated);
+    void verifySession();
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener('auth:expired', handleExpired);
+      window.removeEventListener('auth:avatarUpdated', handleAvatarUpdated);
+      window.removeEventListener('auth:nameUpdated', handleNameUpdated);
+    };
+  }, [clearAuthenticatedState]);
+
+  const login = useCallback(async (credentials: LoginRequest): Promise<LoginResponse> => {
+    const response = await authService.login(credentials);
+    setUser(toContextUser(response.user));
+    return response;
+  }, []);
+
+  const loginWithGoogle = useCallback(async (code: string, redirectUri: string): Promise<LoginResponse> => {
+    const response = await authService.loginWithGoogle(code, redirectUri);
+    setUser(toContextUser(response.user));
+    return response;
+  }, []);
+
+  const logout = useCallback(async (): Promise<void> => {
+    await authService.logout();
+    setUser(null);
+  }, []);
+
+  const switchAccount = useCallback(async (): Promise<void> => {
+    await logout();
+  }, [logout]);
+
+  const updateUser = useCallback((updatedUser: AuthenticatedUser): void => {
+    setUser(toContextUser(updatedUser));
+  }, []);
+
+  const isAuthenticated = user !== null;
+  const isAdmin = user?.role === 'ADMIN';
+  const isUser = user?.role === 'USER';
+
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        isAuthenticated,
+        isAdmin,
+        isUser,
+        isLoading,
+        login,
+        loginWithGoogle,
+        logout,
+        switchAccount,
+        updateUser,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = (): AuthContextType => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};

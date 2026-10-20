@@ -1,0 +1,33 @@
+{
+  "title": "Không gian của tôi",
+  "subtitle": "Nơi lưu giữ những điều quan trọng và kết nối gia đình qua từng thế hệ.",
+  "greeting": "Xin chào, {{name}}",
+  "hubEyebrow": "GÓC RIÊNG CỦA BẠN",
+  "hubSectionTitle": "Khám phá không gian của bạn",
+  "dock": {
+    "label": "Điều hướng không gian MyLife"
+  },
+  "modules": {
+    "title": "Các chức năng",
+    "familyTree": {
+      "title": "Gia phả",
+      "description": "Lưu giữ và kết nối các thế hệ trong gia đình.",
+      "open": "Mở Gia phả"
+    },
+    "anniversaries": {
+      "title": "Ngày giỗ & Kỷ niệm",
+      "description": "Ghi nhớ những ngày quan trọng và dấu mốc của gia đình.",
+      "open": "Xem ngày giỗ"
+    },
+    "library": {
+      "title": "Thư viện gia đình",
+      "description": "Lưu giữ hình ảnh và tư liệu ý nghĩa của gia đình.",
+      "open": "Mở Thư viện"
+    },
+    "map": {
+      "title": "Bản đồ gia đình",
+      "description": "Khám phá nơi các nhánh gia đình đang sinh sống.",
+      "open": "Mở Bản đồ"
+    }
+  }
+}

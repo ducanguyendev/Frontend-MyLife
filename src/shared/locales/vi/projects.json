@@ -1,0 +1,138 @@
+{
+  "title": "Dự Án Chọn Lọc",
+  "subtitle": "Sản Phẩm",
+  "liveDemo": "Xem màn hình hệ thống",
+  "github": "GitHub",
+  "hottoys": {
+    "tags": ["ASP.NET CORE", "ORACLE DB", "FULLSTACK WEB"],
+    "title": "Hot Toys Store E-commerce",
+    "problemStatementTag": "UX PROBLEM STATEMENT",
+    "problemStatement": "Nhà sưu tầm mô hình cao cấp yêu cầu thông tin tồn kho tức thời và bộ lọc danh mục tinh gọn. Giải pháp này ánh xạ trực tiếp cấu trúc cơ sở dữ liệu quan hệ vào các bộ điều khiển hàng tồn kho trực quan.",
+    "description": "Một ứng dụng full-stack MVC tích hợp quy trình làm việc frontend Razor Pages tương tác với cơ sở dữ liệu bảo mật để kiểm soát hàng tồn kho sản phẩm.",
+    "features": [
+      "Danh mục sản phẩm tương tác với bộ lọc tìm kiếm đa tiêu chí",
+      "Phân quyền truy cập dựa trên vai trò (RBAC) cho khách hàng và quản trị viên",
+      "Bảng điều khiển quản trị trực quan hóa biểu đồ doanh thu và báo cáo bán hàng"
+    ],
+    "modal": {
+      "title": "Hot Toys Store — Giao diện hệ thống",
+      "techStack": "ASP.NET CORE MVC & ORACLE DB E-COMMERCE",
+      "footer": "THIẾT KẾ TRÊN FIGMA • KIẾN TRÚC HỆ THỐNG ASP.NET CORE MVC & ORACLE DB",
+      "tabs": {
+        "home": "Home & Banner",
+        "catalog": "Catalog & Products",
+        "stats": "Statistics & Management"
+      },
+      "screens": {
+        "home": {
+          "tag": "HOMEPAGE & HERO BANNER",
+          "title": "Chào mừng đến với ToyStore",
+          "desc": "Trang chủ sở hữu thiết kế tối giản, sang trọng và tối màu, tập trung cao độ vào việc làm nổi bật các mô hình nhân vật cao cấp.",
+          "desc2": "Banner chính hiển thị hình ảnh độ tương phản cao với hiệu ứng chuyển tiếp mượt mà, tích hợp thanh tìm kiếm thông minh trực quan ở trung tâm để tối ưu hóa lưu trình tìm kiếm của khách hàng."
+        },
+        "featured": {
+          "tag": "FEATURED PRODUCTS",
+          "title": "Phân phối theo Bộ sưu tập",
+          "desc": "Phân khu trưng bày các bộ sưu tập được tuyển chọn kỹ lượng như Mô hình Anime (ví dụ: 2B), Mô hình DC (ví dụ: Superman) và các sản phẩm thịnh hành mới ra mắt (ví dụ: Black Myth Wukong).",
+          "desc2": "Thiết kế thẻ Card UI sạch sẽ với các đường viền mềm mại, hiển thị rõ ràng số lượng mặt hàng và danh mục con giúp người dùng dễ dàng định vị sở thích."
+        },
+        "catalog": {
+          "tag": "CATALOG & PRODUCT DETAILS",
+          "title": "Mua sắm Tiện lợi & Đa dạng",
+          "desc": "Phân loại sản phẩm thông minh theo vũ trụ điện ảnh hoặc thương hiệu sản xuất như DC, Marvel hoặc Anime.",
+          "desc2": "Mỗi sản phẩm hiển thị thông số chi tiết: ảnh cận cảnh độ phân giải cao từ Hot Toys hoặc InArt, tình trạng kho hàng, giá bán nội địa (VND) và các nút hành động nhanh như \"Thêm vào giỏ\" hoặc \"Xem chi tiết\"."
+        },
+        "stats": {
+          "tag": "REPORTS & ADMIN DASHBOARD",
+          "title": "Bảng phân tích Dữ liệu Chi tiết",
+          "desc": "Hệ thống tích hợp bảng điều khiển quản trị thông minh chuyên biệt dành cho các nhà quản lý để giám sát và vận hành doanh thu của cửa hàng.",
+          "desc2": "Bao gồm các biểu đồ dữ liệu tương tác: biểu đồ đường và cột theo dõi doanh thu & lượng đơn hàng, biểu đồ tròn phân tích sản phẩm bán chạy nhất, số liệu thống kê tổng thu nhập gộp và bảng quản lý tài khoản người dùng."
+        }
+      }
+    }
+  },
+  "homme": {
+    "tags": ["ASP.NET CORE MVC", "MS SQL SERVER", "SIGNALR", "RESTFUL API"],
+    "title": "HOMME Store",
+    "problemStatementTag": "BACKEND ARCHITECTURE STATEMENT",
+    "problemStatement": "Xây dựng lõi xử lý e-commerce mạnh mẽ kết hợp tự động hóa vận chuyển logistics thực tế và tương tác khách hàng thời gian thực qua AI Chatbot và SignalR socket.",
+    "description": "Hệ thống bán hàng e-commerce thời trang nam tối ưu hóa nghiệp vụ backend, tích hợp cổng chat hỗ trợ tư vấn thông minh và giải thuật tính toán phí giao hàng tự động.",
+    "features": [
+      "Tích hợp Chatbot AI (Gemini/OpenAI API) và Live Chat thời gian thực với SignalR kết nối tức thời đến nhân viên hỗ trợ",
+      "Tự động hóa 100% quy trình giao nhận bằng cách tích hợp API Giao Hàng Nhanh (GHN) để tính phí vận chuyển và in nhãn vận đơn",
+      "Bảo mật thông tin hệ thống với phân quyền 3 cấp (Admin, Employee, Customer), bảo vệ phiên đăng nhập và giỏ hàng qua HttpOnly Cookies & Session"
+    ],
+    "modal": {
+      "title": "HOMME Store — Giao diện hệ thống",
+      "techStack": "ASP.NET CORE MVC & MS SQL SERVER PLATFORM",
+      "footer": "PHÁT TRIỂN HỆ THỐNG • CORE BACKEND ASP.NET CORE MVC & MS SQL SERVER",
+      "tabs": {
+        "catalog": "Catalog & Shipping",
+        "vouchers": "Marketing & Vouchers",
+        "chat": "AI Chat & Support"
+      },
+      "screens": {
+        "catalog": {
+          "tag": "CATALOG & DYNAMIC FILTERS",
+          "title": "Trang Danh mục Sản phẩm & Bộ lọc Thông minh",
+          "desc": "Giao diện bộ lọc bên trái trực quan cho phép phân loại nhanh theo khoảng giá (VND), danh mục thời trang (Sơ mi, Áo thun, Quần âu, Áo khoác), kích cỡ (S, M, L...) và màu sắc.",
+          "desc2": "Hệ thống tự động đồng bộ API Giao Hàng Nhanh (GHN) tại trang thanh toán để tính phí vận chuyển chính xác theo từng khu vực địa lý của người dùng."
+        },
+        "vouchers": {
+          "tag": "ADMIN VOUCHER MANAGEMENT",
+          "title": "Trình Quản lý Mã Giảm giá & Khuyến mãi",
+          "desc": "Bảng điều khiển quản trị chuyên sâu hỗ trợ phát hành voucher mới với đầy đủ thiết lập: Mã giảm giá, Loại giảm giá (Cố định/Phần trăm), Số lượng phát hành và Hạn sử dụng.",
+          "desc2": "Bảng danh sách voucher hiển thị trạng thái kích hoạt thực tế (Active) và cung cấp hành động hủy hiệu lực (Vô hiệu hóa) tức thời để kiểm soát ngân sách marketing."
+        },
+        "chat": {
+          "tag": "AI CHATBOT & SIGNALR LIVE SUPPORT",
+          "title": "Trung tâm Hỗ trợ Khách hàng Đa kênh",
+          "desc": "Cổng giao tiếp đa luồng tích hợp Chatbot AI tự động phản hồi các câu hỏi thường gặp của khách hàng thông qua API Gemini/OpenAI.",
+          "desc2": "Hệ thống kết nối SignalR Socket cho phép người mua chuyển đổi sang trò chuyện trực tuyến trực tiếp (Live Chat) với nhân viên quản trị ngay khi có yêu cầu phức tạp."
+        }
+      }
+    }
+  },
+  "treasure": {
+    "tags": ["JAVA SE", "TCP SOCKETS", "MULTITHREADING", "GAME ENGINE"],
+    "title": "Treasure Hunter",
+    "problemStatementTag": "GAME MECHANICS STATEMENT",
+    "problemStatement": "Lập trình trò chơi đi cảnh đồng bộ thời gian thực cho nhiều người chơi qua socket, tối ưu hóa vòng lặp game loop đạt hiệu năng phản hồi tức thời không trễ.",
+    "description": "Trò chơi đi cảnh 2D Multiplayer viết trên nền tảng Java SE thuần, xây dựng máy chủ chuyên biệt và đồng bộ chuyển động, hoạt ảnh của người chơi qua mạng.",
+    "features": [
+      "Vòng lặp game loop chuẩn công nghiệp tối ưu hóa hiệu năng cực cao: 200 UPS cập nhật vật lý và 120 FPS dựng hình",
+      "Hệ thống máy chủ đa luồng (Multithreaded Server) sử dụng TCP Sockets đồng bộ hóa chuyển động, chiến đấu và chỉ số người chơi thời gian thực",
+      "Ứng dụng mẫu thiết kế hướng đối tượng (OOP & State Pattern) giúp module hóa mã nguồn, hỗ trợ mở rộng màn chơi và hệ thống âm thanh dễ dàng"
+    ],
+    "modal": {
+      "title": "Treasure Hunter — Giao diện Game",
+      "techStack": "JAVA SE & TCP SOCKET MULTIPLAYER ENGINE",
+      "footer": "PHÁT TRIỂN GAME • CORE GAME ENGINE JAVA SE & MULTITHREADING",
+      "tabs": {
+        "lobby": "Lobby & Setup",
+        "gameplay": "Core Gameplay",
+        "victory": "Victory & Completion"
+      },
+      "screens": {
+        "lobby": {
+          "tag": "START MENU & CHARACTER CREATION",
+          "title": "Bảng điều khiển & Đăng ký Nhân vật",
+          "desc": "Màn hình bắt đầu của game được xây dựng trên bảng gỗ Pixel Art cổ điển với các tùy chọn: Play, Options, Credits, Quit nổi bật trên nền trời sao tím và trăng tròn.",
+          "desc2": "Hộp thoại đăng ký yêu cầu người chơi nhập biệt danh đại diện của mình (ví dụ: \"DUKA\") để máy chủ đăng ký vị trí và hiển thị tên người chơi trực tiếp trong phòng chờ kết nối."
+        },
+        "gameplay": {
+          "tag": "2D PLATFORMER MECHANICS",
+          "title": "Cơ chế Đi cảnh & Chiến đấu Đồng bộ",
+          "desc": "Người chơi điều khiển nhân vật cướp biển nhảy tránh bẫy chông nhọn, thu thập hòm báu và chiến đấu cận chiến với quái vật cua trên đảo cát.",
+          "desc2": "Hệ thống hiển thị thanh máu (HP) và thanh năng lượng trực quan ở góc trên bên trái màn hình. Máy chủ TCP đồng bộ hóa tức thời vị trí của tất cả người chơi cùng phòng."
+        },
+        "victory": {
+          "tag": "LEVEL COMPLETED & PROGRESSION",
+          "title": "Giao diện Kết thúc Màn chơi",
+          "desc": "Sau khi vượt qua toàn bộ thử thách và tiêu diệt quái vật, hệ thống hiển thị bảng gỗ chúc mừng \"LEVEL COMPLETED\" với các nút tùy chọn hành động nhanh.",
+          "desc2": "Người chơi có thể nhanh chóng nhấn nút Home để quay lại sảnh chính hoặc nút Tiếp tục (Play) để chuyển sang bản đồ màn chơi tiếp theo đã được tải sẵn."
+        }
+      }
+    }
+  }
+}

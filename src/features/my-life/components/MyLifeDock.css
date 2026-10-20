@@ -1,0 +1,13 @@
+.mylife-dock-row {
+  z-index: 30;
+  display: flex;
+  flex: 0 0 auto;
+  justify-content: center;
+  padding: 0.5rem 1rem calc(env(safe-area-inset-bottom, 0px) + 0.5rem);
+}
+
+@media (min-width: 80rem) {
+  .mylife-dock-row {
+    display: none;
+  }
+}

@@ -1,0 +1,226 @@
+.family-flip-card {
+  perspective: 1100px;
+}
+
+.family-flip-card__scene {
+  min-height: 248px;
+  height: 100%;
+  border-radius: 1rem;
+}
+
+.family-flip-card__inner {
+  position: relative;
+  min-height: 248px;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 700ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.family-flip-card[data-flipped="true"] .family-flip-card__inner {
+  transform: rotateY(180deg);
+}
+
+.family-flip-card__face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 1rem;
+  padding: 1.25rem 1rem;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  box-shadow: 0 8px 28px rgb(15 23 42 / 0.05);
+}
+
+.family-flip-card__front {
+  gap: 0.35rem;
+  visibility: visible;
+}
+
+.family-flip-card__back {
+  visibility: hidden;
+}
+
+.family-flip-card[data-flipped="true"] .family-flip-card__front {
+  visibility: hidden;
+}
+
+.family-flip-card[data-flipped="true"] .family-flip-card__back {
+  visibility: visible;
+}
+
+.family-flip-card__front::after {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid color-mix(in srgb, var(--accent-color) 16%, transparent);
+  content: "";
+  pointer-events: none;
+}
+
+.family-flip-card__glow {
+  position: absolute;
+  inset: -35% 10% auto;
+  height: 115px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, color-mix(in srgb, var(--accent-color) 12%, transparent), transparent 70%);
+  opacity: 0.75;
+  pointer-events: none;
+  transition: opacity 450ms ease;
+}
+
+.family-flip-card__avatar,
+.family-flip-card__name,
+.family-flip-card__meta,
+.family-flip-card__role,
+.family-flip-card__flip-trigger {
+  position: relative;
+  z-index: 1;
+}
+
+.family-flip-card__name,
+.family-flip-card__back-title {
+  max-width: 100%;
+  margin: 0.2rem 0 0;
+  overflow: hidden;
+  font-size: 1.1rem;
+  font-weight: 750;
+  line-height: 1.25;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.family-flip-card__meta {
+  display: flex;
+  max-width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  font-size: 0.75rem;
+}
+
+.family-flip-card__role {
+  max-width: 90%;
+  overflow: hidden;
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 550;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.family-flip-card__flip-trigger,
+.family-flip-card__view {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  border: 0;
+  background: transparent;
+  font-size: 0.8rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.family-flip-card__flip-trigger {
+  margin-top: 0.35rem;
+}
+
+.family-flip-card__back {
+  align-items: stretch;
+  transform: rotateY(180deg);
+  padding: 1.25rem 1.15rem 1rem;
+}
+
+.family-flip-card__back-title {
+  margin: 0 2rem 0.65rem 0;
+  text-align: left;
+}
+
+.family-flip-card__summary {
+  display: grid;
+  width: 100%;
+  gap: 0.55rem;
+  margin: 0;
+  font-size: 0.78rem;
+}
+
+.family-flip-card__summary-row {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: 1rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.family-flip-card__summary-row svg {
+  color: var(--accent-color);
+}
+
+.family-flip-card__summary-row dd {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.family-flip-card__summary-row--address dd {
+  display: -webkit-box;
+  overflow: hidden;
+  white-space: normal;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.family-flip-card__back-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 0.65rem;
+}
+
+.family-flip-card__back-actions .family-flip-card__flip-trigger {
+  margin-top: 0;
+  font-size: 0.72rem;
+}
+
+.family-flip-card__view {
+  padding: 0.35rem 0;
+}
+
+.family-flip-card__menu {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-3px) scale(0.96);
+  transform-origin: top right;
+  transition: opacity 200ms ease, transform 200ms ease, visibility 0s;
+}
+
+.family-flip-card__menu--visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+}
+
+@media (hover: hover) {
+  .family-flip-card__scene:hover .family-flip-card__glow {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .family-flip-card__inner,
+  .family-flip-card__glow,
+  .family-flip-card__menu {
+    transition-duration: 0.01ms !important;
+  }
+}
