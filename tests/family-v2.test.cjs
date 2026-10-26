@@ -31,6 +31,20 @@ test('family timeline UI exposes source data, safe event CRUD and useful filters
   assert.match(routes, /path="\/timeline"/);
 });
 
+test('family timeline uses the shared floating add button and shared modal for create and edit', () => {
+  const page = read('src/features/my-life/pages/FamilyTimelinePage.tsx');
+  const modal = read('src/features/my-life/components/TimelineEventModal.tsx');
+  assert.match(page, /FloatingAddButton ariaLabel=\{t\('admin\.family_v2\.add_event'\)\} tooltip=\{t\('admin\.family_v2\.add_event'\)\}/);
+  assert.match(page, /onClick=\{openCreateModal\}/);
+  assert.match(page, /beginEdit\(event\)/);
+  assert.match(page, /<TimelineEventModal isOpen form=\{form\}/);
+  assert.doesNotMatch(page, /\{form && <form/);
+  assert.match(modal, /<Modal[\s\S]*?ariaLabel=\{title\}/);
+  assert.match(modal, /editing \? 'admin\.family_v2\.edit_event' : 'admin\.family_v2\.add_event'/);
+  assert.match(modal, /<Select[\s\S]*?<SelectItem/);
+  assert.match(modal, /<Textarea/);
+});
+
 test('member profile connects family, anniversaries, timeline, avatar and map without guessing library matches', () => {
   const service = read('src/features/admin/services/familyV2Service.ts');
   const page = read('src/features/my-life/pages/FamilyMemberProfilePage.tsx');
