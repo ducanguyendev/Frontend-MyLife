@@ -1,6 +1,6 @@
 import React from "react";
 import {
-  CalendarDays, MapPin, Phone, ExternalLink, BookOpen, Edit2, X, UsersRound,
+  CalendarDays, MapPin, Phone, ExternalLink, BookOpen, Edit2, X, UsersRound, UserRoundSearch,
 } from "lucide-react";
 import { useLanguage } from "@/shared/hooks/useLanguage";
 import { Modal } from "@/shared/components/ui";
@@ -20,6 +20,7 @@ interface MemberDetailModalProps {
   onClose: () => void;
   onEdit: (member: FamilyMember) => void;
   onView: (member: FamilyMember) => void;
+  onOpenProfile: (member: FamilyMember) => void;
 }
 
 const SectionTitle: React.FC<{ icon: React.ReactNode; children: React.ReactNode }> = ({ icon, children }) => (
@@ -28,7 +29,7 @@ const SectionTitle: React.FC<{ icon: React.ReactNode; children: React.ReactNode 
   </h4>
 );
 
-export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({ member, members, onClose, onEdit, onView }) => {
+export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({ member, members, onClose, onEdit, onView, onOpenProfile }) => {
   const { t, language } = useLanguage();
 
   if (!member) return null;
@@ -112,6 +113,9 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({ member, me
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-1">
+            <button type="button" onClick={() => onOpenProfile(member)} className="inline-flex items-center gap-1.5 rounded-xl border border-custom-border bg-secondary-bg px-2.5 py-2 text-xs font-semibold text-primary-text transition-colors hover:border-accent/50 hover:bg-primary-bg sm:px-3">
+              <UserRoundSearch size={14} aria-hidden="true" /><span className="hidden sm:inline">{t('admin.family_v2.view_profile')}</span>
+            </button>
             <button
               type="button"
               onClick={() => { onClose(); onEdit(member); }}

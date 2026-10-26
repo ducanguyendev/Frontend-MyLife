@@ -1,4 +1,4 @@
-import { BookOpen, CalendarDays, MapPinned, Network } from 'lucide-react';
+import { BookOpen, CalendarDays, Clock3, MapPinned, Network } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 export interface MyLifeModule {
@@ -8,7 +8,7 @@ export interface MyLifeModule {
   actionKey: string;
   route: string;
   icon: LucideIcon;
-  visualVariant: 'family' | 'calendar' | 'library' | 'map';
+  visualVariant: 'family' | 'calendar' | 'library' | 'map' | 'timeline';
 }
 
 export const myLifeModules: MyLifeModule[] = [
@@ -47,5 +47,14 @@ export const myLifeModules: MyLifeModule[] = [
     route: '/map',
     icon: MapPinned,
     visualVariant: 'map',
+  },
+  {
+    id: 'timeline',
+    titleKey: 'myLife.modules.timeline.title',
+    descriptionKey: 'myLife.modules.timeline.description',
+    actionKey: 'myLife.modules.timeline.open',
+    route: '/timeline',
+    icon: Clock3,
+    visualVariant: 'timeline',
   },
 ];

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, BookOpen, CalendarDays, MapPinned, Network } from 'lucide-react';
+import { ArrowRight, BookOpen, CalendarDays, Clock3, MapPinned, Network } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { MyLifeModule } from '../config/myLifeModules';
@@ -42,6 +42,7 @@ export const MyLifeModuleCard: React.FC<MyLifeModuleCardProps> = ({ module }) =>
           <span className="my-life-module-card__map-ring my-life-module-card__map-ring--inner" />
           <MapPinned className="my-life-module-card__map-pin" size={34} />
         </>}
+        {module.visualVariant === 'timeline' && <Clock3 className="my-life-module-card__map-pin" size={38} />}
       </span>
       <span className="relative z-10 flex w-fit items-center justify-center rounded-2xl border border-custom-border/70 bg-secondary-bg/75 p-3 text-[var(--module-accent)] shadow-sm backdrop-blur-sm">
         <Icon size={22} aria-hidden="true" />

@@ -11,6 +11,7 @@ const cardPlacement: Record<string, string> = {
   calendar: 'xl:col-span-6',
   library: 'xl:col-span-3',
   map: 'xl:col-span-3',
+  timeline: 'xl:col-span-6',
 };
 
 export const MyLifeHubPage: React.FC = () => {

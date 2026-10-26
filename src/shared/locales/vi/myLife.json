@@ -28,6 +28,11 @@
       "title": "Bản đồ gia đình",
       "description": "Khám phá nơi các nhánh gia đình đang sinh sống.",
       "open": "Mở Bản đồ"
+    },
+    "timeline": {
+      "title": "D?ng th?i gian gia ??nh",
+      "description": "L?u gi? c?c d?u m?c v? k? ?c c?a gia ??nh qua nhi?u th? h?.",
+      "open": "M? d?ng th?i gian"
     }
   }
 }

@@ -21,6 +21,7 @@
 .my-life-module-card--calendar { --module-accent: #d97706; }
 .my-life-module-card--library { --module-accent: #8b5cf6; }
 .my-life-module-card--map { --module-accent: #0891b2; }
+.my-life-module-card--timeline { --module-accent: #0f766e; }
 
 .my-life-module-card:hover {
   border-color: color-mix(in srgb, var(--module-accent) 38%, var(--custom-border));

@@ -28,6 +28,11 @@
       "title": "Family Map",
       "description": "Explore where family branches live around the world.",
       "open": "Open map"
+    },
+    "timeline": {
+      "title": "Family Timeline",
+      "description": "Keep the milestones and memories of your family together.",
+      "open": "Open timeline"
     }
   }
 }

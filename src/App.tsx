@@ -19,6 +19,8 @@ const MyLifeHubPage = lazy(() => import('@/features/my-life/pages/MyLifeHubPage'
 const AnniversariesPage = lazy(() => import('@/features/my-life/pages/AnniversariesPage').then(module => ({ default: module.AnniversariesPage })));
 const LibraryPage = lazy(() => import('@/features/my-life/pages/LibraryPage').then(module => ({ default: module.LibraryPage })));
 const FamilyMapPage = lazy(() => import('@/features/my-life/pages/FamilyMapPage').then(module => ({ default: module.FamilyMapPage })));
+const FamilyTimelinePage = lazy(() => import('@/features/my-life/pages/FamilyTimelinePage').then(module => ({ default: module.FamilyTimelinePage })));
+const FamilyMemberProfilePage = lazy(() => import('@/features/my-life/pages/FamilyMemberProfilePage').then(module => ({ default: module.FamilyMemberProfilePage })));
 import { Forbidden } from '@/features/portfolio/pages/Forbidden';
 import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute';
 import { useLanguage } from '@/shared/hooks/useLanguage';
@@ -115,6 +117,10 @@ function App() {
             <Route caseSensitive path="/anniversaries" element={<ProtectedRoute requiredRole="USER"><AnniversariesPage /></ProtectedRoute>} />
             <Route caseSensitive path="/library" element={<ProtectedRoute requiredRole="USER"><LibraryPage /></ProtectedRoute>} />
             <Route caseSensitive path="/map" element={<ProtectedRoute requiredRole="USER"><FamilyMapPage /></ProtectedRoute>} />
+            <Route caseSensitive path="/timeline" element={<ProtectedRoute requiredRole="USER"><FamilyTimelinePage /></ProtectedRoute>} />
+            <Route caseSensitive path="/mylife/family/member/:id" element={<ProtectedRoute requiredRole="USER"><FamilyMemberProfilePage /></ProtectedRoute>} />
+            <Route caseSensitive path="/timeline" element={<ProtectedRoute requiredRole="USER"><FamilyTimelinePage /></ProtectedRoute>} />
+            <Route caseSensitive path="/mylife/family/member/:id" element={<ProtectedRoute requiredRole="USER"><FamilyMemberProfilePage /></ProtectedRoute>} />
             <Route caseSensitive path="/MyLife" element={<Navigate replace to="/mylife" />} />
             <Route caseSensitive path="/Mylife" element={<Navigate replace to="/mylife" />} />
             <Route caseSensitive path="/FamilyTree" element={<Navigate replace to="/familytree" />} />

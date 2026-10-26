@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, lazy, Suspense } from "react";
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Loader2, LayoutGrid, Table2, Network
 } from "lucide-react";
@@ -31,6 +32,8 @@ const ShadcnFamilyTreeView = IS_SHADCN_FAMILY_TREE_DEV_POC ? lazy(() => import('
 
 export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast }) => {
   const { t } = useLanguage();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const { members, setMembers, loading, loadError, fetchMembers } = useFamilyMembers();
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
@@ -83,7 +86,7 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
   }, [members]);
 
   // Modal handlers
-  const handleOpenModal = (member?: FamilyMember) => {
+  const handleOpenModal = useCallback((member?: FamilyMember) => {
     setPendingAvatar(null); setRemoveAvatar(false);
     if (member) {
       setEditingMember({
@@ -113,7 +116,15 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
       });
     }
     setIsModalOpen(true);
-  };
+  }, []);
+
+  useEffect(() => {
+    const editMemberId = (location.state as { editMemberId?: number } | null)?.editMemberId;
+    if (!editMemberId || !members.length) return;
+    const member = members.find(item => item.id === editMemberId);
+    if (member) handleOpenModal(member);
+    navigate(location.pathname, { replace: true, state: null });
+  }, [handleOpenModal, location.pathname, location.state, members, navigate]);
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
@@ -425,6 +436,7 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
         onClose={() => setMemberToViewId(null)}
         onEdit={handleOpenModal}
         onView={handleViewMember}
+        onOpenProfile={member => { setMemberToViewId(null); navigate(`/mylife/family/member/${member.id}`); }}
       />
 
       <MemberFormModal
