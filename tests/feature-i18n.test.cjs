@@ -110,6 +110,7 @@ async function familySetup(locale, response = { success: true, message: 'Family 
   });
   const { FamilyTreeManager } = load('src/features/admin/components/FamilyTreeManager.tsx', {
     react: { ...hooks.hooks, default: hooks.hooks }, 'react/jsx-runtime': { jsx: hooks.jsx, jsxs: hooks.jsx },
+    'react-router-dom': { useNavigate: () => () => {}, useLocation: () => ({ state: null }) },
     'lucide-react': new Proxy({}, { get: (_, key) => key }), '@/shared/hooks/useLanguage': { useLanguage: () => ({ t, language: i18n.language }) },
     '@/shared/components/ui': { Button: 'Button', FloatingAddButton: 'Button', Select: 'Select' }, '@/shared/components/SearchBar': { SearchBar: 'SearchBar' },
     '@/shared/api/apiClient': { apiClient }, '../services/featureMessages': messages,

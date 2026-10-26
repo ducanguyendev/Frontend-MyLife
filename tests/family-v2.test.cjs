@@ -47,8 +47,22 @@ test('member profile connects family, anniversaries, timeline, avatar and map wi
 });
 
 test('English and Vietnamese locales include V2 page, relationship and event keys', () => {
-  const vi = JSON.parse(read('src/shared/locales/vi/admin.json')).family_v2;
+  const viAdmin = JSON.parse(read('src/shared/locales/vi/admin.json'));
+  const vi = viAdmin.family_v2;
   const en = JSON.parse(read('src/shared/locales/en/admin.json')).family_v2;
   const required = ['relationship', 'view_relationship', 'relationship_error', 'family_relations', 'member_timeline', 'timeline', 'add_event', 'edit_event', 'delete_event', 'approximate_date', 'location', 'view_on_map', 'library_not_linked'];
   for (const locale of [vi, en]) for (const key of required) assert.equal(typeof locale[key], 'string', `missing ${key}`);
+
+  assert.equal(vi.timeline, 'Dòng thời gian gia đình');
+  assert.equal(vi.add_event, 'Thêm sự kiện');
+  assert.equal(vi.relationship, 'Tra cứu quan hệ');
+  assert.equal(vi.edit_member, 'Chỉnh sửa thành viên');
+  assert.equal(vi.location, 'Địa điểm');
+
+  const viMyLife = JSON.parse(read('src/shared/locales/vi/myLife.json'));
+  assert.deepEqual(viMyLife.modules.timeline, {
+    title: 'Dòng thời gian gia đình',
+    description: 'Lưu giữ các dấu mốc và ký ức của gia đình qua nhiều thế hệ.',
+    open: 'Mở dòng thời gian',
+  });
 });
