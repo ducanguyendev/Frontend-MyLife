@@ -487,7 +487,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
                 {/* Upload Hover Overlay (Chỉ hiển thị icon Camera, không có chữ Đổi ảnh) */}
                 <div
-                  className="absolute inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                  className="absolute inset-0 rounded-full bg-black/35 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                 >
                   {isUploading ? (
                     <Loader2 size={22} className="animate-spin text-accent" />
