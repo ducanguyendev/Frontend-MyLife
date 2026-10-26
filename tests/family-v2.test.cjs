@@ -2,9 +2,18 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const vm = require('node:vm');
+const ts = require('typescript');
 
 const root = path.resolve(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
+const loadTypeScriptModule = file => {
+  const source = read(file);
+  const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } }).outputText;
+  const module = { exports: {} };
+  vm.runInNewContext(`(function(exports, require, module) { ${compiled}\n})`, { Intl, Date })(module.exports, require, module);
+  return module.exports;
+};
 
 test('relationship UI uses the authenticated server relationship graph and displays its path', () => {
   const service = read('src/features/admin/services/familyV2Service.ts');
@@ -83,11 +92,30 @@ test('timeline event badges map every known type and unknown types to translated
   }
   assert.match(mapping, /\?\? 'admin\.family_v2\.type_event'/);
   assert.deepEqual(['birth', 'death', 'marriage', 'child_birth', 'address_change', 'anniversary', 'memory', 'custom'].map(key => vi[`type_${key}`]),
-    ['Sinh', 'Mất', 'Kết hôn', 'Con chào đời', 'Chuyển nơi ở', 'Kỷ niệm', 'Ký ức', 'Sự kiện gia đình']);
+    ['Sinh nhật', 'Mất', 'Kết hôn', 'Con chào đời', 'Chuyển nơi ở', 'Kỷ niệm', 'Ký ức', 'Sự kiện gia đình']);
   assert.deepEqual(['birth', 'death', 'marriage', 'child_birth', 'address_change', 'anniversary', 'memory', 'custom'].map(key => en[`type_${key}`]),
     ['Birth', 'Death', 'Marriage', 'Child birth', 'Address change', 'Anniversary', 'Memory', 'Family event']);
   assert.equal(vi.type_event, 'Sự kiện');
   assert.equal(en.type_event, 'Event');
+});
+
+test('timeline presentation localizes derived titles only and formats date-only values safely', () => {
+  const { getTimelineEventDisplayTitle, formatTimelineDate } = loadTypeScriptModule('src/features/my-life/components/timeline/timelinePresentation.ts');
+  const locale = JSON.parse(read('src/shared/locales/vi/admin.json')).family_v2;
+  const en = JSON.parse(read('src/shared/locales/en/admin.json')).family_v2;
+  const translateFor = dictionary => (key, options = {}) => String(dictionary[key.replace('admin.family_v2.', '')] ?? key).replace(/\{\{(\w+)\}\}/g, (_match, name) => options[name] ?? '');
+  const base = { id: 1, memberId: 1, memberName: 'Nguyễn Bửu', eventType: 'BIRTH', title: 'Birth of Nguyễn Bửu', description: null, eventDate: '1935-12-01', eventYear: 1935, isApproximate: false, location: null, latitude: null, longitude: null, relatedMemberId: null, sourceType: 'MEMBER', sourceId: 1, isDerived: true };
+  assert.equal(getTimelineEventDisplayTitle(base, translateFor(locale)), 'Nguyễn Bửu chào đời');
+  assert.equal(getTimelineEventDisplayTitle(base, translateFor(en)), 'Birth of Nguyễn Bửu');
+  assert.equal(getTimelineEventDisplayTitle({ ...base, eventType: 'DEATH', title: 'Death of Nguyễn Bửu' }, translateFor(locale)), 'Nguyễn Bửu qua đời');
+  assert.equal(getTimelineEventDisplayTitle({ ...base, eventType: 'DEATH', title: 'Death of Nguyễn Bửu' }, translateFor(en)), 'Death of Nguyễn Bửu');
+  assert.equal(getTimelineEventDisplayTitle({ ...base, isDerived: false, title: 'Cả nhà đi Đà Lạt' }, translateFor(locale)), 'Cả nhà đi Đà Lạt');
+  assert.equal(getTimelineEventDisplayTitle({ ...base, memberName: null }, translateFor(locale)), 'Một thành viên chào đời');
+  assert.equal(formatTimelineDate('1935-12-01', 'vi'), '01/12/1935');
+  assert.equal(formatTimelineDate('1970-03-12', 'vi'), '12/03/1970');
+  assert.equal(formatTimelineDate('1974-01-09', 'vi'), '09/01/1974');
+  assert.equal(translateFor(locale)('admin.family_v2.approximate_year', { year: 1975 }), 'Khoảng năm 1975');
+  assert.equal(translateFor(en)('admin.family_v2.approximate_year', { year: 1975 }), 'Around 1975');
 });
 
 test('member profile connects family, anniversaries, timeline, avatar and map without guessing library matches', () => {

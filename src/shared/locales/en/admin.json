@@ -610,6 +610,11 @@
     "type_birth": "Birth",
     "type_death": "Death",
     "type_anniversary": "Anniversary",
-    "type_event": "Event"
+    "type_event": "Event",
+    "approximate_year": "Around {{year}}",
+    "derived_birth_title": "Birth of {{name}}",
+    "derived_birth_fallback": "A family member",
+    "derived_death_title": "Death of {{name}}",
+    "derived_death_fallback": "A family member"
   }
 }

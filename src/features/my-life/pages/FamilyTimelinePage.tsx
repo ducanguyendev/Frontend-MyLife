@@ -10,6 +10,7 @@ import { TimelineFilterBar } from '@/features/my-life/components/timeline/Timeli
 import { TimelineYearSection } from '@/features/my-life/components/timeline/TimelineYearSection';
 import { groupTimelineEventsByYear } from '@/features/my-life/components/timeline/timelineUtils';
 import { FILTER_TYPES, type Filter } from '@/features/my-life/components/timeline/types';
+import { formatTimelineDate } from '@/features/my-life/components/timeline/timelinePresentation';
 
 const blank = (): FamilyTimelineWrite => ({ memberId: null, eventType: 'CUSTOM', title: '', description: null, eventDate: null, eventYear: null, isApproximate: false, location: null, latitude: null, longitude: null, relatedMemberId: null });
 
@@ -59,8 +60,8 @@ export const FamilyTimelinePage: React.FC = () => {
     catch { toast(t('admin.family_v2.event_delete_error'), false); }
   };
   const dateLabel = (event: FamilyTimelineEvent) => event.eventDate
-    ? new Date(`${event.eventDate.slice(0, 10)}T00:00:00Z`).toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-GB', { timeZone: 'UTC' })
-    : event.eventYear ? `${event.isApproximate ? `${t('admin.family_v2.approximate_date')} ` : ''}${event.eventYear}` : t('admin.family_v2.unknown_date');
+    ? formatTimelineDate(event.eventDate, language)
+    : event.eventYear ? (event.isApproximate ? t('admin.family_v2.approximate_year', { year: event.eventYear }) : String(event.eventYear)) : t('admin.family_v2.unknown_date');
 
   return <MyLifeWorkspaceLayout backTo="/mylife" showDock contentClassName="px-3 py-4 sm:px-5 sm:py-5">
     <main className="mx-auto w-full max-w-5xl space-y-4">
