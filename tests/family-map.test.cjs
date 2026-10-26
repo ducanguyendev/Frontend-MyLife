@@ -8,13 +8,18 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 
 test('Family map uses the authenticated backend distribution API and real Leaflet data', () => {
   const component = read('src/features/admin/components/family-tree/FamilyMapTab.tsx');
+  const baseLayer = read('src/features/admin/components/family-tree/VietMapBaseLayer.tsx');
   const service = read('src/features/admin/services/familyMapService.ts');
   assert.match(service, /apiClient\.get<unknown>\('\/api\/family-tree\/map'/);
   assert.match(service, /return normalizeFamilyMapData\(response\.data\)/);
   assert.match(component, /Array\.isArray\(data\?\.members\)/);
   assert.match(component, /CircleMarker/);
-  assert.match(component, /tile\.openstreetmap\.org/);
-  assert.match(component, /OpenStreetMap contributors/);
+  assert.match(component, /<VietMapBaseLayer\s*\/>/);
+  assert.match(baseLayer, /VITE_VIETMAP_TILE_KEY/);
+  assert.match(baseLayer, /maps\.vietmap\.vn\/maps\/styles\/tm\/style\.json/);
+  assert.match(baseLayer, /tile\.openstreetmap\.org/);
+  assert.match(baseLayer, /OpenStreetMap contributors/);
+  assert.match(baseLayer, /removeLayer\(layer\)/);
   assert.match(component, /fitBounds/);
   assert.match(component, /center=\{\[location\.latitude, location\.longitude\]\}/);
   assert.doesNotMatch(component, /Math\.round\([^\n]*(?:latitude|longitude)/i);
@@ -32,15 +37,19 @@ test('Family map has API loading, error, empty, and no-location states without f
   assert.match(component, /void load\(\)/);
 });
 
-test('Family map retains its single API owner, five-second polling, viewport fitting, and Leaflet layers', () => {
+test('Family map retains its single API owner, five-second polling, viewport fitting, and both VietMap bases', () => {
   const component = read('src/features/admin/components/family-tree/FamilyMapTab.tsx');
+  const baseLayer = read('src/features/admin/components/family-tree/VietMapBaseLayer.tsx');
   assert.match(component, /getFamilyMapDistribution\(signal\)/);
   assert.match(component, /setInterval\(\(\) => void load\(\), 5000\)/);
   assert.match(component, /map\.setView\(VIETNAM_CENTER, 5\)/);
   assert.match(component, /map\.setView\(\[locations\[0\]\.latitude, locations\[0\]\.longitude\], 13\)/);
   assert.match(component, /map\.fitBounds/);
-  for (const layer of ['MapContainer', 'TileLayer', 'CircleMarker', 'Tooltip', 'Popup']) assert.ok(component.includes(layer));
-  assert.match(component, /openstreetmap\.org\/copyright/);
+  for (const layer of ['MapContainer', 'CircleMarker', 'Tooltip', 'Popup', 'VietMapBaseLayer']) assert.ok(component.includes(layer));
+  assert.equal((component.match(/<VietMapBaseLayer\s*\/>/g) || []).length, 2);
+  assert.match(baseLayer, /openstreetmap\.org\/copyright/);
+  assert.match(baseLayer, /map\.attributionControl\.addAttribution/);
+  assert.match(baseLayer, /map\.attributionControl\.removeAttribution/);
   assert.match(component, /location\.members\.slice\(0, 6\)/);
   assert.match(component, /family_map\.more_members/);
 });

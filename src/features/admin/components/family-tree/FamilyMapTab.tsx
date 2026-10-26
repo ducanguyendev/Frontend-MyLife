@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { CircleMarker, MapContainer, Popup, TileLayer, Tooltip, useMap, useMapEvents } from 'react-leaflet';
+import { AttributionControl, CircleMarker, MapContainer, Popup, Tooltip, useMap, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useReducedMotion } from 'framer-motion';
 import { Globe, Layers3, Loader2, MapPin, RefreshCw, Users } from 'lucide-react';
@@ -7,6 +7,7 @@ import { Button, Modal } from '@/shared/components/ui';
 import './FamilyMapTab.css';
 import { useLanguage } from '@/shared/hooks/useLanguage';
 import { getFamilyMapDistribution, updateFamilyMemberLocation, type FamilyMapData, type FamilyMapLocation, type FamilyMapMember } from '../../services/familyMapService';
+import { VietMapBaseLayer } from './VietMapBaseLayer';
 
 const VIETNAM_CENTER: [number, number] = [16.2, 106.2];
 
@@ -170,11 +171,9 @@ export const FamilyMapTab: React.FC = () => {
           </div>
         ) : data && locations.length > 0 ? (
           <>
-            <MapContainer center={VIETNAM_CENTER} zoom={5} scrollWheelZoom className="family-distribution-map absolute inset-0 z-0 h-full w-full">
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
+            <MapContainer center={VIETNAM_CENTER} zoom={5} scrollWheelZoom attributionControl={false} className="family-distribution-map absolute inset-0 z-0 h-full w-full">
+              <VietMapBaseLayer />
+              <AttributionControl prefix={false} />
               <MapViewport locations={locations} />
               {locations.map(location => {
                 const radius = Math.min(22, Math.max(8, 7 + Math.sqrt(location.memberCount) * 3));
@@ -242,8 +241,9 @@ export const FamilyMapTab: React.FC = () => {
           </select>
           <p className="text-sm text-secondary-text">{t('admin.family_map.tap_map_to_pick')}</p>
           <div className="h-[min(55vh,440px)] overflow-hidden rounded-xl border border-custom-border">
-            <MapContainer key={locationMember.id} center={locationPoint ?? VIETNAM_CENTER} zoom={locationPoint ? 13 : 5} scrollWheelZoom className="h-full w-full">
-              <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+            <MapContainer key={locationMember.id} center={locationPoint ?? VIETNAM_CENTER} zoom={locationPoint ? 13 : 5} scrollWheelZoom attributionControl={false} className="h-full w-full">
+              <VietMapBaseLayer />
+              <AttributionControl prefix={false} />
               <LocationPickerEvents point={locationPoint} onPick={setLocationPoint} />
             </MapContainer>
           </div>

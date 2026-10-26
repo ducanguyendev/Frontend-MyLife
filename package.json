@@ -43,6 +43,8 @@
     "@memoir/tree": "^0.8.0",
     "@radix-ui/react-select": "^2.4.1",
     "@tailwindcss/vite": "^4.3.3",
+    "@vietmap/vietmap-gl-js": "^7.0.0-pre.1",
+    "@vietmap/vietmap-gl-leaflet": "^0.1.0",
     "@xyflow/react": "^12.11.6",
     "family-chart": "^0.9.0",
     "framer-motion": "^12.43.0",
