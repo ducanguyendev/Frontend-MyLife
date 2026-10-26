@@ -573,9 +573,9 @@
     "library_not_linked": "Library items are not linked to individual members yet.",
     "type_custom": "Family event",
     "type_memory": "Memory",
-    "type_address_change": "Moved home",
+    "type_address_change": "Address change",
     "type_marriage": "Marriage",
-    "type_child_birth": "Child's birth",
+    "type_child_birth": "Child birth",
     "member_optional": "Member (optional)",
     "related_member_optional": "Related member (optional)",
     "whole_family": "Whole family",
@@ -606,6 +606,10 @@
     "event_type_memory_help": "Save a meaningful family story or memory.",
     "event_type_address_change_help": "Record a place where a member lived.",
     "event_type_marriage_help": "Record a marriage between two family members.",
-    "event_type_child_birth_help": "Record the milestone of a member being born."
+    "event_type_child_birth_help": "Record the milestone of a member being born.",
+    "type_birth": "Birth",
+    "type_death": "Death",
+    "type_anniversary": "Anniversary",
+    "type_event": "Event"
   }
 }

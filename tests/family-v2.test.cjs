@@ -71,6 +71,25 @@ test('timeline modal renders type-specific semantic forms with shared controls a
   for (const key of ['marriage_person_one', 'new_address', 'memory_content', 'same_marriage_member_error']) assert.equal(typeof en[key], 'string');
 });
 
+test('timeline event badges map every known type and unknown types to translated labels', () => {
+  const card = read('src/features/my-life/components/timeline/TimelineEventCard.tsx');
+  const mapping = read('src/features/my-life/components/timeline/eventTypeTranslation.ts');
+  const vi = JSON.parse(read('src/shared/locales/vi/admin.json')).family_v2;
+  const en = JSON.parse(read('src/shared/locales/en/admin.json')).family_v2;
+  assert.match(card, /translate\(getTimelineEventTypeTranslationKey\(event\.eventType\)\)/);
+  assert.doesNotMatch(card, /type_\$\{event\.eventType\.toLowerCase\(\)\}/);
+  for (const type of ['BIRTH', 'DEATH', 'MARRIAGE', 'CHILD_BIRTH', 'ADDRESS_CHANGE', 'ANNIVERSARY', 'MEMORY', 'CUSTOM']) {
+    assert.match(mapping, new RegExp(`${type}: 'admin\\.family_v2\\.type_`));
+  }
+  assert.match(mapping, /\?\? 'admin\.family_v2\.type_event'/);
+  assert.deepEqual(['birth', 'death', 'marriage', 'child_birth', 'address_change', 'anniversary', 'memory', 'custom'].map(key => vi[`type_${key}`]),
+    ['Sinh', 'Mất', 'Kết hôn', 'Con chào đời', 'Chuyển nơi ở', 'Kỷ niệm', 'Ký ức', 'Sự kiện gia đình']);
+  assert.deepEqual(['birth', 'death', 'marriage', 'child_birth', 'address_change', 'anniversary', 'memory', 'custom'].map(key => en[`type_${key}`]),
+    ['Birth', 'Death', 'Marriage', 'Child birth', 'Address change', 'Anniversary', 'Memory', 'Family event']);
+  assert.equal(vi.type_event, 'Sự kiện');
+  assert.equal(en.type_event, 'Event');
+});
+
 test('member profile connects family, anniversaries, timeline, avatar and map without guessing library matches', () => {
   const service = read('src/features/admin/services/familyV2Service.ts');
   const page = read('src/features/my-life/pages/FamilyMemberProfilePage.tsx');

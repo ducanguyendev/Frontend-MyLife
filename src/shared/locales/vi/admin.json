@@ -606,6 +606,10 @@
     "event_type_memory_help": "Lưu lại một câu chuyện hoặc ký ức đáng nhớ.",
     "event_type_address_change_help": "Ghi lại nơi thành viên từng sinh sống.",
     "event_type_marriage_help": "Ghi lại sự kiện kết hôn giữa hai thành viên.",
-    "event_type_child_birth_help": "Ghi lại dấu mốc một thành viên chào đời."
+    "event_type_child_birth_help": "Ghi lại dấu mốc một thành viên chào đời.",
+    "type_birth": "Sinh",
+    "type_death": "Mất",
+    "type_anniversary": "Kỷ niệm",
+    "type_event": "Sự kiện"
   }
 }
