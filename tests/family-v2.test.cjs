@@ -20,6 +20,8 @@ test('relationship UI uses the authenticated server relationship graph and displ
 test('family timeline UI exposes source data, safe event CRUD and useful filters', () => {
   const service = read('src/features/admin/services/familyV2Service.ts');
   const page = read('src/features/my-life/pages/FamilyTimelinePage.tsx');
+  const card = read('src/features/my-life/components/timeline/TimelineEventCard.tsx');
+  const groups = read('src/features/my-life/components/timeline/timelineUtils.ts');
   const routes = read('src/App.tsx');
   assert.match(service, /\/api\/family-tree\/timeline/);
   assert.match(service, /saveFamilyTimelineEvent/);
@@ -27,22 +29,46 @@ test('family timeline UI exposes source data, safe event CRUD and useful filters
   assert.match(page, /fetchFamilyTimeline/);
   assert.match(page, /event\.isDerived/);
   assert.match(page, /FILTER_TYPES/);
-  assert.match(page, /event\.latitude !== null && event\.longitude !== null/);
+  assert.match(card, /event\.latitude !== null && event\.longitude !== null/);
+  assert.match(page, /groupTimelineEventsByYear\(filtered\)/);
+  assert.match(groups, /event\.eventDate[\s\S]*event\.eventYear/);
   assert.match(routes, /path="\/timeline"/);
 });
 
 test('family timeline uses the shared floating add button and shared modal for create and edit', () => {
   const page = read('src/features/my-life/pages/FamilyTimelinePage.tsx');
   const modal = read('src/features/my-life/components/TimelineEventModal.tsx');
+  const card = read('src/features/my-life/components/timeline/TimelineEventCard.tsx');
   assert.match(page, /FloatingAddButton ariaLabel=\{t\('admin\.family_v2\.add_event'\)\} tooltip=\{t\('admin\.family_v2\.add_event'\)\}/);
   assert.match(page, /onClick=\{openCreateModal\}/);
-  assert.match(page, /beginEdit\(event\)/);
+  assert.match(page, /onEdit=\{beginEdit\}/);
+  assert.match(page, /TimelineYearSection/);
   assert.match(page, /<TimelineEventModal isOpen form=\{form\}/);
   assert.doesNotMatch(page, /\{form && <form/);
   assert.match(modal, /<Modal[\s\S]*?ariaLabel=\{title\}/);
   assert.match(modal, /editing \? 'admin\.family_v2\.edit_event' : 'admin\.family_v2\.add_event'/);
   assert.match(modal, /<Select[\s\S]*?<SelectItem/);
   assert.match(modal, /<Textarea/);
+  assert.match(card, /!event\.isDerived/);
+});
+
+test('timeline modal renders type-specific semantic forms with shared controls and marriage validation', () => {
+  const modal = read('src/features/my-life/components/TimelineEventModal.tsx');
+  const vi = JSON.parse(read('src/shared/locales/vi/admin.json')).family_v2;
+  const en = JSON.parse(read('src/shared/locales/en/admin.json')).family_v2;
+  for (const token of ['default: return <>', 'case \'MEMORY\'', 'case \'ADDRESS_CHANGE\'', 'case \'MARRIAGE\'', 'case \'CHILD_BIRTH\'']) assert.ok(modal.includes(token), `missing ${token} form`);
+  for (const token of ['memory_title', 'memory_content', 'moved_member', 'new_address', 'marriage_person_one', 'marriage_person_two', 'child_member', 'birth_date']) assert.ok(modal.includes(token), `missing ${token} semantic field`);
+  assert.match(modal, /form\.memberId === form\.relatedMemberId/);
+  assert.match(modal, /same_marriage_member_error/);
+  assert.match(modal, /<Input/);
+  assert.match(modal, /<Select/);
+  assert.match(modal, /<Modal/);
+  assert.match(modal, /<Textarea/);
+  assert.match(modal, /buildTimelineEventSuggestedTitle/);
+  assert.equal(vi.marriage_person_one, 'Ng\u01b0\u1eddi th\u1ee9 nh\u1ea5t');
+  assert.equal(vi.new_address, '\u0110\u1ecba ch\u1ec9 m\u1edbi');
+  assert.equal(vi.memory_content, 'N\u1ed9i dung k\u00fd \u1ee9c');
+  for (const key of ['marriage_person_one', 'new_address', 'memory_content', 'same_marriage_member_error']) assert.equal(typeof en[key], 'string');
 });
 
 test('member profile connects family, anniversaries, timeline, avatar and map without guessing library matches', () => {
