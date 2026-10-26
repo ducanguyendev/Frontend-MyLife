@@ -300,7 +300,17 @@
     "geocoding_status": "Geocoding status",
     "no_address_status": "No address: {{count}}",
     "pending_status": "Locating: {{count}}",
-    "failed_status": "Location not found: {{count}}"
+    "failed_status": "Location not found: {{count}}",
+    "adjust_location": "Adjust location",
+    "confirm_location": "Confirm location",
+    "member": "Member",
+    "tap_map_to_pick": "Tap the map to select the precise location.",
+    "no_point_selected": "No location selected",
+    "no_address": "No address",
+    "status_pending": "Finding location…",
+    "status_located": "Location found",
+    "status_failed": "Unable to find location",
+    "status_manual": "Location confirmed manually"
   },
   "section_family_relations": "Family Relations & Children",
   "section_contact_address": "Contact Information & Address",

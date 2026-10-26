@@ -352,7 +352,17 @@
     "geocoding_status": "Trạng thái xác định vị trí",
     "no_address_status": "Chưa có địa chỉ: {{count}}",
     "pending_status": "Đang xác định: {{count}}",
-    "failed_status": "Chưa tìm thấy vị trí: {{count}}"
+    "failed_status": "Chưa tìm thấy vị trí: {{count}}",
+    "adjust_location": "Chỉnh vị trí",
+    "confirm_location": "Xác nhận vị trí",
+    "member": "Thành viên",
+    "tap_map_to_pick": "Chạm vào bản đồ để chọn vị trí chính xác.",
+    "no_point_selected": "Chưa chọn vị trí",
+    "no_address": "Chưa có địa chỉ",
+    "status_pending": "Đang xác định vị trí…",
+    "status_located": "Đã xác định vị trí",
+    "status_failed": "Không thể xác định vị trí",
+    "status_manual": "Vị trí đã được xác nhận thủ công"
   },
   "section_family_relations": "Quan hệ gia đình & Con cái",
   "section_contact_address": "Thông tin liên hệ & Nơi ở",

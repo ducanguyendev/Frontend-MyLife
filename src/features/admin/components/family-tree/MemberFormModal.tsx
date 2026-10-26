@@ -110,6 +110,15 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
   }, [isOpen]);
 
   const isUpdate = !!editingMember?.id;
+  const locationStatusKey = editingMember?.locationSource === "MANUAL"
+    ? "admin.family_map.status_manual"
+    : editingMember?.locationStatus === "LOCATED"
+      ? "admin.family_map.status_located"
+      : editingMember?.locationStatus === "FAILED"
+        ? "admin.family_map.status_failed"
+        : editingMember?.locationStatus === "PENDING"
+          ? "admin.family_map.status_pending"
+          : null;
 
   // Filter potential relatives (cannot select oneself)
   const availableMembers = members.filter((m) => m.id !== editingMember?.id);
@@ -896,6 +905,9 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                       disabled={isSaving}
                       onChange={(address) => onChange({ ...editingMember, address })}
                     />
+                    {locationStatusKey && (
+                      <p className="mt-1.5 text-xs text-secondary-text" role="status">{t(locationStatusKey)}</p>
+                    )}
                   </div>
                 </div>
               </motion.div>

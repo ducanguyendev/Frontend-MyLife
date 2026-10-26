@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { CircleMarker, MapContainer, Popup, TileLayer, Tooltip, useMap } from 'react-leaflet';
+import { CircleMarker, MapContainer, Popup, TileLayer, Tooltip, useMap, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useReducedMotion } from 'framer-motion';
 import { Globe, Layers3, Loader2, MapPin, RefreshCw, Users } from 'lucide-react';
 import { Button, Modal } from '@/shared/components/ui';
 import './FamilyMapTab.css';
 import { useLanguage } from '@/shared/hooks/useLanguage';
-import { getFamilyMapDistribution, type FamilyMapData, type FamilyMapLocation } from '../../services/familyMapService';
+import { getFamilyMapDistribution, updateFamilyMemberLocation, type FamilyMapData, type FamilyMapLocation, type FamilyMapMember } from '../../services/familyMapService';
 
 const VIETNAM_CENTER: [number, number] = [16.2, 106.2];
 
@@ -28,6 +28,11 @@ function MapViewport({ locations }: { locations: FamilyMapLocation[] }) {
   return null;
 }
 
+function LocationPickerEvents({ point, onPick }: { point: [number, number] | null; onPick: (point: [number, number]) => void }) {
+  useMapEvents({ click: event => onPick([event.latlng.lat, event.latlng.lng]) });
+  return point ? <CircleMarker center={point} radius={9} pathOptions={{ color: '#fff', weight: 3, fillColor: '#0f62fe', fillOpacity: 1 }} /> : null;
+}
+
 export const FamilyMapTab: React.FC = () => {
   const { t } = useLanguage();
   const shouldReduceMotion = useReducedMotion();
@@ -35,6 +40,9 @@ export const FamilyMapTab: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [distributionOpen, setDistributionOpen] = useState(false);
+  const [locationMember, setLocationMember] = useState<FamilyMapMember | null>(null);
+  const [locationPoint, setLocationPoint] = useState<[number, number] | null>(null);
+  const [savingLocation, setSavingLocation] = useState(false);
 
   const load = useCallback(async (signal?: AbortSignal) => {
     try {
@@ -61,7 +69,8 @@ export const FamilyMapTab: React.FC = () => {
     return () => window.clearInterval(timer);
   }, [data?.pendingGeocodingMembers, load]);
 
-  const locations = data?.locations ?? [];
+  const locations = Array.isArray(data?.locations) ? data.locations : [];
+  const members = Array.isArray(data?.members) ? data.members : [];
   const stats = useMemo(() => [
     { label: t('admin.family_map.compact_total'), value: data?.totalMembers ?? 0, icon: Users },
     { label: t('admin.family_map.compact_located'), value: data?.locatedMembers ?? 0, icon: MapPin },
@@ -85,6 +94,27 @@ export const FamilyMapTab: React.FC = () => {
     void load();
   };
 
+  const openLocationPicker = (member: FamilyMapMember) => {
+    setLocationMember(member);
+    setLocationPoint(typeof member.latitude === 'number' && typeof member.longitude === 'number'
+      ? [member.latitude, member.longitude]
+      : null);
+  };
+
+  const confirmLocation = async () => {
+    if (!locationMember || !locationPoint) return;
+    setSavingLocation(true);
+    try {
+      await updateFamilyMemberLocation(locationMember.id, locationPoint[0], locationPoint[1]);
+      setLocationMember(null);
+      await load();
+    } catch {
+      setError(true);
+    } finally {
+      setSavingLocation(false);
+    }
+  };
+
   return (
     <div className="family-map-workspace flex h-full min-h-0 flex-col gap-2 sm:gap-3">
       <div className="flex shrink-0 items-center justify-between gap-3 px-1">
@@ -103,6 +133,12 @@ export const FamilyMapTab: React.FC = () => {
           >
             <Layers3 size={16} aria-hidden="true" />
             <span>{t('admin.family_map.open_distribution')}</span>
+          </Button>
+        )}
+        {members.length > 0 && (
+          <Button type="button" variant="secondary" size="sm" className="shrink-0" onClick={() => openLocationPicker(members[0])}>
+            <MapPin size={16} aria-hidden="true" />
+            <span>{t('admin.family_map.adjust_location')}</span>
           </Button>
         )}
       </div>
@@ -151,7 +187,7 @@ export const FamilyMapTab: React.FC = () => {
                         <strong className="text-base">{location.displayName}</strong>
                         <p className="mb-2 text-gray-600">{t('admin.family_map.member_count', { count: location.memberCount })}</p>
                         <p className="mb-1 font-medium">{t('admin.family_map.view_members')}</p>
-                        <ul className="space-y-1">{visibleMembers.map(member => <li key={member.id}>• {member.fullName} — {t('admin.family_map.generation', { count: member.generation })}</li>)}</ul>
+                        <ul className="space-y-1">{visibleMembers.map(member => <li key={member.id} className="flex items-center justify-between gap-3">• {member.fullName} — {t('admin.family_map.generation', { count: member.generation })}<button type="button" className="font-semibold text-blue-700 underline" onClick={() => { const detail = members.find(item => item.id === member.id); if (detail) openLocationPicker(detail); }}>{t('admin.family_map.adjust_location')}</button></li>)}</ul>
                         {location.memberCount > visibleMembers.length && <p className="mt-1 text-gray-600">{t('admin.family_map.more_members', { count: location.memberCount - visibleMembers.length })}</p>}
                       </div>
                     </Popup>
@@ -190,6 +226,30 @@ export const FamilyMapTab: React.FC = () => {
           </>
         ) : null}
       </section>
+
+      <Modal
+        isOpen={locationMember !== null}
+        onClose={() => setLocationMember(null)}
+        title={t('admin.family_map.adjust_location')}
+        ariaLabel={t('admin.family_map.adjust_location')}
+        maxWidth="lg"
+        footer={<div className="flex w-full items-center justify-end gap-3"><Button type="button" variant="secondary" disabled={savingLocation} onClick={() => setLocationMember(null)}>{t('admin.cancel', { defaultValue: 'Cancel' })}</Button><Button type="button" variant="primary" disabled={!locationPoint || savingLocation} isLoading={savingLocation} onClick={() => void confirmLocation()}>{t('admin.family_map.confirm_location')}</Button></div>}
+      >
+        {locationMember && <div className="space-y-3">
+          <label className="block text-sm font-medium text-primary-text" htmlFor="family-map-member-picker">{t('admin.family_map.member')}</label>
+          <select id="family-map-member-picker" className="w-full rounded-lg border border-custom-border bg-secondary-bg px-3 py-2 text-primary-text" value={locationMember.id} onChange={event => { const member = members.find(item => item.id === Number(event.target.value)); if (member) openLocationPicker(member); }}>
+            {members.map(member => <option key={member.id} value={member.id}>{member.fullName} · {member.address || t('admin.family_map.no_address')}</option>)}
+          </select>
+          <p className="text-sm text-secondary-text">{t('admin.family_map.tap_map_to_pick')}</p>
+          <div className="h-[min(55vh,440px)] overflow-hidden rounded-xl border border-custom-border">
+            <MapContainer key={locationMember.id} center={locationPoint ?? VIETNAM_CENTER} zoom={locationPoint ? 13 : 5} scrollWheelZoom className="h-full w-full">
+              <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+              <LocationPickerEvents point={locationPoint} onPick={setLocationPoint} />
+            </MapContainer>
+          </div>
+          <p className="font-mono text-xs text-secondary-text">{locationPoint ? `${locationPoint[0].toFixed(6)}, ${locationPoint[1].toFixed(6)}` : t('admin.family_map.no_point_selected')}</p>
+        </div>}
+      </Modal>
 
       <Modal
         isOpen={distributionOpen}

@@ -9,7 +9,9 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 test('Family map uses the authenticated backend distribution API and real Leaflet data', () => {
   const component = read('src/features/admin/components/family-tree/FamilyMapTab.tsx');
   const service = read('src/features/admin/services/familyMapService.ts');
-  assert.match(service, /apiClient\.get<FamilyMapResponse>\('\/api\/family-tree\/map'/);
+  assert.match(service, /apiClient\.get<unknown>\('\/api\/family-tree\/map'/);
+  assert.match(service, /return normalizeFamilyMapData\(response\.data\)/);
+  assert.match(component, /Array\.isArray\(data\?\.members\)/);
   assert.match(component, /CircleMarker/);
   assert.match(component, /tile\.openstreetmap\.org/);
   assert.match(component, /OpenStreetMap contributors/);
@@ -83,3 +85,44 @@ test('Vietnamese and English family map translations include every rendered key'
   const required = ['title', 'description', 'workspace_title', 'open_distribution', 'compact_total', 'compact_located', 'compact_unlocated', 'compact_regions', 'statistics', 'total', 'located', 'unlocated', 'regions', 'loading', 'error', 'retry', 'empty', 'no_locations', 'unknown_location', 'update_address', 'distribution', 'member_count', 'generation', 'more_members', 'view_members', 'locating', 'geocoding_status', 'no_address_status', 'pending_status', 'failed_status'];
   for (const locale of [vi, en]) for (const key of required) assert.equal(typeof locale[key], 'string', `missing ${key}`);
 });
+
+test('Family map normalization tolerates missing and empty member arrays', () => {
+  const normalize = loadNormalizer();
+  for (const members of [undefined, null, []]) {
+    const data = normalize({
+      locations: [{ key: 'one', latitude: 10, longitude: 106, memberCount: 2, members }],
+    });
+    assert.equal(data.locations.length, 1);
+    assert.deepEqual(data.locations[0].members, []);
+    assert.ok(Array.isArray(data.members));
+  }
+});
+
+test('Family map normalization discards invalid coordinates and preserves valid markers', () => {
+  const normalize = loadNormalizer();
+  const data = normalize({
+    locations: [
+      { key: 'bad', latitude: null, longitude: undefined, members: [] },
+      { key: 'good', latitude: '10.123', longitude: 106.456, members: [{ id: 7, fullName: 'A', generation: 2 }] },
+    ],
+  });
+  assert.equal(data.locations.length, 1);
+  assert.deepEqual([data.locations[0].latitude, data.locations[0].longitude], [10.123, 106.456]);
+  assert.equal(data.locations[0].memberCount, 1);
+  assert.equal(data.members[0].status, 'LOCATED');
+});
+
+function loadNormalizer() {
+  const ts = require('typescript');
+  const source = read('src/features/admin/services/familyMapService.ts');
+  const { outputText } = ts.transpileModule(source, {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+  });
+  const module = { exports: {} };
+  const localRequire = name => {
+    if (name === '@/shared/api/apiClient') return { apiClient: {} };
+    throw new Error(`Unexpected import in Family Map normalizer test: ${name}`);
+  };
+  new Function('require', 'module', 'exports', outputText)(localRequire, module, module.exports);
+  return module.exports.normalizeFamilyMapData;
+}

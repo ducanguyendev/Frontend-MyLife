@@ -13,6 +13,11 @@ export interface FamilyMember {
   deathDate?: string | null;
   role?: string;
   address?: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  locationDisplayName?: string | null;
+  locationSource?: "GEOCODED" | "MANUAL" | null;
+  locationStatus?: "NO_ADDRESS" | "PENDING" | "LOCATED" | "FAILED" | "UNAVAILABLE";
   phoneNumber?: string;
   facebookUrl?: string;
   instagramUrl?: string;
