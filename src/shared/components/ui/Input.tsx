@@ -9,6 +9,7 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
   rightIcon?: React.ReactNode;
   containerClassName?: string;
   density?: 'default' | 'compact';
+  floatingLabelAlways?: boolean;
 }
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
@@ -22,6 +23,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       className = '',
       containerClassName = '',
       density = 'default',
+      floatingLabelAlways = false,
       disabled,
       id,
       value,
@@ -40,7 +42,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     const inputId = id || (label ? label.toLowerCase().replace(/[^a-z0-9]/g, '-') : undefined);
 
     const currentValue = value !== undefined ? value : internalValue;
-    const isFloating = isFocused || (currentValue !== undefined && currentValue !== null && String(currentValue).length > 0);
+    const isFloating = floatingLabelAlways || isFocused || (currentValue !== undefined && currentValue !== null && String(currentValue).length > 0);
 
     const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
       setIsFocused(true);

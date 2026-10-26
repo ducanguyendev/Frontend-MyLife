@@ -548,7 +548,7 @@
     "event_type": "Event type",
     "title": "Title",
     "event_date": "Date",
-    "event_year": "Year (if date is unknown)",
+    "event_year": "Year",
     "description": "Description",
     "approximate_date": "Approximate date",
     "unknown_date": "Date unknown",
@@ -615,6 +615,12 @@
     "derived_birth_title": "Birth of {{name}}",
     "derived_birth_fallback": "A family member",
     "derived_death_title": "Death of {{name}}",
-    "derived_death_fallback": "A family member"
+    "derived_death_fallback": "A family member",
+    "enter_title": "Enter a title...",
+    "enter_notes": "Add notes...",
+    "enter_memory_content": "Tell the story...",
+    "enter_location": "Enter a location...",
+    "enter_address": "Enter the new address...",
+    "enter_place": "Enter a place..."
   }
 }

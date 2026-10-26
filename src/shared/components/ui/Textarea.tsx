@@ -6,6 +6,7 @@ export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextArea
   error?: string | null;
   helperText?: string;
   containerClassName?: string;
+  floatingLabelAlways?: boolean;
 }
 
 export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
@@ -16,6 +17,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
       helperText,
       className = '',
       containerClassName = '',
+      floatingLabelAlways = false,
       disabled,
       id,
       value,
@@ -34,7 +36,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
     const textareaId = id || (label ? label.toLowerCase().replace(/[^a-z0-9]/g, '-') : undefined);
 
     const currentValue = value !== undefined ? value : internalValue;
-    const isFloating = isFocused || (currentValue !== undefined && currentValue !== null && String(currentValue).length > 0);
+    const isFloating = floatingLabelAlways || isFocused || (currentValue !== undefined && currentValue !== null && String(currentValue).length > 0);
 
     const handleFocus = (e: React.FocusEvent<HTMLTextAreaElement>) => {
       setIsFocused(true);

@@ -548,7 +548,7 @@
     "event_type": "Loại sự kiện",
     "title": "Tiêu đề",
     "event_date": "Ngày",
-    "event_year": "Năm (nếu chưa rõ ngày)",
+    "event_year": "Năm",
     "description": "Mô tả",
     "approximate_date": "Ngày ước lượng",
     "unknown_date": "Chưa rõ ngày",
@@ -615,6 +615,12 @@
     "derived_birth_title": "{{name}} chào đời",
     "derived_birth_fallback": "Một thành viên",
     "derived_death_title": "{{name}} qua đời",
-    "derived_death_fallback": "Một thành viên"
+    "derived_death_fallback": "Một thành viên",
+    "enter_title": "Nhập tiêu đề...",
+    "enter_notes": "Thêm ghi chú...",
+    "enter_memory_content": "Kể lại kỷ niệm...",
+    "enter_location": "Nhập địa điểm...",
+    "enter_address": "Nhập địa chỉ mới...",
+    "enter_place": "Nhập nơi chốn..."
   }
 }

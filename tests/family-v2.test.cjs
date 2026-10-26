@@ -47,6 +47,9 @@ test('family timeline UI exposes source data, safe event CRUD and useful filters
 test('family timeline uses the shared floating add button and shared modal for create and edit', () => {
   const page = read('src/features/my-life/pages/FamilyTimelinePage.tsx');
   const modal = read('src/features/my-life/components/TimelineEventModal.tsx');
+  const input = read('src/shared/components/ui/Input.tsx');
+  const textarea = read('src/shared/components/ui/Textarea.tsx');
+  const memberForm = read('src/features/admin/components/family-tree/MemberFormModal.tsx');
   const card = read('src/features/my-life/components/timeline/TimelineEventCard.tsx');
   assert.match(page, /FloatingAddButton ariaLabel=\{t\('admin\.family_v2\.add_event'\)\} tooltip=\{t\('admin\.family_v2\.add_event'\)\}/);
   assert.match(page, /onClick=\{openCreateModal\}/);
@@ -58,6 +61,14 @@ test('family timeline uses the shared floating add button and shared modal for c
   assert.match(modal, /editing \? 'admin\.family_v2\.edit_event' : 'admin\.family_v2\.add_event'/);
   assert.match(modal, /<Select[\s\S]*?<SelectItem/);
   assert.match(modal, /<Textarea/);
+  assert.match(modal, /floatingLabel appearance="simple"/);
+  assert.match(modal, /<DateInput[\s\S]*?formatBackendToDob[\s\S]*?formatDobToBackend/);
+  assert.match(modal, /floatingLabelAlways/);
+  assert.match(input, /floatingLabelAlways/);
+  assert.match(textarea, /floatingLabelAlways/);
+  assert.match(memberForm, /<DateInput/);
+  assert.equal(JSON.parse(read('src/shared/locales/vi/admin.json')).family_v2.event_year, 'Năm');
+  assert.equal(JSON.parse(read('src/shared/locales/en/admin.json')).family_v2.event_year, 'Year');
   assert.match(card, /!event\.isDerived/);
 });
 
