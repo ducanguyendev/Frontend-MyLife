@@ -17,7 +17,9 @@ const modules = read('src/features/my-life/config/myLifeModules.ts');
 const card = read('src/features/my-life/components/MyLifeModuleCard.tsx');
 const illustration = read('src/features/my-life/components/MyLifeIllustrations.tsx');
 const illustrationSlots = read('src/features/my-life/config/illustrationSlots.ts');
-const slotComponent = read('src/features/my-life/components/IllustrationSlot.tsx');
+const sharedIllustrationSlots = read('src/shared/components/illustration/illustrationSlots.tsx');
+const slotComponent = read('src/shared/components/illustration/IllustrationSlot.tsx');
+const slotCss = read('src/shared/components/illustration/IllustrationSlot.css');
 const hubCss = read('src/features/my-life/pages/MyLifeHubPage.css');
 const globalStyles = read('src/index.css');
 
@@ -66,27 +68,35 @@ test('hub uses a responsive bento with a primary family card and five visual var
   for (const variant of ['family', 'calendar', 'library', 'map', 'timeline']) {
     assert.ok(hubCss.includes(`my-life-module-card--${variant}`));
   }
-  assert.match(card, /<IllustrationSlot slot=\{module\.illustrationSlot\} \/>/);
+  assert.match(card, /<IllustrationSlot definition=\{illustrationSlots\[module\.illustrationSlot\]\} \/>/);
+  assert.match(hub, /<IllustrationSlot definition=\{illustrationSlots\.familyHero\} \/>/);
   assert.doesNotMatch(hubCss, /radial-gradient|filter:\s*blur|mask-image/);
+  assert.match(hub, /overflow-hidden/);
+  assert.match(hubCss, /@media \(max-width: 767px\)/);
+  assert.match(hubCss, /\.dark \.my-life-hero/);
   assert.match(hubCss, /prefers-reduced-motion/);
 });
 
 test('semantic illustration slots map to local decorative artwork with a null fallback', () => {
   for (const [slot, artwork] of [
-    ['familyTree', 'FamilyTreeArtwork'], ['anniversary', 'AnniversaryArtwork'], ['library', 'LibraryArtwork'],
-    ['familyMap', 'FamilyMapArtwork'], ['timeline', 'TimelineArtwork'], ['memberCard', 'MemberCardArtwork'],
+    ['familyHero', 'FamilyHeroArtwork'], ['familyTree', 'FamilyTreeArtwork'], ['anniversary', 'AnniversaryArtwork'], ['library', 'LibraryArtwork'],
+    ['familyMap', 'FamilyMapArtwork'], ['timeline', 'TimelineArtwork'],
   ]) {
     assert.match(illustrationSlots, new RegExp(`${slot}:\\s*\\{\\s*Artwork:\\s*${artwork}`));
   }
   for (const [moduleId, slot] of [['familytree', 'familyTree'], ['anniversaries', 'anniversary'], ['library', 'library'], ['map', 'familyMap'], ['timeline', 'timeline']]) {
     assert.match(modules, new RegExp(`id: '${moduleId}'[\\s\\S]*?illustrationSlot: '${slot}'`));
   }
-  assert.match(slotComponent, /if \(!definition \|\| !Artwork\) return null/);
-  assert.match(slotComponent, /aria-hidden=\{definition\.decorative \|\| undefined\}/);
+  assert.match(slotComponent, /if \(!Artwork\) return null/);
+  assert.match(slotComponent, /aria-hidden=\{definition\.decorative \? true : undefined\}/);
   assert.match(slotComponent, /<Artwork \/>/);
   assert.match(illustrationSlots, /memberProfile:\s*\{\s*className:/);
-  assert.match(read('src/features/my-life/components/IllustrationSlot.css'), /pointer-events:\s*none/);
-  assert.doesNotMatch(illustration, /https?:\/\/|import .*assets/);
+  assert.match(illustrationSlots, /\.\.\.sharedIllustrationSlots/);
+  assert.match(sharedIllustrationSlots, /memberCard:[\s\S]*?family-member-card__illustration/);
+  assert.match(slotCss, /pointer-events:\s*none/);
+  assert.doesNotMatch(illustration, /<img\b|https?:\/\/(?!www\.w3\.org)/);
+  assert.doesNotMatch(sharedIllustrationSlots, /<img\b|https?:\/\/(?!www\.w3\.org)/);
+  assert.doesNotMatch(slotComponent, /features\/my-life/);
 });
 
 test('hub stays personal and does not introduce fake summaries or API loading', () => {

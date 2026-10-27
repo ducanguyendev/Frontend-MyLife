@@ -2,7 +2,8 @@ import React from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Edit2, Eye, MoreVertical, Trash2 } from "lucide-react";
 import { useLanguage } from "@/shared/hooks/useLanguage";
-import { IllustrationSlot } from "@/features/my-life/components/IllustrationSlot";
+import { IllustrationSlot } from "@/shared/components/illustration/IllustrationSlot";
+import { sharedIllustrationSlots } from "@/shared/components/illustration/illustrationSlots";
 import { type FamilyMember, removeVietnameseTones, getGenerationColors } from "./types";
 import { MemberAvatarImage } from "./MemberAvatarImage";
 import "./MemberCard.css";
@@ -49,7 +50,7 @@ export const MemberCard: React.FC<MemberCardProps> = ({
         onClick={() => onView(member)}
         aria-label={`${t("admin.view_detail", { defaultValue: "Xem chi tiết" })}: ${name}`}
       >
-        <IllustrationSlot slot="memberCard" />
+        <IllustrationSlot definition={sharedIllustrationSlots.memberCard} />
         <MemberAvatarImage
           member={member}
           alt={name}

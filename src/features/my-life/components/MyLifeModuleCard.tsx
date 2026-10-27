@@ -3,7 +3,8 @@ import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { MyLifeModule } from '../config/myLifeModules';
-import { IllustrationSlot } from './IllustrationSlot';
+import { IllustrationSlot } from '@/shared/components/illustration/IllustrationSlot';
+import { illustrationSlots } from '../config/illustrationSlots';
 
 interface MyLifeModuleCardProps {
   module: MyLifeModule;
@@ -20,7 +21,7 @@ export const MyLifeModuleCard: React.FC<MyLifeModuleCardProps> = ({ module }) =>
       to={module.route}
       className={`my-life-module-card ${variantClass} group relative isolate flex h-full min-h-[230px] w-full flex-col overflow-hidden rounded-[1.75rem] border border-custom-border p-5 text-primary-text transition-all duration-[240ms] hover:-translate-y-0.5 md:p-6`}
     >
-      <IllustrationSlot slot={module.illustrationSlot} />
+      <IllustrationSlot definition={illustrationSlots[module.illustrationSlot]} />
       <span className="relative z-10 flex w-fit items-center justify-center rounded-2xl border border-custom-border/70 bg-secondary-bg/75 p-3 text-[var(--module-accent)] shadow-sm backdrop-blur-sm">
         <Icon size={22} aria-hidden="true" />
       </span>

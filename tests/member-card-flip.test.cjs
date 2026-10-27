@@ -8,7 +8,7 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const card = read('src/features/admin/components/family-tree/MemberCard.tsx');
 const css = read('src/features/admin/components/family-tree/MemberCard.css');
 const manager = read('src/features/admin/components/FamilyTreeManager.tsx');
-const slots = read('src/features/my-life/config/illustrationSlots.ts');
+const slots = read('src/shared/components/illustration/illustrationSlots.tsx');
 
 test('whole member card is a keyboard-accessible control that opens the existing detail view', () => {
   assert.match(card, /<button[\s\S]*?className=\{`family-member-card__open/);
@@ -24,7 +24,7 @@ test('whole member card is a keyboard-accessible control that opens the existing
 test('member card has no flip or text CTA and keeps its decorative family illustration', () => {
   assert.doesNotMatch(card, /quick_preview|flip_back|view_profile|Xem nhanh|Lật lại|Xem hồ sơ/);
   assert.doesNotMatch(card, /isFlipped|setIsFlipped|rotateY/);
-  assert.match(card, /<IllustrationSlot slot="memberCard" \/>/);
+  assert.match(card, /<IllustrationSlot definition=\{sharedIllustrationSlots\.memberCard\} \/>/);
   assert.match(slots, /memberCard:[\s\S]*?family-member-card__illustration/);
 });
 
