@@ -1,5 +1,6 @@
 import { BookOpen, CalendarDays, Clock3, MapPinned, Network } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import type { IllustrationSlotKey } from './illustrationSlots';
 
 export interface MyLifeModule {
   id: string;
@@ -9,6 +10,7 @@ export interface MyLifeModule {
   route: string;
   icon: LucideIcon;
   visualVariant: 'family' | 'calendar' | 'library' | 'map' | 'timeline';
+  illustrationSlot: IllustrationSlotKey;
 }
 
 export const myLifeModules: MyLifeModule[] = [
@@ -20,6 +22,7 @@ export const myLifeModules: MyLifeModule[] = [
     route: '/familytree',
     icon: Network,
     visualVariant: 'family',
+    illustrationSlot: 'familyTree',
   },
   {
     id: 'anniversaries',
@@ -29,6 +32,7 @@ export const myLifeModules: MyLifeModule[] = [
     route: '/anniversaries',
     icon: CalendarDays,
     visualVariant: 'calendar',
+    illustrationSlot: 'anniversary',
   },
   {
     id: 'library',
@@ -38,6 +42,7 @@ export const myLifeModules: MyLifeModule[] = [
     route: '/library',
     icon: BookOpen,
     visualVariant: 'library',
+    illustrationSlot: 'library',
   },
   {
     id: 'map',
@@ -47,6 +52,7 @@ export const myLifeModules: MyLifeModule[] = [
     route: '/map',
     icon: MapPinned,
     visualVariant: 'map',
+    illustrationSlot: 'familyMap',
   },
   {
     id: 'timeline',
@@ -56,5 +62,6 @@ export const myLifeModules: MyLifeModule[] = [
     route: '/timeline',
     icon: Clock3,
     visualVariant: 'timeline',
+    illustrationSlot: 'timeline',
   },
 ];

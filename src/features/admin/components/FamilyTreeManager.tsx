@@ -333,7 +333,6 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
                   <MemberCard
                     key={m.id}
                     member={m}
-                    members={members}
                     index={i}
                     isDropdownOpen={activeDropdown === m.id}
                     onToggleDropdown={(e) => {

@@ -15,6 +15,9 @@ const manager = read('src/features/admin/components/FamilyTreeManager.tsx');
 const hub = read('src/features/my-life/pages/MyLifeHubPage.tsx');
 const modules = read('src/features/my-life/config/myLifeModules.ts');
 const card = read('src/features/my-life/components/MyLifeModuleCard.tsx');
+const illustration = read('src/features/my-life/components/MyLifeIllustrations.tsx');
+const illustrationSlots = read('src/features/my-life/config/illustrationSlots.ts');
+const slotComponent = read('src/features/my-life/components/IllustrationSlot.tsx');
 const hubCss = read('src/features/my-life/pages/MyLifeHubPage.css');
 const globalStyles = read('src/index.css');
 
@@ -37,13 +40,13 @@ test('legacy FamilyTree and MyLife aliases replace-navigate to canonical routes'
   }
 });
 
-test('hub renders four configured real modules with semantic route links', () => {
+test('hub renders five configured real modules with semantic route links', () => {
   assert.match(hub, /t\('myLife\.title'\)/);
   assert.match(hub, /myLifeModules\.map/);
-  for (const [id, route] of [['familytree', '/familytree'], ['anniversaries', '/anniversaries'], ['library', '/library'], ['map', '/map']]) {
+  for (const [id, route] of [['familytree', '/familytree'], ['anniversaries', '/anniversaries'], ['library', '/library'], ['map', '/map'], ['timeline', '/timeline']]) {
     assert.match(modules, new RegExp(`id: '${id}'[\\s\\S]*?route: '${route.replaceAll('/', '\\/')}'`));
   }
-  assert.equal((modules.match(/id: '/g) || []).length, 4);
+  assert.equal((modules.match(/id: '/g) || []).length, 5);
   assert.match(card, /<Link[\s\S]*to=\{module\.route\}/);
   assert.match(globalStyles, /:where\(button, \[tabindex\], input, select, textarea\)[\s\S]*?:focus-visible/);
   assert.match(globalStyles, /box-shadow: inset 0 0 0 1px var\(--focus-border\)/);
@@ -51,7 +54,7 @@ test('hub renders four configured real modules with semantic route links', () =>
   assert.doesNotMatch(modules, /Finance|Tasks|Goals/);
 });
 
-test('hub uses a responsive bento with a primary family card and four visual variants', () => {
+test('hub uses a responsive bento with a primary family card and five visual variants', () => {
   assert.match(hub, /cardPlacement\[module\.visualVariant\]/);
   assert.match(hub, /grid-cols-1[\s\S]*md:grid-cols-2[\s\S]*xl:grid-cols-12/);
   assert.match(hub, /family:[\s\S]*md:col-span-2[\s\S]*xl:col-span-6[\s\S]*xl:row-span-2/);
@@ -59,9 +62,31 @@ test('hub uses a responsive bento with a primary family card and four visual var
   assert.match(modules, /visualVariant: 'calendar'/);
   assert.match(modules, /visualVariant: 'library'/);
   assert.match(modules, /visualVariant: 'map'/);
-  for (const variant of ['family', 'calendar', 'library', 'map']) assert.ok(hubCss.includes(`my-life-module-card--${variant}`));
-  assert.match(hubCss, /radial-gradient/);
+  assert.match(modules, /visualVariant: 'timeline'/);
+  for (const variant of ['family', 'calendar', 'library', 'map', 'timeline']) {
+    assert.ok(hubCss.includes(`my-life-module-card--${variant}`));
+  }
+  assert.match(card, /<IllustrationSlot slot=\{module\.illustrationSlot\} \/>/);
+  assert.doesNotMatch(hubCss, /radial-gradient|filter:\s*blur|mask-image/);
   assert.match(hubCss, /prefers-reduced-motion/);
+});
+
+test('semantic illustration slots map to local decorative artwork with a null fallback', () => {
+  for (const [slot, artwork] of [
+    ['familyTree', 'FamilyTreeArtwork'], ['anniversary', 'AnniversaryArtwork'], ['library', 'LibraryArtwork'],
+    ['familyMap', 'FamilyMapArtwork'], ['timeline', 'TimelineArtwork'], ['memberCard', 'MemberCardArtwork'],
+  ]) {
+    assert.match(illustrationSlots, new RegExp(`${slot}:\\s*\\{\\s*Artwork:\\s*${artwork}`));
+  }
+  for (const [moduleId, slot] of [['familytree', 'familyTree'], ['anniversaries', 'anniversary'], ['library', 'library'], ['map', 'familyMap'], ['timeline', 'timeline']]) {
+    assert.match(modules, new RegExp(`id: '${moduleId}'[\\s\\S]*?illustrationSlot: '${slot}'`));
+  }
+  assert.match(slotComponent, /if \(!definition \|\| !Artwork\) return null/);
+  assert.match(slotComponent, /aria-hidden=\{definition\.decorative \|\| undefined\}/);
+  assert.match(slotComponent, /<Artwork \/>/);
+  assert.match(illustrationSlots, /memberProfile:\s*\{\s*className:/);
+  assert.match(read('src/features/my-life/components/IllustrationSlot.css'), /pointer-events:\s*none/);
+  assert.doesNotMatch(illustration, /https?:\/\/|import .*assets/);
 });
 
 test('hub stays personal and does not introduce fake summaries or API loading', () => {
@@ -125,7 +150,7 @@ test('module and page translations exist in Vietnamese and English; shared contr
     assert.ok(messages.title);
     assert.ok(messages.hubEyebrow);
     assert.ok(messages.hubSectionTitle);
-    for (const module of ['familyTree', 'anniversaries', 'library', 'map']) {
+    for (const module of ['familyTree', 'anniversaries', 'library', 'map', 'timeline']) {
       assert.ok(messages.modules[module].title);
       assert.ok(messages.modules[module].description);
       assert.ok(messages.modules[module].open);
