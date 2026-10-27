@@ -9,11 +9,11 @@ import { illustrationSlots } from '../config/illustrationSlots';
 import './MyLifeHubPage.css';
 
 const cardPlacement: Record<string, string> = {
-  family: 'md:col-span-2 md:min-h-[280px] xl:col-span-6 xl:row-span-2',
-  calendar: 'xl:col-span-6',
-  library: 'xl:col-span-3',
-  map: 'xl:col-span-3',
-  timeline: 'xl:col-span-6',
+  family: 'xl:col-span-4',
+  calendar: 'xl:col-span-4',
+  library: 'xl:col-span-4',
+  map: 'xl:col-span-4 xl:col-start-3',
+  timeline: 'md:col-span-2 md:w-1/2 md:justify-self-center xl:col-span-4 xl:col-start-7 xl:w-full',
 };
 
 export const MyLifeHubPage: React.FC = () => {
@@ -38,7 +38,7 @@ export const MyLifeHubPage: React.FC = () => {
             <span className="my-life-section__marker" aria-hidden="true" />
             <h2 id="my-life-modules-heading" className="m-0 text-lg font-bold tracking-tight text-primary-text">{t('myLife.modules.title')}</h2>
           </div>
-          <div className="grid flex-1 grid-cols-1 auto-rows-[minmax(230px,auto)] gap-4 md:grid-cols-2 xl:min-h-[528px] xl:grid-cols-12 xl:grid-rows-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+          <div className="grid flex-1 grid-cols-1 auto-rows-[minmax(290px,auto)] gap-4 md:grid-cols-2 xl:min-h-[620px] xl:grid-cols-12 xl:grid-rows-2">
             {myLifeModules.map((module) => (
               <div className={`flex min-h-0 min-w-0 ${cardPlacement[module.visualVariant] ?? ''}`} key={module.id}>
                 <MyLifeModuleCard module={module} />

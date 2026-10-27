@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, CalendarDays, Clock3, Flower2, MapPinned } from 'lucide-react';
+import { BookOpen, CalendarDays, Flower2, MapPinned } from 'lucide-react';
 
 export const FamilyHeroArtwork: React.FC = () => (
   <svg className="my-life-hero__svg" viewBox="0 0 520 330" fill="none">
@@ -57,14 +57,47 @@ export const FamilyHeroArtwork: React.FC = () => (
 
 export const FamilyTreeArtwork: React.FC = () => (
   <svg className="my-life-module-card__family-tree" viewBox="0 0 390 240" fill="none">
-    <path className="family-tree__trunk" d="M195 30v72M195 102 95 155m100-53 100 53M95 155v45m100-45v45m100-45v45" />
-    <path className="family-tree__leaf" d="M195 102c-24-10-36-31-30-54 22 3 38 20 30 54Zm0 0c24-10 36-31 30-54-22 3-38 20-30 54Z" />
-    <g className="tree-portrait tree-portrait--top"><circle cx="195" cy="29" r="22"/><circle className="portrait-face" cx="195" cy="25" r="8"/><path className="portrait-body" d="M181 42c2-8 7-12 14-12s12 4 14 12"/></g>
-    <g className="tree-portrait"><circle cx="95" cy="155" r="25"/><circle className="portrait-face" cx="95" cy="149" r="8"/><path className="portrait-body" d="M79 171c2-9 8-14 16-14s14 5 16 14"/></g>
-    <g className="tree-portrait"><circle cx="295" cy="155" r="25"/><circle className="portrait-face" cx="295" cy="149" r="8"/><path className="portrait-body" d="M279 171c2-9 8-14 16-14s14 5 16 14"/></g>
-    <g className="tree-portrait tree-portrait--small"><circle cx="95" cy="205" r="22"/><circle className="portrait-face" cx="95" cy="200" r="7"/><path className="portrait-body" d="M81 219c2-8 7-12 14-12s12 4 14 12"/></g>
-    <g className="tree-portrait tree-portrait--small"><circle cx="195" cy="205" r="22"/><circle className="portrait-face" cx="195" cy="200" r="7"/><path className="portrait-body" d="M181 219c2-8 7-12 14-12s12 4 14 12"/></g>
-    <g className="tree-portrait tree-portrait--small"><circle cx="295" cy="205" r="22"/><circle className="portrait-face" cx="295" cy="200" r="7"/><path className="portrait-body" d="M281 219c2-8 7-12 14-12s12 4 14 12"/></g>
+    <path className="family-tree__portrait-backdrop" d="M35 220c-7-73 41-155 160-166 118 11 167 93 160 166H35Z" />
+    <path className="family-tree__branch" d="M57 194c-15-22-16-42-3-62m3 28c18-1 30-10 35-28m-78 5c17 0 29-7 39-21m259 78c15-22 16-42 3-62m-3 28c-18-1-30-10-35-28m78 5c-17 0-29-7-39-21" />
+    <path className="family-tree__leaf" d="M53 134c-19-1-27-13-25-27 18 1 28 10 25 27Zm26-20c-1-19 10-29 24-30 0 18-9 29-24 30Zm232 20c19-1 27-13 25-27-18 1-28 10-25 27Zm-26-20c1-19-10-29-24-30 0 18 9 29 24 30Z" />
+    <ellipse className="family-tree__ground" cx="195" cy="220" rx="153" ry="12" />
+
+    <g className="family-portrait__person family-portrait__person--elder-one">
+      <path className="family-portrait__body" d="M67 218c2-49 15-75 43-75s42 26 44 75H67Z" />
+      <path className="family-portrait__neck" d="M96 126h26v24H96z"/><circle className="family-portrait__face" cx="109" cy="110" r="28" />
+      <path className="family-portrait__hair" d="M81 110c-3-29 15-43 32-42 22 1 33 18 24 39-12-4-18-12-20-21-9 14-20 21-36 24Z" />
+      <path className="family-portrait__detail" d="M96 117h1m22 0h1m-15 13c4 3 8 3 12 0" />
+    </g>
+    <g className="family-portrait__person family-portrait__person--elder-two">
+      <path className="family-portrait__body" d="M132 218c2-55 17-82 48-82s46 27 48 82H132Z" />
+      <path className="family-portrait__neck" d="M163 119h31v28h-31z"/><circle className="family-portrait__face" cx="179" cy="99" r="32" />
+      <path className="family-portrait__hair" d="M148 100c-2-32 17-49 37-48 26 1 37 22 28 45-13-5-20-14-22-25-9 15-23 24-43 28Z" />
+      <path className="family-portrait__detail" d="M164 107h1m26 0h1m-17 14c4 3 8 3 12 0" />
+    </g>
+    <g className="family-portrait__person family-portrait__person--adult">
+      <path className="family-portrait__body" d="M210 218c2-55 17-82 48-82s46 27 48 82H210Z" />
+      <path className="family-portrait__neck" d="M241 119h31v28h-31z"/><circle className="family-portrait__face" cx="257" cy="99" r="32" />
+      <path className="family-portrait__hair" d="M226 100c-2-32 17-49 37-48 26 1 37 22 28 45-13-5-20-14-22-25-9 15-23 24-43 28Z" />
+      <path className="family-portrait__detail" d="M242 107h1m26 0h1m-17 14c4 3 8 3 12 0" />
+    </g>
+    <g className="family-portrait__person family-portrait__person--young-one">
+      <path className="family-portrait__body" d="M111 222c2-40 13-61 37-61s35 21 37 61h-74Z" />
+      <path className="family-portrait__neck" d="M136 147h24v22h-24z"/><circle className="family-portrait__face" cx="148" cy="132" r="25" />
+      <path className="family-portrait__hair" d="M124 133c-2-25 12-38 27-37 19 1 28 15 21 33-10-3-16-9-18-18-7 12-16 19-30 22Z" />
+      <path className="family-portrait__detail" d="M136 139h1m19 0h1m-12 10c3 2 6 2 9 0" />
+    </g>
+    <g className="family-portrait__person family-portrait__person--young-two">
+      <path className="family-portrait__body" d="M174 222c2-37 12-56 35-56s33 19 35 56h-70Z" />
+      <path className="family-portrait__neck" d="M198 154h23v20h-23z"/><circle className="family-portrait__face" cx="210" cy="140" r="23" />
+      <path className="family-portrait__hair" d="M188 141c-2-23 11-35 25-34 18 1 26 14 20 30-9-3-14-9-16-16-7 11-15 17-29 20Z" />
+      <path className="family-portrait__detail" d="M199 147h1m18 0h1m-11 9c3 2 6 2 8 0" />
+    </g>
+    <g className="family-portrait__person family-portrait__person--young-three">
+      <path className="family-portrait__body" d="M231 222c2-39 12-58 35-58s34 19 36 58h-71Z" />
+      <path className="family-portrait__neck" d="M255 152h24v21h-24z"/><circle className="family-portrait__face" cx="267" cy="137" r="24" />
+      <path className="family-portrait__hair" d="M244 138c-2-24 12-37 27-36 18 1 27 15 20 31-10-3-15-10-17-18-7 12-16 19-30 23Z" />
+      <path className="family-portrait__detail" d="M256 144h1m19 0h1m-12 10c3 2 6 2 9 0" />
+    </g>
   </svg>
 );
 
@@ -105,5 +138,4 @@ export const TimelineArtwork: React.FC = () => <div className="my-life-module-ca
     <span className="timeline-memory__dot" />
     <span className="timeline-memory__label">{milestone}</span>
   </div>)}
-  <Clock3 className="timeline-memory__clock" size={22} aria-hidden="true" />
 </div>;

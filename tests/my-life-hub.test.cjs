@@ -56,10 +56,13 @@ test('hub renders five configured real modules with semantic route links', () =>
   assert.doesNotMatch(modules, /Finance|Tasks|Goals/);
 });
 
-test('hub uses a responsive bento with a primary family card and five visual variants', () => {
+test('hub uses an even responsive grid with shared visual and content regions', () => {
   assert.match(hub, /cardPlacement\[module\.visualVariant\]/);
-  assert.match(hub, /grid-cols-1[\s\S]*md:grid-cols-2[\s\S]*xl:grid-cols-12/);
-  assert.match(hub, /family:[\s\S]*md:col-span-2[\s\S]*xl:col-span-6[\s\S]*xl:row-span-2/);
+  assert.match(hub, /grid-cols-1[\s\S]*md:grid-cols-2[\s\S]*xl:grid-cols-12[\s\S]*xl:grid-rows-2/);
+  assert.match(hub, /family: 'xl:col-span-4'/);
+  assert.match(hub, /calendar: 'xl:col-span-4'/);
+  assert.match(hub, /map: 'xl:col-span-4 xl:col-start-3'/);
+  assert.match(hub, /timeline: 'md:col-span-2 md:w-1\/2[\s\S]*xl:col-span-4 xl:col-start-7/);
   assert.match(modules, /visualVariant: 'family'/);
   assert.match(modules, /visualVariant: 'calendar'/);
   assert.match(modules, /visualVariant: 'library'/);
@@ -69,11 +72,14 @@ test('hub uses a responsive bento with a primary family card and five visual var
     assert.ok(hubCss.includes(`my-life-module-card--${variant}`));
   }
   assert.match(card, /<IllustrationSlot definition=\{illustrationSlots\[module\.illustrationSlot\]\} \/>/);
+  assert.match(card, /my-life-module-card__visual[\s\S]*?my-life-module-card__content/);
+  assert.match(card, /min-h-\[290px\]/);
   assert.match(hub, /<IllustrationSlot definition=\{illustrationSlots\.familyHero\} \/>/);
   assert.doesNotMatch(hubCss, /radial-gradient|filter:\s*blur|mask-image/);
   assert.match(hub, /overflow-hidden/);
   assert.match(hubCss, /@media \(max-width: 767px\)/);
   assert.match(hubCss, /\.dark \.my-life-hero/);
+  assert.match(hubCss, /\.timeline-track \{[^}]*top: 61\.5%/);
   assert.match(hubCss, /prefers-reduced-motion/);
 });
 
@@ -93,6 +99,9 @@ test('semantic illustration slots map to local decorative artwork with a null fa
   assert.match(illustrationSlots, /memberProfile:\s*\{\s*className:/);
   assert.match(illustrationSlots, /\.\.\.sharedIllustrationSlots/);
   assert.match(sharedIllustrationSlots, /memberCard:[\s\S]*?family-member-card__illustration/);
+  assert.match(illustration, /family-portrait__person--elder-one/);
+  assert.doesNotMatch(illustration, /family-tree__trunk|tree-portrait/);
+  assert.match(illustration, /timeline-memory__label/);
   assert.match(slotCss, /pointer-events:\s*none/);
   assert.doesNotMatch(illustration, /<img\b|https?:\/\/(?!www\.w3\.org)/);
   assert.doesNotMatch(sharedIllustrationSlots, /<img\b|https?:\/\/(?!www\.w3\.org)/);
