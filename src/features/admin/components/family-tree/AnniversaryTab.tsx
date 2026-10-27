@@ -7,7 +7,7 @@ import { anniversaryService, type FamilyAnniversary, type FamilyAnniversaryPaylo
 import { FamilyAnniversaryModal } from './FamilyAnniversaryModal';
 import { formatLunarYearLabel } from './lunarYearUtils';
 import { removeVietnameseTones, type FamilyMember } from './types';
-import { anniversaryDateKey, anniversaryDateParts, getAnniversaryMonthGrid, getAnniversaryNavigationTarget, getVietnamTodayKey } from './anniversaryCalendarUtils';
+import { anniversaryDateKey, anniversaryDateParts, getAnniversaryMonthGrid, getAnniversaryNavigationTarget, getDayEventVisual, getVietnamTodayKey } from './anniversaryCalendarUtils';
 import { fetchFamilyMembers } from './useFamilyMembers';
 
 interface Props {
@@ -230,11 +230,23 @@ export const AnniversaryTab: React.FC<Props> = ({ showToast, members: initialMem
           {cells.map(({ year, month, day, inMonth }) => {
             const key = anniversaryDateKey(year, month, day);
             const dayEvents = eventsByDate.get(key) ?? [];
+            const dayVisual = getDayEventVisual(dayEvents);
             const isToday = key === todayKey;
             const isSelected = key === calendarSelectedDate;
-            return <button key={key} type="button" role="gridcell" aria-label={`${fullDateFormat.format(new Date(Date.UTC(year, month, day, 12)))}${dayEvents.length ? `, ${t('admin.anniversary_ui.event_count', { count: dayEvents.length })}` : ''}${isToday ? `, ${t('admin.anniversary_ui.today')}` : ''}`} aria-pressed={isSelected} onClick={() => selectDay(key)} className={`relative flex aspect-square min-h-9 flex-col items-center justify-center rounded-lg text-sm transition-colors duration-200 motion-reduce:transition-none    ${inMonth ? 'text-primary-text' : 'text-secondary-text/40'} ${isToday ? 'bg-[var(--focus-surface)] font-semibold' : ''} ${isSelected ? 'bg-accent text-white shadow-sm' : dayEvents.length ? 'bg-accent/10 font-bold text-accent hover:bg-accent/20' : 'hover:bg-primary-bg'}`}>
+            const eventTone = dayVisual.type === 'death-anniversary' ? 'border-amber-300/80 bg-amber-50 text-amber-800 hover:bg-amber-100 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-300'
+              : dayVisual.type === 'family-event' ? 'border-teal-300/80 bg-teal-50 text-teal-800 hover:bg-teal-100 dark:border-teal-400/30 dark:bg-teal-400/10 dark:text-teal-300'
+                : dayVisual.type === 'mixed' ? 'border-accent/30 bg-accent/5 text-accent hover:bg-accent/10' : '';
+            const dayState = isSelected ? 'border-accent bg-accent font-bold text-white ring-2 ring-accent/50 shadow-sm'
+              : isToday ? 'border-accent/70 bg-[var(--focus-surface)] font-semibold text-primary-text ring-1 ring-accent/50'
+                : dayEvents.length ? `${eventTone} font-bold` : 'border-transparent text-primary-text hover:bg-primary-bg';
+            return <button key={key} type="button" role="gridcell" aria-current={isToday ? 'date' : undefined} aria-label={`${fullDateFormat.format(new Date(Date.UTC(year, month, day, 12)))}${dayVisual.count ? `, ${t('admin.anniversary_ui.event_count', { count: dayVisual.count })}` : ''}${isToday ? `, ${t('admin.anniversary_ui.today')}` : ''}`} aria-pressed={isSelected} onClick={() => selectDay(key)} className={`relative flex aspect-square min-h-9 cursor-pointer flex-col items-center justify-center rounded-lg border text-sm transition-colors duration-200 motion-reduce:transition-none sm:min-h-10 ${inMonth ? '' : 'text-secondary-text/50'} ${dayState}`}>
               <span>{day}</span>
-              {dayEvents.length > 0 && <span aria-hidden="true" className={`absolute bottom-1 flex h-1.5 min-w-1.5 items-center justify-center rounded-full ${isSelected ? 'bg-white' : 'bg-accent'} ${dayEvents.length > 1 ? 'px-1 text-[8px] leading-none text-white' : ''}`}>{dayEvents.length > 1 ? dayEvents.length : ''}</span>}
+              {dayVisual.count > 0 && <span aria-hidden="true" className="absolute bottom-1 flex h-3 items-center gap-0.5">
+                {dayVisual.count === 1
+                  ? <span className={`h-1.5 w-1.5 rounded-full ${isSelected ? 'bg-white' : dayVisual.type === 'death-anniversary' ? 'bg-amber-600 dark:bg-amber-300' : dayVisual.type === 'family-event' ? 'bg-teal-600 dark:bg-teal-300' : 'bg-accent'}`} />
+                  : dayVisual.count > 1 ? <><span className={`flex h-3 min-w-3 items-center justify-center rounded-full px-1 text-[8px] font-bold leading-none ${isSelected ? 'bg-white/20 text-white' : dayVisual.type === 'death-anniversary' ? 'bg-amber-600 text-white dark:bg-amber-400 dark:text-slate-950' : dayVisual.type === 'family-event' ? 'bg-teal-600 text-white dark:bg-teal-400 dark:text-slate-950' : 'bg-accent text-white'}`}>{dayVisual.count}</span>
+                    {dayVisual.type === 'mixed' && <span className="flex items-center gap-0.5"><i className={`h-1 w-1 rounded-full ${isSelected ? 'bg-white' : 'bg-amber-500'}`} /><i className={`h-1 w-1 rounded-full ${isSelected ? 'bg-white/70' : 'bg-teal-500'}`} /></span>}</> : null}
+              </span>}
             </button>;
           })}
         </div>

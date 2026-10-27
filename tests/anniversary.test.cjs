@@ -66,7 +66,7 @@ test('solar calendar utilities handle month edges, leap February, and UTC-safe I
   const output = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
   const exports = {};
   new vm.Script(output).runInNewContext({ exports, Date, Intl });
-  const { getAnniversaryMonthGrid, anniversaryDateParts, anniversaryDateKey, getAnniversaryNavigationTarget } = exports;
+  const { getAnniversaryMonthGrid, anniversaryDateParts, anniversaryDateKey, getAnniversaryNavigationTarget, getDayEventVisual } = exports;
 
   const december = getAnniversaryMonthGrid(2026, 11);
   assert.ok(december.some(day => day.year === 2027 && day.month === 0 && day.day === 1 && !day.inMonth));
@@ -81,6 +81,22 @@ test('solar calendar utilities handle month edges, leap February, and UTC-safe I
   assert.deepEqual(JSON.parse(JSON.stringify(getAnniversaryNavigationTarget('2027-08-19'))), { visibleMonth: { year: 2027, month: 7 }, selectedDate: '2027-08-19' });
   assert.deepEqual(JSON.parse(JSON.stringify(getAnniversaryNavigationTarget('2028-12-15'))), { visibleMonth: { year: 2028, month: 11 }, selectedDate: '2028-12-15' });
   assert.equal(getAnniversaryNavigationTarget('2028-13-45'), null);
+  assert.deepEqual(JSON.parse(JSON.stringify(getDayEventVisual([]))), { count: 0, type: 'none', hasDeathAnniversary: false, hasFamilyEvent: false });
+  assert.deepEqual(JSON.parse(JSON.stringify(getDayEventVisual([{ eventType: 'DEATH_ANNIVERSARY' }]))), { count: 1, type: 'death-anniversary', hasDeathAnniversary: true, hasFamilyEvent: false });
+  assert.deepEqual(JSON.parse(JSON.stringify(getDayEventVisual([{ eventType: 'FAMILY_EVENT' }, { eventType: 'FAMILY_EVENT' }]))), { count: 2, type: 'family-event', hasDeathAnniversary: false, hasFamilyEvent: true });
+  assert.deepEqual(JSON.parse(JSON.stringify(getDayEventVisual([{ eventType: 'DEATH_ANNIVERSARY' }, { eventType: 'FAMILY_EVENT' }]))), { count: 2, type: 'mixed', hasDeathAnniversary: true, hasFamilyEvent: true });
+});
+
+test('calendar day cells distinguish event types, count badges, selected priority, and today semantics', () => {
+  const source = readFileSync(join(__dirname, '../src/features/admin/components/family-tree/AnniversaryTab.tsx'), 'utf8');
+  assert.match(source, /dayVisual\.type === 'death-anniversary' \? 'border-amber/);
+  assert.match(source, /dayVisual\.type === 'family-event' \? 'border-teal/);
+  assert.match(source, /dayVisual\.type === 'mixed' \? 'border-accent/);
+  assert.match(source, /dayVisual\.count > 1/);
+  assert.match(source, /aria-current=\{isToday \? 'date' : undefined\}/);
+  assert.match(source, /isSelected \? 'border-accent bg-accent font-bold text-white ring-2/);
+  assert.match(source, /: isToday \? 'border-accent\/70 bg-\[var\(--focus-surface\)\]/);
+  assert.match(source, /aria-label=\{`\$\{fullDateFormat\.format[\s\S]*dayVisual\.count \? `, \$\{t\('admin\.anniversary_ui\.event_count'/);
 });
 
 test('event card selection navigates without filtering the list; actions remain separate and month picker applies', () => {

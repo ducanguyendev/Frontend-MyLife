@@ -22,6 +22,17 @@ export const getAnniversaryNavigationTarget = (date: string) => {
   return { visibleMonth: { year: parts.year, month: parts.month }, selectedDate: anniversaryDateKey(parts.year, parts.month, parts.day) };
 };
 
+export type AnniversaryDayEventVisualType = 'death-anniversary' | 'family-event' | 'mixed' | 'none';
+
+export const getDayEventVisual = (events: Array<{ eventType: string }>) => {
+  const hasDeathAnniversary = events.some(event => event.eventType === 'DEATH_ANNIVERSARY');
+  const hasFamilyEvent = events.some(event => event.eventType === 'FAMILY_EVENT');
+  const hasOtherEvent = events.some(event => event.eventType !== 'DEATH_ANNIVERSARY' && event.eventType !== 'FAMILY_EVENT');
+  const type: AnniversaryDayEventVisualType = hasOtherEvent || (hasDeathAnniversary && hasFamilyEvent) ? 'mixed'
+    : hasDeathAnniversary ? 'death-anniversary' : hasFamilyEvent ? 'family-event' : 'none';
+  return { count: events.length, type, hasDeathAnniversary, hasFamilyEvent };
+};
+
 export const getVietnamTodayKey = () => {
   const parts = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date());
   return anniversaryDateKey(Number(parts.find(part => part.type === 'year')?.value), Number(parts.find(part => part.type === 'month')?.value) - 1, Number(parts.find(part => part.type === 'day')?.value));
