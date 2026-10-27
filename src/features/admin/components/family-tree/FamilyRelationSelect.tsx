@@ -13,6 +13,7 @@ export interface FamilyRelationSelectProps {
   options: FamilyRelationOption[];
   placeholder: string;
   generationLabel: string;
+  showGeneration?: boolean;
   label?: string;
   disabled?: boolean;
   onChange: (memberId: number | undefined) => void;
@@ -22,11 +23,15 @@ export interface FamilyRelationSelectProps {
 export const toggleFamilyRelationSelection = (currentValue: number | undefined, selectedMemberId: number): number | undefined =>
   currentValue === selectedMemberId ? undefined : selectedMemberId;
 
+export const formatFamilyRelationOption = (option: FamilyRelationOption, generationLabel: string, showGeneration = true) =>
+  showGeneration ? `${option.fullName} (${generationLabel} ${option.generation})` : option.fullName;
+
 export const FamilyRelationSelect: React.FC<FamilyRelationSelectProps> = ({
   value,
   options,
   placeholder,
   generationLabel,
+  showGeneration = true,
   label,
   disabled = false,
   onChange,
@@ -40,7 +45,7 @@ export const FamilyRelationSelect: React.FC<FamilyRelationSelectProps> = ({
   const [activeIndex, setActiveIndex] = useState(0);
   const [position, setPosition] = useState<React.CSSProperties>({});
   const selected = options.find((option) => option.id === value);
-  const formatOption = (option: FamilyRelationOption) => `${option.fullName} (${generationLabel} ${option.generation})`;
+  const formatOption = (option: FamilyRelationOption) => formatFamilyRelationOption(option, generationLabel, showGeneration);
 
   const close = (restoreFocus = false) => {
     setOpen(false);

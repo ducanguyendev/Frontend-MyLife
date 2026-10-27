@@ -53,6 +53,15 @@ test('selecting a relation replaces the current member and selecting it again cl
   assert.equal(toggle(undefined, 25), 25);
 });
 
+test('generation display is optional and defaults to the current parent relation label', () => {
+  const format = relationExports.formatFamilyRelationOption;
+  const option = { id: 12, fullName: 'Nguyễn Bửu', generation: 1 };
+  assert.equal(format(option, 'Đời'), 'Nguyễn Bửu (Đời 1)');
+  assert.equal(format(option, 'Đời', false), 'Nguyễn Bửu');
+  assert.match(component, /showGeneration\?: boolean/);
+  assert.match(component, /showGeneration = true/);
+});
+
 test('relation choices exclude self and obsolete empty relation labels are removed in both locales', () => {
   assert.match(form, /m\.id !== editingMember\?\.id/);
   assert.doesNotMatch(form, /NO_RELATION_VALUE|no_father|no_mother|no_spouse/);

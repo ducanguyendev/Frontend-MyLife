@@ -180,14 +180,14 @@ test('anniversary controls and status text are translated in Vietnamese and Engl
   }
 });
 
-test('related-member reset uses an explicit Radix item and anniversary search uses shared SearchBar', () => {
-  const select = readFileSync(join(__dirname, '../src/shared/components/ui/Select.tsx'), 'utf8');
+test('related-member picker toggles selection and anniversary search uses shared SearchBar', () => {
+  const relation = readFileSync(join(__dirname, '../src/features/admin/components/family-tree/FamilyRelationSelect.tsx'), 'utf8');
   const modal = readFileSync(join(__dirname, '../src/features/admin/components/family-tree/FamilyAnniversaryModal.tsx'), 'utf8');
   const tab = readFileSync(join(__dirname, '../src/features/admin/components/family-tree/AnniversaryTab.tsx'), 'utf8');
-  assert.match(select, /@radix-ui\/react-select/);
-  assert.match(select, /<SelectPrimitive\.Value[\s\S]*placeholder=\{floatingLabel \? ''/);
-  assert.match(modal, /SelectItem value=\{NO_RELATED_MEMBER\}/);
-  assert.match(modal, /value === NO_RELATED_MEMBER \? '' : value/);
+  assert.match(modal, /<FamilyRelationSelect[\s\S]*?showGeneration=\{false\}/);
+  assert.match(modal, /onChange=\{handleRelatedMemberChange\}/);
+  assert.match(relation, /toggleFamilyRelationSelection\(value, option\.id\)/);
+  assert.doesNotMatch(modal, /NO_RELATED_MEMBER|<Select\s[^>]*related_member/);
   assert.doesNotMatch(modal, /clearable|onClear|clearLabel/);
   assert.match(tab, /import \{ SearchBar \} from ['"]@\/shared\/components\/SearchBar['"]/);
   assert.match(tab, /<SearchBar\b[^>]*ariaLabel=/);
@@ -211,6 +211,19 @@ test('anniversary modal keeps accessible naming, original date checks, and backe
   assert.match(service, /nextLunarYear: number/);
   assert.match(modal, /dateCheck\?\.status === 'mismatch'/);
   assert.match(modal, /footer=\{/);
+  assert.match(modal, /maxWidth="2xl"/);
+  assert.match(modal, /<FamilyRelationSelect[\s\S]*?showGeneration=\{false\}/);
+  assert.doesNotMatch(modal, /NO_RELATED_MEMBER|<Select\s[\s\S]{0,180}related_member/);
+  assert.match(modal, /placeholder=\{t\('admin\.anniversary_ui\.select_member'\)\}/);
+  assert.match(modal, /options=\{relatedMemberOptions\}/);
+  assert.match(modal, /members\.filter\(member => !isDeathAnniversary \|\| member\.lifeStatus === 'DECEASED'\)/);
+  assert.match(modal, /const handleRelatedMemberChange = \(nextMemberId: number \| undefined\)/);
+  assert.match(modal, /if \(dateFromMember\) setOriginalSolarDate\(''\)/);
+  assert.match(modal, /nextMember\?\.lifeStatus === 'DECEASED' && nextMember\.deathDate/);
+  assert.match(modal, /relatedMemberId: relatedMemberId \?\? null/);
+  assert.match(modal, /setRelatedMemberId\(undefined\)/);
+  assert.match(modal, /setDateFromMember\(false\)/);
+  assert.match(modal, /setTitle\(`\$\{t\('admin\.anniversary_ui\.death_prefix'\)\} \$\{selectedMember\.fullName\}`\)/);
   assert.doesNotMatch(modal, /vietnameseToday|year \+ offset|offset <= 4/);
   assert.match(service, /next-occurrence\?/);
   assert.match(tab, /leftIcon=\{<Plus size=\{16\} \/>\}/);
@@ -264,6 +277,7 @@ test('anniversary card and live form labels follow event type in Vietnamese and 
     const resources = JSON.parse(readFileSync(join(__dirname, `../src/shared/locales/${lng}/admin.json`), 'utf8'));
     const { death_place, death_host, place, host } = resources.anniversary_ui;
     assert.deepEqual([death_place, death_host, place, host], expected);
+    assert.equal(resources.anniversary_ui.select_member, lng === 'vi' ? 'Chọn thành viên' : 'Select member');
   }
 });
 

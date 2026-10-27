@@ -4,7 +4,7 @@ const { readFileSync } = require('node:fs');
 const { join } = require('node:path');
 
 const read = path => readFileSync(join(__dirname, '..', path), 'utf8');
-const form = read('src/features/admin/components/family-tree/MemberFormModal.tsx');
+const form = read('src/features/admin/components/family-tree/MemberFormModal.tsx').replace(/\r\n/g, '\n');
 const modal = read('src/shared/components/ui/Modal.tsx');
 const details = read('src/features/admin/components/family-tree/MemberDetailModal.tsx');
 
@@ -46,11 +46,14 @@ test('form sibling chips contain only member name, generation badge and explicit
 });
 
 test('basic information keeps birth date left, required status right and full-width conditional death date', () => {
-  const start = form.indexOf('{/* Ngày sinh */}');
+  const start = form.indexOf('/* Họ và tên * */');
   const end = form.indexOf('</div>\n              </motion.div>', start);
   const basicGrid = form.slice(start, end);
   assert.ok(start >= 0 && end > start);
   assert.match(basicGrid, /<DateInput[\s\S]*?label=\{t\("admin\.field_dob"/);
+  assert.match(basicGrid, /<Input\s+required\s+floatingLabel[\s\S]*?label=\{t\("admin\.field_fullname"/);
+  assert.match(basicGrid, /<Input\s+required\s+floatingLabel[\s\S]*?label=\{t\("admin\.field_role"/);
+  assert.match(basicGrid, /<DateInput\s+disableFuture\s+floatingLabel[\s\S]*?label=\{t\("admin\.field_dob"/);
   assert.match(basicGrid, /<Select[\s\S]*?label=\{t\("admin\.member_life_status\.label"\)\}[\s\S]*?floatingLabel[\s\S]*?required/);
   assert.match(basicGrid, /className="md:col-span-2"[\s\S]*?<DateInput/);
   assert.match(basicGrid, /editingMember\.lifeStatus === "DECEASED" &&/);

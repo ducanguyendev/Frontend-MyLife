@@ -557,6 +557,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                   {/* Họ và tên * */}
                   <Input
                     required
+                    floatingLabel
                     maxLength={50}
                     label={t("admin.field_fullname", { defaultValue: "Họ và tên *" })}
                     value={editingMember.fullName || ""}
@@ -589,6 +590,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                   {/* Vai trò trong tộc * */}
                   <Input
                     required
+                    floatingLabel
                     label={t("admin.field_role", { defaultValue: "Vai trò *" })}
                     value={editingMember.role || ""}
                     error={errors.role ? t(errors.role) : undefined}
@@ -615,6 +617,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                   <div>
                     <DateInput
                       disableFuture
+                      floatingLabel
                       label={t("admin.field_dob", { defaultValue: "Ngày sinh" })}
                       value={
                         editingMember.dateOfBirth

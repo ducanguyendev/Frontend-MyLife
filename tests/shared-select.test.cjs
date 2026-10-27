@@ -36,7 +36,8 @@ test('MyLife Selects use the simple appearance without changing custom relation 
   const relation = read('src/features/admin/components/family-tree/FamilyRelationSelect.tsx');
   assert.match(library, /appearance="simple"[\s\S]*?variant="compact"/);
   assert.match(upload, /LibrarySelectField[\s\S]*?appearance="simple"/);
-  assert.equal((anniversary.match(/appearance="simple"/g) || []).length, 2);
+  assert.equal((anniversary.match(/appearance="simple"/g) || []).length, 1);
+  assert.match(anniversary, /<FamilyRelationSelect[\s\S]*?showGeneration=\{false\}/);
   assert.doesNotMatch(memberForm, /appearance="simple"[\s\S]{0,120}clearable/);
   assert.match(memberForm, /appearance="simple"[\s\S]*?floatingLabel/);
   assert.match(relation, /toggleFamilyRelationSelection/);

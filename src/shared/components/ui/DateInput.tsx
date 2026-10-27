@@ -359,7 +359,8 @@ export const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(
       <div ref={rootRef} className="relative w-full">
         <Input ref={setInputRef} type="text" inputMode="numeric" value={value} onChange={handleInputChange}
           onKeyDown={handleKeyDown} onPaste={handlePaste} placeholder={placeholder} maxLength={maxLength}
-          leftIcon={leftIcon} rightIcon={calendarButton} disabled={disabled} name={name} {...props} />
+          leftIcon={leftIcon} rightIcon={calendarButton} disabled={disabled} name={name} {...props}
+          floatingLabelAlways={Boolean(props.floatingLabelAlways || (props.floatingLabel && isOpen))} />
         {isOpen && typeof document !== 'undefined' && createPortal(
           <div ref={popupRef} style={popupPosition} role="dialog" aria-label={t('common.date_picker.calendar', {
             defaultValue: language === 'vi' ? 'Lịch chọn ngày' : 'Date picker calendar',

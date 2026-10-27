@@ -12,6 +12,10 @@ export interface FormFieldShellProps {
   children: React.ReactNode;
 }
 
+export function normalizeRequiredLabel(label: string | undefined, required: boolean) {
+  return required && typeof label === 'string' ? label.replace(/\s*\*+\s*$/, '') : label;
+}
+
 export function FormFieldShell({
   label,
   fieldId,
@@ -24,10 +28,11 @@ export function FormFieldShell({
 }: FormFieldShellProps) {
   const generatedId = useId();
   const feedbackId = fieldId ? `${fieldId}-${error ? 'error' : 'helper'}` : `${generatedId}-${error ? 'error' : 'helper'}`;
+  const normalizedLabel = normalizeRequiredLabel(label, required);
 
   return <div className={`flex w-full flex-col ${containerClassName}`}>
-    {label && <label htmlFor={fieldId} className={`mb-1.5 px-1 text-xs font-semibold text-[var(--field-label)] ${labelClassName}`}>
-      {label}{required && <span aria-hidden="true" className="ml-1 text-[var(--field-error)]">*</span>}
+    {normalizedLabel && <label htmlFor={fieldId} className={`mb-1.5 px-1 text-xs font-semibold text-[var(--field-label)] ${labelClassName}`}>
+      {normalizedLabel}{required && <span aria-hidden="true" className="ml-1 text-[var(--field-error)]">*</span>}
     </label>}
     {children}
     {error ? <p id={feedbackId} className="mt-1.5 flex items-start gap-1.5 px-1 text-xs font-medium text-[var(--field-error)]" role="alert">

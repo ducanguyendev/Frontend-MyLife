@@ -59,12 +59,13 @@ test('date typing formatter preserves DD/MM/YYYY entry and conversion helpers', 
 
 test('DateInput keeps numeric typing and paste formatting with no native picker dependency', () => {
   const { DateInput, source, rerender } = loadDateInput(); let changed;
-  const props = { value: '', onValueChange: value => { changed = value; }, label: 'Display date' };
+  const props = { value: '', onValueChange: value => { changed = value; }, label: 'Display date', floatingLabel: true };
   let tree = rerender(props);
   const textInput = nodes(tree).find(node => node.type === 'Input').props;
   assert.equal(textInput.type, 'text');
   assert.equal(textInput.inputMode, 'numeric');
   assert.equal(textInput.maxLength, 10);
+  assert.equal(textInput.floatingLabel, true);
   let prevented = false;
   textInput.onKeyDown({ key: 'a', preventDefault: () => { prevented = true; } });
   assert.equal(prevented, true);
