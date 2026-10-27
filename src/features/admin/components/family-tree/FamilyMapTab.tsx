@@ -6,7 +6,7 @@ import { Globe, Layers3, Loader2, MapPin, RefreshCw, Users } from 'lucide-react'
 import { Button, Modal } from '@/shared/components/ui';
 import './FamilyMapTab.css';
 import { useLanguage } from '@/shared/hooks/useLanguage';
-import { getFamilyMapDistribution, updateFamilyMemberLocation, type FamilyMapData, type FamilyMapLocation, type FamilyMapMember } from '../../services/familyMapService';
+import { getFamilyMapDistribution, retryFamilyMapGeocoding, updateFamilyMemberLocation, type FamilyMapData, type FamilyMapLocation, type FamilyMapMember } from '../../services/familyMapService';
 import { VietMapBaseLayer } from './VietMapBaseLayer';
 
 const VIETNAM_CENTER: [number, number] = [16.2, 106.2];
@@ -44,6 +44,8 @@ export const FamilyMapTab: React.FC = () => {
   const [locationMember, setLocationMember] = useState<FamilyMapMember | null>(null);
   const [locationPoint, setLocationPoint] = useState<[number, number] | null>(null);
   const [savingLocation, setSavingLocation] = useState(false);
+  const [retryingGeocoding, setRetryingGeocoding] = useState(false);
+  const [retryFeedback, setRetryFeedback] = useState<'success' | 'error' | null>(null);
 
   const load = useCallback(async (signal?: AbortSignal) => {
     try {
@@ -82,18 +84,41 @@ export const FamilyMapTab: React.FC = () => {
   const hasGeocodingStatus = Boolean(data && (
     data.pendingGeocodingMembers > 0 || (data.noAddressMembers ?? 0) > 0 || (data.failedGeocodingMembers ?? 0) > 0
   ));
-  const geocodingStatus = hasGeocodingStatus && data ? (
-    <div className="flex flex-wrap justify-center gap-x-3 gap-y-1 text-xs text-secondary-text" aria-label={t('admin.family_map.geocoding_status')}>
-      {(data.noAddressMembers ?? 0) > 0 && <span>{t('admin.family_map.no_address_status', { count: data.noAddressMembers })}</span>}
-      {data.pendingGeocodingMembers > 0 && <span role="status">{t('admin.family_map.pending_status', { count: data.pendingGeocodingMembers })}</span>}
-      {(data.failedGeocodingMembers ?? 0) > 0 && <span>{t('admin.family_map.failed_status', { count: data.failedGeocodingMembers })}</span>}
-    </div>
-  ) : null;
-
   const retry = () => {
     setLoading(true);
     void load();
   };
+
+  const retryGeocoding = async () => {
+    if (retryingGeocoding) return;
+    setRetryingGeocoding(true);
+    setRetryFeedback(null);
+    try {
+      await retryFamilyMapGeocoding();
+      setRetryFeedback('success');
+      setLoading(true);
+      await load();
+    } catch {
+      setRetryFeedback('error');
+    } finally {
+      setRetryingGeocoding(false);
+    }
+  };
+
+  const geocodingStatus = hasGeocodingStatus && data ? (
+    <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-secondary-text" aria-label={t('admin.family_map.geocoding_status')}>
+      {(data.noAddressMembers ?? 0) > 0 && <span>{t('admin.family_map.no_address_status', { count: data.noAddressMembers })}</span>}
+      {data.pendingGeocodingMembers > 0 && <span role="status">{t('admin.family_map.pending_status', { count: data.pendingGeocodingMembers })}</span>}
+      {(data.failedGeocodingMembers ?? 0) > 0 && <span>{t('admin.family_map.failed_status', { count: data.failedGeocodingMembers })}</span>}
+      {(data.failedGeocodingMembers ?? 0) > 0 && (
+        <Button type="button" variant="secondary" size="sm" isLoading={retryingGeocoding} disabled={retryingGeocoding} onClick={() => void retryGeocoding()}>
+          {t('admin.family_map.retry_geocoding')}
+        </Button>
+      )}
+      {retryFeedback === 'success' && <p role="status">{t('admin.family_map.retry_geocoding_success')}</p>}
+      {retryFeedback === 'error' && <p role="alert">{t('admin.family_map.retry_geocoding_error')}</p>}
+    </div>
+  ) : null;
 
   const openLocationPicker = (member: FamilyMapMember) => {
     setLocationMember(member);

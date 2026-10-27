@@ -37,6 +37,20 @@ test('Family map has API loading, error, empty, and no-location states without f
   assert.match(component, /void load\(\)/);
 });
 
+test('Family map exposes an explicit failed-location retry with loading, API call, and reload', () => {
+  const component = read('src/features/admin/components/family-tree/FamilyMapTab.tsx');
+  const service = read('src/features/admin/services/familyMapService.ts');
+  assert.match(service, /apiClient\.post<unknown>\('\/api\/family-tree\/map\/retry-geocoding'/);
+  assert.match(component, /retryFamilyMapGeocoding\(\)/);
+  assert.match(component, /data\.failedGeocodingMembers\s*\?\?\s*0\)\s*>\s*0[\s\S]*?<Button[\s\S]*?isLoading=\{retryingGeocoding\}/);
+  assert.match(component, /await retryFamilyMapGeocoding\(\);[\s\S]*?await load\(\)/);
+  assert.match(component, /if \(retryingGeocoding\) return/);
+  const vi = JSON.parse(read('src/shared/locales/vi/admin.json')).family_map;
+  const en = JSON.parse(read('src/shared/locales/en/admin.json')).family_map;
+  assert.equal(vi.retry_geocoding, 'Thử định vị lại');
+  assert.equal(en.retry_geocoding, 'Retry locating');
+});
+
 test('Family map retains its single API owner, five-second polling, viewport fitting, and both VietMap bases', () => {
   const component = read('src/features/admin/components/family-tree/FamilyMapTab.tsx');
   const baseLayer = read('src/features/admin/components/family-tree/VietMapBaseLayer.tsx');

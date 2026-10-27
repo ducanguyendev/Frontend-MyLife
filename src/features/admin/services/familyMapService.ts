@@ -165,3 +165,17 @@ export async function getFamilyMapDistribution(signal?: AbortSignal): Promise<Fa
   }
   return normalizeFamilyMapData(response.data);
 }
+
+export async function retryFamilyMapGeocoding(): Promise<{ queued: number; skippedManual: number; skippedLocated: number; noAddress: number }> {
+  const response = await apiClient.post<unknown>('/api/family-tree/map/retry-geocoding');
+  if (!isRecord(response) || !isRecord(response.data)) {
+    throw new TypeError('Invalid family map retry API response');
+  }
+  const count = (value: unknown) => Math.max(0, Math.floor(finiteNumber(value) ?? 0));
+  return {
+    queued: count(response.data.queued),
+    skippedManual: count(response.data.skippedManual),
+    skippedLocated: count(response.data.skippedLocated),
+    noAddress: count(response.data.noAddress),
+  };
+}
