@@ -16,6 +16,10 @@ export const anniversaryDateParts = (date: string) => {
 
 export const anniversaryDateKey = (year: number, month: number, day: number) => `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
+export const getAnniversaryOrganizationLabelKeys = (eventType: 'DEATH_ANNIVERSARY' | 'FAMILY_EVENT') => eventType === 'DEATH_ANNIVERSARY'
+  ? { place: 'admin.anniversary_ui.death_place', host: 'admin.anniversary_ui.death_host' }
+  : { place: 'admin.anniversary_ui.place', host: 'admin.anniversary_ui.host' };
+
 export const getAnniversaryNavigationTarget = (date: string) => {
   const parts = anniversaryDateParts(date);
   if (!parts) return null;

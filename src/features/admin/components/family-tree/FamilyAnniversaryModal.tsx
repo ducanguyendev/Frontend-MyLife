@@ -5,6 +5,7 @@ import { useLanguage } from '@/shared/hooks/useLanguage';
 import { anniversaryService, type AnniversaryEventType, type FamilyAnniversary, type FamilyAnniversaryPayload } from '../../services/anniversaryService';
 import type { FamilyMember } from './types';
 import { formatLunarYearLabel, getLunarYearCanChi, isSupportedLunarYear } from './lunarYearUtils';
+import { getAnniversaryOrganizationLabelKeys } from './anniversaryCalendarUtils';
 
 interface Props {
   anniversary?: FamilyAnniversary;
@@ -297,8 +298,8 @@ export function FamilyAnniversaryModal({ anniversary, members, onClose, onSubmit
           <Plus size={16} className="text-accent" aria-hidden="true" />{t('admin.anniversary_ui.organization_notes')}
         </h2>
         <div className="space-y-3 p-3.5">
-          <Input label={t('admin.anniversary_ui.place')} value={place} maxLength={500} disabled={isSaving} onChange={event => setPlace(event.target.value)} />
-          <Input label={t('admin.anniversary_ui.host')} value={host} maxLength={300} disabled={isSaving} onChange={event => setHost(event.target.value)} />
+          <Input label={t(getAnniversaryOrganizationLabelKeys(eventType).place)} value={place} maxLength={500} disabled={isSaving} onChange={event => setPlace(event.target.value)} />
+          <Input label={t(getAnniversaryOrganizationLabelKeys(eventType).host)} value={host} maxLength={300} disabled={isSaving} onChange={event => setHost(event.target.value)} />
           <Textarea label={t('admin.anniversary_ui.notes')} rows={3} maxLength={2000} value={notes} disabled={isSaving} onChange={event => setNotes(event.target.value)} />
         </div>
       </section>

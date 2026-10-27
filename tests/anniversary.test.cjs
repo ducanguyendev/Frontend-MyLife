@@ -74,7 +74,7 @@ test('solar calendar utilities handle month edges, leap February, and UTC-safe I
   const output = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
   const exports = {};
   new vm.Script(output).runInNewContext({ exports, Date, Intl });
-  const { getAnniversaryMonthGrid, anniversaryDateParts, anniversaryDateKey, getAnniversaryNavigationTarget, countAnniversaryEventsInMonth, getDayEventVisual } = exports;
+  const { getAnniversaryMonthGrid, anniversaryDateParts, anniversaryDateKey, getAnniversaryNavigationTarget, countAnniversaryEventsInMonth, getAnniversaryOrganizationLabelKeys, getDayEventVisual } = exports;
 
   const december = getAnniversaryMonthGrid(2026, 11);
   assert.ok(december.some(day => day.year === 2027 && day.month === 0 && day.day === 1 && !day.inMonth));
@@ -94,6 +94,8 @@ test('solar calendar utilities handle month edges, leap February, and UTC-safe I
   assert.equal(countAnniversaryEventsInMonth(countDates.map(nextSolarDate => ({ nextSolarDate })), 2026, 8), 1);
   assert.equal(countAnniversaryEventsInMonth(countDates.map(nextSolarDate => ({ nextSolarDate })), 2026, 11), 1);
   assert.equal(countAnniversaryEventsInMonth(countDates.map(nextSolarDate => ({ nextSolarDate })), 2026, 1), 0);
+  assert.deepEqual(JSON.parse(JSON.stringify(getAnniversaryOrganizationLabelKeys('DEATH_ANNIVERSARY'))), { place: 'admin.anniversary_ui.death_place', host: 'admin.anniversary_ui.death_host' });
+  assert.deepEqual(JSON.parse(JSON.stringify(getAnniversaryOrganizationLabelKeys('FAMILY_EVENT'))), { place: 'admin.anniversary_ui.place', host: 'admin.anniversary_ui.host' });
   assert.deepEqual(JSON.parse(JSON.stringify(getDayEventVisual([]))), { count: 0, type: 'none', hasDeathAnniversary: false, hasFamilyEvent: false });
   assert.deepEqual(JSON.parse(JSON.stringify(getDayEventVisual([{ eventType: 'DEATH_ANNIVERSARY' }]))), { count: 1, type: 'death-anniversary', hasDeathAnniversary: true, hasFamilyEvent: false });
   assert.deepEqual(JSON.parse(JSON.stringify(getDayEventVisual([{ eventType: 'FAMILY_EVENT' }, { eventType: 'FAMILY_EVENT' }]))), { count: 2, type: 'family-event', hasDeathAnniversary: false, hasFamilyEvent: true });
@@ -147,7 +149,7 @@ test('anniversary controls and status text are translated in Vietnamese and Engl
     const resources = JSON.parse(readFileSync(join(__dirname, `../src/shared/locales/${lng}/admin.json`), 'utf8'));
     const i18n = i18next.createInstance();
     await i18n.init({ lng, fallbackLng: false, resources: { [lng]: { translation: { admin: resources } }, }, interpolation: { escapeValue: false } });
-  for (const key of ['calendar', 'month_picker', 'month', 'year', 'go_to_month', 'calendar_solar', 'previous_month', 'next_month', 'upcoming_events', 'event_type_filter', 'clear_date', 'no_events_date', 'add', 'add_aria_label', 'edit_title', 'delete_confirm', 'event_type', 'event_information', 'date_of_death', 'solar_death_date', 'lunar_death_date', 'lunar_day', 'lunar_month', 'lunar_year', 'historical_lunar_year', 'lunar_recurrence_help', 'original_date_summary', 'upcoming_lunar_date', 'original_lunar_year', 'recurrence_explanation', 'leap_month', 'checking_dates', 'dates_match', 'date_mismatch', 'current_year_passed', 'current_year_upcoming', 'loading', 'load_failed', 'empty', 'invalid_lunar_date', 'save_failed', 'created', 'updated', 'deleted']) {
+  for (const key of ['calendar', 'month_picker', 'month', 'year', 'go_to_month', 'calendar_solar', 'previous_month', 'next_month', 'upcoming_events', 'event_type_filter', 'death_place', 'death_host', 'place', 'host', 'clear_date', 'no_events_date', 'add', 'add_aria_label', 'edit_title', 'delete_confirm', 'event_type', 'event_information', 'date_of_death', 'solar_death_date', 'lunar_death_date', 'lunar_day', 'lunar_month', 'lunar_year', 'historical_lunar_year', 'lunar_recurrence_help', 'original_date_summary', 'upcoming_lunar_date', 'original_lunar_year', 'recurrence_explanation', 'leap_month', 'checking_dates', 'dates_match', 'date_mismatch', 'current_year_passed', 'current_year_upcoming', 'loading', 'load_failed', 'empty', 'invalid_lunar_date', 'save_failed', 'created', 'updated', 'deleted']) {
       const translation = i18n.t(`admin.anniversary_ui.${key}`, { title: 'event' });
       assert.notEqual(translation, `admin.anniversary_ui.${key}`);
       assert.ok(translation.length > 0);
@@ -217,4 +219,27 @@ test('only death anniversaries render and validate lunar dates; ordinary events 
   assert.match(modal, /label=\{t\(isDeathAnniversary \? 'admin\.anniversary_ui\.solar_death_date' : 'admin\.anniversary_ui\.event_date'\)\}/);
   assert.match(service, /lunarDay: number \| null/);
   assert.match(service, /lunarMonth: number \| null/);
+});
+
+test('anniversary card and live form labels follow event type in Vietnamese and English', async () => {
+  const tab = readFileSync(join(__dirname, '../src/features/admin/components/family-tree/AnniversaryTab.tsx'), 'utf8');
+  const modal = readFileSync(join(__dirname, '../src/features/admin/components/family-tree/FamilyAnniversaryModal.tsx'), 'utf8');
+  const utilsSource = readFileSync(join(__dirname, '../src/features/admin/components/family-tree/anniversaryCalendarUtils.ts'), 'utf8');
+  assert.match(tab, /getAnniversaryOrganizationLabelKeys\(item\.eventType\)\.place/);
+  assert.match(tab, /getAnniversaryOrganizationLabelKeys\(item\.eventType\)\.host/);
+  assert.match(modal, /getAnniversaryOrganizationLabelKeys\(eventType\)\.place/);
+  assert.match(modal, /getAnniversaryOrganizationLabelKeys\(eventType\)\.host/);
+  assert.match(modal, /const nextEventType = value as AnniversaryEventType;[\s\S]*setEventType\(nextEventType\)/);
+  assert.match(utilsSource, /eventType === 'DEATH_ANNIVERSARY'[\s\S]*death_place[\s\S]*death_host[\s\S]*anniversary_ui\.place[\s\S]*anniversary_ui\.host/);
+  assert.doesNotMatch(tab, /admin\.anniversary_place|admin\.anniversary_host/);
+  assert.doesNotMatch(modal, /admin\.anniversary_place|admin\.anniversary_host/);
+
+  for (const [lng, expected] of Object.entries({
+    vi: ['Nơi tổ chức giỗ', 'Chủ lễ / Trưởng chi', 'Địa điểm tổ chức', 'Người chủ trì'],
+    en: ['Memorial location', 'Officiant / Family representative', 'Event location', 'Host'],
+  })) {
+    const resources = JSON.parse(readFileSync(join(__dirname, `../src/shared/locales/${lng}/admin.json`), 'utf8'));
+    const { death_place, death_host, place, host } = resources.anniversary_ui;
+    assert.deepEqual([death_place, death_host, place, host], expected);
+  }
 });

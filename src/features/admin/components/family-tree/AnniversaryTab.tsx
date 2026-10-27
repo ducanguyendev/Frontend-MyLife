@@ -7,7 +7,7 @@ import { anniversaryService, type FamilyAnniversary, type FamilyAnniversaryPaylo
 import { FamilyAnniversaryModal } from './FamilyAnniversaryModal';
 import { formatLunarYearLabel } from './lunarYearUtils';
 import { removeVietnameseTones, type FamilyMember } from './types';
-import { anniversaryDateKey, anniversaryDateParts, countAnniversaryEventsInMonth, getAnniversaryMonthGrid, getAnniversaryNavigationTarget, getDayEventVisual, getVietnamTodayKey } from './anniversaryCalendarUtils';
+import { anniversaryDateKey, anniversaryDateParts, countAnniversaryEventsInMonth, getAnniversaryMonthGrid, getAnniversaryNavigationTarget, getAnniversaryOrganizationLabelKeys, getDayEventVisual, getVietnamTodayKey } from './anniversaryCalendarUtils';
 import { fetchFamilyMembers } from './useFamilyMembers';
 
 interface Props {
@@ -311,8 +311,8 @@ export const AnniversaryTab: React.FC<Props> = ({ showToast, members: initialMem
                     </div>
                   </div>
                   {(item.place || item.host || item.notes) && <div className="mt-2 space-y-1.5 border-t border-custom-border/60 pt-2 text-xs text-secondary-text">
-                    {item.place && <p className="flex items-start gap-1.5"><MapPin size={13} className="mt-0.5 shrink-0 text-accent" /><span><strong className="text-primary-text">{t('admin.anniversary_place')}</strong> {item.place}</span></p>}
-                    {item.host && <p className="flex items-start gap-1.5"><Users size={13} className="mt-0.5 shrink-0 text-blue-400" /><span><strong className="text-primary-text">{t('admin.anniversary_host')}</strong> {item.host}</span></p>}
+                    {item.place && <p className="flex items-start gap-1.5"><MapPin size={13} className="mt-0.5 shrink-0 text-accent" /><span><strong className="text-primary-text">{t(getAnniversaryOrganizationLabelKeys(item.eventType).place)}</strong> {item.place}</span></p>}
+                    {item.host && <p className="flex items-start gap-1.5"><Users size={13} className="mt-0.5 shrink-0 text-blue-400" /><span><strong className="text-primary-text">{t(getAnniversaryOrganizationLabelKeys(item.eventType).host)}</strong> {item.host}</span></p>}
                     {item.notes && <p className="whitespace-pre-wrap break-words text-secondary-text">{item.notes}</p>}
                   </div>}
                   <div className="mt-2 flex justify-end gap-1 border-t border-custom-border/60 pt-1.5">
