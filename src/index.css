@@ -31,6 +31,16 @@
     --accent-hover-color: #333333; 
     --focus-border: #a1a1aa;
     --focus-surface: rgba(113, 113, 122, 0.08);
+    /* MyLife form field counterparts: Mobile-Mylife/lib/shared/theme/app_colors.dart */
+    --field-bg: #ffffff;
+    --field-border: #e6e6e2;
+    --field-text: #18181b;
+    --field-label: #666666;
+    --field-placeholder: rgba(102, 102, 102, 0.62);
+    --field-focus-border: #71717a;
+    --field-focus-ring: rgba(113, 113, 122, 0.14);
+    --field-error: #ef4444;
+    --field-disabled-bg: #efefec;
     --calendar-selected-bg: #18181b;
     --calendar-selected-text: #ffffff;
     --calendar-selected-border: #18181b;
@@ -61,6 +71,15 @@
     --accent-hover-color: #e5e5e5; 
     --focus-border: #71717a;
     --focus-surface: rgba(161, 161, 170, 0.12);
+    --field-bg: #111111;
+    --field-border: #3f3f46;
+    --field-text: #ffffff;
+    --field-label: #a1a1aa;
+    --field-placeholder: rgba(161, 161, 170, 0.62);
+    --field-focus-border: #a1a1aa;
+    --field-focus-ring: rgba(161, 161, 170, 0.16);
+    --field-error: #ef4444;
+    --field-disabled-bg: #18181b;
     --calendar-selected-bg: #27272a;
     --calendar-selected-text: #ffffff;
     --calendar-selected-border: #71717a;

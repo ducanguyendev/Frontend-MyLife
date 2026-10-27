@@ -1,6 +1,7 @@
 import React, { useId, useState } from 'react';
 import * as SelectPrimitive from '@radix-ui/react-select';
-import { AlertCircle, Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { FormFieldShell, getFormFieldFeedbackId } from './FormFieldShell';
 
 export interface SelectOption {
   value: string;
@@ -61,7 +62,8 @@ export const Select = React.forwardRef<React.ElementRef<typeof SelectPrimitive.T
     const currentValue = isControlled ? value ?? undefined : internalValue;
     const isOpen = controlledOpen ?? internalOpen;
     const triggerId = id ?? generatedId;
-    const describedBy = error ? `${triggerId}-error` : helperText ? `${triggerId}-helper` : undefined;
+    const feedbackId = error || helperText ? getFormFieldFeedbackId(triggerId, Boolean(error)) : undefined;
+    const describedBy = feedbackId;
     const isFloating = floatingLabel && (isOpen || isFocused || Boolean(currentValue));
     const isSimple = appearance === 'simple';
     const items = options?.map(option => (
@@ -69,8 +71,7 @@ export const Select = React.forwardRef<React.ElementRef<typeof SelectPrimitive.T
     ));
 
     return (
-      <div className={`flex w-full flex-col ${containerClassName}`}>
-        {!floatingLabel && label && <label htmlFor={triggerId} className="mb-1.5 px-1 text-xs font-semibold text-secondary-text">{label}{required ? ' *' : ''}</label>}
+      <FormFieldShell label={floatingLabel ? undefined : label} fieldId={triggerId} required={required} error={error} helperText={helperText} containerClassName={containerClassName}>
         <SelectPrimitive.Root
           {...props}
           value={currentValue ?? ''}
@@ -91,13 +92,13 @@ export const Select = React.forwardRef<React.ElementRef<typeof SelectPrimitive.T
               aria-describedby={describedBy}
               onFocus={event => { setIsFocused(true); onFocus?.(event); }}
               onBlur={event => { setIsFocused(false); onBlur?.(event); }}
-              className={`flex w-full rounded-2xl border bg-primary-bg text-left font-medium text-primary-text outline-none transition-colors duration-200 data-[placeholder]:text-secondary-text focus-visible:border-[var(--focus-border)]    disabled:cursor-not-allowed disabled:opacity-50 ${
+              className={`flex w-full border bg-[var(--field-bg)] text-left font-medium text-[var(--field-text)] outline-none transition-colors duration-150 data-[placeholder]:text-[var(--field-placeholder)] focus-visible:border-[var(--field-focus-border)] focus-visible:ring-2 focus-visible:ring-[var(--field-focus-ring)] disabled:cursor-not-allowed disabled:bg-[var(--field-disabled-bg)] disabled:opacity-70 ${
                 variant === 'compact'
                   ? 'h-10 items-center justify-between gap-2 rounded-xl px-3 py-2 text-sm'
                   : floatingLabel
-                    ? 'min-h-[56px] items-end justify-between gap-2 px-4 pt-5 pb-1.5 text-sm'
-                    : 'min-h-[56px] items-center justify-between gap-2 px-4 py-3 text-sm'
-              } ${error ? 'border-error focus-visible:border-error ' : 'border-custom-border hover:border-custom-border/80'} ${isSimple && isOpen ? 'border-[var(--focus-border)]' : ''} ${className} ${triggerClassName}`}
+                    ? 'min-h-[58px] items-end justify-between gap-2 rounded-2xl px-4 pt-5 pb-1.5 text-[15px]'
+                    : 'min-h-[58px] items-center justify-between gap-2 rounded-2xl px-4 py-3 text-[15px]'
+              } ${error ? 'border-[var(--field-error)] focus-visible:border-[var(--field-error)] focus-visible:ring-[var(--field-error)]/15' : 'border-[var(--field-border)] hover:border-[var(--field-focus-border)]'} ${isSimple && isOpen ? 'border-[var(--field-focus-border)]' : ''} ${className} ${triggerClassName}`}
             >
               <SelectPrimitive.Value
                 placeholder={floatingLabel ? '' : placeholder ?? (label ? `Chọn ${label.toLocaleLowerCase()}` : 'Chọn một giá trị')}
@@ -114,8 +115,8 @@ export const Select = React.forwardRef<React.ElementRef<typeof SelectPrimitive.T
                 htmlFor={triggerId}
                 className={`pointer-events-none absolute left-4 select-none transition-all duration-200 ${
                   isFloating
-                    ? `top-2 text-[11px] font-semibold ${error ? 'text-error' : isFocused || isOpen ? 'text-accent' : 'text-secondary-text'}`
-                    : 'top-1/2 -translate-y-1/2 text-sm font-normal text-secondary-text'
+                    ? `top-2 text-[11px] font-semibold ${error ? 'text-[var(--field-error)]' : 'text-[var(--field-label)]'}`
+                    : 'top-1/2 -translate-y-1/2 text-sm font-medium text-[var(--field-placeholder)]'
                 }`}
               >{label}{required ? ' *' : ''}</label>
               <SelectPrimitive.Icon className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-secondary-text transition-transform duration-200 motion-reduce:transition-none data-[state=open]:rotate-180">
@@ -138,9 +139,7 @@ export const Select = React.forwardRef<React.ElementRef<typeof SelectPrimitive.T
             </SelectPrimitive.Content>
           </SelectPrimitive.Portal>
         </SelectPrimitive.Root>
-        {error ? <p id={`${triggerId}-error`} className="mt-1.5 flex items-center gap-1.5 px-1 text-xs font-medium text-error"><AlertCircle size={13} />{error}</p>
-          : helperText ? <p id={`${triggerId}-helper`} className="mt-1 px-1 text-xs text-secondary-text">{helperText}</p> : null}
-      </div>
+      </FormFieldShell>
     );
   }
 );

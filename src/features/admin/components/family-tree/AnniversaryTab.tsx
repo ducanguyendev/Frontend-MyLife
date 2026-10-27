@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CalendarDays, ChevronLeft, ChevronRight, Loader2, MapPin, Pencil, Plus, RotateCcw, Trash2, Users, X } from 'lucide-react';
-import { Button, Modal } from '@/shared/components/ui';
+import { Button, Modal, Select, SelectItem } from '@/shared/components/ui';
 import { SearchBar } from '@/shared/components/SearchBar';
 import { useLanguage } from '@/shared/hooks/useLanguage';
 import { anniversaryService, type FamilyAnniversary, type FamilyAnniversaryPayload } from '../../services/anniversaryService';
@@ -210,9 +210,9 @@ export const AnniversaryTab: React.FC<Props> = ({ showToast, members: initialMem
               {monthPickerOpen && <div id="anniversary-month-picker" role="dialog" aria-label={t('admin.anniversary_ui.month_picker')} onKeyDown={event => { if (event.key === 'Escape') setMonthPickerOpen(false); }} className="absolute left-0 top-full z-30 mt-2 w-64 rounded-xl border border-custom-border bg-secondary-bg p-3 shadow-lg">
                 <div className="grid grid-cols-2 gap-2">
                   <label className="space-y-1 text-xs font-semibold text-secondary-text"><span>{t('admin.anniversary_ui.month')}</span>
-                    <select className="h-10 w-full rounded-lg border border-custom-border bg-primary-bg px-2 text-sm text-primary-text" aria-label={t('admin.anniversary_ui.month')} value={draftMonth?.month ?? currentMonth.month} onChange={event => setDraftMonth(current => ({ year: current?.year ?? currentMonth.year, month: Number(event.target.value) }))}>
-                      {Array.from({ length: 12 }, (_, month) => <option key={month} value={month}>{new Intl.DateTimeFormat(language === 'vi' ? 'vi-VN' : 'en-US', { month: 'long', timeZone: 'UTC' }).format(new Date(Date.UTC(2024, month, 1, 12)))}</option>)}
-                    </select>
+                    <Select aria-label={t('admin.anniversary_ui.month')} appearance="simple" variant="compact" value={String(draftMonth?.month ?? currentMonth.month)} onValueChange={value => setDraftMonth(current => ({ year: current?.year ?? currentMonth.year, month: Number(value) }))}>
+                      {Array.from({ length: 12 }, (_, month) => <SelectItem key={month} value={String(month)}>{new Intl.DateTimeFormat(language === 'vi' ? 'vi-VN' : 'en-US', { month: 'long', timeZone: 'UTC' }).format(new Date(Date.UTC(2024, month, 1, 12)))}</SelectItem>)}
+                    </Select>
                   </label>
                   <label className="space-y-1 text-xs font-semibold text-secondary-text"><span>{t('admin.anniversary_ui.year')}</span>
                     <input className="h-10 w-full rounded-lg border border-custom-border bg-primary-bg px-2 text-sm text-primary-text" aria-label={t('admin.anniversary_ui.year')} type="number" min={1800} max={2200} value={draftMonth?.year ?? currentMonth.year} onChange={event => setDraftMonth(current => ({ year: Number(event.target.value), month: current?.month ?? currentMonth.month }))} />

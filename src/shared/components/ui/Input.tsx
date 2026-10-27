@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { AlertCircle } from 'lucide-react';
+import React, { useId } from 'react';
+import { FormFieldShell, getFormFieldFeedbackId } from './FormFieldShell';
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -13,135 +13,48 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
 }
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  (
-    {
-      label,
-      error,
-      helperText,
-      leftIcon,
-      rightIcon,
-      className = '',
-      containerClassName = '',
-      density = 'default',
-      floatingLabelAlways = false,
-      disabled,
-      id,
-      value,
-      defaultValue,
-      onChange,
-      onFocus,
-      onBlur,
-      placeholder,
-      ...props
-    },
-    ref
-  ) => {
-    const [isFocused, setIsFocused] = useState(false);
-    const [internalValue, setInternalValue] = useState(defaultValue ?? '');
+  ({
+    label,
+    error,
+    helperText,
+    leftIcon,
+    rightIcon,
+    className = '',
+    containerClassName = '',
+    density = 'default',
+    floatingLabelAlways = false,
+    disabled,
+    required,
+    id,
+    placeholder,
+    'aria-describedby': ariaDescribedBy,
+    ...props
+  }, ref) => {
+    const generatedId = useId();
+    const inputId = id ?? (label ? generatedId : undefined);
+    const feedbackId = inputId && (error || helperText) ? getFormFieldFeedbackId(inputId, Boolean(error)) : undefined;
+    const describedBy = [ariaDescribedBy, feedbackId].filter(Boolean).join(' ') || undefined;
+    const floating = floatingLabelAlways && Boolean(label);
 
-    const inputId = id || (label ? label.toLowerCase().replace(/[^a-z0-9]/g, '-') : undefined);
-
-    const currentValue = value !== undefined ? value : internalValue;
-    const isFloating = floatingLabelAlways || isFocused || (currentValue !== undefined && currentValue !== null && String(currentValue).length > 0);
-
-    const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-      setIsFocused(true);
-      onFocus?.(e);
-    };
-
-    const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-      setIsFocused(false);
-      onBlur?.(e);
-    };
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (value === undefined) {
-        setInternalValue(e.target.value);
-      }
-      onChange?.(e);
-    };
-
-    const leftPadClass = leftIcon ? 'pl-11' : 'pl-4';
-    const labelLeftClass = leftIcon ? 'left-11' : 'left-4';
-
-    return (
-      <div className={`w-full flex flex-col ${containerClassName}`}>
-        <div
-          className={`
-            relative w-full rounded-2xl border transition-all duration-200 bg-primary-bg
-            ${density === 'compact' ? 'min-h-[44px]' : 'min-h-[56px]'} flex items-center
-            ${disabled ? 'opacity-50 cursor-not-allowed bg-secondary-bg/30' : ''}
-            ${
-              error
-                ? 'border-error'
-                : isFocused
-                ? 'border-[var(--focus-border)] bg-[var(--focus-surface)]'
-                : 'border-custom-border hover:border-custom-border/80'
-            }
-          `}
-        >
-          {leftIcon && (
-            <div className="absolute left-3.5 text-secondary-text pointer-events-none flex items-center justify-center">
-              {leftIcon}
-            </div>
-          )}
-
-          <input
-            ref={ref}
-            data-ui-control
-            id={inputId}
-            disabled={disabled}
-            value={value}
-            defaultValue={defaultValue}
-            onChange={handleChange}
-            onFocus={handleFocus}
-            onBlur={handleBlur}
-            placeholder={label ? (isFloating ? placeholder : '') : placeholder}
-            className={`
-              w-full h-full bg-transparent text-primary-text text-sm font-medium
-              ${density === 'compact' ? 'py-2' : 'pt-5 pb-1.5'} ${leftPadClass} ${rightIcon ? 'pr-11' : 'pr-4'}
-              outline-none transition-colors
-              placeholder:text-secondary-text/40
-              disabled:cursor-not-allowed
-              ${className}
-            `}
-            {...props}
-          />
-
-          {label && (
-            <label
-              htmlFor={inputId}
-              className={`
-                absolute ${labelLeftClass} pointer-events-none transition-all duration-200 select-none
-                ${
-                  isFloating
-                    ? 'top-2 text-[11px] font-semibold ' + (error ? 'text-error' : isFocused ? 'text-accent' : 'text-secondary-text')
-                    : 'top-1/2 -translate-y-1/2 text-sm text-secondary-text font-normal'
-                }
-              `}
-            >
-              {label}
-            </label>
-          )}
-
-          {rightIcon && (
-            <div className="absolute right-3.5 text-secondary-text flex items-center justify-center">
-              {rightIcon}
-            </div>
-          )}
-        </div>
-
-        {/* Error message / Log notification */}
-        {error ? (
-          <div className="flex items-center gap-1.5 mt-1.5 px-1 text-xs text-error font-medium animate-in fade-in duration-200">
-            <AlertCircle size={13} className="shrink-0" />
-            <span>{error}</span>
-          </div>
-        ) : helperText ? (
-          <p className="text-xs text-secondary-text mt-1 px-1">{helperText}</p>
-        ) : null}
+    return <FormFieldShell label={floating ? undefined : label} fieldId={inputId} required={required} error={error} helperText={helperText} containerClassName={containerClassName}>
+      <div className={`group relative flex w-full items-center rounded-2xl border bg-[var(--field-bg)] transition-colors duration-150 ${density === 'compact' ? 'min-h-11' : 'min-h-[58px]'} ${disabled ? 'cursor-not-allowed border-[var(--field-border)] bg-[var(--field-disabled-bg)]' : error ? 'border-[var(--field-error)]' : 'border-[var(--field-border)] hover:border-[var(--field-focus-border)]'} ${!disabled && !error ? 'focus-within:border-[var(--field-focus-border)] focus-within:ring-2 focus-within:ring-[var(--field-focus-ring)]' : ''}`}>
+        {leftIcon && <span aria-hidden="true" className="pointer-events-none absolute left-4 inline-flex items-center text-secondary-text [&>svg]:size-[18px]">{leftIcon}</span>}
+        <input
+          {...props}
+          ref={ref}
+          data-ui-control
+          id={inputId}
+          disabled={disabled}
+          required={required}
+          aria-invalid={error ? true : props['aria-invalid']}
+          aria-describedby={describedBy}
+          placeholder={placeholder}
+          className={`min-h-[56px] w-full bg-transparent text-[15px] font-medium text-[var(--field-text)] outline-none transition-colors placeholder:text-[var(--field-placeholder)] disabled:cursor-not-allowed ${leftIcon ? 'pl-12' : 'pl-4'} ${rightIcon ? 'pr-12' : 'pr-4'} ${floating ? 'pt-5 pb-1.5' : 'py-3'} ${className}`}
+        />
+        {floating && <label htmlFor={inputId} className={`pointer-events-none absolute left-4 top-2 select-none text-[11px] font-semibold ${error ? 'text-[var(--field-error)]' : 'text-[var(--field-label)]'}`}>{label}</label>}
+        {rightIcon && <span className="absolute right-3.5 inline-flex items-center text-secondary-text [&>svg]:size-[18px]">{rightIcon}</span>}
       </div>
-    );
+    </FormFieldShell>;
   }
 );
 

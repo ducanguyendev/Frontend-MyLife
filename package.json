@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "test:avatar": "node --test tests/avatar.test.cjs",
     "test:date-input": "node --test tests/date-input.test.cjs",
+    "test:form-controls": "node --test tests/form-controls.test.cjs",
     "test:member-avatar": "node --test tests/member-avatar-display.test.cjs",
     "test:member-card-flip": "node --test tests/member-card-flip.test.cjs",
     "test:member-detail-layout": "node --test tests/member-detail-layout.test.cjs",

@@ -3,7 +3,7 @@ import { CircleMarker, MapContainer, Popup, Tooltip, useMap, useMapEvents } from
 import 'leaflet/dist/leaflet.css';
 import { useReducedMotion } from 'framer-motion';
 import { Globe, Layers3, Loader2, MapPin, RefreshCw, Users } from 'lucide-react';
-import { Button, Modal } from '@/shared/components/ui';
+import { Button, Modal, Select, SelectItem } from '@/shared/components/ui';
 import './FamilyMapTab.css';
 import { useLanguage } from '@/shared/hooks/useLanguage';
 import { getFamilyMapDistribution, retryFamilyMapGeocoding, updateFamilyMemberLocation, type FamilyMapData, type FamilyMapLocation, type FamilyMapMember } from '../../services/familyMapService';
@@ -259,10 +259,9 @@ export const FamilyMapTab: React.FC = () => {
         footer={<div className="flex w-full items-center justify-end gap-3"><Button type="button" variant="secondary" disabled={savingLocation} onClick={() => setLocationMember(null)}>{t('admin.cancel', { defaultValue: 'Cancel' })}</Button><Button type="button" variant="primary" disabled={!locationPoint || savingLocation} isLoading={savingLocation} onClick={() => void confirmLocation()}>{t('admin.family_map.confirm_location')}</Button></div>}
       >
         {locationMember && <div className="space-y-3">
-          <label className="block text-sm font-medium text-primary-text" htmlFor="family-map-member-picker">{t('admin.family_map.member')}</label>
-          <select id="family-map-member-picker" className="w-full rounded-lg border border-custom-border bg-secondary-bg px-3 py-2 text-primary-text" value={locationMember.id} onChange={event => { const member = members.find(item => item.id === Number(event.target.value)); if (member) openLocationPicker(member); }}>
-            {members.map(member => <option key={member.id} value={member.id}>{member.fullName} · {member.address || t('admin.family_map.no_address')}</option>)}
-          </select>
+          <Select aria-label={t('admin.family_map.member')} appearance="simple" value={String(locationMember.id)} onValueChange={value => { const member = members.find(item => item.id === Number(value)); if (member) openLocationPicker(member); }}>
+            {members.map(member => <SelectItem key={member.id} value={String(member.id)}>{member.fullName} · {member.address || t('admin.family_map.no_address')}</SelectItem>)}
+          </Select>
           <p className="text-sm text-secondary-text">{t('admin.family_map.tap_map_to_pick')}</p>
           <div className="h-[min(55vh,440px)] overflow-hidden rounded-xl border border-custom-border">
             <MapContainer key={locationMember.id} center={locationPoint ?? VIETNAM_CENTER} zoom={locationPoint ? 13 : 5} scrollWheelZoom className="h-full w-full">

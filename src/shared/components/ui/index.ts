@@ -2,6 +2,7 @@ export * from './Button';
 export * from './FloatingAddButton';
 export * from './Modal';
 export * from './Input';
+export * from './FormFieldShell';
 export * from './PasswordInput';
 export * from './Badge';
 export * from './Card';

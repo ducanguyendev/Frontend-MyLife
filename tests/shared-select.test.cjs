@@ -17,11 +17,11 @@ test('shared Select exposes floating labels and preserves Radix Portal without c
   assert.match(select, /top-2 text-\[11px\] font-semibold/);
   assert.doesNotMatch(select, /clearable|onClear|clearLabel|<X\b/);
   assert.match(select, /variant === 'compact'[\s\S]*'h-10/);
-  assert.match(select, /min-h-\[56px\]/);
+  assert.match(select, /min-h-\[58px\]/);
   assert.match(select, /appearance\?: 'default' \| 'simple'/);
   assert.match(select, /data-ui-control/);
-  assert.match(select, /focus-visible:border-\[var\(--focus-border\)\]/);
-  assert.doesNotMatch(select, /focus-visible:ring-/);
+  assert.match(select, /focus-visible:border-\[var\(--field-focus-border\)\]/);
+  assert.match(select, /focus-visible:ring-2/);
   assert.match(select, /data-\[state=checked\]:bg-primary-bg/);
   assert.match(select, /<SelectPrimitive\.ItemIndicator[\s\S]*?<Check size=\{16\}/);
   assert.match(select, /shadow-\[0_4px_16px_rgb\(0_0_0\/0\.08\)\]/);
