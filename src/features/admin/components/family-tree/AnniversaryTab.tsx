@@ -1,0 +1,340 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { CalendarDays, ChevronLeft, ChevronRight, Loader2, MapPin, Pencil, Plus, RotateCcw, Trash2, Users, X } from 'lucide-react';
+import { Button, Modal, Select, SelectItem } from '@/shared/components/ui';
+import { SearchBar } from '@/shared/components/SearchBar';
+import { useLanguage } from '@/shared/hooks/useLanguage';
+import { anniversaryService, type FamilyAnniversary, type FamilyAnniversaryPayload } from '../../services/anniversaryService';
+import { FamilyAnniversaryModal } from './FamilyAnniversaryModal';
+import { formatLunarYearLabel } from './lunarYearUtils';
+import { removeVietnameseTones, type FamilyMember } from './types';
+import { anniversaryDateKey, anniversaryDateParts, countAnniversaryEventsInMonth, getAnniversaryMonthGrid, getAnniversaryNavigationTarget, getAnniversaryOrganizationLabelKeys, getDayEventVisual, getVietnamTodayKey } from './anniversaryCalendarUtils';
+import { fetchFamilyMembers } from './useFamilyMembers';
+
+interface Props {
+  showToast: (text: string, ok: boolean) => void;
+  members?: FamilyMember[];
+}
+
+type EventTypeFilter = 'ALL' | 'DEATH_ANNIVERSARY' | 'FAMILY_EVENT';
+
+export const AnniversaryTab: React.FC<Props> = ({ showToast, members: initialMembers }) => {
+  const { t, language } = useLanguage();
+  const [items, setItems] = useState<FamilyAnniversary[]>([]);
+  const [search, setSearch] = useState('');
+  const [eventTypeFilter, setEventTypeFilter] = useState<EventTypeFilter>('ALL');
+  const [calendarSelectedDate, setCalendarSelectedDate] = useState<string | null>(null);
+  const [filterDate, setFilterDate] = useState<string | null>(null);
+  const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
+  const [visibleMonth, setVisibleMonth] = useState<{ year: number; month: number } | null>(null);
+  const [monthPickerOpen, setMonthPickerOpen] = useState(false);
+  const [draftMonth, setDraftMonth] = useState<{ year: number; month: number } | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [editing, setEditing] = useState<FamilyAnniversary | null | undefined>(undefined);
+  const [deleting, setDeleting] = useState<FamilyAnniversary | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [members, setMembers] = useState<FamilyMember[] | null>(initialMembers ?? null);
+  const [membersLoading, setMembersLoading] = useState(false);
+  const [membersLoadError, setMembersLoadError] = useState<string | null>(null);
+  const membersRequest = useRef<Promise<FamilyMember[] | null> | null>(null);
+  const membersController = useRef<AbortController | null>(null);
+  const pendingEditor = useRef<FamilyAnniversary | null>(null);
+
+  useEffect(() => {
+    if (initialMembers !== undefined) setMembers(initialMembers);
+  }, [initialMembers]);
+
+  useEffect(() => () => membersController.current?.abort(), []);
+
+  const openEditor = async (anniversary: FamilyAnniversary | null) => {
+    pendingEditor.current = anniversary;
+    if (initialMembers !== undefined) {
+      setEditing(anniversary);
+      return;
+    }
+    if (members !== null) {
+      setEditing(anniversary);
+      return;
+    }
+    setMembersLoadError(null);
+    let request = membersRequest.current;
+    if (!request) {
+      const controller = new AbortController();
+      membersController.current = controller;
+      setMembersLoading(true);
+      request = fetchFamilyMembers(controller.signal).then(result => {
+        if (controller.signal.aborted) return null;
+        if ('errorKey' in result) {
+          setMembersLoadError(result.errorKey);
+          showToast(t(result.errorKey), false);
+          return null;
+        }
+        setMembers(result.members);
+        return result.members;
+      }).finally(() => {
+        if (membersRequest.current === request) membersRequest.current = null;
+        if (!controller.signal.aborted) setMembersLoading(false);
+      });
+      membersRequest.current = request;
+    }
+    const loaded = await request;
+    if (loaded !== null && !membersController.current?.signal.aborted) {
+      setEditing(pendingEditor.current);
+      setMembersLoadError(null);
+    }
+  };
+
+  const load = useCallback(async (signal?: AbortSignal) => {
+    setLoading(true);
+    setLoadError(false);
+    try {
+      const data = await anniversaryService.getAnniversaries(signal);
+      if (!signal?.aborted) setItems(data);
+    } catch {
+      if (!signal?.aborted) setLoadError(true);
+    } finally {
+      if (!signal?.aborted) setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void load(controller.signal);
+    return () => controller.abort();
+  }, [load]);
+
+  const firstDate = items.length ? anniversaryDateParts(items[0].nextSolarDate) : null;
+  const todayKey = getVietnamTodayKey();
+  const today = anniversaryDateParts(todayKey)!;
+  const currentMonth = visibleMonth ?? (firstDate ? { year: firstDate.year, month: firstDate.month } : { year: today.year, month: today.month });
+  const visibleMonthEventCount = useMemo(() => countAnniversaryEventsInMonth(items, currentMonth.year, currentMonth.month), [items, currentMonth.year, currentMonth.month]);
+  const cells = useMemo(() => getAnniversaryMonthGrid(currentMonth.year, currentMonth.month), [currentMonth.year, currentMonth.month]);
+  const monthLabel = new Intl.DateTimeFormat(language === 'vi' ? 'vi-VN' : 'en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(Date.UTC(currentMonth.year, currentMonth.month, 1, 12)));
+  const fullDateFormat = new Intl.DateTimeFormat(language === 'vi' ? 'vi-VN' : 'en-US', { dateStyle: 'full', timeZone: 'UTC' });
+  const dateFormat = new Intl.DateTimeFormat(language === 'vi' ? 'vi-VN' : 'en-US', { dateStyle: 'long', timeZone: 'UTC' });
+  const weekdayLabels = Array.from({ length: 7 }, (_, index) => new Intl.DateTimeFormat(language === 'vi' ? 'vi-VN' : 'en-US', { weekday: 'short', timeZone: 'UTC' }).format(new Date(Date.UTC(2024, 0, index + 1, 12))));
+  const eventsByDate = useMemo(() => {
+    const grouped = new Map<string, FamilyAnniversary[]>();
+    for (const item of items) {
+      const parts = anniversaryDateParts(item.nextSolarDate);
+      if (!parts) continue;
+      const key = anniversaryDateKey(parts.year, parts.month, parts.day);
+      grouped.set(key, [...(grouped.get(key) ?? []), item]);
+    }
+    return grouped;
+  }, [items]);
+
+  const filtered = useMemo(() => {
+    const query = removeVietnameseTones(search.trim()).toLocaleLowerCase();
+    const textFiltered = query ? items.filter(item => [item.title, item.relatedMemberName, item.place, item.host, item.notes]
+      .some(value => value && removeVietnameseTones(value).toLocaleLowerCase().includes(query))) : items;
+    const typeFiltered = eventTypeFilter === 'ALL' ? textFiltered : textFiltered.filter(item => item.eventType === eventTypeFilter);
+    return filterDate ? typeFiltered.filter(item => {
+      const parts = anniversaryDateParts(item.nextSolarDate);
+      return parts && anniversaryDateKey(parts.year, parts.month, parts.day) === filterDate;
+    }) : typeFiltered;
+  }, [items, search, eventTypeFilter, filterDate]);
+
+  const moveMonth = (delta: number) => {
+    const next = new Date(Date.UTC(currentMonth.year, currentMonth.month + delta, 1));
+    setVisibleMonth({ year: next.getUTCFullYear(), month: next.getUTCMonth() });
+  };
+  const selectDay = (key: string) => {
+    const next = calendarSelectedDate === key ? null : key;
+    setCalendarSelectedDate(next); setFilterDate(next); setSelectedEventId(null);
+  };
+  const clearDateFilter = () => { setFilterDate(null); setCalendarSelectedDate(null); setSelectedEventId(null); };
+  const clearAllFilters = () => {
+    setSearch(''); setFilterDate(null); setCalendarSelectedDate(null); setEventTypeFilter('ALL'); setSelectedEventId(null);
+  };
+  const handleSelectEvent = (item: FamilyAnniversary) => {
+    const target = getAnniversaryNavigationTarget(item.nextSolarDate);
+    if (!target) return;
+    setVisibleMonth(target.visibleMonth);
+    setCalendarSelectedDate(target.selectedDate);
+    setSelectedEventId(item.id);
+    setMonthPickerOpen(false);
+  };
+  const openMonthPicker = () => {
+    setDraftMonth(currentMonth);
+    setMonthPickerOpen(value => !value);
+  };
+  const applyMonthPicker = () => {
+    if (!draftMonth || !Number.isInteger(draftMonth.year) || draftMonth.year < 1800 || draftMonth.year > 2200 || draftMonth.month < 0 || draftMonth.month > 11) return;
+    setVisibleMonth(draftMonth);
+    setMonthPickerOpen(false);
+  };
+
+  const save = async (payload: FamilyAnniversaryPayload) => {
+    if (editing) await anniversaryService.updateAnniversary(editing.id, payload);
+    else await anniversaryService.createAnniversary(payload);
+    setEditing(undefined);
+    await load();
+    showToast(t(editing ? 'admin.anniversary_ui.updated' : 'admin.anniversary_ui.created'), true);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleting || isDeleting) return;
+    setIsDeleting(true);
+    try {
+      await anniversaryService.deleteAnniversary(deleting.id);
+      setItems(current => current.filter(item => item.id !== deleting.id));
+      setDeleting(null);
+      showToast(t('admin.anniversary_ui.deleted'), true);
+    } catch {
+      showToast(t('admin.anniversary_ui.delete_failed'), false);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const eventLabel = (item: FamilyAnniversary) => t(item.eventType === 'DEATH_ANNIVERSARY' ? 'admin.anniversary_ui.death_anniversary' : 'admin.anniversary_ui.family_event');
+  const hasFilters = Boolean(search.trim() || filterDate || eventTypeFilter !== 'ALL');
+
+  return <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain p-3 custom-scrollbar xl:overflow-hidden sm:p-4">
+    <header className="mb-3 flex shrink-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="min-w-0 flex-1">
+        <h1 className="text-xl font-black tracking-tight text-primary-text sm:text-2xl">{t('myLife.modules.anniversaries.title')}</h1>
+        <p className="mt-0.5 text-xs text-secondary-text sm:text-sm">{t('myLife.modules.anniversaries.description')}</p>
+      </div>
+      <Button className="w-full shrink-0 whitespace-nowrap sm:w-auto" disabled={membersLoading} leftIcon={<Plus size={16} />} onClick={() => void openEditor(null)}>{t('admin.anniversary_ui.add_action')}</Button>
+    </header>
+
+    <main className="flex min-h-0 flex-1 flex-col gap-3 xl:grid xl:grid-cols-[minmax(300px,0.4fr)_minmax(0,0.6fr)]">
+      <section aria-label={t('admin.anniversary_ui.calendar')} className="shrink-0 rounded-2xl border border-custom-border bg-secondary-bg p-3 sm:p-4 xl:flex xl:min-h-0 xl:flex-col">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <div className="flex min-w-0 flex-1 items-center gap-2">
+            <CalendarDays size={18} className="shrink-0 text-accent" aria-hidden="true" />
+            <div className="relative min-w-0">
+              <button type="button" className="truncate rounded-lg px-2 py-1 text-left font-bold capitalize text-primary-text hover:bg-primary-bg focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent" aria-expanded={monthPickerOpen} aria-haspopup="dialog" aria-controls="anniversary-month-picker" onClick={openMonthPicker}>{monthLabel}</button>
+              {monthPickerOpen && <div id="anniversary-month-picker" role="dialog" aria-label={t('admin.anniversary_ui.month_picker')} onKeyDown={event => { if (event.key === 'Escape') setMonthPickerOpen(false); }} className="absolute left-0 top-full z-30 mt-2 w-64 rounded-xl border border-custom-border bg-secondary-bg p-3 shadow-lg">
+                <div className="grid grid-cols-2 gap-2">
+                  <label className="space-y-1 text-xs font-semibold text-secondary-text"><span>{t('admin.anniversary_ui.month')}</span>
+                    <Select aria-label={t('admin.anniversary_ui.month')} appearance="simple" variant="compact" value={String(draftMonth?.month ?? currentMonth.month)} onValueChange={value => setDraftMonth(current => ({ year: current?.year ?? currentMonth.year, month: Number(value) }))}>
+                      {Array.from({ length: 12 }, (_, month) => <SelectItem key={month} value={String(month)}>{new Intl.DateTimeFormat(language === 'vi' ? 'vi-VN' : 'en-US', { month: 'long', timeZone: 'UTC' }).format(new Date(Date.UTC(2024, month, 1, 12)))}</SelectItem>)}
+                    </Select>
+                  </label>
+                  <label className="space-y-1 text-xs font-semibold text-secondary-text"><span>{t('admin.anniversary_ui.year')}</span>
+                    <input className="h-10 w-full rounded-lg border border-custom-border bg-primary-bg px-2 text-sm text-primary-text" aria-label={t('admin.anniversary_ui.year')} type="number" min={1800} max={2200} value={draftMonth?.year ?? currentMonth.year} onChange={event => setDraftMonth(current => ({ year: Number(event.target.value), month: current?.month ?? currentMonth.month }))} />
+                  </label>
+                </div>
+                <div className="mt-3 flex justify-end"><Button type="button" className="min-h-9 px-3 text-xs" onClick={applyMonthPicker}>{t('admin.anniversary_ui.go_to_month')}</Button></div>
+              </div>}
+            </div>
+            <span className="hidden shrink-0 whitespace-nowrap rounded-full bg-accent/10 px-2 py-0.5 text-xs font-semibold text-accent sm:inline-flex sm:items-center">{t('admin.anniversary_ui.event_count', { count: visibleMonthEventCount })}</span>
+          </div>
+          <div className="ml-auto flex shrink-0 items-center gap-1">
+            <Button variant="ghost" className="min-h-9 shrink-0 px-2" aria-label={t('admin.anniversary_ui.previous_month')} onClick={() => moveMonth(-1)}><ChevronLeft size={18} /></Button>
+            <Button variant="ghost" className="min-h-9 shrink-0 px-2" aria-label={t('admin.anniversary_ui.next_month')} onClick={() => moveMonth(1)}><ChevronRight size={18} /></Button>
+            <Button variant="outline" className="min-h-9 shrink-0 whitespace-nowrap px-2 text-xs" leftIcon={<RotateCcw size={13} />} onClick={() => { setVisibleMonth({ year: today.year, month: today.month }); setCalendarSelectedDate(todayKey); setFilterDate(null); setSelectedEventId(null); setMonthPickerOpen(false); }}>{t('admin.anniversary_ui.today')}</Button>
+          </div>
+        </div>
+        <div className="grid grid-cols-7 gap-1" role="grid" aria-label={monthLabel}>
+          {weekdayLabels.map((label, index) => <div key={`${label}-${index}`} role="columnheader" className="py-1 text-center text-[10px] font-semibold uppercase text-secondary-text sm:text-xs">{label}</div>)}
+          {cells.map(({ year, month, day, inMonth }) => {
+            const key = anniversaryDateKey(year, month, day);
+            const dayEvents = eventsByDate.get(key) ?? [];
+            const dayVisual = getDayEventVisual(dayEvents);
+            const isToday = key === todayKey;
+            const isSelected = key === calendarSelectedDate;
+            const eventTone = dayVisual.type === 'death-anniversary' ? 'border-amber-300/80 bg-amber-50 text-amber-800 hover:bg-amber-100 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-300'
+              : dayVisual.type === 'family-event' ? 'border-teal-300/80 bg-teal-50 text-teal-800 hover:bg-teal-100 dark:border-teal-400/30 dark:bg-teal-400/10 dark:text-teal-300'
+                : dayVisual.type === 'mixed' ? 'border-accent/30 bg-accent/5 text-accent hover:bg-accent/10' : '';
+            const selectedEventTone = dayVisual.type === 'death-anniversary' ? 'border-amber-500 ring-amber-500/50 dark:border-amber-400 dark:ring-amber-400/40'
+              : dayVisual.type === 'family-event' ? 'border-teal-500 ring-teal-500/50 dark:border-teal-400 dark:ring-teal-400/40'
+                : dayVisual.type === 'mixed' ? 'border-accent/70 ring-accent/40' : 'border-[var(--calendar-selected-border)] ring-[var(--calendar-selected-ring)]';
+            const dayState = isSelected ? `${selectedEventTone} bg-[var(--calendar-selected-bg)] font-bold text-[var(--calendar-selected-text)] ring-2 shadow-sm`
+              : isToday ? 'border-accent/70 bg-[var(--focus-surface)] font-semibold text-primary-text ring-1 ring-accent/50'
+                : dayEvents.length ? `${eventTone} font-bold` : 'border-transparent text-primary-text hover:bg-primary-bg';
+            return <button key={key} type="button" role="gridcell" aria-current={isToday ? 'date' : undefined} aria-label={`${fullDateFormat.format(new Date(Date.UTC(year, month, day, 12)))}${dayVisual.count ? `, ${t('admin.anniversary_ui.event_count', { count: dayVisual.count })}` : ''}${isToday ? `, ${t('admin.anniversary_ui.today')}` : ''}`} aria-pressed={isSelected} onClick={() => selectDay(key)} className={`relative flex aspect-square min-h-9 cursor-pointer flex-col items-center justify-center rounded-lg border text-sm transition-colors duration-200 motion-reduce:transition-none sm:min-h-10 ${inMonth || isSelected ? '' : 'text-secondary-text/50'} ${dayState}`}>
+              <span>{day}</span>
+              {dayVisual.count > 0 && <span aria-hidden="true" className="absolute bottom-1 flex h-3 items-center gap-0.5">
+                {dayVisual.count === 1
+                  ? <span className={`h-1.5 w-1.5 rounded-full ${dayVisual.type === 'death-anniversary' ? 'bg-amber-600 dark:bg-amber-300' : dayVisual.type === 'family-event' ? 'bg-teal-600 dark:bg-teal-300' : 'bg-accent'}`} />
+                  : dayVisual.count > 1 ? <><span className={`flex h-3 min-w-3 items-center justify-center rounded-full px-1 text-[8px] font-bold leading-none ${isSelected ? 'bg-white/20 text-white' : dayVisual.type === 'death-anniversary' ? 'bg-amber-600 text-white dark:bg-amber-400 dark:text-slate-950' : dayVisual.type === 'family-event' ? 'bg-teal-600 text-white dark:bg-teal-400 dark:text-slate-950' : 'bg-accent text-white'}`}>{dayVisual.count}</span>
+                    {dayVisual.type === 'mixed' && <span className="flex items-center gap-0.5"><i className="h-1 w-1 rounded-full bg-amber-500" /><i className="h-1 w-1 rounded-full bg-teal-500" /></span>}</> : null}
+              </span>}
+            </button>;
+          })}
+        </div>
+        <div className="mt-3 flex min-h-6 flex-wrap items-center justify-between gap-2 border-t border-custom-border pt-2 text-xs text-secondary-text">
+          <span>{t('admin.anniversary_ui.calendar_solar')}</span>
+          {calendarSelectedDate && <button type="button" onClick={clearDateFilter} className="inline-flex items-center gap-1 rounded-md px-2 py-1 font-semibold text-accent transition-colors duration-200 hover:bg-accent/10   "><X size={13} />{t('admin.anniversary_ui.clear_date')}</button>}
+        </div>
+      </section>
+
+      <section aria-labelledby="anniversary-events-heading" className="flex min-h-[18rem] flex-1 flex-col overflow-hidden rounded-2xl border border-custom-border bg-primary-bg xl:min-h-0">
+        <header className="flex shrink-0 flex-col gap-3 border-b border-custom-border px-4 py-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="min-w-0">
+              <h2 id="anniversary-events-heading" className="font-bold text-primary-text">{t('admin.anniversary_ui.upcoming_events')}</h2>
+              {filterDate && <p className="text-xs text-secondary-text">{dateFormat.format(new Date(`${filterDate}T12:00:00Z`))}</p>}
+            </div>
+            <span className="shrink-0 whitespace-nowrap rounded-full bg-accent/10 px-2.5 py-1 text-xs font-semibold text-accent">{t('admin.anniversary_ui.event_count', { count: filtered.length })}</span>
+          </div>
+          <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+            <SearchBar className="w-full sm:w-[20rem] sm:max-w-[40vw] sm:shrink" ariaLabel={t('admin.anniversary_ui.search')} placeholder={t('admin.anniversary_ui.search')} value={search} onChange={setSearch} />
+            <div role="group" aria-label={t('admin.anniversary_ui.event_type_filter')} className="flex w-max min-w-full flex-nowrap items-center gap-1 overflow-x-auto sm:w-auto sm:min-w-0 sm:shrink-0">
+              {([
+                ['ALL', 'admin.anniversary_ui.all_events'],
+                ['DEATH_ANNIVERSARY', 'admin.anniversary_ui.death_anniversary'],
+                ['FAMILY_EVENT', 'admin.anniversary_ui.family_event'],
+              ] as const).map(([value, label]) => <button key={value} type="button" aria-pressed={eventTypeFilter === value} onClick={() => { setEventTypeFilter(value); setSelectedEventId(null); }} className={`min-h-9 shrink-0 whitespace-nowrap rounded-full border px-3 text-xs font-semibold transition-colors ${eventTypeFilter === value ? 'border-accent bg-accent/10 text-accent' : 'border-custom-border bg-secondary-bg text-secondary-text hover:border-accent/30 hover:text-primary-text'}`}>{t(label)}</button>)}
+              {filterDate && <button type="button" onClick={clearDateFilter} aria-label={t('admin.anniversary_ui.clear_date')} className="inline-flex min-h-9 shrink-0 items-center gap-1 rounded-full px-2 text-xs font-semibold text-accent transition-colors duration-200 hover:bg-accent/10"><X size={13} />{t('admin.anniversary_ui.all_events')}</button>}
+            </div>
+          </div>
+        </header>
+
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3 custom-scrollbar sm:p-4">
+          {loading ? <div role="status" className="flex min-h-40 items-center justify-center gap-2 text-sm text-secondary-text"><Loader2 className="animate-spin" size={18} />{t('admin.anniversary_ui.loading')}</div>
+            : loadError ? <div role="alert" className="flex min-h-40 flex-col items-center justify-center text-center"><p className="mb-3 text-sm text-primary-text">{t('admin.anniversary_ui.load_failed')}</p><Button className="min-h-10" variant="outline" onClick={() => void load()}>{t('admin.anniversary_ui.retry')}</Button></div>
+              : filtered.length === 0 ? <div className="flex min-h-40 flex-col items-center justify-center px-4 text-center">
+                <CalendarDays className="mb-2 text-secondary-text" size={28} aria-hidden="true" />
+                <p className="font-semibold text-primary-text">{filterDate ? t('admin.anniversary_ui.no_events_date') : hasFilters ? t('admin.anniversary_ui.no_results') : t('admin.anniversary_ui.empty')}</p>
+                {!hasFilters && !items.length && <p className="mt-1 text-sm text-secondary-text">{t('admin.anniversary_ui.empty_desc')}</p>}
+                {hasFilters && <button type="button" onClick={clearAllFilters} className="mt-2 rounded-md px-2 py-1 text-sm font-semibold text-accent hover:bg-accent/10   ">{t('admin.anniversary_ui.clear_filters')}</button>}
+              </div>
+                : <div className="space-y-2.5">{filtered.map(item => <article key={item.id} role="button" tabIndex={0} aria-pressed={selectedEventId === item.id} aria-label={`${item.title}, ${dateFormat.format(new Date(`${item.nextSolarDate}T12:00:00Z`))}`} onClick={() => handleSelectEvent(item)} onKeyDown={event => { if (event.target !== event.currentTarget) return; if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); handleSelectEvent(item); } }} className={`cursor-pointer rounded-xl border p-3 shadow-sm transition-colors duration-200 motion-reduce:transition-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent sm:p-4 ${selectedEventId === item.id ? 'border-accent bg-accent/5 shadow-md' : 'border-custom-border bg-secondary-bg hover:border-accent/30'}`}>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
+                        <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${item.daysUntil === 0 ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : item.eventType === 'DEATH_ANNIVERSARY' ? 'border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-400' : 'border-accent/20 bg-accent/10 text-accent'}`}>{item.daysUntil === 0 ? t('admin.anniversary_ui.today') : t('admin.anniversary_ui.days_left', { count: item.daysUntil })}</span>
+                        <span className="text-[11px] text-secondary-text">{eventLabel(item)}</span>
+                      </div>
+                      <h3 className="break-words text-sm font-bold text-primary-text sm:text-base">{item.title}</h3>
+                      {item.relatedMemberName && <p className="mt-0.5 truncate text-xs text-secondary-text">{item.relatedMemberName}{item.relatedMemberGeneration ? ` · ${t('admin.generation')} ${item.relatedMemberGeneration}` : ''}{item.relatedMemberRole ? ` · ${item.relatedMemberRole}` : ''}</p>}
+                    </div>
+                    <div className="shrink-0 text-right">
+                      {item.eventType === 'DEATH_ANNIVERSARY' && item.lunarDay && item.lunarMonth && <>
+                        <p className="text-xs font-bold text-accent">{t('admin.anniversary_ui.lunar_date', { day: item.lunarDay, month: item.lunarMonth })}{item.isLeapMonth ? ` · ${t('admin.anniversary_ui.leap_month_short')}` : ''}</p>
+                        {formatLunarYearLabel(item.lunarYear ?? NaN) && <p className="text-[11px] text-secondary-text">{t('admin.anniversary_ui.original_lunar_year', { label: formatLunarYearLabel(item.lunarYear ?? NaN) })}</p>}
+                        {item.nextLunarYear && <p className="mt-1 text-[11px] font-medium text-primary-text">{t('admin.anniversary_ui.upcoming_lunar_date', { date: `${item.lunarDay}/${item.lunarMonth}/${item.nextLunarYear}`, canChi: formatLunarYearLabel(item.nextLunarYear)?.replace(`${item.nextLunarYear} – `, '') ?? '' })}</p>}
+                      </>}
+                      {item.nextSolarDate && <p className="mt-0.5 text-[11px] text-secondary-text">{dateFormat.format(new Date(`${item.nextSolarDate}T12:00:00Z`))}</p>}
+                    </div>
+                  </div>
+                  {(item.place || item.host || item.notes) && <div className="mt-2 space-y-1.5 border-t border-custom-border/60 pt-2 text-xs text-secondary-text">
+                    {item.place && <p className="flex items-start gap-1.5"><MapPin size={13} className="mt-0.5 shrink-0 text-accent" /><span><strong className="text-primary-text">{t(getAnniversaryOrganizationLabelKeys(item.eventType).place)}</strong> {item.place}</span></p>}
+                    {item.host && <p className="flex items-start gap-1.5"><Users size={13} className="mt-0.5 shrink-0 text-blue-400" /><span><strong className="text-primary-text">{t(getAnniversaryOrganizationLabelKeys(item.eventType).host)}</strong> {item.host}</span></p>}
+                    {item.notes && <p className="whitespace-pre-wrap break-words text-secondary-text">{item.notes}</p>}
+                  </div>}
+                  <div className="mt-2 flex justify-end gap-1 border-t border-custom-border/60 pt-1.5">
+                    <Button className="min-h-9 px-2 text-xs" variant="ghost" disabled={membersLoading} leftIcon={<Pencil size={13} />} onClick={event => { event.stopPropagation(); void openEditor(item); }}>{t('admin.anniversary_ui.edit')}</Button>
+                    <Button className="min-h-9 px-2 text-xs text-error hover:text-error" variant="ghost" leftIcon={<Trash2 size={13} />} onClick={event => { event.stopPropagation(); setDeleting(item); }}>{t('admin.anniversary_ui.delete')}</Button>
+                  </div>
+                </article>)}</div>}
+        </div>
+      </section>
+    </main>
+
+    {membersLoadError && <div role="alert" className="fixed bottom-4 right-4 z-50 max-w-sm rounded-xl border border-error/30 bg-secondary-bg p-4 text-sm text-primary-text shadow-lg">
+      <p>{t(membersLoadError)}</p><Button className="mt-3 min-h-9" variant="outline" disabled={membersLoading} onClick={() => void openEditor(pendingEditor.current)}>{t('admin.library_ui.retry')}</Button>
+    </div>}
+    {editing !== undefined && members !== null && <FamilyAnniversaryModal anniversary={editing ?? undefined} members={members} onClose={() => setEditing(undefined)} onSubmit={save} />}
+    <Modal isOpen={!!deleting} title={t('admin.anniversary_ui.delete_title')} onClose={() => !isDeleting && setDeleting(null)} maxWidth="sm" closeOnBackdropClick={!isDeleting} closeOnEsc={!isDeleting}>
+      <div className="space-y-5"><p className="text-sm text-secondary-text">{t('admin.anniversary_ui.delete_confirm', { title: deleting?.title ?? '' })}</p>
+        <div className="flex justify-end gap-3"><Button className="min-h-11" variant="secondary" disabled={isDeleting} onClick={() => setDeleting(null)}>{t('admin.anniversary_ui.cancel')}</Button>
+          <Button className="min-h-11" variant="danger" isLoading={isDeleting} onClick={() => void confirmDelete()}>{t('admin.anniversary_ui.delete')}</Button></div></div>
+    </Modal>
+  </div>;
+};

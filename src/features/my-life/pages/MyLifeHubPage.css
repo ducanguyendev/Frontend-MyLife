@@ -1,0 +1,257 @@
+.my-life-hub-scroll {
+  position: relative;
+  isolation: isolate;
+  background-color: color-mix(in srgb, var(--primary-bg) 95%, #e7ddca);
+}
+
+.my-life-hub-scroll::before {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150' fill='none'%3E%3Cpath d='M30 0v28m0 0 18 18M30 28 13 46m35 0v18m0 0 16 16M48 64 31 81m89-81v27m0 0-18 17m18-17 17 18m-17-18V5' stroke='%23988e7d' stroke-opacity='.38' stroke-width='1.2'/%3E%3Ccircle cx='30' cy='28' r='2' fill='%23988e7d' fill-opacity='.45'/%3E%3Ccircle cx='48' cy='64' r='2' fill='%23988e7d' fill-opacity='.45'/%3E%3Ccircle cx='120' cy='27' r='2' fill='%23988e7d' fill-opacity='.45'/%3E%3C/svg%3E");
+  background-size: 150px 150px;
+  content: "";
+  opacity: 0.1;
+  pointer-events: none;
+}
+
+.my-life-hub {
+  position: relative;
+  z-index: 1;
+}
+
+.my-life-hero {
+  position: relative;
+  min-height: 215px;
+  background: linear-gradient(112deg, #fbf8f1 0%, #f1eadc 100%);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--primary-text) 4%, transparent);
+}
+
+.my-life-hero__copy { max-width: 58%; }
+.my-life-hero__greeting { background: color-mix(in srgb, var(--secondary-bg) 78%, transparent); }
+.my-life-hero__art {
+  position: absolute;
+  top: 0;
+  right: 1%;
+  display: flex;
+  width: 48%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.97;
+}
+
+.my-life-hero__svg { width: 100%; height: 100%; overflow: visible; }
+.my-life-hero__arch { stroke: color-mix(in srgb, #9b8b70 20%, transparent); stroke-width: 1.5; }
+.my-life-hero__branch { stroke: color-mix(in srgb, #829272 38%, transparent); stroke-linecap: round; stroke-width: 2; }
+.my-life-hero__ground { fill: color-mix(in srgb, #9da77f 15%, transparent); }
+.person-face { fill: #e9bda0; }
+.person-neck { fill: #d99d7b; }
+.person-detail { stroke: #654c42; stroke-linecap: round; stroke-width: 2; }
+.person-hair { fill: #65564b; }
+.my-life-hero__person--grandparent .person-body { fill: #7d917d; }
+.my-life-hero__person--grandparent-two .person-body { fill: #c88370; }
+.my-life-hero__person--parent .person-body { fill: #798fac; }
+.my-life-hero__person--parent-two .person-body { fill: #d4a65d; }
+.my-life-hero__person--child .person-body { fill: #b47b9c; }
+.my-life-hero__person--child-two .person-body { fill: #6c9d98; }
+.my-life-hero__sparkle { fill: #c39751; }
+.my-life-section__marker { width: 0.55rem; height: 1.35rem; border-radius: 999px; background: var(--accent-color); opacity: 0.7; }
+
+.my-life-module-card {
+  --module-accent: var(--accent-color);
+  background: var(--secondary-bg);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--primary-text) 4%, transparent);
+  isolation: isolate;
+}
+
+.my-life-module-card--family { --module-accent: var(--accent-color); }
+.my-life-module-card--calendar { --module-accent: #d97706; }
+.my-life-module-card--library { --module-accent: #8b5cf6; }
+.my-life-module-card--map { --module-accent: #0891b2; }
+.my-life-module-card--timeline { --module-accent: #0f766e; }
+
+.my-life-module-card:hover {
+  border-color: color-mix(in srgb, var(--module-accent) 38%, var(--custom-border));
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--primary-text) 6%, transparent);
+}
+
+.my-life-module-card__visual {
+  position: relative;
+  display: flex;
+  height: 145px;
+  flex: 0 0 145px;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.my-life-module-card__icon { flex-shrink: 0; }
+
+.my-life-module-card__art {
+  position: absolute;
+  top: 0.25rem;
+  right: 0;
+  display: flex;
+  width: min(54%, 19rem);
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  color: color-mix(in srgb, var(--module-accent) 44%, var(--secondary-bg));
+  opacity: 0.9;
+  pointer-events: none;
+  transition: transform 240ms ease, opacity 240ms ease;
+}
+
+.my-life-module-card:hover .my-life-module-card__art { transform: translateY(-2px); opacity: 1; }
+
+.my-life-module-card__art--family {
+  top: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.my-life-module-card__family-tree { width: 100%; height: 100%; overflow: hidden; }
+.family-tree__portrait-backdrop { fill: color-mix(in srgb, #e6d9c2 30%, var(--secondary-bg)); }
+.family-tree__ground { fill: color-mix(in srgb, #8e9c77 18%, var(--secondary-bg)); }
+.family-tree__branch { stroke: color-mix(in srgb, #718b70 55%, var(--custom-border)); stroke-linecap: round; stroke-width: 2; }
+.family-tree__leaf { fill: color-mix(in srgb, #7c9876 38%, var(--secondary-bg)); }
+.family-portrait__face { fill: #e9b99a; }
+.family-portrait__neck { fill: #d89b7a; }
+.family-portrait__hair { fill: #675447; }
+.family-portrait__detail { stroke: #634d40; stroke-linecap: round; stroke-width: 1.7; }
+.family-portrait__person--elder-one .family-portrait__body { fill: #82977f; }
+.family-portrait__person--elder-two .family-portrait__body { fill: #c98672; }
+.family-portrait__person--adult .family-portrait__body { fill: #758dab; }
+.family-portrait__person--young-one .family-portrait__body { fill: #c99e5d; }
+.family-portrait__person--young-two .family-portrait__body { fill: #aa7c9d; }
+.family-portrait__person--young-three .family-portrait__body { fill: #6b9b91; }
+
+.my-life-module-card__art--calendar {
+  top: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.my-life-module-card__anniversary-scene { position: relative; width: 100%; height: 100%; }
+.my-life-module-card__calendar-page {
+  position: absolute;
+  top: 2%;
+  right: 13%;
+  display: grid;
+  width: 66%;
+  height: 92%;
+  grid-template-rows: auto 1fr;
+  justify-items: center;
+  gap: 0.45rem;
+  border: 1px solid color-mix(in srgb, var(--module-accent) 20%, var(--custom-border));
+  border-radius: 1rem;
+  padding: 0.8rem 0.75rem;
+  background: color-mix(in srgb, var(--module-accent) 5%, var(--secondary-bg));
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--primary-text) 5%, transparent);
+  transform: rotate(4deg);
+}
+.my-life-module-card__calendar-page > svg { color: var(--module-accent); }
+.my-life-module-card__calendar-grid { display: grid; width: 100%; grid-template-columns: repeat(4, 1fr); gap: 0.42rem; align-content: center; justify-items: center; }
+.my-life-module-card__calendar-grid i { width: 0.4rem; aspect-ratio: 1; border-radius: 50%; background: color-mix(in srgb, var(--module-accent) 28%, var(--custom-border)); }
+.my-life-module-card__calendar-grid i.is-marked { background: #d58b66; box-shadow: 0 0 0 3px color-mix(in srgb, #d58b66 18%, transparent); }
+.my-life-module-card__memory-photo {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 42%;
+  padding: 0.35rem 0.35rem 0.8rem;
+  border: 1px solid color-mix(in srgb, var(--module-accent) 20%, var(--custom-border));
+  border-radius: 0.65rem;
+  background: var(--secondary-bg);
+  box-shadow: 0 4px 10px color-mix(in srgb, var(--primary-text) 7%, transparent);
+  transform: rotate(-7deg);
+}
+.my-life-module-card__memory-photo svg { display: block; width: 100%; border-radius: 0.4rem; background: color-mix(in srgb, #d9b69c 18%, var(--secondary-bg)); }
+.my-life-module-card__memory-photo circle { fill: #d9aa89; }
+.my-life-module-card__memory-photo path:not(.photo-flower) { fill: #80967e; }
+.my-life-module-card__memory-photo .photo-flower { fill: #d48b73; }
+.my-life-module-card__anniversary-flower { position: absolute; right: 2%; top: 17%; color: #d18762; }
+
+.my-life-module-card__art--library { top: 0; right: 0; width: 100%; height: 100%; }
+.my-life-module-card__album-stack { position: relative; width: 100%; height: 100%; }
+.album-photo { position: absolute; display: flex; width: 7.3rem; height: 6.3rem; align-items: flex-start; border: 1px solid color-mix(in srgb, var(--module-accent) 20%, var(--custom-border)); border-radius: 0.7rem; padding: 0.35rem 0.35rem 1rem; background: var(--secondary-bg); box-shadow: 0 4px 12px color-mix(in srgb, var(--primary-text) 7%, transparent); }
+.album-photo svg { width: 100%; height: 100%; border-radius: 0.4rem; fill: color-mix(in srgb, #b7c9b2 62%, var(--secondary-bg)); }
+.album-photo svg rect { fill: color-mix(in srgb, #d6c5a5 34%, var(--secondary-bg)); }
+.album-photo svg circle { fill: color-mix(in srgb, #e3b993 76%, var(--secondary-bg)); }
+.album-photo svg path { fill: color-mix(in srgb, #7d9c82 68%, var(--secondary-bg)); }
+.album-photo--back { top: 11%; left: 20%; transform: rotate(-16deg); opacity: 0.78; }
+.album-photo--middle { top: 15%; left: 34%; transform: rotate(11deg); }
+.album-photo--front { top: 28%; left: 47%; transform: rotate(-4deg); }
+.album-photo--front > svg:first-child { height: calc(100% - 0.2rem); }
+.album-photo--front > svg:last-child { position: absolute; right: 0.45rem; bottom: 1.05rem; color: #785da0; }
+
+.my-life-module-card__art--map { top: 0; right: 0; width: 100%; height: 100%; }
+.my-life-module-card__map-illustration { width: 100%; height: 100%; overflow: visible; }
+.map-land { fill: color-mix(in srgb, #70b4b7 15%, var(--secondary-bg)); stroke: color-mix(in srgb, #278f9b 45%, var(--custom-border)); stroke-width: 2; }
+.map-route,.map-side-route { stroke: color-mix(in srgb, #168c9a 62%, var(--secondary-bg)); stroke-linecap: round; stroke-width: 2; stroke-dasharray: 4 5; }
+.map-stop { fill: var(--secondary-bg); stroke: #168c9a; stroke-width: 3; }
+.map-stop--small { fill: #168c9a; }
+.map-symbol { color: #168c9a; }
+.map-deco-dot { fill: color-mix(in srgb, #168c9a 40%, var(--secondary-bg)); }
+
+.my-life-module-card__art--timeline { top: 0; right: 0; width: 100%; height: 100%; }
+.my-life-module-card__timeline-scene { position: relative; display: flex; width: 100%; height: 100%; align-items: center; justify-content: space-between; padding: 0 1.7rem; }
+.timeline-track { position: absolute; top: 61.5%; right: 12%; left: 12%; height: 2px; background: color-mix(in srgb, var(--module-accent) 36%, var(--custom-border)); }
+.timeline-memory { position: relative; z-index: 1; display: grid; width: 22%; height: 100%; grid-template-rows: 3.1rem 0.75rem 1rem; justify-items: center; align-content: center; row-gap: 0.3rem; }
+.timeline-memory__photo { position: relative; display: block; width: min(100%, 4.2rem); height: 3.1rem; overflow: hidden; border: 3px solid var(--secondary-bg); border-radius: 0.55rem; background: color-mix(in srgb, #c6d3bd 56%, var(--secondary-bg)); box-shadow: 0 3px 8px color-mix(in srgb, var(--primary-text) 8%, transparent); }
+.timeline-memory__photo i { position: absolute; top: 0.35rem; right: 0.4rem; width: 0.7rem; aspect-ratio: 1; border-radius: 50%; background: #e8c37c; }
+.timeline-memory__photo b { position: absolute; right: -0.3rem; bottom: 0; left: -0.3rem; height: 55%; background: #82997e; clip-path: polygon(0 100%, 35% 10%, 55% 56%, 72% 24%, 100% 100%); }
+.timeline-memory__photo em { position: absolute; z-index: 1; bottom: 0; left: 48%; width: 0.7rem; height: 1.1rem; border-radius: 0.6rem 0.6rem 0 0; background: color-mix(in srgb, var(--module-accent) 70%, var(--secondary-bg)); }
+.timeline-memory__dot { z-index: 1; align-self: center; width: 0.7rem; height: 0.7rem; border: 2px solid var(--secondary-bg); border-radius: 50%; background: var(--module-accent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--module-accent) 25%, transparent); }
+.timeline-memory__label { z-index: 1; color: var(--module-accent); font-size: 0.68rem; font-weight: 800; letter-spacing: 0.08em; line-height: 1rem; }
+
+.family-member-card__illustration { pointer-events: none; }
+
+@media (min-width: 1280px) {
+  .my-life-module-card:not(.my-life-module-card--family) { min-height: 100%; }
+}
+
+@media (max-width: 767px) {
+  .my-life-hub-scroll { background-color: color-mix(in srgb, var(--primary-bg) 98%, #e7ddca); }
+  .my-life-hero { min-height: 210px; padding: 1rem 1.25rem; }
+  .my-life-hero__copy { max-width: 78%; }
+  .my-life-hero__art { top: 0; right: -4%; width: 62%; height: 66%; opacity: 0.2; }
+  .my-life-module-card__visual { height: 132px; flex-basis: 132px; }
+  .my-life-module-card__art--family { width: 100%; height: 100%; opacity: 0.9; }
+  .timeline-track { top: 60%; }
+  .timeline-memory__photo { height: 2.65rem; }
+  .timeline-memory { grid-template-rows: 2.65rem 0.75rem 1rem; }
+}
+
+@media (max-width: 420px) {
+  .my-life-hero__copy { max-width: 84%; }
+  .my-life-hero__copy h1 { font-size: 1.65rem; }
+  .my-life-hero__copy > p:not(:first-child) { max-width: 90%; font-size: 0.82rem; }
+  .my-life-module-card__art--family { width: 74%; }
+  .timeline-memory__photo { height: 2.5rem; }
+}
+
+.dark .my-life-hub-scroll { background-color: color-mix(in srgb, var(--primary-bg) 96%, #887451); }
+.dark .my-life-hub-scroll::before { opacity: 0.045; }
+.dark .my-life-hero { background: linear-gradient(112deg, #1c1b18 0%, #171715 100%); }
+.dark .my-life-hero__art { opacity: 0.72; }
+.dark .my-life-hero__ground { fill: color-mix(in srgb, #8f9974 18%, transparent); }
+.dark .family-portrait__person { opacity: 0.84; }
+.dark .family-portrait__face { fill: #c99073; }
+.dark .family-portrait__neck { fill: #bc8064; }
+.dark .family-portrait__hair { fill: #3f3833; }
+.dark .person-face { fill: #c99073; }
+.dark .person-neck { fill: #bc8064; }
+.dark .person-detail { stroke: #493b35; }
+.dark .person-hair { fill: #3f3833; }
+.dark .my-life-module-card__memory-photo,.dark .album-photo { box-shadow: 0 3px 8px color-mix(in srgb, #000 20%, transparent); }
+
+@media (max-width: 767px) {
+  .dark .my-life-hero__art { opacity: 0.18; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .my-life-module-card__art { transition-duration: 0.01ms; }
+}

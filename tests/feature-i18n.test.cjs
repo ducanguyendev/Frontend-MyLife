@@ -1,0 +1,311 @@
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
+const { readFileSync } = require('node:fs');
+const { join } = require('node:path');
+const vm = require('node:vm');
+const ts = require('typescript');
+const i18next = require('i18next');
+
+function load(path, mocks = {}) {
+  const source = readFileSync(join(__dirname, '..', path), 'utf8');
+  const { outputText } = ts.transpileModule(source, { compilerOptions: {
+    module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true,
+  } });
+  const exports = {};
+  new vm.Script(outputText, { filename: path }).runInNewContext({ exports, require: name => {
+    assert.ok(name in mocks, `Unexpected import ${name}`); return mocks[name];
+  }, AbortController, console: { log() {} }, document: { addEventListener() {}, removeEventListener() {} } });
+  return exports;
+}
+const messages = load('src/features/admin/services/featureMessages.ts');
+const searchHelpers = load('src/features/admin/components/family-tree/memberSearch.ts', { './types': load('src/features/admin/components/family-tree/types.ts') });
+async function translator(locale) {
+  const i18n = i18next.createInstance();
+  const resources = Object.fromEntries(['vi', 'en'].map(language => [language, { translation: {
+    admin: JSON.parse(readFileSync(join(__dirname, `../src/shared/locales/${language}/admin.json`), 'utf8')),
+    common: JSON.parse(readFileSync(join(__dirname, `../src/shared/locales/${language}/common.json`), 'utf8')),
+  } }]));
+  await i18n.init({ lng: locale, fallbackLng: false, resources, interpolation: { escapeValue: false } });
+  return i18n;
+}
+
+test('FamilyTree sibling labels resolve to human-readable text in VI and EN', async () => {
+  const vi = await translator('vi');
+  const en = await translator('en');
+  const viKeys = {
+    siblings_biological_group: 'Anh / Chị / Em ruột',
+    siblings_biological_empty: 'Không có anh/chị/em ruột',
+    sibling_cousin_younger_brother: 'Em trai họ',
+    sibling_neutral_cousin: 'Anh / Chị / Em họ',
+  };
+  const enKeys = {
+    siblings_biological_group: 'Full siblings',
+    siblings_biological_empty: 'No full siblings',
+    sibling_cousin_younger_brother: 'Younger male cousin',
+    sibling_neutral_cousin: 'Cousin',
+  };
+  for (const [key, expected] of Object.entries(viKeys)) {
+    assert.equal(vi.t(`admin.${key}`), expected);
+    assert.notEqual(vi.t(`admin.${key}`), `admin.${key}`);
+  }
+  for (const [key, expected] of Object.entries(enKeys)) {
+    assert.equal(en.t(`admin.${key}`), expected);
+    assert.notEqual(en.t(`admin.${key}`), `admin.${key}`);
+  }
+});
+
+test('Mindmap legend and layout controls have VI and EN translations', async () => {
+  const vi = await translator('vi');
+  const en = await translator('en');
+  for (const locale of [vi, en]) {
+    for (const key of ['mindmap_relationship_legend', 'mindmap_parent_child', 'mindmap_spouse', 'mindmap_horizontal', 'layout_vertical', 'layout_horizontal']) {
+      assert.notEqual(locale.t(`admin.${key}`), `admin.${key}`);
+    }
+  }
+  assert.equal(vi.t('admin.mindmap_spouse'), 'Vợ / Chồng');
+  assert.equal(en.t('admin.mindmap_spouse'), 'Spouse');
+});
+function harness() {
+  const states = []; const effects = []; let index = 0;
+  const hooks = {
+    useState: initial => {
+      const position = index++;
+      if (!(position in states)) states[position] = typeof initial === 'function' ? initial() : initial;
+      return [states[position], next => { states[position] = typeof next === 'function' ? next(states[position]) : next; }];
+    },
+    lazy: () => 'FamilyMindmap', Suspense: 'Suspense',
+    useEffect: effect => { effects.push(effect); }, useCallback: callback => callback, useMemo: callback => callback(), forwardRef: callback => callback,
+  };
+  const jsx = (type, props) => ({ type, props });
+  return { hooks, jsx, render: (component, props) => { index = 0; return component(props); },
+    mount: async () => { effects.splice(0).forEach(effect => effect()); await flush(); } };
+}
+const flush = () => new Promise(resolve => setImmediate(resolve));
+function nodes(tree) {
+  if (!tree || typeof tree !== 'object') return [];
+  if (Array.isArray(tree)) return tree.flatMap(nodes);
+  return [tree, ...nodes(tree.props?.children)];
+}
+const find = (tree, type, condition = () => true) => {
+  const node = nodes(tree).find(node => node.type === type && condition(node.props));
+  assert.ok(node, `Missing ${type}`); return node.props;
+};
+const stubNames = ['MemberCard', 'MemberTable', 'MemberDetailModal', 'MemberFormModal', 'DeleteConfirmModal',
+  'AnniversaryTab', 'LibraryTab', 'FamilyMapTab', 'FamilyMindmap', 'FamilyChartView'];
+
+async function familySetup(locale, response = { success: true, message: 'Family member deleted.' }) {
+  const i18n = await translator(locale); const t = i18n.t.bind(i18n); const hooks = harness(); const toasts = [];
+  const member = { id: 15, fullName: 'Nguyễn Văn An', generation: 1, gender: 'Nam' };
+  const otherMember = { id: 16, fullName: 'Lê Thị Bình', generation: 2, gender: 'Nữ' };
+  const calls = [];
+  const apiClient = { requestRaw: async (path, options = {}) => {
+    calls.push({ path, method: options.method });
+    const body = options.method === 'POST' && path === '/api/family-tree' ? { data: { ...member } } : options.method === 'PUT' ? { data: { ...member } } : options.method === 'DELETE' ? response : { data: [member, otherMember] };
+    return new Response(JSON.stringify(body), { status: options.method === 'DELETE' && response.success === false ? 404 : 200, headers: { 'Content-Type': 'application/json' } });
+  } };
+  const familyMembersHook = load('src/features/admin/components/family-tree/useFamilyMembers.ts', {
+    react: hooks.hooks,
+    '@/shared/api/apiClient': { apiClient },
+    '../../services/featureMessages': messages,
+  });
+  const { FamilyTreeManager } = load('src/features/admin/components/FamilyTreeManager.tsx', {
+    react: { ...hooks.hooks, default: hooks.hooks }, 'react/jsx-runtime': { jsx: hooks.jsx, jsxs: hooks.jsx },
+    'react-router-dom': { useNavigate: () => () => {}, useLocation: () => ({ state: null }) },
+    'lucide-react': new Proxy({}, { get: (_, key) => key }), '@/shared/hooks/useLanguage': { useLanguage: () => ({ t, language: i18n.language }) },
+    '@/shared/components/ui': { Button: 'Button', FloatingAddButton: 'Button', Select: 'Select' }, '@/shared/components/SearchBar': { SearchBar: 'SearchBar' },
+    '@/shared/api/apiClient': { apiClient }, '../services/featureMessages': messages,
+    './family-tree/memberSearch': searchHelpers,
+    './family-tree/useFamilyMembers': familyMembersHook,
+    './family-tree/familyTreeRendererConfig': { FAMILY_TREE_RENDERER: 'family-chart', IS_FAMILY_CHART_DEV_POC: true, IS_MEMOIR_DEV_POC: false, IS_DEVELOPMENT_BUILD: true },
+    './family-tree/FamilyChartErrorBoundary': { FamilyChartErrorBoundary: 'FamilyChartErrorBoundary' },
+    './family-tree/FamilyTreeRendererErrorBoundary': { FamilyTreeRendererErrorBoundary: 'FamilyTreeRendererErrorBoundary' },
+    './family-tree': { ...Object.fromEntries(stubNames.map(name => [name, name])), removeVietnameseTones: name => name },
+  });
+  const render = () => hooks.render(FamilyTreeManager, { showToast: (text, ok) => toasts.push({ text, ok }) });
+  render(); await hooks.mount();
+  return { render, toasts, member, otherMember, calls, t };
+}
+
+for (const locale of ['vi', 'en']) {
+  test(`${locale}: FamilyTree switches grid to table to mindmap and supplies filtered members`, async () => {
+    const setup = await familySetup(locale);
+    const initial = setup.render();
+    assert.ok(nodes(initial).some(node => node.type === 'MemberCard'));
+    const tableView = find(initial, 'button', props => props['aria-label'] === setup.t('admin.view_table'));
+    tableView.onClick();
+    let tree = setup.render();
+    const table = find(tree, 'MemberTable');
+    assert.deepEqual(table.members.map(member => member.id), [setup.member.id, setup.otherMember.id]);
+    find(tree, 'button', props => props['aria-label'] === setup.t('admin.view_mindmap')).onClick();
+    tree = setup.render();
+    assert.ok(nodes(tree).some(node => node.type === 'FamilyMindmap'));
+    find(tree, 'button', props => props['aria-label'] === setup.t('admin.view_table')).onClick();
+    tree = setup.render();
+    find(tree, 'SearchBar').onChange('Bình');
+    assert.deepEqual(find(setup.render(), 'MemberTable').members.map(member => member.id), [setup.otherMember.id]);
+  });
+}
+
+for (const locale of ['vi', 'en']) {
+  test(`${locale}: actual FamilyTree delete ignores backend English success and interpolates member name`, async () => {
+    const setup = await familySetup(locale);
+    find(setup.render(), 'MemberCard').onDelete(setup.member);
+    await find(setup.render(), 'DeleteConfirmModal').onConfirm();
+    assert.deepEqual(setup.toasts.at(-1), { text: locale === 'vi' ? 'Đã xóa thành viên Nguyễn Văn An thành công.' : 'Member Nguyễn Văn An was deleted successfully.', ok: true });
+    assert.ok(!setup.toasts.at(-1).text.includes('Family member deleted'));
+    assert.equal(setup.calls.at(-1).method, 'DELETE');
+  });
+  test(`${locale}: actual FamilyTree create/update success use separate localized actions`, async () => {
+    const setup = await familySetup(locale, { success: true, message: 'English created/updated.' });
+    find(setup.render(), 'Button', props => props.tooltip === setup.t('admin.add_member')).onClick();
+    const createForm = find(setup.render(), 'MemberFormModal');
+    createForm.onChange({ ...createForm.editingMember, generation: 1 });
+    await find(setup.render(), 'MemberFormModal').onSubmit({ preventDefault() {} });
+    assert.equal(setup.toasts.findLast(toast => toast.ok)?.text, setup.t('admin.member_create_success'));
+    await flush();
+    setup.member.id = 15;
+    find(setup.render(), 'MemberCard').onEdit(setup.member);
+    setup.member.id = 15;
+    const editForm = find(setup.render(), 'MemberFormModal');
+    await editForm.onSubmit({ preventDefault() {} });
+    assert.equal(setup.toasts.findLast(toast => toast.ok)?.text, setup.t('admin.member_update_success'));
+  });
+}
+
+test('actual FamilyTree error code translates; raw backend message is never shown', async () => {
+  const setup = await familySetup('vi', { success: false, code: 'FAMILY_MEMBER_NOT_FOUND', message: 'Family member not found.' });
+  find(setup.render(), 'MemberCard').onDelete(setup.member);
+  await find(setup.render(), 'DeleteConfirmModal').onConfirm();
+  assert.deepEqual(setup.toasts.at(-1), { text: 'Không tìm thấy thành viên.', ok: false });
+});
+
+for (const locale of ['vi', 'en']) {
+  test(`${locale}: actual Library callbacks localize album/photo CRUD and upload success`, async () => {
+    const i18n = await translator(locale); const t = i18n.t.bind(i18n); const h = harness(); const toasts = [];
+    const photo = { id: 15, albumId: 1, title: 'Photo', fileName: 'photo.webp', url: 'primary', driveFileId: 'fixture-id' };
+    const album = { id: 1, name: 'Family', photos: [photo] };
+    let uploadMetadata; let updateMetadata;
+    const libraryService = { getOverview: async () => ({ categories: [{ id: 1, name: 'Hoạt hình', slug: 'hoat-hinh', isDefault: false }], albums: [album] }),
+      createAlbum: async () => album, updateAlbum: async () => album, deleteAlbum: async () => {},
+      uploadPhotos: async (_albumId, _files, metadata) => { uploadMetadata = metadata; return []; },
+      updatePhoto: async (_id, metadata) => { updateMetadata = metadata; }, deletePhoto: async () => {} };
+    const { LibraryTab } = load('src/features/admin/components/family-tree/LibraryTab.tsx', {
+      react: { ...h.hooks, default: h.hooks }, 'react/jsx-runtime': { jsx: h.jsx, jsxs: h.jsx },
+      'lucide-react': new Proxy({}, { get: (_, key) => key }), '@/shared/hooks/useLanguage': { useLanguage: () => ({ t }) },
+      '@/shared/components/ui': { Button: 'Button', Modal: 'Modal', Select: 'Select', SelectItem: 'SelectItem' }, '../../services/featureMessages': messages,
+      '../../services/libraryService': { libraryService }, './PhotoLightboxModal': { PhotoLightboxModal: 'Lightbox' },
+      './LibraryAlbumModal': { LibraryAlbumModal: 'AlbumModal' }, './LibraryUploadModal': { LibraryUploadModal: 'UploadModal' },
+      './LibraryPhotoEditModal': { LibraryPhotoEditModal: 'PhotoModal' },
+      './LibraryImage': { LibraryImage: 'LibraryImage' }, './LibraryTab.css': {},
+    });
+    const render = () => h.render(LibraryTab, { showToast: text => toasts.push(text) });
+    render(); await h.mount();
+    find(render(), 'Select', props => props['aria-label'] === t('admin.library_ui.album_filter')).onValueChange('1');
+    assert.equal(nodes(render()).some(node => /category|danh mục/i.test(String(node.props?.['aria-label'] ?? node.props?.children ?? ''))), false);
+    find(render(), 'Button', props => props.children === t('admin.library_ui.create_album')).onClick();
+    await find(render(), 'AlbumModal').onSubmit({ name: 'Family' });
+    assert.equal(toasts.at(-1), t('admin.library_ui.album_created'));
+    find(render(), 'button', props => props['aria-label'] === t('admin.library_ui.edit_album')).onClick();
+    await find(render(), 'AlbumModal').onSubmit({ name: 'Renamed' });
+    assert.equal(toasts.at(-1), t('admin.library_ui.album_updated'));
+    find(render(), 'Button', props => props.children === t('admin.library_ui.upload')).onClick();
+    await find(render(), 'UploadModal').onSubmit(1, [], { title: 'Album photo' });
+    assert.equal(Object.hasOwn(uploadMetadata, 'category'), false);
+    assert.equal(toasts.at(-1), t('admin.library_ui.photo_uploaded'));
+    assert.ok(!nodes(render()).some(node => node.type === 'Lightbox'));
+    find(render(), 'button', props => props['aria-label']?.endsWith(': Photo')).onClick();
+    find(render(), 'Lightbox').onEdit(photo); await find(render(), 'PhotoModal').onSubmit({ title: 'Edited' });
+    assert.equal(Object.hasOwn(updateMetadata, 'category'), false);
+    assert.equal(toasts.at(-1), t('admin.library_ui.photo_updated'));
+    find(render(), 'button', props => props['aria-label']?.endsWith(': Photo')).onClick();
+    find(render(), 'Lightbox').onDelete(photo);
+    find(render(), 'Button', props => props.variant === 'danger').onClick(); await flush();
+    assert.equal(toasts.at(-1), t('admin.library_ui.photo_deleted'));
+    find(render(), 'button', props => props['aria-label'] === t('admin.library_ui.delete_album')).onClick();
+    find(render(), 'Button', props => props.variant === 'danger').onClick(); await flush();
+    assert.equal(toasts.at(-1), t('admin.library_ui.album_deleted'));
+    assert.equal(nodes(render()).some(node => /create category|tạo danh mục|category_filter/i.test(String(node.props?.children ?? node.props?.['aria-label'] ?? ''))), false);
+  });
+}
+
+test('all success/error/validation keys including category translations exist in VI and EN', async () => {
+  const vi = await translator('vi'); const en = await translator('en');
+  const keys = [...Object.values(messages.featureSuccessKeys), 'admin.library_ui.name_required', 'admin.library_ui.category_name_required',
+    'admin.library_ui.album_required', 'admin.library_ui.images_required', 'admin.library_ui.file_size', 'admin.library_ui.file_invalid', 'admin.library_ui.file_count'];
+  for (const key of keys) { assert.ok(vi.exists(key), key); assert.ok(en.exists(key), key); assert.notEqual(vi.t(key), en.t(key)); }
+  assert.equal(vi.t(messages.featureSuccessKeys.categoryCreate), 'Tạo danh mục thành công.');
+  assert.equal(vi.t(messages.featureSuccessKeys.categoryDelete), 'Đã xóa danh mục thành công.');
+});
+
+test('known codes, old status-only responses and unknown errors never expose raw English', async () => {
+  const i18n = await translator('vi');
+  for (const [error, action, expected] of [
+    [{ status: 429, payload: { code: 'RATE_LIMITED', message: 'Raw English' } }, 'photo_upload', 'common.rate_limited'],
+    [{ payload: { code: 'LIBRARY_CATEGORY_CANNOT_EDIT', message: 'Default categories cannot be edited.' }, status: 409 }, 'category_save', 'admin.library_ui.category_cannot_edit'],
+    [{ payload: { code: 'LIBRARY_CATEGORY_CANNOT_DELETE' }, status: 409 }, 'category_delete', 'admin.library_ui.category_cannot_delete'],
+    [{ payload: { code: 'LIBRARY_CATEGORY_NOT_FOUND' }, status: 404 }, 'category_save', 'admin.library_ui.category_not_found'],
+    [{ payload: { code: 'LIBRARY_CATEGORY_INVALID' }, status: 400 }, 'category_save', 'admin.library_ui.category_invalid'],
+    [{ payload: { code: 'LIBRARY_CATEGORY_IN_USE', message: 'English raw' }, status: 400 }, 'album_delete', 'admin.library_ui.category_in_use'],
+    [{ payload: { code: 'LIBRARY_INVALID_IMAGE' }, status: 400 }, 'photo_upload', 'admin.library_ui.file_invalid'],
+    [{ payload: { code: 'LIBRARY_INVALID_DISPLAY_DATE' }, status: 400 }, 'photo_upload', 'admin.library_ui.date_invalid'],
+    [{ status: 0, message: 'Failed to fetch' }, 'member_load', 'admin.notifications.connection_failed'],
+    [{ status: 404, payload: { message: 'Album not found.' } }, 'album_delete', 'admin.library_ui.album_not_found'],
+    [{ status: 502, payload: { message: 'Drive delete failed.' } }, 'photo_delete', 'admin.library_ui.photo_delete_failed'],
+    [{ payload: { code: 'LIBRARY_STORAGE_FAILED', message: 'Drive failed' } }, 'photo_upload', 'admin.library_ui.upload_failed'],
+    [{ payload: { code: 'LIBRARY_NOT_FOUND' } }, 'photo_save', 'admin.library_ui.photo_not_found'],
+    [{ status: 400, errors: { Name: ['English validation'] } }, 'album_save', 'admin.library_ui.validation'],
+    [{ payload: { code: 'UNKNOWN_NEW_CODE', message: 'Raw new error' } }, 'photo_save', 'admin.library_ui.photo_save_failed'],
+  ]) {
+    const key = messages.getFeatureErrorKey(error, action); assert.equal(key, expected); assert.ok(i18n.exists(key));
+    assert.notEqual(i18n.t(key), error.message ?? error.payload?.message);
+  }
+});
+
+test('Library validation key changes language while the same form error remains visible', async () => {
+  const i18n = await translator('vi'); const h = harness(); const t = i18n.t.bind(i18n);
+  const { LibraryAlbumModal } = load('src/features/admin/components/family-tree/LibraryAlbumModal.tsx', {
+    react: h.hooks, 'react/jsx-runtime': { jsx: h.jsx, jsxs: h.jsx }, '@/shared/hooks/useLanguage': { useLanguage: () => ({ t }) },
+    '@/shared/components/ui': { Button: 'Button', Input: 'Input', Modal: 'Modal' }, '../../services/featureMessages': messages,
+    './LibraryPhotoFormFields': { libraryFieldClass: '', LibraryTextField: 'Input', LibraryTextArea: 'Textarea' },
+  });
+  const render = () => h.render(LibraryAlbumModal, { onSubmit: () => assert.fail('invalid name submitted'), onClose() {} });
+  await find(render(), 'form').onSubmit({ preventDefault() {} });
+  assert.equal(find(render(), 'p', props => props.role === 'alert').children, 'Vui lòng nhập tên album.');
+  await i18n.changeLanguage('en');
+  assert.equal(find(render(), 'p', props => props.role === 'alert').children, 'Please enter an album name.');
+});
+
+test('Member form validations, including birth date, follow current locale without raw helper defaults', async () => {
+  const i18n = await translator('vi'); const t = i18n.t.bind(i18n); const h = harness();
+  const jsxMock = { jsx: h.jsx, jsxs: h.jsx };
+  const dateHelpers = load('src/shared/components/ui/DateInput.tsx', {
+    react: { ...h.hooks, default: h.hooks }, 'react/jsx-runtime': jsxMock,
+    'react-dom': { createPortal: node => node }, 'react-day-picker': { DayPicker: 'DayPicker' },
+    'date-fns': { format: () => '' }, 'date-fns/locale': { enUS: {}, vi: {} },
+    'lucide-react': { Calendar: 'Calendar', ChevronLeft: 'ChevronLeft', ChevronRight: 'ChevronRight' }, './Input': { Input: 'Input' },
+    '@/shared/hooks/useLanguage': { useLanguage: () => ({ t, language: i18n.language }) },
+  });
+  const { MemberFormModal } = load('src/features/admin/components/family-tree/MemberFormModal.tsx', {
+    react: { ...h.hooks, default: h.hooks }, 'react/jsx-runtime': jsxMock,
+    'lucide-react': new Proxy({}, { get: (_, key) => key }),
+    'framer-motion': { motion: new Proxy({}, { get: (_, key) => key }), AnimatePresence: 'AnimatePresence' },
+    '@/shared/hooks/useLanguage': { useLanguage: () => ({ t, language: i18n.language }) },
+    '@/shared/api/apiClient': { apiClient: {} }, './types': { removeVietnameseTones: value => value },
+    './MemberAvatarImage': { MemberAvatarImage: 'MemberAvatarImage' },
+    './FamilyRelationSelect': { FamilyRelationSelect: 'FamilyRelationSelect' },
+    './FamilyMemberPicker': { FamilyMemberPicker: 'FamilyMemberPicker' },
+    '@/shared/components/AddressInput': { AddressInput: 'AddressInput' },
+    './siblingRelations': { isBiologicalSibling: () => false, getSiblingSeniority: () => 'unknown', getSiblingDisplayLabelKey: () => 'sibling_neutral_biological' },
+    '@/shared/components/ui': { ...dateHelpers, ...Object.fromEntries(['Modal', 'Button', 'Input', 'Select', 'Textarea', 'DateInput'].map(name => [name, name])) },
+  });
+  let member = { fullName: '', generation: 1, role: 'Tổ tiên', dateOfBirth: '' };
+  const render = () => h.render(MemberFormModal, { isOpen: true, editingMember: member, members: [], isSaving: false,
+    onClose() {}, onChange() {}, onSubmit: () => assert.fail('invalid member submitted') });
+  find(render(), 'form').onSubmit({ preventDefault() {} });
+  assert.equal(find(render(), 'Input', props => !!props.error).error, t('common.registerPage.errors.nameRequired'));
+  await i18n.changeLanguage('en');
+  assert.equal(find(render(), 'Input', props => !!props.error).error, 'Please enter your full name.');
+  member = { ...member, fullName: 'Nguyễn Văn An', dateOfBirth: '2099-01-01' };
+  find(render(), 'form').onSubmit({ preventDefault() {} });
+  assert.equal(find(render(), 'DateInput').error, t('common.registerPage.dobValidation.futureDate'));
+});
