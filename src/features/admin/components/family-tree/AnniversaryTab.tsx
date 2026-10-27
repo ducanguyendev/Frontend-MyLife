@@ -198,8 +198,8 @@ export const AnniversaryTab: React.FC<Props> = ({ showToast, members: initialMem
 
     <main className="flex min-h-0 flex-1 flex-col gap-3 xl:grid xl:grid-cols-[minmax(290px,0.4fr)_minmax(0,0.6fr)]">
       <section aria-label={t('admin.anniversary_ui.calendar')} className="shrink-0 rounded-2xl border border-custom-border bg-secondary-bg p-3 sm:p-4 xl:flex xl:min-h-0 xl:flex-col">
-        <div className="mb-3 flex items-center justify-between gap-2">
-          <div className="flex min-w-0 items-center gap-2">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <div className="flex min-w-0 flex-1 items-center gap-2">
             <CalendarDays size={18} className="shrink-0 text-accent" aria-hidden="true" />
             <div className="relative min-w-0">
               <button type="button" className="truncate rounded-lg px-2 py-1 text-left font-bold capitalize text-primary-text hover:bg-primary-bg focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent" aria-expanded={monthPickerOpen} aria-haspopup="dialog" aria-controls="anniversary-month-picker" onClick={openMonthPicker}>{monthLabel}</button>
@@ -217,12 +217,12 @@ export const AnniversaryTab: React.FC<Props> = ({ showToast, members: initialMem
                 <div className="mt-3 flex justify-end"><Button type="button" className="min-h-9 px-3 text-xs" onClick={applyMonthPicker}>{t('admin.anniversary_ui.go_to_month')}</Button></div>
               </div>}
             </div>
-            <span className="hidden rounded-full bg-accent/10 px-2 py-0.5 text-xs font-semibold text-accent sm:inline-flex">{t('admin.anniversary_ui.event_count', { count: items.length })}</span>
+            <span className="hidden shrink-0 whitespace-nowrap rounded-full bg-accent/10 px-2 py-0.5 text-xs font-semibold text-accent sm:inline-flex sm:items-center">{t('admin.anniversary_ui.event_count', { count: items.length })}</span>
           </div>
-          <div className="flex shrink-0 items-center gap-1">
-            <Button variant="ghost" className="min-h-9 px-2" aria-label={t('admin.anniversary_ui.previous_month')} onClick={() => moveMonth(-1)}><ChevronLeft size={18} /></Button>
-            <Button variant="ghost" className="min-h-9 px-2" aria-label={t('admin.anniversary_ui.next_month')} onClick={() => moveMonth(1)}><ChevronRight size={18} /></Button>
-            <Button variant="outline" className="min-h-9 px-2 text-xs" leftIcon={<RotateCcw size={13} />} onClick={() => { setVisibleMonth({ year: today.year, month: today.month }); setCalendarSelectedDate(todayKey); setFilterDate(null); setSelectedEventId(null); setMonthPickerOpen(false); }}>{t('admin.anniversary_ui.today')}</Button>
+          <div className="ml-auto flex shrink-0 items-center gap-1">
+            <Button variant="ghost" className="min-h-9 shrink-0 px-2" aria-label={t('admin.anniversary_ui.previous_month')} onClick={() => moveMonth(-1)}><ChevronLeft size={18} /></Button>
+            <Button variant="ghost" className="min-h-9 shrink-0 px-2" aria-label={t('admin.anniversary_ui.next_month')} onClick={() => moveMonth(1)}><ChevronRight size={18} /></Button>
+            <Button variant="outline" className="min-h-9 shrink-0 whitespace-nowrap px-2 text-xs" leftIcon={<RotateCcw size={13} />} onClick={() => { setVisibleMonth({ year: today.year, month: today.month }); setCalendarSelectedDate(todayKey); setFilterDate(null); setSelectedEventId(null); setMonthPickerOpen(false); }}>{t('admin.anniversary_ui.today')}</Button>
           </div>
         </div>
         <div className="grid grid-cols-7 gap-1" role="grid" aria-label={monthLabel}>

@@ -99,6 +99,25 @@ test('calendar day cells distinguish event types, count badges, selected priorit
   assert.match(source, /aria-label=\{`\$\{fullDateFormat\.format[\s\S]*dayVisual\.count \? `, \$\{t\('admin\.anniversary_ui\.event_count'/);
 });
 
+test('month event-count badge cannot shrink or wrap and header controls keep their width', async () => {
+  const source = readFileSync(join(__dirname, '../src/features/admin/components/family-tree/AnniversaryTab.tsx'), 'utf8');
+  assert.match(source, /hidden shrink-0 whitespace-nowrap rounded-full bg-accent\/10 px-2 py-0\.5 text-xs font-semibold text-accent sm:inline-flex sm:items-center/);
+  assert.match(source, /flex flex-wrap items-center justify-between gap-2/);
+  assert.match(source, /CalendarDays size=\{18\} className="shrink-0 text-accent"/);
+  assert.match(source, /className="ml-auto flex shrink-0 items-center gap-1"/);
+  assert.match(source, /min-h-9 shrink-0 whitespace-nowrap px-2 text-xs/);
+  for (const lng of ['vi', 'en']) {
+    const resources = JSON.parse(readFileSync(join(__dirname, `../src/shared/locales/${lng}/admin.json`), 'utf8'));
+    const i18n = i18next.createInstance();
+    await i18n.init({ lng, fallbackLng: false, resources: { [lng]: { translation: { admin: resources } } }, interpolation: { escapeValue: false } });
+    for (const count of [1, 3, 12, 99]) {
+      const label = i18n.t('admin.anniversary_ui.event_count', { count });
+      assert.ok(label.startsWith(String(count)));
+      assert.ok(!/\r|\n/.test(label));
+    }
+  }
+});
+
 test('event card selection navigates without filtering the list; actions remain separate and month picker applies', () => {
   const source = readFileSync(join(__dirname, '../src/features/admin/components/family-tree/AnniversaryTab.tsx'), 'utf8');
   assert.match(source, /const handleSelectEvent = \(item: FamilyAnniversary\)[\s\S]*setVisibleMonth\(target\.visibleMonth\)[\s\S]*setCalendarSelectedDate\(target\.selectedDate\)[\s\S]*setSelectedEventId\(item\.id\)/);
