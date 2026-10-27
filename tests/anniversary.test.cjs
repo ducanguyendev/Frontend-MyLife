@@ -53,8 +53,9 @@ test('Anniversary workspace is data-backed with calendar filtering and CRUD stat
   assert.match(source, /removeVietnameseTones/);
   assert.match(source, /item\.nextSolarDate/);
   assert.match(source, /getAnniversaryMonthGrid\(/);
-  assert.match(source, /selectedDate \? textFiltered\.filter/);
-  assert.match(source, /setSelectedDate\(null\)/);
+  assert.match(source, /filterDate \? textFiltered\.filter/);
+  assert.match(source, /setCalendarSelectedDate\(target\.selectedDate\)/);
+  assert.match(source, /setFilterDate\(null\)/);
   assert.match(source, /overflow-y-auto overscroll-contain p-3/);
   assert.match(source, /xl:grid-cols-\[minmax\(290px,0\.4fr\)_minmax\(0,0\.6fr\)\]/);
   assert.doesNotMatch(source, /banner_title|admin\.anniversary_ui\.total|admin\.anniversary_ui\.nearest/);
@@ -65,7 +66,7 @@ test('solar calendar utilities handle month edges, leap February, and UTC-safe I
   const output = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
   const exports = {};
   new vm.Script(output).runInNewContext({ exports, Date, Intl });
-  const { getAnniversaryMonthGrid, anniversaryDateParts, anniversaryDateKey } = exports;
+  const { getAnniversaryMonthGrid, anniversaryDateParts, anniversaryDateKey, getAnniversaryNavigationTarget } = exports;
 
   const december = getAnniversaryMonthGrid(2026, 11);
   assert.ok(december.some(day => day.year === 2027 && day.month === 0 && day.day === 1 && !day.inMonth));
@@ -76,6 +77,21 @@ test('solar calendar utilities handle month edges, leap February, and UTC-safe I
   assert.equal(JSON.stringify(anniversaryDateParts('2026-10-13')), JSON.stringify({ year: 2026, month: 9, day: 13 }));
   assert.equal(anniversaryDateParts('2026-02-30'), null);
   assert.equal(anniversaryDateKey(2027, 0, 2), '2027-01-02');
+  assert.deepEqual(JSON.parse(JSON.stringify(getAnniversaryNavigationTarget('2027-01-09'))), { visibleMonth: { year: 2027, month: 0 }, selectedDate: '2027-01-09' });
+  assert.deepEqual(JSON.parse(JSON.stringify(getAnniversaryNavigationTarget('2027-08-19'))), { visibleMonth: { year: 2027, month: 7 }, selectedDate: '2027-08-19' });
+  assert.deepEqual(JSON.parse(JSON.stringify(getAnniversaryNavigationTarget('2028-12-15'))), { visibleMonth: { year: 2028, month: 11 }, selectedDate: '2028-12-15' });
+  assert.equal(getAnniversaryNavigationTarget('2028-13-45'), null);
+});
+
+test('event card selection navigates without filtering the list; actions remain separate and month picker applies', () => {
+  const source = readFileSync(join(__dirname, '../src/features/admin/components/family-tree/AnniversaryTab.tsx'), 'utf8');
+  assert.match(source, /const handleSelectEvent = \(item: FamilyAnniversary\)[\s\S]*setVisibleMonth\(target\.visibleMonth\)[\s\S]*setCalendarSelectedDate\(target\.selectedDate\)[\s\S]*setSelectedEventId\(item\.id\)/);
+  assert.match(source, /aria-pressed=\{selectedEventId === item\.id\}/);
+  assert.match(source, /onClick=\{event => \{ event\.stopPropagation\(\); void openEditor\(item\); \}\}/);
+  assert.match(source, /onClick=\{event => \{ event\.stopPropagation\(\); setDeleting\(item\); \}\}/);
+  assert.match(source, /setVisibleMonth\(draftMonth\);\s*setMonthPickerOpen\(false\)/);
+  assert.match(source, /setCalendarSelectedDate\(todayKey\)/);
+  assert.doesNotMatch(source.match(/const handleSelectEvent = \(item: FamilyAnniversary\) => \{[\s\S]*?\n  \};/)?.[0] ?? '', /setFilterDate/);
 });
 
 test('anniversary controls and status text are translated in Vietnamese and English', async () => {
@@ -83,7 +99,7 @@ test('anniversary controls and status text are translated in Vietnamese and Engl
     const resources = JSON.parse(readFileSync(join(__dirname, `../src/shared/locales/${lng}/admin.json`), 'utf8'));
     const i18n = i18next.createInstance();
     await i18n.init({ lng, fallbackLng: false, resources: { [lng]: { translation: { admin: resources } }, }, interpolation: { escapeValue: false } });
-  for (const key of ['calendar', 'calendar_solar', 'previous_month', 'next_month', 'upcoming_events', 'clear_date', 'no_events_date', 'add', 'add_aria_label', 'edit_title', 'delete_confirm', 'event_type', 'event_information', 'date_of_death', 'solar_death_date', 'lunar_death_date', 'lunar_day', 'lunar_month', 'lunar_year', 'historical_lunar_year', 'lunar_recurrence_help', 'original_date_summary', 'upcoming_lunar_date', 'original_lunar_year', 'recurrence_explanation', 'leap_month', 'checking_dates', 'dates_match', 'date_mismatch', 'current_year_passed', 'current_year_upcoming', 'loading', 'load_failed', 'empty', 'invalid_lunar_date', 'save_failed', 'created', 'updated', 'deleted']) {
+  for (const key of ['calendar', 'month_picker', 'month', 'year', 'go_to_month', 'calendar_solar', 'previous_month', 'next_month', 'upcoming_events', 'clear_date', 'no_events_date', 'add', 'add_aria_label', 'edit_title', 'delete_confirm', 'event_type', 'event_information', 'date_of_death', 'solar_death_date', 'lunar_death_date', 'lunar_day', 'lunar_month', 'lunar_year', 'historical_lunar_year', 'lunar_recurrence_help', 'original_date_summary', 'upcoming_lunar_date', 'original_lunar_year', 'recurrence_explanation', 'leap_month', 'checking_dates', 'dates_match', 'date_mismatch', 'current_year_passed', 'current_year_upcoming', 'loading', 'load_failed', 'empty', 'invalid_lunar_date', 'save_failed', 'created', 'updated', 'deleted']) {
       const translation = i18n.t(`admin.anniversary_ui.${key}`, { title: 'event' });
       assert.notEqual(translation, `admin.anniversary_ui.${key}`);
       assert.ok(translation.length > 0);

@@ -16,6 +16,12 @@ export const anniversaryDateParts = (date: string) => {
 
 export const anniversaryDateKey = (year: number, month: number, day: number) => `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
+export const getAnniversaryNavigationTarget = (date: string) => {
+  const parts = anniversaryDateParts(date);
+  if (!parts) return null;
+  return { visibleMonth: { year: parts.year, month: parts.month }, selectedDate: anniversaryDateKey(parts.year, parts.month, parts.day) };
+};
+
 export const getVietnamTodayKey = () => {
   const parts = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date());
   return anniversaryDateKey(Number(parts.find(part => part.type === 'year')?.value), Number(parts.find(part => part.type === 'month')?.value) - 1, Number(parts.find(part => part.type === 'day')?.value));
