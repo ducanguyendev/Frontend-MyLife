@@ -324,15 +324,15 @@ export function layoutShadcnFamilyTree(members: FamilyMember[], showExtendedRela
       const path = !source.singleParent
         ? `M ${connectorSourceX} ${connectorSourceY} L ${connectorSourceX} ${railY} L ${childX} ${railY} L ${childX} ${childY}`
         : Math.abs(connectorSourceX - childX) < .5 ? `M ${connectorSourceX} ${connectorSourceY} L ${childX} ${childY}` : `M ${connectorSourceX} ${connectorSourceY} L ${connectorSourceX} ${railY} L ${childX} ${railY} L ${childX} ${childY}`;
-      links.push({ id: `family-${key}`, path, kind: "family", memberIds: familyMemberIds });
+      links.push({ id: `family-${key}`, path, kind: "family", memberIds: familyMemberIds, sourceMemberIds: group.parentIds, targetMemberIds: childHousehold.flatMap(node => [node.member.id]) });
       continue;
     }
     const connector = buildFamilyConnectorGeometry(connectorSourceX, connectorSourceY, railY, childCenters);
     if (!connector) continue;
-    links.push({ id: `family-${key}`, path: connector.path, kind: "family", memberIds: familyMemberIds });
+    links.push({ id: `family-${key}`, path: connector.path, kind: "family", memberIds: familyMemberIds, sourceMemberIds: group.parentIds, targetMemberIds: group.households.flatMap(household => household.ids) });
     childHouseholds.forEach((household, index) => {
       const childX = childCenters[index]; const childY = Math.min(...household.map(node => node.y));
-      links.push({ id: `family-child-${key}-${group.households[index].key}`, path: `M ${childX} ${railY} L ${childX} ${childY}`, kind: "family-child", memberIds: familyMemberIds });
+      links.push({ id: `family-child-${key}-${group.households[index].key}`, path: `M ${childX} ${railY} L ${childX} ${childY}`, kind: "family-child", memberIds: familyMemberIds, sourceMemberIds: group.parentIds, targetMemberIds: group.households[index].ids });
     });
   }
 

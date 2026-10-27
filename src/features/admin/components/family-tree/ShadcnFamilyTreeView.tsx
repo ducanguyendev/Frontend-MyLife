@@ -3,7 +3,8 @@ import { Download, Focus, GitBranch, ZoomIn, ZoomOut } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
 import { toPng } from "html-to-image";
 import { useLanguage } from "@/shared/hooks/useLanguage";
-import { buildFamilyTreeIndex, getHiddenDescendantCount, getRelatedFamilyMemberIds, getVisibleFamilyMembers } from "./familyTreeAdapter";
+import { buildFamilyTreeIndex, getHiddenDescendantCount, getVisibleFamilyMembers } from "./familyTreeAdapter";
+import { getFamilyBranchEdgeIds, getFamilyBranchMemberIds } from "./familyBranchResolver";
 import { layoutShadcnFamilyTree } from "./shadcnFamilyTreeLayout";
 import { adaptMembersToShadcnFamilyTree } from "./shadcnFamilyTreeAdapter";
 import { ShadcnFamilyTreePersonCard } from "./ShadcnFamilyTreePersonCard";
@@ -33,6 +34,7 @@ export function ShadcnFamilyTreeView({ members, searchFocusMemberId, generationF
   const [focusHistory, setFocusHistory] = useState<number[]>([]);
   const [expandedIds, setExpandedIds] = useState<Set<number>>(() => new Set());
   const [showAll, setShowAll] = useState(true);
+  const [branchMemberId, setBranchMemberId] = useState<number | null>(null);
   const [showExtended, setShowExtended] = useState(false);
   const [hoveredId, setHoveredId] = useState<number | null>(null);
   const [transform, setTransform] = useState<Transform>({ x: 0, y: 0, scale: 1 });
@@ -56,42 +58,31 @@ export function ShadcnFamilyTreeView({ members, searchFocusMemberId, generationF
     });
   }, [model]);
   const index = useMemo(() => buildFamilyTreeIndex(layoutMembers), [layoutMembers]);
-  const visible = useMemo(() => getVisibleFamilyMembers(layoutMembers, focusedId, expandedIds, showAll, index), [layoutMembers, focusedId, expandedIds, showAll, index]);
+  const branchIds = useMemo(() => branchMemberId == null ? null : getFamilyBranchMemberIds(layoutMembers, branchMemberId), [layoutMembers, branchMemberId]);
+  const visible = useMemo(() => branchIds
+    ? layoutMembers.filter(member => branchIds.has(member.id))
+    : getVisibleFamilyMembers(layoutMembers, focusedId, expandedIds, showAll, index),
+  [layoutMembers, branchIds, focusedId, expandedIds, showAll, index]);
   const visibleIds = useMemo(() => new Set(visible.map(member => member.id)), [visible]);
   const hiddenCounts = useMemo(() => new Map(visible.map(member => [member.id, getHiddenDescendantCount(member, index, visibleIds)])), [visible, index, visibleIds]);
   const layout = useMemo(() => layoutShadcnFamilyTree(visible, showExtended), [visible, showExtended]);
-  const activeId = hoveredId ?? focusedId;
-  const relatedIds = useMemo(() => {
-    const result = getRelatedFamilyMemberIds(layoutMembers, activeId, showExtended);
-    if (activeId == null) return result;
-    const active = layoutMembers.find(member => member.id === activeId);
-    if (!active) return result;
-    for (const member of layoutMembers) {
-      if (member.id !== active.id && member.fatherId === active.fatherId && member.motherId === active.motherId && (active.fatherId != null || active.motherId != null)) result.add(member.id);
-    }
-    const byId = new Map(layoutMembers.map(member => [member.id, member]));
-    const pending = [active.fatherId, active.motherId].filter((id): id is number => id != null);
-    const visited = new Set<number>();
-    while (pending.length && visited.size < 64) {
-      const id = pending.pop()!;
-      if (visited.has(id)) continue;
-      visited.add(id); result.add(id);
-      const ancestor = byId.get(id);
-      if (ancestor?.fatherId != null) pending.push(ancestor.fatherId);
-      if (ancestor?.motherId != null) pending.push(ancestor.motherId);
-    }
-    return result;
-  }, [layoutMembers, activeId, showExtended]);
+  const activeId = hoveredId ?? branchMemberId ?? focusedId;
+  const previewBranchIds = useMemo(() => activeId == null ? null : getFamilyBranchMemberIds(layoutMembers, activeId), [layoutMembers, activeId]);
+  const previewBranchEdgeIds = useMemo(() => previewBranchIds == null ? null : getFamilyBranchEdgeIds(previewBranchIds, layout.links), [previewBranchIds, layout.links]);
 
   useEffect(() => { focusedIdRef.current = focusedId; }, [focusedId]);
   useEffect(() => {
     if (focusedId != null && !layoutMembers.some(member => member.id === focusedId)) setFocusedId(null);
   }, [layoutMembers, focusedId]);
   useEffect(() => {
+    if (branchMemberId != null && !layoutMembers.some(member => member.id === branchMemberId)) setBranchMemberId(null);
+  }, [layoutMembers, branchMemberId]);
+  useEffect(() => {
     if (searchFocusMemberId == null || !layoutMembers.some(member => member.id === searchFocusMemberId)) return;
     const current = focusedIdRef.current;
     if (current != null && current !== searchFocusMemberId) setFocusHistory(history => [...history, current]);
     setFocusedId(searchFocusMemberId);
+    setBranchMemberId(null);
     setExpandedIds(new Set());
   }, [searchFocusMemberId, layoutMembers]);
 
@@ -106,7 +97,7 @@ export function ShadcnFamilyTreeView({ members, searchFocusMemberId, generationF
     const minY = Math.min(...target.map(node => node.y));
     const maxY = Math.max(...target.map(node => node.y + node.height));
     const ideal = Math.min((bounds.width - 80) / (maxX - minX + 80), (bounds.height - 130) / (maxY - minY + 130), 1);
-    const floor = centerOnly ? .88 : showAll ? .42 : .68;
+    const floor = centerOnly ? .88 : .42;
     const scale = clampScale(Math.max(floor, ideal));
     setTransform({ x: bounds.width / 2 - (minX + maxX) / 2 * scale, y: bounds.height / 2 - (minY + maxY) / 2 * scale, scale });
   }, [layout.nodes, showAll]);
@@ -124,17 +115,14 @@ export function ShadcnFamilyTreeView({ members, searchFocusMemberId, generationF
     return () => document.removeEventListener("fullscreenchange", update);
   }, []);
 
-  const focusMember = useCallback((id: number) => {
-    if (focusedId !== id && focusedId != null) setFocusHistory(history => [...history, focusedId]);
-    setFocusedId(id); setHoveredId(null);
-  }, [focusedId]);
   const viewBranch = useCallback((id: number) => {
-    focusMember(id); setExpandedIds(new Set()); setShowAll(false);
-  }, [focusMember]);
+    if (branchMemberId != null && branchMemberId !== id) setFocusHistory(history => [...history, branchMemberId]);
+    setFocusedId(id); setHoveredId(null); setBranchMemberId(id); setExpandedIds(new Set()); setShowAll(false);
+  }, [branchMemberId]);
   const restoreFocus = () => {
     const previous = focusHistory.at(-1);
     if (previous == null) return;
-    setFocusHistory(history => history.slice(0, -1)); setFocusedId(previous); setExpandedIds(new Set()); setShowAll(false);
+    setFocusHistory(history => history.slice(0, -1)); setFocusedId(previous); setBranchMemberId(previous); setExpandedIds(new Set()); setShowAll(false);
   };
   const toggleExpanded = (id: number) => setExpandedIds(current => {
     const next = new Set(current);
@@ -181,7 +169,7 @@ export function ShadcnFamilyTreeView({ members, searchFocusMemberId, generationF
 
   return <div ref={shellRef} className={`shadcn-family-tree${exporting ? " is-exporting" : ""}`} data-renderer="shadcn-family-tree">
     <div className="shadcn-family-tree__toolbar" role="toolbar" aria-label={toolbarLabel("admin.mindmap_toolbar", "Công cụ sơ đồ gia phả")}>
-      {!showAll && <button type="button" className="shadcn-family-tree__tool shadcn-family-tree__back" onClick={() => { setShowAll(true); setExpandedIds(new Set()); }}>{toolbarLabel("admin.mindmap_all_tree", "Xem toàn bộ cây")}</button>}
+      {!showAll && <button type="button" className="shadcn-family-tree__tool shadcn-family-tree__back" onClick={() => { setShowAll(true); setBranchMemberId(null); setExpandedIds(new Set()); }}>{toolbarLabel("admin.mindmap_all_tree", "Xem toàn bộ cây")}</button>}
       {!showAll && focusHistory.length > 0 && <button type="button" className="shadcn-family-tree__tool" onClick={restoreFocus}>{toolbarLabel("admin.mindmap_previous_branch", "← Nhánh trước")}</button>}
       <button type="button" className="shadcn-family-tree__tool" aria-label={toolbarLabel("admin.mindmap_zoom_out", "Thu nhỏ")} onClick={() => zoomAt(transform.scale / 1.18)}><ZoomOut size={16} /></button>
       <button type="button" className="shadcn-family-tree__tool" aria-label={toolbarLabel("admin.mindmap_zoom_in", "Phóng to")} onClick={() => zoomAt(transform.scale * 1.18)}><ZoomIn size={16} /></button>
@@ -195,12 +183,12 @@ export function ShadcnFamilyTreeView({ members, searchFocusMemberId, generationF
       <div className="shadcn-family-tree__scene" style={sceneStyle}>
         <svg className="shadcn-family-tree__links" width={layout.width} height={layout.height} aria-hidden="true">
           {layout.links.map(link => {
-            const related = activeId == null || link.memberIds.some(id => relatedIds.has(id));
+            const related = activeId == null || Boolean(previewBranchEdgeIds?.has(link.id));
             return <g key={link.id} className={`shadcn-family-tree__link shadcn-family-tree__link--${link.kind}${related ? " is-related" : " is-dimmed"}`}><path d={link.path} />{link.kind === "spouse" && <><circle cx={link.labelX} cy={link.labelY} r={9} /><text x={link.labelX} y={link.labelY} textAnchor="middle" dominantBaseline="central">♥</text></>}</g>;
           })}
         </svg>
         <AnimatePresence initial={false}>
-          {layout.nodes.map(node => <ShadcnFamilyTreePersonCard key={node.member.id} member={node.member} x={node.x} y={node.y} focused={focusedId === node.member.id} dimmed={activeId != null && !relatedIds.has(node.member.id)} hiddenCount={hiddenCounts.get(node.member.id) ?? 0} expanded={expandedIds.has(node.member.id)} onFocus={focusMember} onViewBranch={viewBranch} onHover={setHoveredId} onExpand={toggleExpanded} onView={onView} onEdit={onEdit} onDelete={onDelete} />)}
+          {layout.nodes.map(node => <ShadcnFamilyTreePersonCard key={node.member.id} member={node.member} x={node.x} y={node.y} focused={focusedId === node.member.id || branchMemberId === node.member.id} dimmed={activeId != null && !previewBranchIds?.has(node.member.id)} hiddenCount={branchMemberId == null ? hiddenCounts.get(node.member.id) ?? 0 : 0} expanded={expandedIds.has(node.member.id)} onViewBranch={viewBranch} onHover={setHoveredId} onExpand={toggleExpanded} onView={onView} onEdit={onEdit} onDelete={onDelete} />)}
         </AnimatePresence>
       </div>
       <div className="shadcn-family-tree__hint" aria-hidden="true">{toolbarLabel("admin.mindmap_drag_hint", "Kéo để di chuyển · Cuộn để thu phóng")}</div>

@@ -13,7 +13,6 @@ interface Props {
   dimmed: boolean;
   hiddenCount: number;
   expanded: boolean;
-  onFocus: (id: number) => void;
   onViewBranch: (id: number) => void;
   onHover: (id: number | null) => void;
   onExpand: (id: number) => void;
@@ -23,7 +22,7 @@ interface Props {
 }
 
 export const ShadcnFamilyTreePersonCard = memo(function ShadcnFamilyTreePersonCard({
-  member, x, y, focused, dimmed, hiddenCount, expanded, onFocus, onViewBranch, onHover, onExpand, onView, onEdit, onDelete,
+  member, x, y, focused, dimmed, hiddenCount, expanded, onViewBranch, onHover, onExpand, onView, onEdit, onDelete,
 }: Props) {
   const { t } = useLanguage();
   const reduceMotion = useReducedMotion();
@@ -43,21 +42,22 @@ export const ShadcnFamilyTreePersonCard = memo(function ShadcnFamilyTreePersonCa
   const genderKey = genderKind === "female" ? "gender_nữ" : genderKind === "male" ? "gender_nam" : genderKind === "other" ? "gender_other" : undefined;
   const gender = genderKey ? t(`admin.${genderKey}`, { defaultValue: member.gender }) : undefined;
 
+  const branchLabel = t("admin.mindmap_focus_branch", { defaultValue: `Xem nhánh của ${member.fullName}` });
   return <motion.article
     className={`shadcn-family-tree__person${focused ? " is-focused" : ""}${dimmed ? " is-dimmed" : ""}${member.lifeStatus === "DECEASED" ? " is-deceased" : ""}`}
     data-gender={genderKind}
     style={{ left: x, top: y }}
     initial={{ opacity: 0, y: 8 }} animate={{ opacity: dimmed ? .54 : 1, y: 0 }} exit={{ opacity: 0 }}
     transition={{ duration: reduceMotion ? .01 : .32, ease: "easeOut" }}
-    onClick={() => onFocus(member.id)}
+    onClick={() => onViewBranch(member.id)}
     onMouseEnter={() => onHover(member.id)}
     onMouseLeave={() => onHover(null)}
   >
-    <button type="button" className="shadcn-family-tree__portrait" aria-label={`${t("admin.view_detail", { defaultValue: "Xem chi tiết" })}: ${member.fullName}`} onClick={event => { event.stopPropagation(); onFocus(member.id); }}>
+    <button type="button" className="shadcn-family-tree__portrait" aria-label={`${branchLabel}: ${member.fullName}`} onClick={event => { event.stopPropagation(); onViewBranch(member.id); }}>
       <MemberAvatarImage member={member} alt={member.fullName} className="shadcn-family-tree__avatar" />
     </button>
     <div className="shadcn-family-tree__copy">
-      <button type="button" className="shadcn-family-tree__name" title={member.fullName} onClick={event => { event.stopPropagation(); onFocus(member.id); }}>{member.fullName}</button>
+      <button type="button" className="shadcn-family-tree__name" title={member.fullName} onClick={event => { event.stopPropagation(); onViewBranch(member.id); }}>{member.fullName}</button>
       <span className="shadcn-family-tree__role">{role}</span>
       <span className="shadcn-family-tree__meta">
         <span className="shadcn-family-tree__generation-chip">{generation}</span>

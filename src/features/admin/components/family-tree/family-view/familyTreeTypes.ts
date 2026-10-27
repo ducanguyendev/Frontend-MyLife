@@ -14,6 +14,8 @@ export interface FamilyViewLink {
   path: string;
   kind: "family" | "family-child" | "spouse" | "extended";
   memberIds: number[];
+  sourceMemberIds?: number[];
+  targetMemberIds?: number[];
   labelX?: number;
   labelY?: number;
 }
