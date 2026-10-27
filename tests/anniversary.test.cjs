@@ -53,11 +53,19 @@ test('Anniversary workspace is data-backed with calendar filtering and CRUD stat
   assert.match(source, /removeVietnameseTones/);
   assert.match(source, /item\.nextSolarDate/);
   assert.match(source, /getAnniversaryMonthGrid\(/);
-  assert.match(source, /filterDate \? textFiltered\.filter/);
+  assert.match(source, /filterDate \? typeFiltered\.filter/);
   assert.match(source, /setCalendarSelectedDate\(target\.selectedDate\)/);
   assert.match(source, /setFilterDate\(null\)/);
   assert.match(source, /overflow-y-auto overscroll-contain p-3/);
-  assert.match(source, /xl:grid-cols-\[minmax\(290px,0\.4fr\)_minmax\(0,0\.6fr\)\]/);
+  assert.match(source, /xl:grid-cols-\[minmax\(300px,0\.4fr\)_minmax\(0,0\.6fr\)\]/);
+  assert.match(source, /const \[eventTypeFilter, setEventTypeFilter\] = useState<EventTypeFilter>\('ALL'\)/);
+  assert.match(source, /eventTypeFilter === 'ALL' \? textFiltered : textFiltered\.filter\(item => item\.eventType === eventTypeFilter\)/);
+  assert.match(source, /\[items, search, eventTypeFilter, filterDate\]/);
+  assert.match(source, /setEventTypeFilter\('ALL'\)/);
+  assert.match(source, /event_type_filter/);
+  assert.match(source, /w-full sm:max-w-sm lg:max-w-md/);
+  assert.match(source, /event_count', \{ count: filtered\.length \}/);
+  assert.doesNotMatch(source.match(/<header className="mb-3[\s\S]*?<\/header>/)?.[0] ?? '', /<SearchBar/);
   assert.doesNotMatch(source, /banner_title|admin\.anniversary_ui\.total|admin\.anniversary_ui\.nearest/);
 });
 
@@ -66,7 +74,7 @@ test('solar calendar utilities handle month edges, leap February, and UTC-safe I
   const output = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
   const exports = {};
   new vm.Script(output).runInNewContext({ exports, Date, Intl });
-  const { getAnniversaryMonthGrid, anniversaryDateParts, anniversaryDateKey, getAnniversaryNavigationTarget, getDayEventVisual } = exports;
+  const { getAnniversaryMonthGrid, anniversaryDateParts, anniversaryDateKey, getAnniversaryNavigationTarget, countAnniversaryEventsInMonth, getDayEventVisual } = exports;
 
   const december = getAnniversaryMonthGrid(2026, 11);
   assert.ok(december.some(day => day.year === 2027 && day.month === 0 && day.day === 1 && !day.inMonth));
@@ -81,6 +89,11 @@ test('solar calendar utilities handle month edges, leap February, and UTC-safe I
   assert.deepEqual(JSON.parse(JSON.stringify(getAnniversaryNavigationTarget('2027-08-19'))), { visibleMonth: { year: 2027, month: 7 }, selectedDate: '2027-08-19' });
   assert.deepEqual(JSON.parse(JSON.stringify(getAnniversaryNavigationTarget('2028-12-15'))), { visibleMonth: { year: 2028, month: 11 }, selectedDate: '2028-12-15' });
   assert.equal(getAnniversaryNavigationTarget('2028-13-45'), null);
+  const countDates = ['2026-01-03', '2026-09-14', '2026-12-31', '2027-01-01'];
+  assert.equal(countAnniversaryEventsInMonth(countDates.map(nextSolarDate => ({ nextSolarDate })), 2026, 0), 1);
+  assert.equal(countAnniversaryEventsInMonth(countDates.map(nextSolarDate => ({ nextSolarDate })), 2026, 8), 1);
+  assert.equal(countAnniversaryEventsInMonth(countDates.map(nextSolarDate => ({ nextSolarDate })), 2026, 11), 1);
+  assert.equal(countAnniversaryEventsInMonth(countDates.map(nextSolarDate => ({ nextSolarDate })), 2026, 1), 0);
   assert.deepEqual(JSON.parse(JSON.stringify(getDayEventVisual([]))), { count: 0, type: 'none', hasDeathAnniversary: false, hasFamilyEvent: false });
   assert.deepEqual(JSON.parse(JSON.stringify(getDayEventVisual([{ eventType: 'DEATH_ANNIVERSARY' }]))), { count: 1, type: 'death-anniversary', hasDeathAnniversary: true, hasFamilyEvent: false });
   assert.deepEqual(JSON.parse(JSON.stringify(getDayEventVisual([{ eventType: 'FAMILY_EVENT' }, { eventType: 'FAMILY_EVENT' }]))), { count: 2, type: 'family-event', hasDeathAnniversary: false, hasFamilyEvent: true });
@@ -134,7 +147,7 @@ test('anniversary controls and status text are translated in Vietnamese and Engl
     const resources = JSON.parse(readFileSync(join(__dirname, `../src/shared/locales/${lng}/admin.json`), 'utf8'));
     const i18n = i18next.createInstance();
     await i18n.init({ lng, fallbackLng: false, resources: { [lng]: { translation: { admin: resources } }, }, interpolation: { escapeValue: false } });
-  for (const key of ['calendar', 'month_picker', 'month', 'year', 'go_to_month', 'calendar_solar', 'previous_month', 'next_month', 'upcoming_events', 'clear_date', 'no_events_date', 'add', 'add_aria_label', 'edit_title', 'delete_confirm', 'event_type', 'event_information', 'date_of_death', 'solar_death_date', 'lunar_death_date', 'lunar_day', 'lunar_month', 'lunar_year', 'historical_lunar_year', 'lunar_recurrence_help', 'original_date_summary', 'upcoming_lunar_date', 'original_lunar_year', 'recurrence_explanation', 'leap_month', 'checking_dates', 'dates_match', 'date_mismatch', 'current_year_passed', 'current_year_upcoming', 'loading', 'load_failed', 'empty', 'invalid_lunar_date', 'save_failed', 'created', 'updated', 'deleted']) {
+  for (const key of ['calendar', 'month_picker', 'month', 'year', 'go_to_month', 'calendar_solar', 'previous_month', 'next_month', 'upcoming_events', 'event_type_filter', 'clear_date', 'no_events_date', 'add', 'add_aria_label', 'edit_title', 'delete_confirm', 'event_type', 'event_information', 'date_of_death', 'solar_death_date', 'lunar_death_date', 'lunar_day', 'lunar_month', 'lunar_year', 'historical_lunar_year', 'lunar_recurrence_help', 'original_date_summary', 'upcoming_lunar_date', 'original_lunar_year', 'recurrence_explanation', 'leap_month', 'checking_dates', 'dates_match', 'date_mismatch', 'current_year_passed', 'current_year_upcoming', 'loading', 'load_failed', 'empty', 'invalid_lunar_date', 'save_failed', 'created', 'updated', 'deleted']) {
       const translation = i18n.t(`admin.anniversary_ui.${key}`, { title: 'event' });
       assert.notEqual(translation, `admin.anniversary_ui.${key}`);
       assert.ok(translation.length > 0);
@@ -175,8 +188,13 @@ test('anniversary modal keeps accessible naming, original date checks, and backe
   assert.match(modal, /footer=\{/);
   assert.doesNotMatch(modal, /vietnameseToday|year \+ offset|offset <= 4/);
   assert.match(service, /next-occurrence\?/);
-  assert.match(tab, /<FloatingAddButton\s+ariaLabel=\{t\('admin\.anniversary_ui\.add_aria_label'\)\}/);
-  assert.match(tab, /tooltip=\{t\('admin\.anniversary_ui\.add'\)\}/);
+  assert.match(tab, /leftIcon=\{<Plus size=\{16\} \/>\}/);
+  assert.match(tab, /t\('admin\.anniversary_ui\.add_action'\)/);
+  assert.match(tab, /<SearchBar className="w-full sm:max-w-sm lg:max-w-md"/);
+  assert.match(tab, /role="group" aria-label=\{t\('admin\.anniversary_ui\.event_type_filter'\)\}/);
+  assert.match(tab, /aria-pressed=\{eventTypeFilter === value\}/);
+  assert.match(tab, /const clearAllFilters = \(\) => \{[\s\S]*setSearch\(''\);[\s\S]*setFilterDate\(null\);[\s\S]*setCalendarSelectedDate\(null\);[\s\S]*setEventTypeFilter\('ALL'\);[\s\S]*setSelectedEventId\(null\)/);
+  assert.match(tab, /onClick=\{clearAllFilters\}/);
   assert.match(tab, /onClick=\{\(\) => void openEditor\(null\)\}/);
   assert.match(tab, /\{editing !== undefined && members !== null && <FamilyAnniversaryModal/);
   assert.doesNotMatch(tab, /admin\.anniversary_ui\.add_first/);

@@ -399,6 +399,7 @@
     "previous_month": "Previous month",
     "next_month": "Next month",
     "upcoming_events": "Upcoming events",
+    "event_type_filter": "Filter event type",
     "clear_date": "Clear date filter",
     "all_events": "All events",
     "clear_filters": "Clear filters",

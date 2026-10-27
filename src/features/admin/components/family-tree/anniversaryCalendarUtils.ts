@@ -22,6 +22,11 @@ export const getAnniversaryNavigationTarget = (date: string) => {
   return { visibleMonth: { year: parts.year, month: parts.month }, selectedDate: anniversaryDateKey(parts.year, parts.month, parts.day) };
 };
 
+export const countAnniversaryEventsInMonth = (events: Array<{ nextSolarDate: string }>, year: number, month: number) => events.reduce((count, event) => {
+  const parts = anniversaryDateParts(event.nextSolarDate);
+  return count + (parts?.year === year && parts.month === month ? 1 : 0);
+}, 0);
+
 export type AnniversaryDayEventVisualType = 'death-anniversary' | 'family-event' | 'mixed' | 'none';
 
 export const getDayEventVisual = (events: Array<{ eventType: string }>) => {
