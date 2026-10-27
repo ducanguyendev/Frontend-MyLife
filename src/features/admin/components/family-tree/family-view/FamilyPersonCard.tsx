@@ -16,6 +16,7 @@ interface FamilyPersonCardProps {
   x: number;
   y: number;
   onFocus: (id: number) => void;
+  onViewBranch: (id: number) => void;
   onHover: (id: number | null) => void;
   onExpand: (id: number) => void;
   onView: (member: FamilyMember) => void;
@@ -24,7 +25,7 @@ interface FamilyPersonCardProps {
 }
 
 export const FamilyPersonCard = memo(function FamilyPersonCard({
-  member, focused, highlighted, dimmed, reducedMotion, hiddenCount, expanded, x, y, onFocus, onHover, onExpand, onView, onEdit, onDelete,
+  member, focused, highlighted, dimmed, reducedMotion, hiddenCount, expanded, x, y, onFocus, onViewBranch, onHover, onExpand, onView, onEdit, onDelete,
 }: FamilyPersonCardProps) {
   const { t } = useLanguage();
   const isPresent = useIsPresent();
@@ -79,7 +80,7 @@ export const FamilyPersonCard = memo(function FamilyPersonCard({
       <button type="button" className="family-person-card__action-trigger" aria-label={actionsLabel} aria-haspopup="menu" aria-expanded={menuOpen}
         onClick={() => setMenuOpen(value => !value)}><MoreHorizontal size={17} /></button>
       {menuOpen && <div className="family-person-card__menu" role="menu" aria-label={actionsLabel} onKeyDown={event => { if (event.key === "Escape") { event.preventDefault(); setMenuOpen(false); } }}>
-        <button role="menuitem" onClick={() => { setMenuOpen(false); onFocus(member.id); }}><GitBranch size={14} />{focusBranchLabel}</button>
+        <button role="menuitem" onClick={() => { setMenuOpen(false); onViewBranch(member.id); }}><GitBranch size={14} />{focusBranchLabel}</button>
         <button role="menuitem" onClick={() => { setMenuOpen(false); onView(member); }}><Eye size={14} />{t("admin.view_detail", { defaultValue: "View details" })}</button>
         <button role="menuitem" onClick={() => { setMenuOpen(false); onEdit(member); }}><Pencil size={14} />{t("admin.edit", { defaultValue: "Edit" })}</button>
         <button role="menuitem" className="is-delete" onClick={() => { setMenuOpen(false); onDelete(member); }}><Trash2 size={14} />{t("admin.delete", { defaultValue: "Delete" })}</button>

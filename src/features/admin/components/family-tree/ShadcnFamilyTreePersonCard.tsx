@@ -14,6 +14,7 @@ interface Props {
   hiddenCount: number;
   expanded: boolean;
   onFocus: (id: number) => void;
+  onViewBranch: (id: number) => void;
   onHover: (id: number | null) => void;
   onExpand: (id: number) => void;
   onView: (member: FamilyMember) => void;
@@ -22,7 +23,7 @@ interface Props {
 }
 
 export const ShadcnFamilyTreePersonCard = memo(function ShadcnFamilyTreePersonCard({
-  member, x, y, focused, dimmed, hiddenCount, expanded, onFocus, onHover, onExpand, onView, onEdit, onDelete,
+  member, x, y, focused, dimmed, hiddenCount, expanded, onFocus, onViewBranch, onHover, onExpand, onView, onEdit, onDelete,
 }: Props) {
   const { t } = useLanguage();
   const reduceMotion = useReducedMotion();
@@ -69,7 +70,7 @@ export const ShadcnFamilyTreePersonCard = memo(function ShadcnFamilyTreePersonCa
       <button type="button" className="shadcn-family-tree__action" aria-label={`${t("admin.view_detail", { defaultValue: "Xem chi tiết" })}: ${member.fullName}`} onClick={event => { event.stopPropagation(); onView(member); }}><Eye size={15} /></button>
       <button type="button" className="shadcn-family-tree__action-menu" aria-label={actionsLabel} aria-haspopup="menu" aria-expanded={menuOpen} onClick={event => { event.stopPropagation(); setMenuOpen(value => !value); }}><MoreHorizontal size={16} /></button>
       {menuOpen && <div className="shadcn-family-tree__menu" role="menu" aria-label={actionsLabel} onClick={event => event.stopPropagation()}>
-        <button role="menuitem" onClick={() => { setMenuOpen(false); onFocus(member.id); }}><GitBranch size={14} />{t("admin.mindmap_focus_branch", { defaultValue: "Xem nhánh người này" })}</button>
+        <button role="menuitem" onClick={() => { setMenuOpen(false); onViewBranch(member.id); }}><GitBranch size={14} />{t("admin.mindmap_focus_branch", { defaultValue: "Xem nhánh này" })}</button>
         <button role="menuitem" onClick={() => { setMenuOpen(false); onView(member); }}><Eye size={14} />{t("admin.view_detail", { defaultValue: "Xem chi tiết" })}</button>
         <button role="menuitem" onClick={() => { setMenuOpen(false); onEdit(member); }}><Pencil size={14} />{t("admin.edit", { defaultValue: "Sửa" })}</button>
         <button role="menuitem" className="is-delete" onClick={() => { setMenuOpen(false); onDelete(member); }}><Trash2 size={14} />{t("admin.delete", { defaultValue: "Xóa" })}</button>

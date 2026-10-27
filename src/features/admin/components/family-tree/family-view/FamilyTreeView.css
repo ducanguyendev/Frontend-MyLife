@@ -104,7 +104,6 @@
 .family-tree-link--spouse circle { fill: var(--family-tree-view-surface); stroke: color-mix(in srgb, #ff6f91 34%, var(--family-tree-view-border)); stroke-width: 1px; }
 .family-tree-link--spouse text { fill: #ed557c; stroke: none; font-size: 12px; font-weight: 800; }
 .family-tree-link--extended { stroke: var(--family-line-muted); stroke-dasharray: 4 7; stroke-width: 1.3px; }
-.family-tree-view__generation { position: absolute; z-index: 3; padding: 5px 10px; border: 1px solid var(--family-tree-view-border); border-radius: 999px; background: color-mix(in srgb, var(--family-tree-view-surface) 88%, transparent); color: var(--secondary-text); font-size: 10px; font-weight: 760; letter-spacing: .11em; text-transform: uppercase; pointer-events: none; }
 .family-tree-view__hint { position: absolute; right: 18px; bottom: 16px; padding: 7px 11px; border: 1px solid var(--family-tree-view-border); border-radius: 999px; background: color-mix(in srgb, var(--family-tree-view-surface) 88%, transparent); color: var(--secondary-text); font-size: 10px; opacity: .72; pointer-events: none; }
 .family-tree-view__status { position: absolute; right: 16px; top: 76px; padding: 8px 12px; border: 1px solid var(--family-tree-view-border); border-radius: 999px; background: var(--family-tree-view-surface); color: var(--secondary-text); font-size: 11px; box-shadow: 0 5px 16px rgb(15 23 42 / 8%); }
 

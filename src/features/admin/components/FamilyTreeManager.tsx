@@ -49,7 +49,7 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
   }, [activeDropdown]);
 
   // UI State
-  const [viewMode, setViewMode] = useState<"grid" | "table" | "mindmap">("grid");
+  const [viewMode, setViewMode] = useState<"grid" | "table" | "mindmap">("mindmap");
   const [searchQuery, setSearchQuery] = useState("");
   const [generationFilter, setGenerationFilter] = useState("all");
 
@@ -284,6 +284,14 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
               {/* View Toggle */}
               <div className="flex items-center bg-secondary-bg p-1 rounded-xl border border-custom-border shadow-sm">
                 <button
+                  aria-label={t("admin.view_mindmap")} aria-pressed={viewMode === "mindmap"}
+                  onClick={() => setViewMode("mindmap")}
+                  className={`p-1.5 rounded-lg transition-colors cursor-pointer ${viewMode === "mindmap" ? "bg-accent text-primary-bg" : "text-secondary-text hover:text-primary-text"}`}
+                  title={t("admin.view_mindmap", { defaultValue: "Sơ đồ phả hệ" })}
+                >
+                  <Network size={16} />
+                </button>
+                <button
                   aria-label={t("admin.view_grid")} aria-pressed={viewMode === "grid"}
                   onClick={() => setViewMode("grid")}
                   className={`p-1.5 rounded-lg transition-colors cursor-pointer ${viewMode === "grid" ? "bg-accent text-primary-bg" : "text-secondary-text hover:text-primary-text"}`}
@@ -298,14 +306,6 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
                   title={t("admin.view_table")}
                 >
                   <Table2 size={16} />
-                </button>
-                <button
-                  aria-label={t("admin.view_mindmap")} aria-pressed={viewMode === "mindmap"}
-                  onClick={() => setViewMode("mindmap")}
-                  className={`p-1.5 rounded-lg transition-colors cursor-pointer ${viewMode === "mindmap" ? "bg-accent text-primary-bg" : "text-secondary-text hover:text-primary-text"}`}
-                  title={t("admin.view_mindmap", { defaultValue: "Sơ đồ phả hệ" })}
-                >
-                  <Network size={16} />
                 </button>
               </div>
             </div>

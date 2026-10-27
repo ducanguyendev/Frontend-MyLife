@@ -5,8 +5,8 @@ export const FAMILY_CARD_WIDTH = 196;
 export const FAMILY_CARD_HEIGHT = 94;
 const PARTNER_GAP = 20;
 const SIBLING_UNIT_GAP = 34;
-const FAMILY_BRANCH_GAP = 20;
-const ROOT_UNIT_GAP = 34;
+const FAMILY_BRANCH_GAP = 28;
+const ROOT_UNIT_GAP = 56;
 const GENERATION_GAP = 88;
 const CANVAS_PADDING = 72;
 
@@ -108,45 +108,97 @@ export function layoutFamilyView(members: FamilyMember[], showExtendedRelations 
   const generations = [...new Set(units.map(unit => unit.generation))].sort((a, b) => a - b);
   const generationIndex = new Map(generations.map((generation, index) => [generation, index]));
   const positions = new Map<number, { x: number; y: number }>();
+  const unitByMemberId = new Map<number, FamilyUnit>();
+  for (const unit of units) for (const id of unit.memberIds) unitByMemberId.set(id, unit);
+  const siblingGroupsByParentUnit = new Map<string, FamilyUnit[][]>();
+  const unattachedUnits = new Set(units);
 
-  for (const generation of generations) {
-    const rowUnits = units.filter(unit => unit.generation === generation);
-    const groups = new Map<string, FamilyUnit[]>();
-    for (const unit of rowUnits) {
-      const group = groups.get(unit.parentKey) ?? [];
-      group.push(unit);
-      groups.set(unit.parentKey, group);
+  // A sibling group belongs to one parent unit when both parents resolve to the same spouse/couple unit.
+  const familySiblingGroups = new Map<string, FamilyUnit[]>();
+  for (const unit of units) {
+    if (!unit.parentIds.length) continue;
+    const group = familySiblingGroups.get(unit.parentKey) ?? [];
+    group.push(unit);
+    familySiblingGroups.set(unit.parentKey, group);
+  }
+  for (const [parentKey, siblings] of familySiblingGroups) {
+    const parentUnits = [...new Set(parentKey.split(":").map(Number).map(id => unitByMemberId.get(id)).filter((unit): unit is FamilyUnit => Boolean(unit)))];
+    siblings.sort((a, b) => a.memberIds[0] - b.memberIds[0]);
+    if (parentUnits.length !== 1 || parentUnits[0].generation >= Math.min(...siblings.map(unit => unit.generation))) continue;
+    const parent = parentUnits[0];
+    const groups = siblingGroupsByParentUnit.get(parent.key) ?? [];
+    groups.push(siblings);
+    siblingGroupsByParentUnit.set(parent.key, groups);
+    siblings.forEach(unit => unattachedUnits.delete(unit));
+  }
+
+  const measureCache = new Map<string, number>();
+  const measureUnit = (unit: FamilyUnit, ancestry = new Set<string>()): number => {
+    if (measureCache.has(unit.key)) return measureCache.get(unit.key)!;
+    if (ancestry.has(unit.key)) return unit.width;
+    const nextAncestry = new Set(ancestry).add(unit.key);
+    const groups = siblingGroupsByParentUnit.get(unit.key) ?? [];
+    const descendantWidth = groups.reduce((sum, siblings, index) => {
+      const groupWidth = siblings.reduce((width, child) => width + measureUnit(child, nextAncestry), 0)
+        + Math.max(0, siblings.length - 1) * SIBLING_UNIT_GAP;
+      return sum + groupWidth + (index ? FAMILY_BRANCH_GAP : 0);
+    }, 0);
+    const width = Math.max(unit.width, descendantWidth);
+    measureCache.set(unit.key, width);
+    return width;
+  };
+
+  const rowY = (unit: FamilyUnit) => CANVAS_PADDING + (generationIndex.get(unit.generation) ?? 0) * (FAMILY_CARD_HEIGHT + GENERATION_GAP);
+  const placeUnit = (unit: FamilyUnit, left: number, allottedWidth: number, ancestry = new Set<string>()) => {
+    if (ancestry.has(unit.key)) return;
+    const nextAncestry = new Set(ancestry).add(unit.key);
+    const unitLeft = left + (allottedWidth - unit.width) / 2;
+    unit.centerX = unitLeft + unit.width / 2;
+    const y = rowY(unit);
+    for (const [memberIndex, memberId] of unit.memberIds.entries()) {
+      positions.set(memberId, { x: unitLeft + memberIndex * (FAMILY_CARD_WIDTH + PARTNER_GAP), y });
     }
 
-    const resolveAnchor = (unit: FamilyUnit): number | null => {
-      const anchors = unit.parentIds.map(id => positions.get(id)).filter((position): position is { x: number; y: number } => !!position);
-      return anchors.length ? anchors.reduce((sum, position) => sum + position.x + FAMILY_CARD_WIDTH / 2, 0) / anchors.length : null;
-    };
-    const orderedGroups = [...groups.entries()].map(([key, familyUnits]) => {
-      familyUnits.sort((a, b) => a.parentIds[0] - b.parentIds[0] || a.memberIds[0] - b.memberIds[0]);
-      const anchorCandidates = familyUnits.map(resolveAnchor).filter((x): x is number => x != null);
-      const anchor = anchorCandidates.length ? anchorCandidates.reduce((sum, x) => sum + x, 0) / anchorCandidates.length : null;
-      const unitGap = key === "root" ? ROOT_UNIT_GAP : SIBLING_UNIT_GAP;
-      return { key, familyUnits, anchor, unitGap, width: familyUnits.reduce((sum, unit) => sum + unit.width, 0) + Math.max(0, familyUnits.length - 1) * unitGap };
-    }).sort((a, b) => (a.anchor ?? Number.POSITIVE_INFINITY) - (b.anchor ?? Number.POSITIVE_INFINITY) || a.key.localeCompare(b.key, undefined, { numeric: true }));
+    const groups = siblingGroupsByParentUnit.get(unit.key) ?? [];
+    const groupWidths = groups.map(siblings => siblings.reduce((sum, child) => sum + measureUnit(child), 0) + Math.max(0, siblings.length - 1) * SIBLING_UNIT_GAP);
+    const totalChildrenWidth = groupWidths.reduce((sum, width) => sum + width, 0) + Math.max(0, groups.length - 1) * FAMILY_BRANCH_GAP;
+    let groupLeft = unit.centerX - totalChildrenWidth / 2;
+    groups.forEach((siblings, groupIndex) => {
+      let siblingLeft = groupLeft;
+      siblings.forEach(child => {
+        const width = measureUnit(child);
+        placeUnit(child, siblingLeft, width, nextAncestry);
+        siblingLeft += width + SIBLING_UNIT_GAP;
+      });
+      groupLeft += groupWidths[groupIndex] + FAMILY_BRANCH_GAP;
+    });
+  };
 
-    let cursor = CANVAS_PADDING;
-    const rank = generationIndex.get(generation) ?? 0;
-    const y = CANVAS_PADDING + rank * (FAMILY_CARD_HEIGHT + GENERATION_GAP);
-    for (const [groupIndex, group] of orderedGroups.entries()) {
-      const gap = groupIndex === 0 ? 0 : FAMILY_BRANCH_GAP;
-      const desiredLeft = group.anchor == null ? cursor : group.anchor - group.width / 2;
-      const left = Math.max(cursor + gap, desiredLeft);
-      let unitCursor = left;
-      for (const [unitIndex, unit] of group.familyUnits.entries()) {
-        unit.centerX = unitCursor + unit.width / 2;
-        for (const [memberIndex, memberId] of unit.memberIds.entries()) {
-          positions.set(memberId, { x: unitCursor + memberIndex * (FAMILY_CARD_WIDTH + PARTNER_GAP), y });
-        }
-        unitCursor += unit.width + (unitIndex < group.familyUnits.length - 1 ? group.unitGap : 0);
+  const roots = [...unattachedUnits].sort((a, b) => a.generation - b.generation || a.memberIds[0] - b.memberIds[0]);
+  let rootCursor = CANVAS_PADDING;
+  const placed = new Set<string>();
+  for (const root of roots) {
+    if (placed.has(root.key)) continue;
+    const width = measureUnit(root);
+    placeUnit(root, rootCursor, width);
+    rootCursor += width + ROOT_UNIT_GAP;
+    placed.add(root.key);
+    const markDescendants = (unit: FamilyUnit, seen = new Set<string>()) => {
+      if (seen.has(unit.key)) return;
+      seen.add(unit.key);
+      for (const group of siblingGroupsByParentUnit.get(unit.key) ?? []) for (const child of group) {
+        placed.add(child.key);
+        markDescendants(child, seen);
       }
-      cursor = left + group.width;
-    }
+    };
+    markDescendants(root);
+  }
+  // Cyclic or inconsistent references remain visible as independent, deterministic roots.
+  for (const unit of [...units].sort((a, b) => a.generation - b.generation || a.memberIds[0] - b.memberIds[0])) {
+    if (positions.has(unit.memberIds[0])) continue;
+    const width = measureUnit(unit);
+    placeUnit(unit, rootCursor, width);
+    rootCursor += width + ROOT_UNIT_GAP;
   }
 
   const minX = Math.min(...[...positions.values()].map(position => position.x));

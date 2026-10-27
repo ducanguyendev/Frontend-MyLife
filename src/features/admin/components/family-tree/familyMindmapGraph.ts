@@ -322,26 +322,6 @@ export function layoutFamilyMindmapGraph(
   }
 
   const extraNodes: FamilyMindmapNode[] = [];
-  for (const generation of ranks) {
-    const rowIds = (rankUnits.get(generation) ?? []).flatMap(unit => unit.ids);
-    const rowPositions = rowIds.map(id => positions.get(id)!).filter(Boolean);
-    if (!rowPositions.length) continue;
-    const minAxis = Math.min(...rowPositions.map(position => direction === "TB" ? position.x : position.y));
-    const maxAxis = Math.max(...rowPositions.map(position => (direction === "TB" ? position.x : position.y) + (direction === "TB" ? MEMBER_NODE_WIDTH : MEMBER_NODE_HEIGHT)));
-    const cross = (rankIndex.get(generation) ?? 0) * (cardCross + GENERATION_GAP);
-    extraNodes.push({
-      id: `generation-${generation}`,
-      type: "generationLabel",
-      position: direction === "TB" ? { x: minAxis, y: cross - 36 } : { x: cross, y: minAxis - 34 },
-      width: direction === "TB" ? maxAxis - minAxis : 26,
-      height: direction === "TB" ? 26 : maxAxis - minAxis,
-      selectable: false,
-      draggable: false,
-      connectable: false,
-      data: { generation, direction, width: maxAxis - minAxis },
-    });
-  }
-
   const hubNodes = graphNodes.filter(node => node.type === "familyUnion");
   for (const hubNode of hubNodes) {
     const parentIds = (hubNode.data.parentIds as number[]).map(String);
@@ -399,7 +379,6 @@ export function layoutFamilyMindmapGraph(
   }
 
   const positioned = graphNodes.map(node => {
-    if (node.type === "generationLabel") return node;
     const position = positions.get(node.id);
     return position ? { ...node, position } : node;
   });

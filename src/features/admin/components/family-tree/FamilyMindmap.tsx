@@ -26,7 +26,7 @@ import { toPng } from "html-to-image";
 import { useLanguage } from "@/shared/hooks/useLanguage";
 import { MemberMindmapNode } from "./MemberMindmapNode";
 import { buildFamilyMindmapGraph, layoutFamilyMindmapGraph, type FamilyMindmapEdge, type FamilyMindmapNode } from "./familyMindmapGraph";
-import { adaptFamilyMembers, buildFamilyTreeIndex, chooseInitialFocus, getHiddenDescendantCount, getVisibleFamilyMembers } from "./familyTreeAdapter";
+import { buildFamilyTreeIndex, getHiddenDescendantCount, getVisibleFamilyMembers } from "./familyTreeAdapter";
 import { type FamilyMember } from "./types";
 import "./FamilyMindmap.css";
 
@@ -85,15 +85,6 @@ const FamilyBranchNode = memo(({ data }: NodeProps<FamilyMindmapNode>) => {
   </div>;
 });
 
-const GenerationLabelNode = memo(({ data }: NodeProps<FamilyMindmapNode>) => {
-  const { t } = useLanguage();
-  const generation = Number(data.generation);
-  const direction = data.direction as Direction;
-  return <div className={`family-mindmap-generation ${direction === "LR" ? "family-mindmap-generation--lr" : ""}`} aria-hidden="true">
-    <span>{t("admin.mindmap_generation", { generation, defaultValue: `Đời ${generation}` })}</span>
-  </div>;
-});
-
 const FamilyTreeEdge = memo((props: EdgeProps<FamilyMindmapEdge>) => {
   const relationType = props.data?.relationType;
   const spouse = relationType === "spouse";
@@ -109,7 +100,7 @@ const FamilyTreeEdge = memo((props: EdgeProps<FamilyMindmapEdge>) => {
   </>;
 });
 
-const nodeTypes = { member: MemberMindmapNode, familyAnchor: FamilyAnchorNode, familyUnion: HiddenUnionNode, familyBranch: FamilyBranchNode, generationLabel: GenerationLabelNode };
+const nodeTypes = { member: MemberMindmapNode, familyAnchor: FamilyAnchorNode, familyUnion: HiddenUnionNode, familyBranch: FamilyBranchNode };
 const edgeTypes = { familyTree: FamilyTreeEdge };
 
 const label = (t: ReturnType<typeof useLanguage>["t"], key: string, fallback: string) => t(key, { defaultValue: fallback });
@@ -125,10 +116,10 @@ const FamilyMindmapInner: React.FC<FamilyMindmapProps> = ({ members, searchFocus
   const [showExtendedRelations, setShowExtendedRelations] = useState(false);
   const [showLegend, setShowLegend] = useState(false);
   const [activeMemberId, setActiveMemberId] = useState<number | null>(null);
-  const [focusedMemberId, setFocusedMemberId] = useState<number | null>(() => chooseInitialFocus(adaptFamilyMembers(members)));
+  const [focusedMemberId, setFocusedMemberId] = useState<number | null>(null);
   const [focusHistory, setFocusHistory] = useState<number[]>([]);
   const [expandedIds, setExpandedIds] = useState<Set<number>>(() => new Set());
-  const [showAllMembers, setShowAllMembers] = useState(false);
+  const [showAllMembers, setShowAllMembers] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
 
@@ -136,8 +127,12 @@ const FamilyMindmapInner: React.FC<FamilyMindmapProps> = ({ members, searchFocus
     if (focusedMemberId !== id && focusedMemberId != null) setFocusHistory(history => [...history, focusedMemberId]);
     setFocusedMemberId(id);
     setExpandedIds(new Set());
-    setShowAllMembers(false);
   }, [focusedMemberId]);
+  const focusBranch = useCallback((id: number) => {
+    focusMember(id);
+    setShowAllMembers(false);
+    setExpandedIds(new Set());
+  }, [focusMember]);
   const restoreFocus = useCallback(() => {
     const prior = focusHistory.at(-1);
     if (prior == null) return;
@@ -146,7 +141,6 @@ const FamilyMindmapInner: React.FC<FamilyMindmapProps> = ({ members, searchFocus
   }, [focusHistory]);
 
   const treeMembers = useMemo(() => generationFilterId == null ? members : members.filter(member => member.generation === generationFilterId), [members, generationFilterId]);
-  const treePeople = useMemo(() => adaptFamilyMembers(treeMembers), [treeMembers]);
   const treeIndex = useMemo(() => buildFamilyTreeIndex(treeMembers), [treeMembers]);
   const visibleMembers = useMemo(() => getVisibleFamilyMembers(treeMembers, focusedMemberId, expandedIds, showAllMembers, treeIndex), [treeMembers, focusedMemberId, expandedIds, showAllMembers, treeIndex]);
   const visibleIdSet = useMemo(() => new Set(visibleMembers.map(member => member.id)), [visibleMembers]);
@@ -154,7 +148,7 @@ const FamilyMindmapInner: React.FC<FamilyMindmapProps> = ({ members, searchFocus
   const graph = useMemo(() => {
     const built = buildFamilyMindmapGraph(visibleMembers, { direction, showHorizontalRelations: showExtendedRelations });
     const withActions = built.nodes.map(node => node.type === "member"
-      ? { ...node, className: `${node.className ?? ""} ${Number(node.id) === focusedMemberId ? "is-focus-person" : ""}`, data: { ...node.data, onView, onEdit, onDelete, onFocusMember: setActiveMemberId, onFocusBranch: focusMember,
+      ? { ...node, className: `${node.className ?? ""} ${Number(node.id) === focusedMemberId ? "is-focus-person" : ""}`, data: { ...node.data, onView, onEdit, onDelete, onFocusMember: setActiveMemberId, onFocusBranch: focusBranch,
         onExpandBranch: (id: number) => setExpandedIds(current => {
           const next = new Set(current);
           if (next.has(id)) next.delete(id);
@@ -164,7 +158,7 @@ const FamilyMindmapInner: React.FC<FamilyMindmapProps> = ({ members, searchFocus
         hiddenDescendantCount: hiddenCounts.get(Number(node.id)) ?? 0, branchExpanded: expandedIds.has(Number(node.id)) } }
       : node) as FamilyMindmapNode[];
     return layoutFamilyMindmapGraph(withActions, built.edges, direction);
-  }, [visibleMembers, onView, onEdit, onDelete, direction, showExtendedRelations, focusMember, hiddenCounts, expandedIds, focusedMemberId]);
+  }, [visibleMembers, onView, onEdit, onDelete, direction, showExtendedRelations, focusBranch, hiddenCounts, expandedIds, focusedMemberId]);
   const relatedMemberIds = useMemo(() => {
     if (activeMemberId == null) return new Set<number>();
     const active = treeMembers.find(member => member.id === activeMemberId);
@@ -206,13 +200,12 @@ const FamilyMindmapInner: React.FC<FamilyMindmapProps> = ({ members, searchFocus
   useEffect(() => {
     if (searchFocusMemberId != null && members.some(member => member.id === searchFocusMemberId)) {
       setFocusedMemberId(searchFocusMemberId);
-      setShowAllMembers(false);
       setExpandedIds(new Set());
     }
   }, [searchFocusMemberId, members]);
   useEffect(() => {
-    if (!treeMembers.some(member => member.id === focusedMemberId)) setFocusedMemberId(chooseInitialFocus(treePeople));
-  }, [treeMembers, focusedMemberId, treePeople]);
+    if (focusedMemberId != null && !treeMembers.some(member => member.id === focusedMemberId)) setFocusedMemberId(null);
+  }, [treeMembers, focusedMemberId]);
 
   useEffect(() => {
     const onFullscreenChange = () => setIsFullscreen(document.fullscreenElement === document.querySelector(".family-mindmap-shell"));
@@ -313,8 +306,8 @@ const FamilyMindmapInner: React.FC<FamilyMindmapProps> = ({ members, searchFocus
           onClick={() => void zoomIn({ duration: reduceMotion ? 0 : 160 })}><Plus size={16} /></button>
         <button type="button" className="family-mindmap-icon-button" aria-label={label(t, "admin.mindmap_fit_view", "Vừa khung nhánh")}
           onClick={() => void fitView({ padding: 0.16, maxZoom: 1, duration: reduceMotion ? 0 : 220 })}><LocateFixed size={16} /></button>
-        <button type="button" className={`family-mindmap-icon-button${showAllMembers ? " is-active" : ""}`} aria-pressed={showAllMembers}
-          onClick={() => { setShowAllMembers(value => !value); setExpandedIds(new Set()); }}>{label(t, showAllMembers ? "admin.mindmap_current_branch" : "admin.mindmap_all_tree", showAllMembers ? "Xem nhánh hiện tại" : "Xem toàn bộ cây")}</button>
+        {!showAllMembers && <button type="button" className="family-mindmap-icon-button is-active" aria-pressed="true"
+          onClick={() => { setShowAllMembers(true); setExpandedIds(new Set()); }}>{label(t, "admin.mindmap_all_tree", "Xem toàn bộ cây")}</button>}
         <span className="family-mindmap-toolbar__separator" />
         <button type="button" className="family-mindmap-icon-button" aria-label={label(t, direction === "TB" ? "admin.layout_horizontal" : "admin.layout_vertical", direction === "TB" ? "Bố cục ngang" : "Bố cục dọc")}
           onClick={() => setDirection(value => value === "TB" ? "LR" : "TB")}><GitMerge size={16} /></button>

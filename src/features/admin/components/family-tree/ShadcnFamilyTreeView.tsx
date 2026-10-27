@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Download, Focus, GitBranch, UsersRound, ZoomIn, ZoomOut } from "lucide-react";
+import { Download, Focus, GitBranch, ZoomIn, ZoomOut } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
 import { toPng } from "html-to-image";
 import { useLanguage } from "@/shared/hooks/useLanguage";
-import { adaptFamilyMembers, buildFamilyTreeIndex, chooseInitialFocus, getHiddenDescendantCount, getRelatedFamilyMemberIds, getVisibleFamilyMembers } from "./familyTreeAdapter";
+import { buildFamilyTreeIndex, getHiddenDescendantCount, getRelatedFamilyMemberIds, getVisibleFamilyMembers } from "./familyTreeAdapter";
 import { layoutShadcnFamilyTree } from "./shadcnFamilyTreeLayout";
 import { adaptMembersToShadcnFamilyTree } from "./shadcnFamilyTreeAdapter";
 import { ShadcnFamilyTreePersonCard } from "./ShadcnFamilyTreePersonCard";
@@ -28,11 +28,11 @@ export function ShadcnFamilyTreeView({ members, searchFocusMemberId, generationF
   const shellRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<{ id: number; x: number; y: number; originX: number; originY: number } | null>(null);
-  const [focusedId, setFocusedId] = useState<number | null>(() => chooseInitialFocus(adaptFamilyMembers(members)));
+  const [focusedId, setFocusedId] = useState<number | null>(null);
   const focusedIdRef = useRef(focusedId);
   const [focusHistory, setFocusHistory] = useState<number[]>([]);
   const [expandedIds, setExpandedIds] = useState<Set<number>>(() => new Set());
-  const [showAll, setShowAll] = useState(false);
+  const [showAll, setShowAll] = useState(true);
   const [showExtended, setShowExtended] = useState(false);
   const [hoveredId, setHoveredId] = useState<number | null>(null);
   const [transform, setTransform] = useState<Transform>({ x: 0, y: 0, scale: 1 });
@@ -82,11 +82,10 @@ export function ShadcnFamilyTreeView({ members, searchFocusMemberId, generationF
     }
     return result;
   }, [layoutMembers, activeId, showExtended]);
-  const generations = useMemo(() => [...new Set(layout.nodes.map(node => node.generation))].sort((a, b) => a - b), [layout.nodes]);
 
   useEffect(() => { focusedIdRef.current = focusedId; }, [focusedId]);
   useEffect(() => {
-    if (layoutMembers.length && !layoutMembers.some(member => member.id === focusedId)) setFocusedId(chooseInitialFocus(adaptFamilyMembers(layoutMembers)));
+    if (focusedId != null && !layoutMembers.some(member => member.id === focusedId)) setFocusedId(null);
   }, [layoutMembers, focusedId]);
   useEffect(() => {
     if (searchFocusMemberId == null || !layoutMembers.some(member => member.id === searchFocusMemberId)) return;
@@ -94,7 +93,6 @@ export function ShadcnFamilyTreeView({ members, searchFocusMemberId, generationF
     if (current != null && current !== searchFocusMemberId) setFocusHistory(history => [...history, current]);
     setFocusedId(searchFocusMemberId);
     setExpandedIds(new Set());
-    setShowAll(false);
   }, [searchFocusMemberId, layoutMembers]);
 
   const fitView = useCallback((centerOnly = false) => {
@@ -128,8 +126,11 @@ export function ShadcnFamilyTreeView({ members, searchFocusMemberId, generationF
 
   const focusMember = useCallback((id: number) => {
     if (focusedId !== id && focusedId != null) setFocusHistory(history => [...history, focusedId]);
-    setFocusedId(id); setExpandedIds(new Set()); setShowAll(false); setHoveredId(null);
+    setFocusedId(id); setHoveredId(null);
   }, [focusedId]);
+  const viewBranch = useCallback((id: number) => {
+    focusMember(id); setExpandedIds(new Set()); setShowAll(false);
+  }, [focusMember]);
   const restoreFocus = () => {
     const previous = focusHistory.at(-1);
     if (previous == null) return;
@@ -180,12 +181,12 @@ export function ShadcnFamilyTreeView({ members, searchFocusMemberId, generationF
 
   return <div ref={shellRef} className={`shadcn-family-tree${exporting ? " is-exporting" : ""}`} data-renderer="shadcn-family-tree">
     <div className="shadcn-family-tree__toolbar" role="toolbar" aria-label={toolbarLabel("admin.mindmap_toolbar", "Công cụ sơ đồ gia phả")}>
-      {focusHistory.length > 0 && <button type="button" className="shadcn-family-tree__tool shadcn-family-tree__back" onClick={restoreFocus}>{toolbarLabel("admin.mindmap_previous_branch", "← Nhánh trước")}</button>}
+      {!showAll && <button type="button" className="shadcn-family-tree__tool shadcn-family-tree__back" onClick={() => { setShowAll(true); setExpandedIds(new Set()); }}>{toolbarLabel("admin.mindmap_all_tree", "Xem toàn bộ cây")}</button>}
+      {!showAll && focusHistory.length > 0 && <button type="button" className="shadcn-family-tree__tool" onClick={restoreFocus}>{toolbarLabel("admin.mindmap_previous_branch", "← Nhánh trước")}</button>}
       <button type="button" className="shadcn-family-tree__tool" aria-label={toolbarLabel("admin.mindmap_zoom_out", "Thu nhỏ")} onClick={() => zoomAt(transform.scale / 1.18)}><ZoomOut size={16} /></button>
       <button type="button" className="shadcn-family-tree__tool" aria-label={toolbarLabel("admin.mindmap_zoom_in", "Phóng to")} onClick={() => zoomAt(transform.scale * 1.18)}><ZoomIn size={16} /></button>
       <button type="button" className="shadcn-family-tree__tool" aria-label={toolbarLabel("admin.mindmap_fit_view", "Vừa nhánh hiện tại")} onClick={() => fitView()}><Focus size={16} /></button>
       <button type="button" className="shadcn-family-tree__tool" aria-label={toolbarLabel("admin.mindmap_focus_branch", "Đưa người đang chọn vào giữa")} onClick={() => fitView(true)}>{toolbarLabel("admin.mindmap_center", "Giữa người chọn")}</button>
-      <button type="button" className={`shadcn-family-tree__tool${showAll ? " is-active" : ""}`} aria-pressed={showAll} onClick={() => { setShowAll(value => !value); setExpandedIds(new Set()); }}><UsersRound size={15} /><span>{showAll ? toolbarLabel("admin.mindmap_current_branch", "Nhánh hiện tại") : toolbarLabel("admin.mindmap_all_tree", "Toàn bộ gia đình")}</span></button>
       <button type="button" className={`shadcn-family-tree__tool${showExtended ? " is-active" : ""}`} aria-pressed={showExtended} aria-label={toolbarLabel("admin.mindmap_extended_relations", "Bật/tắt quan hệ mở rộng")} onClick={() => setShowExtended(value => !value)}><GitBranch size={15} /></button>
       <button type="button" className="shadcn-family-tree__tool" aria-label={isFullscreen ? "Thoát toàn màn hình" : "Toàn màn hình"} onClick={() => void toggleFullscreen()}>{isFullscreen ? "Thu nhỏ" : "Toàn màn hình"}</button>
       <button type="button" className="shadcn-family-tree__tool shadcn-family-tree__export" aria-label={toolbarLabel("admin.export_png", "Xuất PNG")} onClick={() => void exportPng()}><Download size={15} /><span>PNG</span></button>
@@ -199,12 +200,8 @@ export function ShadcnFamilyTreeView({ members, searchFocusMemberId, generationF
           })}
         </svg>
         <AnimatePresence initial={false}>
-          {layout.nodes.map(node => <ShadcnFamilyTreePersonCard key={node.member.id} member={node.member} x={node.x} y={node.y} focused={focusedId === node.member.id} dimmed={activeId != null && !relatedIds.has(node.member.id)} hiddenCount={hiddenCounts.get(node.member.id) ?? 0} expanded={expandedIds.has(node.member.id)} onFocus={focusMember} onHover={setHoveredId} onExpand={toggleExpanded} onView={onView} onEdit={onEdit} onDelete={onDelete} />)}
+          {layout.nodes.map(node => <ShadcnFamilyTreePersonCard key={node.member.id} member={node.member} x={node.x} y={node.y} focused={focusedId === node.member.id} dimmed={activeId != null && !relatedIds.has(node.member.id)} hiddenCount={hiddenCounts.get(node.member.id) ?? 0} expanded={expandedIds.has(node.member.id)} onFocus={focusMember} onViewBranch={viewBranch} onHover={setHoveredId} onExpand={toggleExpanded} onView={onView} onEdit={onEdit} onDelete={onDelete} />)}
         </AnimatePresence>
-        {generations.map(generation => {
-          const row = layout.nodes.filter(node => node.generation === generation); const y = Math.min(...row.map(node => node.y));
-          return <div key={generation} className="shadcn-family-tree__lane-label" style={{ top: y + 5 }}>{toolbarLabel("admin.mindmap_generation", `Đời ${generation}`).replace("{{generation}}", String(generation))}</div>;
-        })}
       </div>
       <div className="shadcn-family-tree__hint" aria-hidden="true">{toolbarLabel("admin.mindmap_drag_hint", "Kéo để di chuyển · Cuộn để thu phóng")}</div>
     </div>

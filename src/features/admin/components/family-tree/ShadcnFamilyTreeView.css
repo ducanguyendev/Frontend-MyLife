@@ -72,7 +72,6 @@
 .shadcn-family-tree__link--spouse circle { fill: var(--secondary-bg, #fff); stroke: color-mix(in srgb, #ff6f91 42%, var(--sft-border)); stroke-width: 1px; }
 .shadcn-family-tree__link--spouse text { fill: #ed557c; stroke: none; font-size: 12px; font-weight: 800; }
 .shadcn-family-tree__link--extended { stroke-dasharray: 4 7; }
-.shadcn-family-tree__lane-label { position: absolute; z-index: 4; left: 12px; padding: 5px 9px; border: 1px solid var(--sft-border); border-radius: 999px; background: color-mix(in srgb, var(--secondary-bg, #fff) 92%, transparent); color: var(--secondary-text, #68716b); font-size: 9px; font-weight: 760; letter-spacing: .1em; text-transform: uppercase; pointer-events: none; }
 
 .shadcn-family-tree__person {
   position: absolute;

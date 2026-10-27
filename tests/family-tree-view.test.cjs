@@ -9,6 +9,7 @@ const source = readFileSync(join(__dirname, '../src/features/admin/components/fa
 const styles = readFileSync(join(__dirname, '../src/features/admin/components/family-tree/family-view/FamilyTreeView.css'), 'utf8');
 const cardSource = readFileSync(join(__dirname, '../src/features/admin/components/family-tree/family-view/FamilyPersonCard.tsx'), 'utf8');
 const viewSource = readFileSync(join(__dirname, '../src/features/admin/components/family-tree/family-view/FamilyTreeView.tsx'), 'utf8');
+const managerSource = readFileSync(join(__dirname, '../src/features/admin/components/FamilyTreeManager.tsx'), 'utf8');
 const { outputText } = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true } });
 const layoutModule = {};
 new vm.Script(outputText).runInNewContext({ exports: layoutModule });
@@ -42,6 +43,49 @@ test('single member produces one compact card without phantom relationships', ()
   assert.equal(layout.nodes[0].width, 196);
   assert.equal(layout.nodes[0].height, 94);
   assert.equal(layout.links.length, 0);
+});
+
+test('default Family Tree opens on a full mindmap and orders views as tree, cards, then list', () => {
+  assert.match(managerSource, /useState<"grid" \| "table" \| "mindmap">\("mindmap"\)/);
+  const treeIndex = managerSource.indexOf('aria-label={t("admin.view_mindmap")');
+  const cardsIndex = managerSource.indexOf('aria-label={t("admin.view_grid")');
+  const listIndex = managerSource.indexOf('aria-label={t("admin.view_table")');
+  assert.ok(treeIndex >= 0 && treeIndex < cardsIndex && cardsIndex < listIndex);
+  assert.match(viewSource, /useState<number \| null>\(null\)/);
+  assert.match(viewSource, /branchMemberId == null\s*\?\s*treeMembers/);
+  assert.doesNotMatch(viewSource, /family-tree-view__generation|admin\.mindmap_generation/);
+});
+
+test('branch mode is entered only through the explicit branch menu action and can return to full tree', () => {
+  assert.match(cardSource, /onViewBranch\(member\.id\)/);
+  assert.match(viewSource, /const focusBranch = useCallback/);
+  assert.match(viewSource, /setBranchMemberId\(id\)/);
+  assert.match(viewSource, /setBranchMemberId\(null\)/);
+  assert.match(viewSource, /admin\.mindmap_all_tree/);
+  assert.doesNotMatch(cardSource, /onClick=\{\(\) => \{ onFocus\(member\.id\); onViewBranch/);
+});
+
+test('family layout is deterministic, generation aligned, spouse aligned, and handles forests', () => {
+  const people = [
+    person(1, { generation: 1, spouseId: 2 }), person(2, { generation: 1, spouseId: 1 }),
+    person(3, { generation: 2, fatherId: 1, motherId: 2, spouseId: 4 }), person(4, { generation: 2, spouseId: 3 }),
+    person(5, { generation: 2, fatherId: 1, motherId: 2 }), person(6, { generation: 3, fatherId: 3, motherId: 4 }),
+    person(7, { generation: 3, fatherId: 3, motherId: 4 }), person(8, { generation: 1 }),
+  ];
+  const layout = layoutFamilyView(people);
+  const shuffled = layoutFamilyView([...people].reverse());
+  const coords = result => Object.fromEntries(result.nodes.map(node => [node.member.id, [node.x, node.y]]));
+  assert.deepEqual(coords(layout), coords(shuffled));
+  for (const generation of [1, 2, 3]) assert.equal(new Set(layout.nodes.filter(node => node.generation === generation).map(node => node.y)).size, 1);
+  for (const [firstId, secondId] of [[1, 2], [3, 4]]) {
+    assert.equal(layout.nodes.find(node => node.member.id === firstId).y, layout.nodes.find(node => node.member.id === secondId).y);
+  }
+  const childCenters = [6, 7].map(id => layout.nodes.find(node => node.member.id === id).x + FAMILY_CARD_WIDTH / 2);
+  const parents = [3, 4].map(id => layout.nodes.find(node => node.member.id === id));
+  const coupleMidpoint = parents.reduce((sum, node) => sum + node.x + node.width / 2, 0) / parents.length;
+  assert.ok(Math.abs(coupleMidpoint - (childCenters[0] + childCenters[1]) / 2) < 1);
+  assert.equal(layout.nodes.length, people.length);
+  assert.ok(layout.nodes.every(node => Number.isFinite(node.x) && Number.isFinite(node.y)));
 });
 
 test('shared parent pair produces one family trunk and a local sibling rail', () => {
