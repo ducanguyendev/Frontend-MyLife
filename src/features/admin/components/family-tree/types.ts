@@ -1,3 +1,5 @@
+import { getGenerationCardTheme } from "./generationCardThemes";
+
 export interface HorizontalRelation {
   memberId: number;
   relationType: string;
@@ -77,18 +79,12 @@ export const removeVietnameseTones = (str: string): string => {
 };
 
 export const getGenerationColors = (generation: number) => {
-  const colors = [
-    { bg: "bg-red-100 dark:bg-red-900/40", text: "text-red-800 dark:text-red-300", border: "border-red-200 dark:border-red-800" },
-    { bg: "bg-blue-100 dark:bg-blue-900/40", text: "text-blue-800 dark:text-blue-300", border: "border-blue-200 dark:border-blue-800" },
-    { bg: "bg-green-100 dark:bg-green-900/40", text: "text-green-800 dark:text-green-300", border: "border-green-200 dark:border-green-800" },
-    { bg: "bg-amber-100 dark:bg-amber-900/40", text: "text-amber-800 dark:text-amber-300", border: "border-amber-200 dark:border-amber-800" },
-    { bg: "bg-purple-100 dark:bg-purple-900/40", text: "text-purple-800 dark:text-purple-300", border: "border-purple-200 dark:border-purple-800" },
-    { bg: "bg-pink-100 dark:bg-pink-900/40", text: "text-pink-800 dark:text-pink-300", border: "border-pink-200 dark:border-pink-800" },
-    { bg: "bg-indigo-100 dark:bg-indigo-900/40", text: "text-indigo-800 dark:text-indigo-300", border: "border-indigo-200 dark:border-indigo-800" },
-    { bg: "bg-teal-100 dark:bg-teal-900/40", text: "text-teal-800 dark:text-teal-300", border: "border-teal-200 dark:border-teal-800" },
-    { bg: "bg-orange-100 dark:bg-orange-900/40", text: "text-orange-800 dark:text-orange-300", border: "border-orange-200 dark:border-orange-800" },
-    { bg: "bg-cyan-100 dark:bg-cyan-900/40", text: "text-cyan-800 dark:text-cyan-300", border: "border-cyan-200 dark:border-cyan-800" }
-  ];
-  const index = Math.max(0, generation - 1) % colors.length;
-  return colors[index];
+  const theme = getGenerationCardTheme(generation);
+  const colors: Record<string, { bg: string; text: string; border: string }> = {
+    origin: { bg: "bg-amber-100 dark:bg-amber-900/40", text: "text-amber-900 dark:text-amber-200", border: "border-amber-200 dark:border-amber-800" },
+    branch: { bg: "bg-sky-100 dark:bg-sky-900/40", text: "text-sky-900 dark:text-sky-200", border: "border-sky-200 dark:border-sky-800" },
+    leaf: { bg: "bg-emerald-100 dark:bg-emerald-900/40", text: "text-emerald-900 dark:text-emerald-200", border: "border-emerald-200 dark:border-emerald-800" },
+    blossom: { bg: "bg-violet-100 dark:bg-violet-900/40", text: "text-violet-900 dark:text-violet-200", border: "border-violet-200 dark:border-violet-800" },
+  };
+  return colors[theme.key] ?? { bg: theme.badgeClassName, text: "", border: "" };
 };

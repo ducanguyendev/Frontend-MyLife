@@ -4,7 +4,8 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/shared/hooks/useLanguage";
 import { Modal } from "@/shared/components/ui";
-import { type FamilyMember, removeVietnameseTones, getGenerationColors } from "./types";
+import { type FamilyMember, removeVietnameseTones } from "./types";
+import { getGenerationCardTheme } from "./generationCardThemes";
 import { MemberAvatarImage } from "./MemberAvatarImage";
 import { getSiblingDisplayLabelKey, getSiblingKind, getSiblingSeniority, isBiologicalSibling } from "./siblingRelations";
 
@@ -74,7 +75,7 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({ member, me
 
   const role = t(`admin.role_${member.role?.toLowerCase() || "member"}`, { defaultValue: member.role || t("admin.role_member") });
   const gender = t(`admin.gender_${member.gender?.toLowerCase() || "unknown"}`, { defaultValue: member.gender || t("admin.gender_unknown") });
-  const generationColors = getGenerationColors(member.generation);
+  const generationTheme = getGenerationCardTheme(member.generation);
 
   return (
     <Modal
@@ -98,7 +99,7 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({ member, me
               <h2 className="max-w-full truncate text-xl font-bold leading-tight text-primary-text sm:text-2xl" title={formatName(member.fullName)}>
                 {formatName(member.fullName)}
               </h2>
-              <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${generationColors.bg} ${generationColors.text} ${generationColors.border}`}>
+              <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${generationTheme.badgeClassName}`}>
                 {t("admin.generation", { defaultValue: "Đời" })} {member.generation}
               </span>
             </div>

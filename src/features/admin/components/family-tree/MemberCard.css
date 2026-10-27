@@ -19,12 +19,13 @@
   text-align: center;
   box-shadow: 0 2px 8px color-mix(in srgb, var(--primary-text) 5%, transparent);
   transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+  border-color: var(--generation-accent-border, var(--custom-border));
 }
 
 .family-member-card__open:hover {
   transform: translateY(-2px);
-  border-color: color-mix(in srgb, var(--accent-color) 44%, var(--custom-border));
-  box-shadow: 0 5px 14px color-mix(in srgb, var(--primary-text) 8%, transparent);
+  border-color: var(--generation-accent, var(--accent-color));
+  box-shadow: 0 5px 14px color-mix(in srgb, var(--generation-accent, var(--primary-text)) 16%, transparent);
 }
 
 .family-member-card__open:focus-visible {
@@ -52,6 +53,53 @@
 
 .family-member-card__illustration circle {
   fill: var(--secondary-bg);
+}
+
+.family-member-card__motif {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.7rem;
+  z-index: 0;
+  color: var(--generation-accent, var(--accent-color));
+  opacity: 0.16;
+  pointer-events: none;
+}
+
+.family-member-card__generation {
+  border-color: var(--generation-accent-border, currentColor);
+}
+
+.family-member-card__life-status {
+  position: relative;
+  z-index: 1;
+  margin-top: 0.15rem;
+  font-size: 0.72rem;
+  font-weight: 650;
+}
+
+.family-member-card__life-status.is-living {
+  color: #16834a;
+}
+
+.family-member-card__life-status.is-deceased {
+  color: var(--secondary-text);
+}
+
+.family-member-card--origin { --generation-accent: #b7791f; --generation-accent-border: #e6c88e; }
+.family-member-card--branch { --generation-accent: #1683a7; --generation-accent-border: #9ed8e7; }
+.family-member-card--leaf { --generation-accent: #25845a; --generation-accent-border: #a8d9ba; }
+.family-member-card--blossom { --generation-accent: #7c56ad; --generation-accent-border: #c9b6e3; }
+.family-member-card--sun { --generation-accent: #c66a24; --generation-accent-border: #eac09a; }
+.family-member-card--bird { --generation-accent: #16899a; --generation-accent-border: #9ad9df; }
+.family-member-card--flower { --generation-accent: #bd4e86; --generation-accent-border: #e8b4cf; }
+.family-member-card--seed { --generation-accent: #688d20; --generation-accent-border: #c8d99b; }
+.family-member-card--vine { --generation-accent: #208077; --generation-accent-border: #a6d5d0; }
+.family-member-card--harvest { --generation-accent: #aa8216; --generation-accent-border: #e5d38e; }
+.family-member-card--neutral { --generation-accent: #75808b; --generation-accent-border: #cbd1d6; }
+
+.family-member-card__avatar {
+  border-color: var(--generation-accent-border, var(--custom-border));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--generation-accent) 14%, transparent);
 }
 
 .family-flip-card__avatar,

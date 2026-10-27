@@ -1,10 +1,9 @@
 import React from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Edit2, Eye, MoreVertical, Trash2 } from "lucide-react";
+import { Edit2, Eye, Flower2, GitBranch, Leaf, MoreVertical, Sprout, Sun, TreeDeciduous, Trash2, Wheat } from "lucide-react";
 import { useLanguage } from "@/shared/hooks/useLanguage";
-import { IllustrationSlot } from "@/shared/components/illustration/IllustrationSlot";
-import { sharedIllustrationSlots } from "@/shared/components/illustration/illustrationSlots";
-import { type FamilyMember, removeVietnameseTones, getGenerationColors } from "./types";
+import { type FamilyMember, removeVietnameseTones } from "./types";
+import { getGenerationCardTheme } from "./generationCardThemes";
 import { MemberAvatarImage } from "./MemberAvatarImage";
 import "./MemberCard.css";
 
@@ -31,7 +30,20 @@ export const MemberCard: React.FC<MemberCardProps> = ({
 }) => {
   const { t, language } = useLanguage();
   const formatName = (name: string) => !name ? "" : language === "en" ? removeVietnameseTones(name) : name;
-  const generationColors = getGenerationColors(member.generation);
+  const generationTheme = getGenerationCardTheme(member.generation);
+  const isDeceased = member.lifeStatus === "DECEASED";
+  const Motif = {
+    tree: TreeDeciduous,
+    branch: GitBranch,
+    leaf: Leaf,
+    blossom: Flower2,
+    sun: Sun,
+    bird: Sprout,
+    flower: Flower2,
+    seed: Sprout,
+    vine: GitBranch,
+    harvest: Wheat,
+  }[generationTheme.motif];
   const name = formatName(member.fullName);
   const gender = t(`admin.gender_${member.gender?.toLowerCase() || "unknown"}`, { defaultValue: member.gender || t("admin.gender_unknown") });
   const role = t(`admin.role_${member.role?.toLowerCase() || "member"}`, { defaultValue: member.role || t("admin.role_member") });
@@ -42,15 +54,15 @@ export const MemberCard: React.FC<MemberCardProps> = ({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.03 }}
-      className={`family-flip-card relative h-full min-h-[248px] ${isDropdownOpen ? "z-40" : "z-0"}`}
+      className={`family-flip-card family-member-card ${generationTheme.className} relative h-full min-h-[248px] ${isDropdownOpen ? "z-40" : "z-0"}`}
     >
       <button
         type="button"
-        className={`family-member-card__open family-flip-card__front bg-secondary-bg border ${generationColors.border}`}
+        className="family-member-card__open family-flip-card__front bg-secondary-bg border"
         onClick={() => onView(member)}
         aria-label={`${t("admin.view_detail", { defaultValue: "Xem chi tiết" })}: ${name}`}
       >
-        <IllustrationSlot definition={sharedIllustrationSlots.memberCard} />
+        <Motif className="family-member-card__motif" size={54} strokeWidth={1.4} aria-hidden="true" />
         <MemberAvatarImage
           member={member}
           alt={name}
@@ -58,12 +70,15 @@ export const MemberCard: React.FC<MemberCardProps> = ({
         />
         <span className="family-flip-card__name text-primary-text" title={name}>{name || t("admin.profile_no_information", { defaultValue: "Chưa có thông tin" })}</span>
         <span className="family-flip-card__meta text-secondary-text">
-          <span className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold ${generationColors.bg} ${generationColors.text} ${generationColors.border}`}>
+          <span className={`family-member-card__generation rounded-full border px-2 py-0.5 text-[11px] font-semibold ${generationTheme.badgeClassName}`}>
             {t("admin.generation", { defaultValue: "Đời" })} {member.generation}
           </span>
           <span>{gender}</span>
         </span>
         <span className="family-flip-card__role text-secondary-text" title={role}>{role}</span>
+        <span className={`family-member-card__life-status ${isDeceased ? "is-deceased" : "is-living"}`}>
+          {isDeceased ? "† " : "● "}{t(isDeceased ? "admin.member_life_status.deceased" : "admin.member_life_status.living")}
+        </span>
       </button>
 
       <div className="family-flip-card__menu absolute right-3 top-3 z-30" onClick={event => event.stopPropagation()}>
