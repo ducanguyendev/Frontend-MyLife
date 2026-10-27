@@ -118,7 +118,10 @@ test('spouse pairs stay adjacent and married child stays paired with spouse on t
   assert.equal(first.width, 190);
   assert.equal(first.height, 90);
   assert.ok(result.links.some(link => link.kind === 'spouse' && link.memberIds.includes(3) && link.memberIds.includes(4)));
-  assert.ok(result.links.some(link => link.kind === 'family' && link.memberIds.includes(3) && link.memberIds.includes(4)), 'child trunk originates from the couple union');
+  const family = result.links.find(link => link.kind === 'family' && link.memberIds.includes(3) && link.memberIds.includes(4));
+  assert.ok(family, 'child trunk originates from the couple union');
+  const householdCenter = (first.x + first.width / 2 + spouse.x + spouse.width / 2) / 2;
+  assert.ok(family.path.includes(`L ${householdCenter} ${first.y}`), 'parent connector drops at the child household midpoint');
 });
 
 test('generation lanes remain finite and non-overlapping for family sizes from 13 to 200 people', () => {
@@ -137,6 +140,88 @@ test('generation lanes remain finite and non-overlapping for family sizes from 1
       assert.equal(new Set(row.map(node => node.y)).size, 1);
       assert.ok(row.slice(1).every((node, index) => row[index].x + row[index].width <= node.x), `generation ${generation} cards do not overlap at size ${size}`);
     }
+  }
+});
+
+test('recursive household layout centers each parent on the complete descendant bounds', () => {
+  const members = [
+    person(1, 'Root A', { generation: 1, spouseId: 2 }), person(2, 'Root B', { generation: 1 }),
+    person(3, 'Branch C', { generation: 2, fatherId: 1, motherId: 2 }),
+    person(4, 'Branch D', { generation: 2, fatherId: 1, motherId: 2 }),
+    person(5, 'Branch E', { generation: 2, fatherId: 1, motherId: 2, spouseId: 6 }),
+    person(6, 'Spouse F', { generation: 2 }),
+    person(7, 'Branch G', { generation: 2, fatherId: 1, motherId: 2 }),
+    person(8, 'C child 1', { generation: 3, fatherId: 3 }),
+    person(9, 'C child 2', { generation: 3, fatherId: 3 }),
+    person(10, 'C child 3', { generation: 3, fatherId: 3 }),
+    person(11, 'D child 1', { generation: 3, fatherId: 4 }),
+    person(12, 'D child 2', { generation: 3, fatherId: 4 }),
+    person(13, 'E child', { generation: 3, fatherId: 5, motherId: 6 }),
+    person(14, 'G child', { generation: 3, fatherId: 7 }),
+  ];
+  const layout = shadcnLayoutModule.layoutShadcnFamilyTree(members);
+  const node = id => layout.nodes.find(item => item.member.id === id);
+  const centerOfHousehold = ids => {
+    const household = ids.map(node);
+    return (Math.min(...household.map(item => item.x)) + Math.max(...household.map(item => item.x + item.width))) / 2;
+  };
+  const descendantBounds = ids => {
+    const pending = [...ids]; const visited = new Set();
+    while (pending.length) {
+      const id = pending.pop();
+      for (const member of members) {
+        if ((member.fatherId === id || member.motherId === id || members.find(parent => parent.id === id)?.childIds?.includes(member.id)) && !visited.has(member.id)) {
+          visited.add(member.id); pending.push(member.id);
+        }
+      }
+    }
+    const descendants = [...visited].map(node);
+    return (Math.min(...descendants.map(item => item.x)) + Math.max(...descendants.map(item => item.x + item.width))) / 2;
+  };
+
+  assert.ok(Math.abs(centerOfHousehold([1, 2]) - descendantBounds([1, 2])) < 1, 'root couple centers on the full descendant subtree');
+  assert.ok(Math.abs(centerOfHousehold([3]) - descendantBounds([3])) < 1, 'branch C centers on its three descendants');
+  assert.ok(Math.abs(centerOfHousehold([4]) - descendantBounds([4])) < 1, 'branch D centers on its two descendants');
+  assert.ok(Math.abs(centerOfHousehold([5, 6]) - descendantBounds([5, 6])) < 1, 'married child household centers on its descendants');
+  assert.ok(Math.abs(centerOfHousehold([7]) - descendantBounds([7])) < 1, 'branch G centers on its descendant');
+  assert.equal(node(5).y, node(6).y);
+  for (const generation of [1, 2, 3]) assert.equal(new Set(layout.nodes.filter(item => item.generation === generation).map(item => item.y)).size, 1);
+  for (const generation of [1, 2, 3]) {
+    const row = layout.nodes.filter(item => item.generation === generation).sort((a, b) => a.x - b.x);
+    assert.ok(row.slice(1).every((item, index) => row[index].x + row[index].width <= item.x), `generation ${generation} cards do not overlap`);
+  }
+});
+
+test('independent roots remain separate and subtree positions do not depend on input order', () => {
+  const members = [
+    person(1, 'Root A', { generation: 1, spouseId: 2 }), person(2, 'Root B', { generation: 1 }),
+    person(3, 'A child', { generation: 2, fatherId: 1, motherId: 2 }),
+    person(4, 'A grandchild', { generation: 3, fatherId: 3 }),
+    person(20, 'Independent root', { generation: 1, spouseId: 21 }), person(21, 'Independent spouse', { generation: 1 }),
+    person(22, 'Other child', { generation: 2, fatherId: 20, motherId: 21 }),
+  ];
+  const layout = shadcnLayoutModule.layoutShadcnFamilyTree(members);
+  const reversed = shadcnLayoutModule.layoutShadcnFamilyTree([...members].reverse());
+  const positions = result => Object.fromEntries(result.nodes.map(item => [item.member.id, [item.x, item.y]]));
+  assert.deepEqual(positions(layout), positions(reversed));
+  assert.equal(layout.nodes.length, members.length);
+  assert.ok(layout.nodes.every(item => Number.isFinite(item.x) && Number.isFinite(item.y)));
+  const node = id => layout.nodes.find(item => item.member.id === id);
+  const firstForest = [1, 2, 3, 4].map(node).filter(Boolean);
+  const secondForest = [20, 21, 22].map(node).filter(Boolean);
+  assert.ok(Math.max(...firstForest.map(item => item.x + item.width)) < Math.min(...secondForest.map(item => item.x)), 'independent root subtree blocks do not overlap');
+});
+
+test('single member, single couple, and empty data keep finite centered layouts', () => {
+  for (const members of [
+    [person(1, 'Only member')],
+    [person(1, 'Partner A', { spouseId: 2 }), person(2, 'Partner B')],
+    [],
+  ]) {
+    const result = shadcnLayoutModule.layoutShadcnFamilyTree(members);
+    assert.equal(result.nodes.length, members.length);
+    assert.ok(result.nodes.every(item => Number.isFinite(item.x) && Number.isFinite(item.y)));
+    assert.ok(Number.isFinite(result.width) && Number.isFinite(result.height));
   }
 });
 

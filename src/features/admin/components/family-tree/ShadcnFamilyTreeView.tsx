@@ -29,7 +29,7 @@ export function ShadcnFamilyTreeView({ members, searchFocusMemberId, generationF
   const viewportRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<{ id: number; x: number; y: number; originX: number; originY: number } | null>(null);
   const [focusedId, setFocusedId] = useState<number | null>(null);
-  const focusedIdRef = useRef(focusedId);
+  const focusedIdRef = useRef<number | null>(null);
   const [focusHistory, setFocusHistory] = useState<number[]>([]);
   const [expandedIds, setExpandedIds] = useState<Set<number>>(() => new Set());
   const [showAll, setShowAll] = useState(true);
@@ -99,7 +99,7 @@ export function ShadcnFamilyTreeView({ members, searchFocusMemberId, generationF
     const viewport = viewportRef.current;
     if (!viewport || !layout.nodes.length) return;
     const bounds = viewport.getBoundingClientRect();
-    const target = centerOnly ? layout.nodes.filter(node => node.member.id === focusedId) : layout.nodes;
+    const target = centerOnly ? layout.nodes.filter(node => node.member.id === focusedIdRef.current) : layout.nodes;
     if (!target.length) return;
     const minX = Math.min(...target.map(node => node.x));
     const maxX = Math.max(...target.map(node => node.x + node.width));
@@ -109,7 +109,7 @@ export function ShadcnFamilyTreeView({ members, searchFocusMemberId, generationF
     const floor = centerOnly ? .88 : showAll ? .42 : .68;
     const scale = clampScale(Math.max(floor, ideal));
     setTransform({ x: bounds.width / 2 - (minX + maxX) / 2 * scale, y: bounds.height / 2 - (minY + maxY) / 2 * scale, scale });
-  }, [layout.nodes, focusedId, showAll]);
+  }, [layout.nodes, showAll]);
   useEffect(() => { fitView(); }, [fitView, visible.length]);
   useEffect(() => {
     const viewport = viewportRef.current;

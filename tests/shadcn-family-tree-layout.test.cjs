@@ -184,7 +184,7 @@ test('one-sided spouseId still aligns couple source to spouse connector midpoint
   assert.deepEqual(family.path.match(/^M ([-\d.]+) ([-\d.]+)/).slice(1).map(Number), [spouse.labelX, spouse.labelY]);
 });
 
-test('married child receives parent drop at biological card center; descendant trunk starts at couple heart', () => {
+test('married child receives parent drop at household midpoint; descendant trunk starts at couple heart', () => {
   const result = familyLayout.layoutShadcnFamilyTree([
     person(70, 'Grandparent A', 1, { spouseId: 71 }), person(71, 'Grandparent B', 1),
     person(72, 'Biological child', 2, { fatherId: 70, motherId: 71, spouseId: 73 }), person(73, 'Child spouse', 2),
@@ -192,7 +192,8 @@ test('married child receives parent drop at biological card center; descendant t
   ]);
   const parentDrop = result.links.find(link => link.kind === 'family' && link.memberIds.includes(72) && link.memberIds.includes(70));
   assert.ok(parentDrop);
-  assert.match(parentDrop.path, new RegExp(`L ${center(nodeFor(result, 72))} ${nodeFor(result, 72).y}$`));
+  const childHouseholdCenter = (center(nodeFor(result, 72)) + center(nodeFor(result, 73))) / 2;
+  assert.match(parentDrop.path, new RegExp(`L ${childHouseholdCenter} ${nodeFor(result, 72).y}$`));
   const spouse = result.links.find(link => link.kind === 'spouse' && link.memberIds.includes(72));
   const descendantTrunk = result.links.find(link => link.kind === 'family' && link.memberIds.includes(74));
   assert.deepEqual(descendantTrunk.path.match(/^M ([-\d.]+) ([-\d.]+)/).slice(1).map(Number), [spouse.labelX, spouse.labelY]);

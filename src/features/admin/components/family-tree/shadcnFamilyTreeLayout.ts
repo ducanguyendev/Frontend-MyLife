@@ -9,10 +9,22 @@ const FAMILY_GAP = 84;
 const GENERATION_GAP = 72;
 const PADDING = 72;
 
-interface HouseholdUnit { ids: number[]; width: number }
-interface RowGroup { key: string; parentIds: number[]; units: HouseholdUnit[]; width: number; anchorOffset: number; target: number }
+const siblingUnitGap = (left: HouseholdUnit, right: HouseholdUnit) =>
+  left.children.length > 0 && right.children.length > 0 ? FAMILY_GAP : SIBLING_GAP;
+const measureHouseholdGroup = (households: HouseholdUnit[], widthOf: (household: HouseholdUnit) => number) =>
+  households.reduce((width, household, index) => width + widthOf(household) + (index ? siblingUnitGap(households[index - 1], household) : 0), 0);
 
-export interface RowGroupPosition { key: string; width: number; target: number }
+interface HouseholdUnit {
+  key: string;
+  ids: number[];
+  width: number;
+  subtreeWidth: number;
+  generation: number;
+  parentIds: number[];
+  children: HouseholdUnit[];
+}
+interface ChildHouseholdGroup { key: string; parentIds: number[]; households: HouseholdUnit[] }
+
 export interface FamilyConnectorGeometry {
   path: string;
   sourceX: number;
@@ -24,14 +36,9 @@ export interface FamilyConnectorGeometry {
   childCenters: number[];
 }
 
-export interface ParentUnionSource {
-  sourceX: number;
-  sourceY: number;
-  couple: boolean;
-  singleParent: boolean;
-}
+export interface RowGroupPosition { key: string; width: number; target: number }
 
-/** Minimize squared movement from desired centers subject to ordered, non-overlapping groups. */
+/** Collision fallback helper retained for experiments; recursive subtree layout does not use it. */
 export function resolveRowGroupPositions(groups: RowGroupPosition[], gap: number): number[] {
   if (!groups.length) return [];
   const ordered = [...groups].sort((a, b) => a.target - b.target || a.key.localeCompare(b.key, undefined, { numeric: true }));
@@ -60,6 +67,27 @@ export function resolveRowGroupPositions(groups: RowGroupPosition[], gap: number
   return groups.map(group => byKey.get(group.key)!);
 }
 
+/** Return the couple midpoint when known, otherwise anchor deterministically to the lowest member id. */
+export function getUnionAnchorX(parents: Array<{ id: number; x: number; width: number }>, coupleKeys: Set<string>): number | null {
+  if (!parents.length) return null;
+  for (let first = 0; first < parents.length; first++) {
+    for (let second = first + 1; second < parents.length; second++) {
+      if (coupleKeys.has(householdKey(parents[first].id, parents[second].id))) {
+        return (parents[first].x + parents[first].width / 2 + parents[second].x + parents[second].width / 2) / 2;
+      }
+    }
+  }
+  const parent = [...parents].sort((a, b) => a.id - b.id)[0];
+  return parent.x + parent.width / 2;
+}
+
+export interface ParentUnionSource {
+  sourceX: number;
+  sourceY: number;
+  couple: boolean;
+  singleParent: boolean;
+}
+
 /** Build a single connected orthogonal trunk and sibling rail for a parent union. */
 export function buildFamilyConnectorGeometry(sourceX: number, sourceY: number, railY: number, centers: number[]): FamilyConnectorGeometry | null {
   const childCenters = [...centers].sort((a, b) => a - b);
@@ -75,20 +103,6 @@ export function buildFamilyConnectorGeometry(sourceX: number, sourceY: number, r
 
 const pairKey = (ids: number[]) => [...new Set(ids)].sort((a, b) => a - b).join(":") || "root";
 const householdKey = (first: number, second: number) => [first, second].sort((a, b) => a - b).join(":");
-
-/** Anchor a known couple at its midpoint; otherwise use one deterministic parent's center. */
-export function getUnionAnchorX(parents: Array<{ id: number; x: number; width: number }>, coupleKeys: Set<string>): number | null {
-  if (!parents.length) return null;
-  for (let first = 0; first < parents.length; first++) {
-    for (let second = first + 1; second < parents.length; second++) {
-      if (coupleKeys.has(householdKey(parents[first].id, parents[second].id))) {
-        return (parents[first].x + parents[first].width / 2 + parents[second].x + parents[second].width / 2) / 2;
-      }
-    }
-  }
-  const parent = [...parents].sort((a, b) => a.id - b.id)[0];
-  return parent.x + parent.width / 2;
-}
 
 /** Match a couple's spouse connector midpoint; only a true single parent starts at card bottom. */
 export function getParentUnionSource(parents: Array<{ id: number; x: number; y: number; width: number; height: number }>, coupleKeys: Set<string>): ParentUnionSource | null {
@@ -164,96 +178,101 @@ export function layoutShadcnFamilyTree(members: FamilyMember[], showExtendedRela
   const generations = [...new Set(members.map(member => member.generation))].sort((a, b) => a - b);
   const minGeneration = generations[0];
   const positions = new Map<number, { x: number; y: number }>();
-  const placeUnit = (unit: HouseholdUnit, startX: number, y: number) => {
-    unit.ids.forEach((id, index) => positions.set(id, { x: startX + index * (SHADCN_TREE_CARD_WIDTH + PARTNER_GAP), y }));
+
+  // Build each spouse pair once, then attach its descendants to the household as a whole.
+  const remaining = new Set(visibleIds);
+  const units: HouseholdUnit[] = [];
+  for (const member of [...members].sort((a, b) => a.id - b.id)) {
+    if (!remaining.has(member.id)) continue;
+    const spouseId = member.spouseId != null && visibleIds.has(member.spouseId)
+      ? member.spouseId
+      : members.find(candidate => candidate.spouseId === member.id && remaining.has(candidate.id))?.id;
+    const spouse = spouseId != null && spouseId !== member.id && remaining.has(spouseId) ? byId.get(spouseId) : undefined;
+    const unitMembers = (spouse ? [member, spouse] : [member]).sort((a, b) => a.id - b.id);
+    const ids = unitMembers.map(person => person.id);
+    ids.forEach(id => remaining.delete(id));
+    const parentCandidates = unitMembers.map(person => [...(parentsByChild.get(person.id) ?? [])].sort((a, b) => a - b));
+    const parentIds = parentCandidates.sort((a, b) => b.length - a.length || pairKey(a).localeCompare(pairKey(b), undefined, { numeric: true }))[0] ?? [];
+    const width = ids.length * SHADCN_TREE_CARD_WIDTH + Math.max(0, ids.length - 1) * PARTNER_GAP;
+    units.push({ key: pairKey(ids), ids, width, subtreeWidth: width, generation: Math.min(...unitMembers.map(person => person.generation)), parentIds, children: [] });
+  }
+
+  const unitByMemberId = new Map<number, HouseholdUnit>();
+  for (const unit of units) for (const id of unit.ids) unitByMemberId.set(id, unit);
+  const childrenByParentUnit = new Map<string, ChildHouseholdGroup[]>();
+  const roots = new Set(units);
+  for (const unit of units) {
+    const parentUnits = [...new Set(unit.parentIds.map(id => unitByMemberId.get(id)).filter((parent): parent is HouseholdUnit => Boolean(parent)))];
+    const eligibleParents = parentUnits.filter(parent => parent.generation < unit.generation).sort((a, b) => a.generation - b.generation || a.ids[0] - b.ids[0]);
+    if (!eligibleParents.length) continue;
+    // A normal couple resolves to one household. For incomplete or blended parent records,
+    // anchor once to the deterministic earliest parent household and keep all parent edges.
+    const owner = eligibleParents[0];
+    const parentKey = pairKey(unit.parentIds);
+    const groups = childrenByParentUnit.get(owner.key) ?? [];
+    let group = groups.find(candidate => candidate.key === parentKey);
+    if (!group) {
+      group = { key: parentKey, parentIds: unit.parentIds, households: [] };
+      groups.push(group);
+      childrenByParentUnit.set(owner.key, groups);
+    }
+    group.households.push(unit);
+    owner.children.push(unit);
+    roots.delete(unit);
+  }
+  units.forEach(unit => { unit.subtreeWidth = unit.width; });
+  // Recompute widths from the leaves upward after the hierarchy is complete.
+  const measureCache = new Map<string, number>();
+  const computeSubtreeWidth = (unit: HouseholdUnit, ancestry = new Set<string>()): number => {
+    if (measureCache.has(unit.key)) return measureCache.get(unit.key)!;
+    if (ancestry.has(unit.key)) return unit.width;
+    const nextAncestry = new Set(ancestry).add(unit.key);
+    const groups = [...(childrenByParentUnit.get(unit.key) ?? [])].sort((a, b) => a.key.localeCompare(b.key, undefined, { numeric: true }));
+    const descendantsWidth = groups.reduce((sum, group, groupIndex) => {
+      const groupWidth = measureHouseholdGroup(group.households, child => computeSubtreeWidth(child, nextAncestry));
+      return sum + groupWidth + (groupIndex ? FAMILY_GAP : 0);
+    }, 0);
+    const width = Math.max(unit.width, descendantsWidth);
+    unit.subtreeWidth = width;
+    measureCache.set(unit.key, width);
+    return width;
+  };
+  const orderedRoots = [...roots].sort((a, b) => a.generation - b.generation || a.ids[0] - b.ids[0]);
+  orderedRoots.forEach(root => computeSubtreeWidth(root));
+  // Orphaned cycles or malformed parent references stay visible as deterministic root households.
+  for (const unit of units) if (!measureCache.has(unit.key)) computeSubtreeWidth(unit);
+
+  const placeUnit = (unit: HouseholdUnit, left: number, allottedWidth: number, ancestry = new Set<string>()) => {
+    if (ancestry.has(unit.key)) return;
+    const nextAncestry = new Set(ancestry).add(unit.key);
+    const unitLeft = left + (allottedWidth - unit.width) / 2;
+    const y = PADDING + (unit.generation - minGeneration) * (SHADCN_TREE_CARD_HEIGHT + GENERATION_GAP);
+    unit.ids.forEach((id, index) => positions.set(id, { x: unitLeft + index * (SHADCN_TREE_CARD_WIDTH + PARTNER_GAP), y }));
+
+    const groups = [...(childrenByParentUnit.get(unit.key) ?? [])].sort((a, b) => a.key.localeCompare(b.key, undefined, { numeric: true }));
+    const groupWidths = groups.map(group => measureHouseholdGroup(group.households, child => child.subtreeWidth));
+    const childWidth = groupWidths.reduce((sum, width) => sum + width, 0) + Math.max(0, groups.length - 1) * FAMILY_GAP;
+    let groupLeft = unitLeft + (unit.width - childWidth) / 2;
+    groups.forEach((group, groupIndex) => {
+      let childLeft = groupLeft;
+      for (const [childIndex, child] of group.households.entries()) {
+        placeUnit(child, childLeft, child.subtreeWidth, nextAncestry);
+        childLeft += child.subtreeWidth + (childIndex < group.households.length - 1 ? siblingUnitGap(child, group.households[childIndex + 1]) : 0);
+      }
+      groupLeft += groupWidths[groupIndex] + FAMILY_GAP;
+    });
   };
 
-  for (const generation of generations) {
-    const row = members.filter(member => member.generation === generation).sort((a, b) => a.id - b.id);
-    const rowIds = new Set(row.map(member => member.id));
-    const parentGroups = new Map<string, { parentIds: number[]; children: FamilyMember[] }>();
-    for (const child of row) {
-      const parentIds = [...(parentsByChild.get(child.id) ?? [])].filter(id => rowIds.has(id) || positions.has(id));
-      const key = pairKey(parentIds);
-      const group = parentGroups.get(key) ?? { parentIds, children: [] };
-      group.children.push(child); parentGroups.set(key, group);
-    }
-
-    const consumed = new Set<number>();
-    const rowGroups: RowGroup[] = [];
-    const known = [...parentGroups].filter(([key]) => key !== "root").sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }));
-    const roots = [...(parentGroups.get("root")?.children ?? [])];
-    const makeUnits = (people: FamilyMember[]): HouseholdUnit[] => {
-      const units: HouseholdUnit[] = [];
-      for (const person of [...people].sort((a, b) => a.id - b.id)) {
-        if (consumed.has(person.id)) continue;
-        const spouseId = person.spouseId != null && rowIds.has(person.spouseId)
-          ? person.spouseId
-          : row.find(candidate => candidate.spouseId === person.id && !consumed.has(candidate.id))?.id;
-        const spouse = spouseId == null || !rowIds.has(spouseId) || consumed.has(spouseId) ? undefined : byId.get(spouseId);
-        const ids = spouse ? [person.id, spouse.id].sort((a, b) => a - b) : [person.id];
-        ids.forEach(id => consumed.add(id));
-        const width = ids.length * SHADCN_TREE_CARD_WIDTH + Math.max(0, ids.length - 1) * PARTNER_GAP;
-        units.push({ ids, width });
-      }
-      return units;
-    };
-    for (const [key, group] of known) {
-      const units = makeUnits(group.children);
-      if (!units.length) continue;
-      const width = units.reduce((sum, unit) => sum + unit.width, 0) + Math.max(0, units.length - 1) * SIBLING_GAP;
-      let unitOffset = 0;
-      const childAnchorOffsets: number[] = [];
-      for (const unit of units) {
-        for (const child of group.children) {
-          const cardIndex = unit.ids.indexOf(child.id);
-          if (cardIndex >= 0) childAnchorOffsets.push(unitOffset + cardIndex * (SHADCN_TREE_CARD_WIDTH + PARTNER_GAP) + SHADCN_TREE_CARD_WIDTH / 2);
-        }
-        unitOffset += unit.width + SIBLING_GAP;
-      }
-      const positionedParents = group.parentIds.flatMap(id => {
-        const position = positions.get(id);
-        return position ? [{ id, x: position.x, width: SHADCN_TREE_CARD_WIDTH }] : [];
-      });
-      const target = getUnionAnchorX(positionedParents, coupleKeys)
-        ?? (rowGroups.length * (width + FAMILY_GAP));
-      const childGroupCenter = childAnchorOffsets.length
-        ? (Math.min(...childAnchorOffsets) + Math.max(...childAnchorOffsets)) / 2
-        : width / 2;
-      rowGroups.push({ key, parentIds: group.parentIds, units, width, anchorOffset: childGroupCenter, target });
-    }
-    if (roots.length) {
-      const units = makeUnits(roots);
-      const width = units.reduce((sum, unit) => sum + unit.width, 0) + Math.max(0, units.length - 1) * FAMILY_GAP;
-      rowGroups.push({ key: "root", parentIds: [], units, width, anchorOffset: width / 2, target: 0 });
-    }
-    rowGroups.sort((a, b) => a.target - b.target || a.key.localeCompare(b.key, undefined, { numeric: true }));
-
-    const y = PADDING + (generation - minGeneration) * (SHADCN_TREE_CARD_HEIGHT + GENERATION_GAP);
-    if (generation === minGeneration || rowGroups.every(group => group.key === "root")) {
-      const totalWidth = rowGroups.reduce((sum, group, index) => sum + group.width + (index ? FAMILY_GAP : 0), 0);
-      let cursor = -totalWidth / 2;
-      for (const group of rowGroups) {
-        let unitX = cursor;
-        for (const [index, unit] of group.units.entries()) { placeUnit(unit, unitX, y); unitX += unit.width + (index < group.units.length - 1 ? FAMILY_GAP : 0); }
-        cursor += group.width + FAMILY_GAP;
-      }
-      continue;
-    }
-
-    const starts = resolveRowGroupPositions(rowGroups.map(group => ({
-      key: group.key,
-      width: group.width,
-      target: group.target + group.width / 2 - group.anchorOffset,
-    })), FAMILY_GAP);
-    for (const [groupIndex, group] of rowGroups.entries()) {
-      const startX = starts[groupIndex];
-      let unitX = startX;
-      for (const [index, unit] of group.units.entries()) {
-        placeUnit(unit, unitX, y);
-        unitX += unit.width + (index < group.units.length - 1 ? SIBLING_GAP : 0);
-      }
-    }
+  const forestWidth = orderedRoots.reduce((sum, root, index) => sum + root.subtreeWidth + (index ? FAMILY_GAP : 0), 0);
+  let rootLeft = -forestWidth / 2;
+  for (const root of orderedRoots) {
+    placeUnit(root, rootLeft, root.subtreeWidth);
+    rootLeft += root.subtreeWidth + FAMILY_GAP;
+  }
+  for (const unit of units) {
+    if (positions.has(unit.ids[0])) continue;
+    placeUnit(unit, rootLeft, unit.subtreeWidth);
+    rootLeft += unit.subtreeWidth + FAMILY_GAP;
   }
 
   const minX = Math.min(...[...positions.values()].map(position => position.x));
@@ -270,42 +289,50 @@ export function layoutShadcnFamilyTree(members: FamilyMember[], showExtendedRela
     links.push({ id: `spouse-${key}`, path: `M ${x1} ${y} L ${x2} ${y}`, kind: "spouse", memberIds: ids, labelX: (x1 + x2) / 2, labelY: y });
   }
 
-  const childrenByUnion = new Map<string, { parentIds: number[]; children: FamilyMember[] }>();
-  for (const child of members) {
-    const parentIds = [...(parentsByChild.get(child.id) ?? [])].sort((a, b) => a - b);
-    if (!parentIds.length) continue;
-    const key = `${pairKey(parentIds)}:${child.generation}`;
-    const group = childrenByUnion.get(key) ?? { parentIds, children: [] };
-    group.children.push(child); childrenByUnion.set(key, group);
+  const childrenByUnion = new Map<string, { parentIds: number[]; households: HouseholdUnit[] }>();
+  for (const unit of units) {
+    for (const childId of unit.ids) {
+      const parentIds = [...(parentsByChild.get(childId) ?? [])].sort((a, b) => a - b);
+      if (!parentIds.length) continue;
+      const key = `${pairKey(parentIds)}:${unit.generation}`;
+      const group = childrenByUnion.get(key) ?? { parentIds, households: [] };
+      if (!group.households.some(household => household.key === unit.key)) group.households.push(unit);
+      childrenByUnion.set(key, group);
+    }
   }
   for (const [key, group] of childrenByUnion) {
+    group.households.sort((a, b) => {
+      const aX = a.ids.reduce((sum, id) => sum + (byNodeId.get(id)?.x ?? 0) + SHADCN_TREE_CARD_WIDTH / 2, 0) / a.ids.length;
+      const bX = b.ids.reduce((sum, id) => sum + (byNodeId.get(id)?.x ?? 0) + SHADCN_TREE_CARD_WIDTH / 2, 0) / b.ids.length;
+      return aX - bX || a.ids[0] - b.ids[0];
+    });
     const parents = group.parentIds.map(id => byNodeId.get(id)).filter((node): node is FamilyViewNode => Boolean(node));
-    const children = group.children.map(child => byNodeId.get(child.id)).filter((node): node is FamilyViewNode => Boolean(node));
-    if (!parents.length || !children.length) continue;
-    const sourceX = getUnionAnchorX(parents.map(node => ({ id: node.member.id, x: node.x, width: node.width })), coupleKeys);
-    if (sourceX == null) continue;
+    const childHouseholds = group.households.map(household => household.ids.map(id => byNodeId.get(id)).filter((node): node is FamilyViewNode => Boolean(node))).filter(household => household.length);
+    const children = childHouseholds.flat();
+    if (!parents.length || !childHouseholds.length) continue;
     const source = getParentUnionSource(parents.map(node => ({ id: node.member.id, x: node.x, y: node.y, width: node.width, height: node.height })), coupleKeys);
     if (!source) continue;
     const connectorSourceX = source.sourceX;
     const connectorSourceY = source.sourceY;
-    const childCenters = children.map(node => node.x + node.width / 2).sort((a, b) => a - b);
+    const childCenters = childHouseholds.map(household => (Math.min(...household.map(node => node.x)) + Math.max(...household.map(node => node.x + node.width)))/2);
     const parentBottom = Math.max(...parents.map(node => node.y + node.height));
     const childTop = Math.min(...children.map(node => node.y));
     const railY = parentBottom + (childTop - parentBottom) * .5;
-    if (children.length === 1) {
-      const child = children[0]; const childX = child.x + child.width / 2;
+    const familyMemberIds = [...group.parentIds, ...group.households.flatMap(household => household.ids)];
+    if (childHouseholds.length === 1) {
+      const childHousehold = childHouseholds[0]; const childX = childCenters[0]; const childY = Math.min(...childHousehold.map(node => node.y));
       const path = !source.singleParent
-        ? `M ${connectorSourceX} ${connectorSourceY} L ${connectorSourceX} ${railY} L ${childX} ${railY} L ${childX} ${child.y}`
-        : Math.abs(connectorSourceX - childX) < .5 ? `M ${connectorSourceX} ${connectorSourceY} L ${childX} ${child.y}` : `M ${connectorSourceX} ${connectorSourceY} L ${connectorSourceX} ${railY} L ${childX} ${railY} L ${childX} ${child.y}`;
-      links.push({ id: `family-${key}`, path, kind: "family", memberIds: [...group.parentIds, child.member.id] });
+        ? `M ${connectorSourceX} ${connectorSourceY} L ${connectorSourceX} ${railY} L ${childX} ${railY} L ${childX} ${childY}`
+        : Math.abs(connectorSourceX - childX) < .5 ? `M ${connectorSourceX} ${connectorSourceY} L ${childX} ${childY}` : `M ${connectorSourceX} ${connectorSourceY} L ${connectorSourceX} ${railY} L ${childX} ${railY} L ${childX} ${childY}`;
+      links.push({ id: `family-${key}`, path, kind: "family", memberIds: familyMemberIds });
       continue;
     }
     const connector = buildFamilyConnectorGeometry(connectorSourceX, connectorSourceY, railY, childCenters);
     if (!connector) continue;
-    links.push({ id: `family-${key}`, path: connector.path, kind: "family", memberIds: [...group.parentIds, ...children.map(child => child.member.id)] });
-    children.forEach(child => {
-      const childX = child.x + child.width / 2;
-      links.push({ id: `family-child-${key}-${child.member.id}`, path: `M ${childX} ${railY} L ${childX} ${child.y}`, kind: "family-child", memberIds: [...group.parentIds, ...children.map(member => member.member.id)] });
+    links.push({ id: `family-${key}`, path: connector.path, kind: "family", memberIds: familyMemberIds });
+    childHouseholds.forEach((household, index) => {
+      const childX = childCenters[index]; const childY = Math.min(...household.map(node => node.y));
+      links.push({ id: `family-child-${key}-${group.households[index].key}`, path: `M ${childX} ${railY} L ${childX} ${childY}`, kind: "family-child", memberIds: familyMemberIds });
     });
   }
 
