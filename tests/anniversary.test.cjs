@@ -63,7 +63,9 @@ test('Anniversary workspace is data-backed with calendar filtering and CRUD stat
   assert.match(source, /\[items, search, eventTypeFilter, filterDate\]/);
   assert.match(source, /setEventTypeFilter\('ALL'\)/);
   assert.match(source, /event_type_filter/);
-  assert.match(source, /w-full sm:max-w-sm lg:max-w-md/);
+  assert.match(source, /w-full sm:w-\[20rem\] sm:max-w-\[40vw\] sm:shrink/);
+  assert.match(source, /flex w-max min-w-full flex-nowrap items-center gap-1 overflow-x-auto sm:w-auto sm:min-w-0 sm:shrink-0/);
+  assert.match(source, /min-h-9 shrink-0 whitespace-nowrap rounded-full border px-3 text-xs font-semibold/);
   assert.match(source, /event_count', \{ count: filtered\.length \}/);
   assert.doesNotMatch(source.match(/<header className="mb-3[\s\S]*?<\/header>/)?.[0] ?? '', /<SearchBar/);
   assert.doesNotMatch(source, /banner_title|admin\.anniversary_ui\.total|admin\.anniversary_ui\.nearest/);
@@ -192,7 +194,7 @@ test('anniversary modal keeps accessible naming, original date checks, and backe
   assert.match(service, /next-occurrence\?/);
   assert.match(tab, /leftIcon=\{<Plus size=\{16\} \/>\}/);
   assert.match(tab, /t\('admin\.anniversary_ui\.add_action'\)/);
-  assert.match(tab, /<SearchBar className="w-full sm:max-w-sm lg:max-w-md"/);
+  assert.match(tab, /<SearchBar className="w-full sm:w-\[20rem\] sm:max-w-\[40vw\] sm:shrink"/);
   assert.match(tab, /role="group" aria-label=\{t\('admin\.anniversary_ui\.event_type_filter'\)\}/);
   assert.match(tab, /aria-pressed=\{eventTypeFilter === value\}/);
   assert.match(tab, /const clearAllFilters = \(\) => \{[\s\S]*setSearch\(''\);[\s\S]*setFilterDate\(null\);[\s\S]*setCalendarSelectedDate\(null\);[\s\S]*setEventTypeFilter\('ALL'\);[\s\S]*setSelectedEventId\(null\)/);
@@ -241,5 +243,19 @@ test('anniversary card and live form labels follow event type in Vietnamese and 
     const resources = JSON.parse(readFileSync(join(__dirname, `../src/shared/locales/${lng}/admin.json`), 'utf8'));
     const { death_place, death_host, place, host } = resources.anniversary_ui;
     assert.deepEqual([death_place, death_host, place, host], expected);
+  }
+});
+
+test('anniversary event type keeps FAMILY_EVENT and presents concise translated labels', () => {
+  const tab = readFileSync(join(__dirname, '../src/features/admin/components/family-tree/AnniversaryTab.tsx'), 'utf8');
+  const modal = readFileSync(join(__dirname, '../src/features/admin/components/family-tree/FamilyAnniversaryModal.tsx'), 'utf8');
+  const service = readFileSync(join(__dirname, '../src/features/admin/services/anniversaryService.ts'), 'utf8');
+  assert.match(service, /export type AnniversaryEventType = 'DEATH_ANNIVERSARY' \| 'FAMILY_EVENT'/);
+  assert.match(tab, /\['FAMILY_EVENT', 'admin\.anniversary_ui\.family_event'\]/);
+  assert.match(tab, /item\.eventType === 'DEATH_ANNIVERSARY' \? 'admin\.anniversary_ui\.death_anniversary' : 'admin\.anniversary_ui\.family_event'/);
+  assert.match(modal, /<SelectItem value="FAMILY_EVENT">\{t\('admin\.anniversary_ui\.family_event'\)\}<\/SelectItem>/);
+  for (const [lng, expected] of [['vi', 'Sự kiện'], ['en', 'Event']]) {
+    const resources = JSON.parse(readFileSync(join(__dirname, `../src/shared/locales/${lng}/admin.json`), 'utf8'));
+    assert.equal(resources.anniversary_ui.family_event, expected);
   }
 });

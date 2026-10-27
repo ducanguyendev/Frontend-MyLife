@@ -269,9 +269,9 @@ export const AnniversaryTab: React.FC<Props> = ({ showToast, members: initialMem
             </div>
             <span className="shrink-0 whitespace-nowrap rounded-full bg-accent/10 px-2.5 py-1 text-xs font-semibold text-accent">{t('admin.anniversary_ui.event_count', { count: filtered.length })}</span>
           </div>
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <SearchBar className="w-full sm:max-w-sm lg:max-w-md" ariaLabel={t('admin.anniversary_ui.search')} placeholder={t('admin.anniversary_ui.search')} value={search} onChange={setSearch} />
-            <div role="group" aria-label={t('admin.anniversary_ui.event_type_filter')} className="flex max-w-full flex-wrap items-center gap-1">
+          <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+            <SearchBar className="w-full sm:w-[20rem] sm:max-w-[40vw] sm:shrink" ariaLabel={t('admin.anniversary_ui.search')} placeholder={t('admin.anniversary_ui.search')} value={search} onChange={setSearch} />
+            <div role="group" aria-label={t('admin.anniversary_ui.event_type_filter')} className="flex w-max min-w-full flex-nowrap items-center gap-1 overflow-x-auto sm:w-auto sm:min-w-0 sm:shrink-0">
               {([
                 ['ALL', 'admin.anniversary_ui.all_events'],
                 ['DEATH_ANNIVERSARY', 'admin.anniversary_ui.death_anniversary'],
