@@ -234,10 +234,12 @@ export const AnniversaryTab: React.FC<Props> = ({ showToast, members: initialMem
                       {item.relatedMemberName && <p className="mt-0.5 truncate text-xs text-secondary-text">{item.relatedMemberName}{item.relatedMemberGeneration ? ` · ${t('admin.generation')} ${item.relatedMemberGeneration}` : ''}{item.relatedMemberRole ? ` · ${item.relatedMemberRole}` : ''}</p>}
                     </div>
                     <div className="shrink-0 text-right">
-                      <p className="text-xs font-bold text-accent">{t('admin.anniversary_ui.lunar_date', { day: item.lunarDay, month: item.lunarMonth })}{item.isLeapMonth ? ` · ${t('admin.anniversary_ui.leap_month_short')}` : ''}</p>
-                      {formatLunarYearLabel(item.lunarYear ?? NaN) && <p className="text-[11px] text-secondary-text">{t('admin.anniversary_ui.original_lunar_year', { label: formatLunarYearLabel(item.lunarYear ?? NaN) })}</p>}
-                      <p className="mt-1 text-[11px] font-medium text-primary-text">{t('admin.anniversary_ui.upcoming_lunar_date', { date: `${item.lunarDay}/${item.lunarMonth}/${item.nextLunarYear}`, canChi: formatLunarYearLabel(item.nextLunarYear)?.replace(`${item.nextLunarYear} – `, '') ?? '' })}</p>
-                      <p className="mt-0.5 text-[11px] text-secondary-text">{dateFormat.format(new Date(`${item.nextSolarDate}T12:00:00Z`))}</p>
+                      {item.eventType === 'DEATH_ANNIVERSARY' && item.lunarDay && item.lunarMonth && <>
+                        <p className="text-xs font-bold text-accent">{t('admin.anniversary_ui.lunar_date', { day: item.lunarDay, month: item.lunarMonth })}{item.isLeapMonth ? ` · ${t('admin.anniversary_ui.leap_month_short')}` : ''}</p>
+                        {formatLunarYearLabel(item.lunarYear ?? NaN) && <p className="text-[11px] text-secondary-text">{t('admin.anniversary_ui.original_lunar_year', { label: formatLunarYearLabel(item.lunarYear ?? NaN) })}</p>}
+                        {item.nextLunarYear && <p className="mt-1 text-[11px] font-medium text-primary-text">{t('admin.anniversary_ui.upcoming_lunar_date', { date: `${item.lunarDay}/${item.lunarMonth}/${item.nextLunarYear}`, canChi: formatLunarYearLabel(item.nextLunarYear)?.replace(`${item.nextLunarYear} – `, '') ?? '' })}</p>}
+                      </>}
+                      {item.nextSolarDate && <p className="mt-0.5 text-[11px] text-secondary-text">{dateFormat.format(new Date(`${item.nextSolarDate}T12:00:00Z`))}</p>}
                     </div>
                   </div>
                   {(item.place || item.host || item.notes) && <div className="mt-2 space-y-1.5 border-t border-custom-border/60 pt-2 text-xs text-secondary-text">

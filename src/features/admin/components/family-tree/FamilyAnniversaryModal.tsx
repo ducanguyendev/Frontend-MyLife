@@ -35,6 +35,7 @@ export function FamilyAnniversaryModal({ anniversary, members, onClose, onSubmit
   const [lunarYear, setLunarYear] = useState(anniversary?.lunarYear ? String(anniversary.lunarYear) : '');
   const [originalSolarDate, setOriginalSolarDate] = useState(anniversary?.originalSolarDate ? formatBackendToDob(anniversary.originalSolarDate) : '');
   const [isLeapMonth, setIsLeapMonth] = useState(anniversary?.isLeapMonth ?? false);
+  const isDeathAnniversary = eventType === 'DEATH_ANNIVERSARY';
   const [place, setPlace] = useState(anniversary?.place ?? '');
   const [host, setHost] = useState(anniversary?.host ?? '');
   const [notes, setNotes] = useState(anniversary?.notes ?? '');
@@ -49,7 +50,6 @@ export function FamilyAnniversaryModal({ anniversary, members, onClose, onSubmit
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const selectedMember = useMemo(() => members.find(member => member.id === Number(relatedMemberId)), [members, relatedMemberId]);
-  const isDeathAnniversary = eventType === 'DEATH_ANNIVERSARY';
   const linkedDeathDate = isDeathAnniversary && selectedMember?.lifeStatus === 'DECEASED' ? selectedMember.deathDate?.split('T')[0] ?? null : null;
   const hasLinkedMemberWithoutDeathDate = isDeathAnniversary && selectedMember?.lifeStatus === 'DECEASED' && !linkedDeathDate;
   const solarDateValue = formatDobToBackend(originalSolarDate);
@@ -83,7 +83,7 @@ export function FamilyAnniversaryModal({ anniversary, members, onClose, onSubmit
   }, [eventType, isDeathAnniversary, selectedMember, title, t]);
 
   useEffect(() => {
-    if (!validLunarParts) {
+    if (!isDeathAnniversary || !validLunarParts) {
       setOccurrence(null);
       setOccurrenceLoading(false);
       setOccurrenceError(null);
@@ -107,10 +107,10 @@ export function FamilyAnniversaryModal({ anniversary, members, onClose, onSubmit
       }
     }, 350);
     return () => { window.clearTimeout(timer); controller.abort(); };
-  }, [day, isLeapMonth, month, validLunarParts]);
+  }, [day, isDeathAnniversary, isLeapMonth, month, validLunarParts]);
 
   useEffect(() => {
-    if (!validSolarDate.valid || !solarDateValue || !validLunarParts || !Number.isInteger(year) || year < 1800 || year > 2200) {
+    if (!isDeathAnniversary || !validSolarDate.valid || !solarDateValue || !validLunarParts || !Number.isInteger(year) || year < 1800 || year > 2200) {
       setDateCheck(null);
       setDateCheckLoading(false);
       setDateCheckError(null);
@@ -136,7 +136,13 @@ export function FamilyAnniversaryModal({ anniversary, members, onClose, onSubmit
       }
     }, 350);
     return () => { window.clearTimeout(timer); controller.abort(); };
-  }, [day, isLeapMonth, month, solarDateValue, validLunarParts, validSolarDate.valid, year]);
+  }, [day, isDeathAnniversary, isLeapMonth, month, solarDateValue, validLunarParts, validSolarDate.valid, year]);
+
+  useEffect(() => {
+    if (isDeathAnniversary) return;
+    setLunarDay(''); setLunarMonth(''); setLunarYear(''); setIsLeapMonth(false);
+    setOccurrence(null); setOccurrenceError(null); setDateCheck(null); setDateCheckError(null);
+  }, [isDeathAnniversary]);
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -144,14 +150,15 @@ export function FamilyAnniversaryModal({ anniversary, members, onClose, onSubmit
     setError(null);
     if (title.trim().length < 2 || title.trim().length > 200) { setError('admin.anniversary_ui.invalid_title'); return; }
     if (hasLinkedMemberWithoutDeathDate) { setError('admin.anniversary_ui.member_death_date_missing'); return; }
-    if (!validLunarParts) { setError('admin.anniversary_ui.invalid_lunar_date'); return; }
+    if (isDeathAnniversary && !validLunarParts) { setError('admin.anniversary_ui.invalid_lunar_date'); return; }
     const hasSolar = Boolean(originalSolarDate.trim());
     const hasYear = Boolean(lunarYear.trim());
+    if (!isDeathAnniversary && (!hasSolar || !validSolarDate.valid)) { setError('admin.anniversary_ui.invalid_solar_date'); return; }
     if (isDeathAnniversary && (!hasSolar || !hasYear)) { setError('admin.anniversary_ui.original_date_required'); return; }
-    if (hasSolar !== hasYear) { setError('admin.anniversary_ui.original_date_required'); return; }
+    if (isDeathAnniversary && hasSolar !== hasYear) { setError('admin.anniversary_ui.original_date_required'); return; }
     if (hasSolar && !validSolarDate.valid) { setError('admin.anniversary_ui.invalid_solar_date'); return; }
     if (hasYear && (!Number.isInteger(year) || year < 1800 || year > 2200)) { setError('admin.anniversary_ui.invalid_lunar_year'); return; }
-    if (hasSolar && hasYear && (dateCheckLoading || dateCheck?.status !== 'matched')) {
+    if (isDeathAnniversary && hasSolar && hasYear && (dateCheckLoading || dateCheck?.status !== 'matched')) {
       if (dateCheck?.status === 'mismatch') { setError('admin.anniversary_ui.date_mismatch'); return; }
       if (dateCheckError === 'admin.anniversary_ui.invalid_lunar_date') { setError(dateCheckError); return; }
       if (!dateCheckError) { setError('admin.anniversary_ui.date_check_pending'); return; }
@@ -161,8 +168,8 @@ export function FamilyAnniversaryModal({ anniversary, members, onClose, onSubmit
     try {
       await onSubmit({
         eventType, title: title.trim(), relatedMemberId: relatedMemberId ? Number(relatedMemberId) : null,
-        lunarDay: day, lunarMonth: month, isLeapMonth,
-        originalSolarDate: hasSolar ? solarDateValue : null, lunarYear: hasYear ? year : null,
+        lunarDay: isDeathAnniversary ? day : null, lunarMonth: isDeathAnniversary ? month : null, isLeapMonth: isDeathAnniversary && isLeapMonth,
+        originalSolarDate: hasSolar ? solarDateValue : null, lunarYear: isDeathAnniversary && hasYear ? year : null,
         place: place.trim() || null, host: host.trim() || null, notes: notes.trim() || null,
       });
     } catch (saveError) {
@@ -194,8 +201,13 @@ export function FamilyAnniversaryModal({ anniversary, members, onClose, onSubmit
         </h2>
         <div className="grid grid-cols-1 gap-3 p-3.5 sm:grid-cols-2">
           <Select appearance="simple" label={t('admin.anniversary_ui.event_type')} value={eventType} disabled={isSaving}
-            onValueChange={value => {
-              setEventType(value as AnniversaryEventType);
+          onValueChange={value => {
+              const nextEventType = value as AnniversaryEventType;
+              if (nextEventType !== eventType && nextEventType !== 'DEATH_ANNIVERSARY') {
+                setLunarDay(''); setLunarMonth(''); setLunarYear(''); setIsLeapMonth(false);
+                setOccurrence(null); setOccurrenceError(null); setDateCheck(null); setDateCheckError(null);
+              }
+              setEventType(nextEventType);
               setRelatedMemberId('');
               if (dateFromMember) setOriginalSolarDate('');
               setDateFromMember(false);
@@ -232,11 +244,11 @@ export function FamilyAnniversaryModal({ anniversary, members, onClose, onSubmit
           {t(isDeathAnniversary ? 'admin.anniversary_ui.date_of_death' : 'admin.anniversary_ui.event_date')}
         </h2>
         <div className="space-y-3.5 p-3.5">
-          <DateInput label={t(isDeathAnniversary ? 'admin.anniversary_ui.solar_death_date' : 'admin.anniversary_ui.solar_event_date')}
+          <DateInput label={t(isDeathAnniversary ? 'admin.anniversary_ui.solar_death_date' : 'admin.anniversary_ui.event_date')}
             value={originalSolarDate} onValueChange={value => { setOriginalSolarDate(value); setDateFromMember(false); setDateCheck(null); setError(null); }} disabled={isSaving || Boolean(linkedDeathDate)} />
           {linkedDeathDate && <p className="-mt-2 text-xs text-secondary-text">{t('admin.anniversary_ui.date_from_member')}</p>}
           {hasLinkedMemberWithoutDeathDate && <p role="alert" className="-mt-2 text-xs text-error">{t('admin.anniversary_ui.member_death_date_missing')}</p>}
-          <div>
+          {isDeathAnniversary && <div>
             <p className="mb-2 text-xs font-semibold text-secondary-text">{t(isDeathAnniversary ? 'admin.anniversary_ui.lunar_death_date' : 'admin.anniversary_ui.lunar_event_date')}</p>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
               <Input label={t('admin.anniversary_ui.lunar_day')} type="number" inputMode="numeric" min={1} max={30} value={lunarDay} disabled={isSaving}
@@ -247,23 +259,23 @@ export function FamilyAnniversaryModal({ anniversary, members, onClose, onSubmit
                 onChange={event => { setLunarYear(event.target.value); setDateCheck(null); setError(null); }} />
             </div>
             {isDeathAnniversary && lunarYearLabel && <p className="mt-1.5 text-xs font-medium text-accent">{lunarYearLabel}<span className="ml-1.5 font-normal text-secondary-text">{t('admin.anniversary_ui.historical_lunar_year')}</span></p>}
-          </div>
+          </div>}
           {isDeathAnniversary && <p className="text-xs leading-relaxed text-secondary-text">{t('admin.anniversary_ui.lunar_recurrence_help')}</p>}
-          <label className="flex w-fit cursor-pointer items-center gap-2 rounded-lg px-1 py-1 text-sm text-primary-text">
+          {isDeathAnniversary && <label className="flex w-fit cursor-pointer items-center gap-2 rounded-lg px-1 py-1 text-sm text-primary-text">
             <input type="checkbox" checked={isLeapMonth} disabled={isSaving} onChange={event => { setIsLeapMonth(event.target.checked); setDateCheck(null); setError(null); }} />
             {t('admin.anniversary_ui.leap_month')}
-          </label>
+          </label>}
 
-          <div className="space-y-2 rounded-xl border border-custom-border bg-primary-bg p-3 text-sm" aria-live="polite">
+          {isDeathAnniversary && <div className="space-y-2 rounded-xl border border-custom-border bg-primary-bg p-3 text-sm" aria-live="polite">
             {dateCheckLoading ? <p className="flex items-center gap-2 text-secondary-text"><Loader2 size={14} className="animate-spin" />{t('admin.anniversary_ui.checking_dates')}</p>
               : dateCheck?.status === 'matched' ? <div className="space-y-1"><p className="font-medium text-emerald-600 dark:text-emerald-400">✓ {t('admin.anniversary_ui.dates_match')}</p>
                   {isDeathAnniversary && lunarYearLabel && <p className="text-xs text-secondary-text">{t('admin.anniversary_ui.original_date_summary', { lunarDate: `${day}/${month}/${year} – ${getLunarYearCanChi(year) ?? ''}`, solarDate: formatIsoDate(solarDateValue ?? '') })}</p>}</div>
                 : dateCheck?.status === 'mismatch' ? <p role="alert" className="text-sm text-error">{t('admin.anniversary_ui.date_mismatch')} {dateCheck.convertedDate && <span>{t('admin.anniversary_ui.converted_date', { date: formatIsoDate(dateCheck.convertedDate) })}</span>}</p>
                   : dateCheckError ? <p role="alert" className="text-sm text-error">{t(dateCheckError)}</p>
                     : <p className="text-xs text-secondary-text">{t('admin.anniversary_ui.date_pair_hint')}</p>}
-          </div>
+          </div>}
 
-          <div className="rounded-xl border border-custom-border bg-primary-bg p-3 text-sm" aria-live="polite">
+          {isDeathAnniversary && <div className="rounded-xl border border-custom-border bg-primary-bg p-3 text-sm" aria-live="polite">
             <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-secondary-text">
               <CalendarDays size={14} aria-hidden="true" />{t('admin.anniversary_ui.next_occurrence')}
             </div>
@@ -276,7 +288,7 @@ export function FamilyAnniversaryModal({ anniversary, members, onClose, onSubmit
                   <p className="mt-1 text-xs text-secondary-text">{t('admin.anniversary_ui.recurrence_explanation')}</p>
                   {occurrence.daysUntil > 0 && <p className="mt-1 text-xs text-secondary-text">{t(occurrence.isCurrentYearPassed ? 'admin.anniversary_ui.current_year_passed' : 'admin.anniversary_ui.current_year_upcoming', { date: formatIsoDate(occurrence.date) })}</p>}
                 </div> : <p className="mt-1.5 text-xs text-secondary-text">{t('admin.anniversary_ui.enter_lunar_date')}</p>}
-          </div>
+          </div>}
         </div>
       </section>
 

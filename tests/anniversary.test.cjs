@@ -135,3 +135,17 @@ test('anniversary modal keeps accessible naming, original date checks, and backe
   assert.match(floatingAdd, /aria-label=\{ariaLabel\}/);
   assert.match(floatingAdd, /title=\{tooltip\}/);
 });
+
+test('only death anniversaries render and validate lunar dates; ordinary events clear and omit lunar data', () => {
+  const modal = readFileSync(join(__dirname, '../src/features/admin/components/family-tree/FamilyAnniversaryModal.tsx'), 'utf8');
+  const service = readFileSync(join(__dirname, '../src/features/admin/services/anniversaryService.ts'), 'utf8');
+  assert.match(modal, /const isDeathAnniversary = eventType === 'DEATH_ANNIVERSARY'/);
+  assert.match(modal, /\{isDeathAnniversary && <div>/);
+  assert.match(modal, /\{isDeathAnniversary && <label/);
+  assert.match(modal, /!isDeathAnniversary \|\| !validLunarParts/);
+  assert.match(modal, /setLunarDay\(''\); setLunarMonth\(''\); setLunarYear\(''\); setIsLeapMonth\(false\)/);
+  assert.match(modal, /lunarDay: isDeathAnniversary \? day : null, lunarMonth: isDeathAnniversary \? month : null/);
+  assert.match(modal, /label=\{t\(isDeathAnniversary \? 'admin\.anniversary_ui\.solar_death_date' : 'admin\.anniversary_ui\.event_date'\)\}/);
+  assert.match(service, /lunarDay: number \| null/);
+  assert.match(service, /lunarMonth: number \| null/);
+});

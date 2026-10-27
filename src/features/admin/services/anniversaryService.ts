@@ -10,8 +10,8 @@ export interface FamilyAnniversary {
   relatedMemberName: string | null;
   relatedMemberGeneration: number | null;
   relatedMemberRole: string | null;
-  lunarDay: number;
-  lunarMonth: number;
+  lunarDay: number | null;
+  lunarMonth: number | null;
   isLeapMonth: boolean;
   originalSolarDate: string | null;
   lunarYear: number | null;
@@ -29,8 +29,8 @@ export interface FamilyAnniversaryPayload {
   eventType: AnniversaryEventType;
   title: string;
   relatedMemberId: number | null;
-  lunarDay: number;
-  lunarMonth: number;
+  lunarDay: number | null;
+  lunarMonth: number | null;
   isLeapMonth: boolean;
   originalSolarDate: string | null;
   lunarYear: number | null;
