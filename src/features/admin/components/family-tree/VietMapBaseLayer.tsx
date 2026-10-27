@@ -32,10 +32,10 @@ export function VietMapBaseLayer() {
     });
     layer.addTo(map);
     const attribution = '&copy; <a href="https://maps.vietmap.vn/">VIETMAP</a> contributors';
-    map.attributionControl.addAttribution(attribution);
+    map.attributionControl?.addAttribution(attribution);
     return () => {
       map.removeLayer(layer);
-      map.attributionControl.removeAttribution(attribution);
+      map.attributionControl?.removeAttribution(attribution);
     };
   }, [map]);
 

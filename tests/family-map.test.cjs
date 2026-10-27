@@ -48,8 +48,10 @@ test('Family map retains its single API owner, five-second polling, viewport fit
   for (const layer of ['MapContainer', 'CircleMarker', 'Tooltip', 'Popup', 'VietMapBaseLayer']) assert.ok(component.includes(layer));
   assert.equal((component.match(/<VietMapBaseLayer\s*\/>/g) || []).length, 2);
   assert.match(baseLayer, /openstreetmap\.org\/copyright/);
-  assert.match(baseLayer, /map\.attributionControl\.addAttribution/);
-  assert.match(baseLayer, /map\.attributionControl\.removeAttribution/);
+  assert.match(baseLayer, /map\.attributionControl\?\.addAttribution/);
+  assert.match(baseLayer, /map\.attributionControl\?\.removeAttribution/);
+  assert.equal((component.match(/<MapContainer\b/g) || []).length, 2);
+  assert.doesNotMatch(component, /attributionControl=\{false\}|<AttributionControl\b|\bAttributionControl\b/);
   assert.match(component, /location\.members\.slice\(0, 6\)/);
   assert.match(component, /family_map\.more_members/);
 });
