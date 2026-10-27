@@ -111,9 +111,30 @@ test('calendar day cells distinguish event types, count badges, selected priorit
   assert.match(source, /dayVisual\.type === 'mixed' \? 'border-accent/);
   assert.match(source, /dayVisual\.count > 1/);
   assert.match(source, /aria-current=\{isToday \? 'date' : undefined\}/);
-  assert.match(source, /isSelected \? 'border-accent bg-accent font-bold text-white ring-2/);
+  assert.match(source, /const dayState = isSelected \? `\$\{selectedEventTone\} bg-\[var\(--calendar-selected-bg\)\] font-bold text-\[var\(--calendar-selected-text\)\] ring-2/);
+  assert.match(source, /dayVisual\.type === 'death-anniversary' \? 'border-amber-500 ring-amber-500\/50 dark:border-amber-400 dark:ring-amber-400\/40'/);
+  assert.match(source, /dayVisual\.type === 'family-event' \? 'border-teal-500 ring-teal-500\/50 dark:border-teal-400 dark:ring-teal-400\/40'/);
+  assert.match(source, /dayVisual\.count > 0 && <span aria-hidden="true"/);
+  assert.match(source, /dayVisual\.type === 'death-anniversary' \? 'bg-amber-600 dark:bg-amber-300' : dayVisual\.type === 'family-event' \? 'bg-teal-600 dark:bg-teal-300'/);
   assert.match(source, /: isToday \? 'border-accent\/70 bg-\[var\(--focus-surface\)\]/);
   assert.match(source, /aria-label=\{`\$\{fullDateFormat\.format[\s\S]*dayVisual\.count \? `, \$\{t\('admin\.anniversary_ui\.event_count'/);
+});
+
+test('calendar selected colors use light and dark semantic tokens without overriding the app accent', () => {
+  const css = readFileSync(join(__dirname, '../src/index.css'), 'utf8');
+  const source = readFileSync(join(__dirname, '../src/features/admin/components/family-tree/AnniversaryTab.tsx'), 'utf8');
+  const root = css.match(/:root\s*\{([\s\S]*?)\n\s*\}/)?.[1] ?? '';
+  const dark = css.match(/\.dark\s*\{([\s\S]*?)\n\s*\}/)?.[1] ?? '';
+  for (const token of ['--calendar-selected-bg', '--calendar-selected-text', '--calendar-selected-border', '--calendar-selected-ring']) {
+    assert.match(root, new RegExp(`${token}:\\s*[^;]+;`));
+    assert.match(dark, new RegExp(`${token}:\\s*[^;]+;`));
+  }
+  assert.match(root, /--calendar-selected-bg:\s*#18181b;/);
+  assert.match(dark, /--calendar-selected-bg:\s*#27272a;/);
+  assert.doesNotMatch(dark, /--calendar-selected-bg:\s*#(?:fff(?:fff)?|ffffff);/i);
+  assert.match(dark, /--accent-color:\s*#ffffff;/);
+  assert.match(source, /aria-current=\{isToday \? 'date' : undefined\}/);
+  assert.match(source, /aria-pressed=\{isSelected\}/);
 });
 
 test('month event-count badge cannot shrink or wrap and header controls keep their width', async () => {

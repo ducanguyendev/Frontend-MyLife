@@ -240,16 +240,19 @@ export const AnniversaryTab: React.FC<Props> = ({ showToast, members: initialMem
             const eventTone = dayVisual.type === 'death-anniversary' ? 'border-amber-300/80 bg-amber-50 text-amber-800 hover:bg-amber-100 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-300'
               : dayVisual.type === 'family-event' ? 'border-teal-300/80 bg-teal-50 text-teal-800 hover:bg-teal-100 dark:border-teal-400/30 dark:bg-teal-400/10 dark:text-teal-300'
                 : dayVisual.type === 'mixed' ? 'border-accent/30 bg-accent/5 text-accent hover:bg-accent/10' : '';
-            const dayState = isSelected ? 'border-accent bg-accent font-bold text-white ring-2 ring-accent/50 shadow-sm'
+            const selectedEventTone = dayVisual.type === 'death-anniversary' ? 'border-amber-500 ring-amber-500/50 dark:border-amber-400 dark:ring-amber-400/40'
+              : dayVisual.type === 'family-event' ? 'border-teal-500 ring-teal-500/50 dark:border-teal-400 dark:ring-teal-400/40'
+                : dayVisual.type === 'mixed' ? 'border-accent/70 ring-accent/40' : 'border-[var(--calendar-selected-border)] ring-[var(--calendar-selected-ring)]';
+            const dayState = isSelected ? `${selectedEventTone} bg-[var(--calendar-selected-bg)] font-bold text-[var(--calendar-selected-text)] ring-2 shadow-sm`
               : isToday ? 'border-accent/70 bg-[var(--focus-surface)] font-semibold text-primary-text ring-1 ring-accent/50'
                 : dayEvents.length ? `${eventTone} font-bold` : 'border-transparent text-primary-text hover:bg-primary-bg';
-            return <button key={key} type="button" role="gridcell" aria-current={isToday ? 'date' : undefined} aria-label={`${fullDateFormat.format(new Date(Date.UTC(year, month, day, 12)))}${dayVisual.count ? `, ${t('admin.anniversary_ui.event_count', { count: dayVisual.count })}` : ''}${isToday ? `, ${t('admin.anniversary_ui.today')}` : ''}`} aria-pressed={isSelected} onClick={() => selectDay(key)} className={`relative flex aspect-square min-h-9 cursor-pointer flex-col items-center justify-center rounded-lg border text-sm transition-colors duration-200 motion-reduce:transition-none sm:min-h-10 ${inMonth ? '' : 'text-secondary-text/50'} ${dayState}`}>
+            return <button key={key} type="button" role="gridcell" aria-current={isToday ? 'date' : undefined} aria-label={`${fullDateFormat.format(new Date(Date.UTC(year, month, day, 12)))}${dayVisual.count ? `, ${t('admin.anniversary_ui.event_count', { count: dayVisual.count })}` : ''}${isToday ? `, ${t('admin.anniversary_ui.today')}` : ''}`} aria-pressed={isSelected} onClick={() => selectDay(key)} className={`relative flex aspect-square min-h-9 cursor-pointer flex-col items-center justify-center rounded-lg border text-sm transition-colors duration-200 motion-reduce:transition-none sm:min-h-10 ${inMonth || isSelected ? '' : 'text-secondary-text/50'} ${dayState}`}>
               <span>{day}</span>
               {dayVisual.count > 0 && <span aria-hidden="true" className="absolute bottom-1 flex h-3 items-center gap-0.5">
                 {dayVisual.count === 1
-                  ? <span className={`h-1.5 w-1.5 rounded-full ${isSelected ? 'bg-white' : dayVisual.type === 'death-anniversary' ? 'bg-amber-600 dark:bg-amber-300' : dayVisual.type === 'family-event' ? 'bg-teal-600 dark:bg-teal-300' : 'bg-accent'}`} />
+                  ? <span className={`h-1.5 w-1.5 rounded-full ${dayVisual.type === 'death-anniversary' ? 'bg-amber-600 dark:bg-amber-300' : dayVisual.type === 'family-event' ? 'bg-teal-600 dark:bg-teal-300' : 'bg-accent'}`} />
                   : dayVisual.count > 1 ? <><span className={`flex h-3 min-w-3 items-center justify-center rounded-full px-1 text-[8px] font-bold leading-none ${isSelected ? 'bg-white/20 text-white' : dayVisual.type === 'death-anniversary' ? 'bg-amber-600 text-white dark:bg-amber-400 dark:text-slate-950' : dayVisual.type === 'family-event' ? 'bg-teal-600 text-white dark:bg-teal-400 dark:text-slate-950' : 'bg-accent text-white'}`}>{dayVisual.count}</span>
-                    {dayVisual.type === 'mixed' && <span className="flex items-center gap-0.5"><i className={`h-1 w-1 rounded-full ${isSelected ? 'bg-white' : 'bg-amber-500'}`} /><i className={`h-1 w-1 rounded-full ${isSelected ? 'bg-white/70' : 'bg-teal-500'}`} /></span>}</> : null}
+                    {dayVisual.type === 'mixed' && <span className="flex items-center gap-0.5"><i className="h-1 w-1 rounded-full bg-amber-500" /><i className="h-1 w-1 rounded-full bg-teal-500" /></span>}</> : null}
               </span>}
             </button>;
           })}

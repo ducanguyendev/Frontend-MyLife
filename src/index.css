@@ -31,6 +31,10 @@
     --accent-hover-color: #333333; 
     --focus-border: #a1a1aa;
     --focus-surface: rgba(113, 113, 122, 0.08);
+    --calendar-selected-bg: #18181b;
+    --calendar-selected-text: #ffffff;
+    --calendar-selected-border: #18181b;
+    --calendar-selected-ring: rgba(24, 24, 27, 0.25);
     
     /* Semantic Colors */
     --color-success: #10b981;
@@ -57,6 +61,10 @@
     --accent-hover-color: #e5e5e5; 
     --focus-border: #71717a;
     --focus-surface: rgba(161, 161, 170, 0.12);
+    --calendar-selected-bg: #27272a;
+    --calendar-selected-text: #ffffff;
+    --calendar-selected-border: #71717a;
+    --calendar-selected-ring: rgba(161, 161, 170, 0.28);
     
     /* Semantic Colors */
     --color-success: #10b981;
