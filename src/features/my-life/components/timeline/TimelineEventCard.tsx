@@ -3,6 +3,7 @@ import { Button } from '@/shared/components/ui';
 import type { FamilyTimelineEvent } from '@/features/admin/services/familyV2Service';
 import { getTimelineEventTypeTranslationKey } from './eventTypeTranslation';
 import { getTimelineEventDisplayTitle } from './timelinePresentation';
+import { isDerivedOnlyEventType } from './types';
 import type { TFunction } from 'i18next';
 
 export function TimelineEventCard({ event, date, onEdit, onDelete, translate }: { event: FamilyTimelineEvent; date: string; onEdit: (event: FamilyTimelineEvent) => void; onDelete: (event: FamilyTimelineEvent) => void; translate: TFunction }) {
@@ -15,6 +16,6 @@ export function TimelineEventCard({ event, date, onEdit, onDelete, translate }: 
    {event.memberName && <p className="m-0 text-sm text-secondary-text">{event.memberName}</p>}
    {event.description && <p className="mt-2 whitespace-pre-wrap text-sm text-secondary-text">{event.description}</p>}
    {event.location && <p className="mt-2 inline-flex items-center gap-1 text-sm text-secondary-text"><MapPin size={14} aria-hidden="true" />{event.location}{event.latitude !== null && event.longitude !== null && <a className="ml-2 text-accent underline" href={`https://www.openstreetmap.org/?mlat=${event.latitude}&mlon=${event.longitude}#map=14/${event.latitude}/${event.longitude}`} target="_blank" rel="noreferrer">{translate('admin.family_v2.view_on_map')}</a>}</p>}
-  </div>{!event.isDerived && <div className="flex shrink-0 gap-2"><Button variant="secondary" size="sm" onClick={() => onEdit(event)}>{translate('admin.family_v2.edit_event')}</Button><button type="button" onClick={() => onDelete(event)} aria-label={translate('admin.family_v2.delete_event')} className="rounded-lg border border-custom-border p-2 text-secondary-text hover:text-error"><Trash2 size={16} /></button></div>}</div>
+  </div>{!event.isDerived && !isDerivedOnlyEventType(event.eventType) && <div className="flex shrink-0 gap-2"><Button variant="secondary" size="sm" onClick={() => onEdit(event)}>{translate('admin.family_v2.edit_event')}</Button><button type="button" onClick={() => onDelete(event)} aria-label={translate('admin.family_v2.delete_event')} className="rounded-lg border border-custom-border p-2 text-secondary-text hover:text-error"><Trash2 size={16} /></button></div>}</div>
  </li>;
 }

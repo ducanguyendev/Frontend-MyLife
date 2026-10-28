@@ -3,18 +3,18 @@ import { Button, DateInput, formatBackendToDob, formatDobToBackend, Input, Modal
 import { useLanguage } from '@/shared/hooks/useLanguage';
 import type { FamilyMember } from '@/features/admin/components/family-tree/types';
 import type { FamilyTimelineWrite } from '@/features/admin/services/familyV2Service';
+import type { CreatableTimelineEventType } from './timeline/types';
 
 interface TimelineEventModalProps {
   isOpen: boolean; form: FamilyTimelineWrite; members: FamilyMember[]; editing: boolean; saving: boolean;
   onClose: () => void; onSubmit: (event: React.FormEvent<HTMLFormElement>) => void; onChange: (form: FamilyTimelineWrite) => void;
 }
-const EVENT_TYPES = ['CUSTOM', 'MEMORY', 'ADDRESS_CHANGE', 'MARRIAGE', 'CHILD_BIRTH'] as const;
-type EventType = typeof EVENT_TYPES[number];
+export const EVENT_TYPES: CreatableTimelineEventType[] = ['CUSTOM', 'MEMORY', 'ADDRESS_CHANGE', 'MARRIAGE'];
+type EventType = CreatableTimelineEventType;
 
 export function buildTimelineEventSuggestedTitle(type: EventType, first?: string, second?: string): string {
   if (type === 'ADDRESS_CHANGE') return first ? `${first} chuyển nơi ở` : '';
   if (type === 'MARRIAGE') return first ? `${first} kết hôn${second ? ` với ${second}` : ''}` : '';
-  if (type === 'CHILD_BIRTH') return first ? `${first} chào đời` : 'Con chào đời';
   return '';
 }
 
@@ -27,9 +27,13 @@ export const TimelineEventModal: React.FC<TimelineEventModalProps> = ({ isOpen, 
   const relatedName = useMemo(() => members.find(member => member.id === form.relatedMemberId)?.fullName, [form.relatedMemberId, members]);
   const update = (patch: Partial<FamilyTimelineWrite>) => onChange({ ...form, ...patch });
   const type = form.eventType as EventType;
+  const legacyEventType = editing && !EVENT_TYPES.includes(form.eventType as CreatableTimelineEventType) ? form.eventType : null;
+  const eventTypeHelp = legacyEventType
+    ? t('admin.family_v2.event_type_legacy_help')
+    : t(`admin.family_v2.event_type_${type.toLowerCase()}_help`);
 
   useEffect(() => {
-    if (!titleTouched && ['ADDRESS_CHANGE', 'MARRIAGE', 'CHILD_BIRTH'].includes(type)) {
+    if (!titleTouched && ['ADDRESS_CHANGE', 'MARRIAGE'].includes(type)) {
       const suggested = buildTimelineEventSuggestedTitle(type, memberName, relatedName);
       if (suggested && suggested !== form.title) update({ title: suggested });
     }
@@ -77,11 +81,6 @@ export const TimelineEventModal: React.FC<TimelineEventModalProps> = ({ isOpen, 
         {dateFields(t('admin.family_v2.marriage_date'))}{locationField(t('admin.family_v2.marriage_place'), false, 'admin.family_v2.enter_place')}{notesField(t('admin.family_v2.marriage_notes'))}
         {approximateField}{form.memberId !== null && form.memberId === form.relatedMemberId && <p role="alert" className="m-0 text-sm text-error sm:col-span-2">{t('admin.family_v2.same_marriage_member_error')}</p>}
       </>;
-      case 'CHILD_BIRTH': return <>
-        {personSelect('memberId', t('admin.family_v2.child_member'))}{personSelect('relatedMemberId', t('admin.family_v2.parent_or_relative'), true)}
-        {titleField(t('admin.family_v2.title'))}
-        {dateFields(t('admin.family_v2.birth_date'))}{locationField(t('admin.family_v2.birth_place'), false, 'admin.family_v2.enter_place')}{notesField(t('admin.family_v2.birth_notes'))}{approximateField}
-      </>;
       default: return <>
         {titleField(t('admin.family_v2.title'))}{personSelect('memberId', t('admin.family_v2.member_optional'), true)}
         {personSelect('relatedMemberId', t('admin.family_v2.related_member_optional'), true)}{dateFields()}
@@ -98,9 +97,10 @@ export const TimelineEventModal: React.FC<TimelineEventModalProps> = ({ isOpen, 
       <Button type="submit" form="familyTimelineEventForm" isLoading={saving} disabled={saving || Boolean(criticalError) || sameMarriageMember || form.title.trim().length < 2}>{t('admin.family_v2.save_event')}</Button></div>}>
     <form id="familyTimelineEventForm" onSubmit={event => { if (sameMarriageMember) { event.preventDefault(); setTypeError(t('admin.family_v2.same_marriage_member_error')); return; } if (criticalError || form.title.trim().length < 2) { event.preventDefault(); setTypeError(criticalError || t('admin.family_v2.title_required')); return; } onSubmit(event); }} className="grid grid-cols-1 gap-3 sm:grid-cols-2">
       <Select label={t('admin.family_v2.event_type')} floatingLabel appearance="simple" value={form.eventType} disabled={saving} onValueChange={changeType}>
+        {legacyEventType && <SelectItem value={legacyEventType} disabled>{t(`admin.family_v2.type_${legacyEventType.toLowerCase()}`)} ({t('admin.family_v2.legacy_event_type')})</SelectItem>}
         {EVENT_TYPES.map(eventType => <SelectItem key={eventType} value={eventType}>{t(`admin.family_v2.type_${eventType.toLowerCase()}`)}</SelectItem>)}
       </Select>
-      <p className="m-0 self-center text-xs text-secondary-text sm:pt-5">{t(`admin.family_v2.event_type_${type.toLowerCase()}_help`)}</p>
+      <p className="m-0 self-center text-xs text-secondary-text sm:pt-5">{eventTypeHelp}</p>
       {semanticFields()}
       {criticalError && <p role="alert" className="m-0 text-sm text-secondary-text sm:col-span-2">{criticalError}</p>}
       {typeError && <p role="alert" className="m-0 text-sm text-error sm:col-span-2">{typeError}</p>}

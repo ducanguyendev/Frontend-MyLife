@@ -37,11 +37,41 @@ test('family timeline UI exposes source data, safe event CRUD and useful filters
   assert.match(service, /deleteFamilyTimelineEvent/);
   assert.match(page, /fetchFamilyTimeline/);
   assert.match(page, /event\.isDerived/);
-  assert.match(page, /FILTER_TYPES/);
+  assert.match(page, /isDerivedOnlyEventType\(event\.eventType\)/);
+  assert.match(page, /matchesTimelineFilter/);
   assert.match(card, /event\.latitude !== null && event\.longitude !== null/);
   assert.match(page, /groupTimelineEventsByYear\(filtered\)/);
+  assert.match(page, /disabled=\{!defaultEventType\}/);
+  assert.match(page, /birth_death_auto_hint/);
+  assert.match(page, /other_events_readonly_hint/);
+  assert.match(page, /matchesTimelineFilter\(event\.eventType, filter\)/);
+  assert.match(page, /eventType: event\.eventType/);
   assert.match(groups, /event\.eventDate[\s\S]*event\.eventYear/);
   assert.match(routes, /path="\/timeline"/);
+});
+
+test('timeline groups legacy and derived event types and chooses safe create defaults', () => {
+  const { FILTER_TYPES, KNOWN_FILTER_EVENT_TYPES, getDefaultEventTypeForFilter, isDerivedOnlyEventType, matchesTimelineFilter } = loadTypeScriptModule('src/features/my-life/components/timeline/types.ts');
+  assert.deepEqual(Array.from(FILTER_TYPES.BIRTH), ['BIRTH', 'DEATH']);
+  assert.deepEqual(Array.from(FILTER_TYPES.MARRIAGE), ['MARRIAGE']);
+  assert.deepEqual(Array.from(FILTER_TYPES.FAMILY), ['CUSTOM', 'CHILD_BIRTH']);
+  assert.deepEqual(Array.from(FILTER_TYPES.LOCATION), ['ADDRESS_CHANGE']);
+  assert.deepEqual(Array.from(FILTER_TYPES.MEMORY), ['MEMORY', 'ANNIVERSARY']);
+  assert.ok(KNOWN_FILTER_EVENT_TYPES.includes('CHILD_BIRTH'));
+  assert.equal(matchesTimelineFilter('CHILD_BIRTH', 'FAMILY'), true);
+  assert.equal(matchesTimelineFilter('ANNIVERSARY', 'MEMORY'), true);
+  assert.equal(matchesTimelineFilter('FUTURE_EVENT_TYPE', 'OTHER'), true);
+  assert.equal(matchesTimelineFilter('CUSTOM', 'OTHER'), false);
+  assert.equal(matchesTimelineFilter('FUTURE_EVENT_TYPE', 'ALL'), true);
+  assert.equal(isDerivedOnlyEventType('BIRTH'), true);
+  assert.equal(isDerivedOnlyEventType('DEATH'), true);
+  assert.equal(isDerivedOnlyEventType('CHILD_BIRTH'), false);
+  for (const [filter, eventType] of [
+    ['ALL', 'CUSTOM'], ['MARRIAGE', 'MARRIAGE'], ['FAMILY', 'CUSTOM'],
+    ['LOCATION', 'ADDRESS_CHANGE'], ['MEMORY', 'MEMORY'],
+  ]) assert.equal(getDefaultEventTypeForFilter(filter), eventType);
+  assert.equal(getDefaultEventTypeForFilter('BIRTH'), null);
+  assert.equal(getDefaultEventTypeForFilter('OTHER'), null);
 });
 
 test('family timeline uses the shared floating add button and shared modal for create and edit', () => {
@@ -51,7 +81,7 @@ test('family timeline uses the shared floating add button and shared modal for c
   const textarea = read('src/shared/components/ui/Textarea.tsx');
   const memberForm = read('src/features/admin/components/family-tree/MemberFormModal.tsx');
   const card = read('src/features/my-life/components/timeline/TimelineEventCard.tsx');
-  assert.match(page, /FloatingAddButton ariaLabel=\{t\('admin\.family_v2\.add_event'\)\} tooltip=\{t\('admin\.family_v2\.add_event'\)\}/);
+  assert.match(page, /FloatingAddButton ariaLabel=\{t\('admin\.family_v2\.add_event'\)\} tooltip=\{t\(defaultEventType/);
   assert.match(page, /onClick=\{openCreateModal\}/);
   assert.match(page, /onEdit=\{beginEdit\}/);
   assert.match(page, /TimelineYearSection/);
@@ -76,8 +106,12 @@ test('timeline modal renders type-specific semantic forms with shared controls a
   const modal = read('src/features/my-life/components/TimelineEventModal.tsx');
   const vi = JSON.parse(read('src/shared/locales/vi/admin.json')).family_v2;
   const en = JSON.parse(read('src/shared/locales/en/admin.json')).family_v2;
-  for (const token of ['default: return <>', 'case \'MEMORY\'', 'case \'ADDRESS_CHANGE\'', 'case \'MARRIAGE\'', 'case \'CHILD_BIRTH\'']) assert.ok(modal.includes(token), `missing ${token} form`);
-  for (const token of ['memory_title', 'memory_content', 'moved_member', 'new_address', 'marriage_person_one', 'marriage_person_two', 'child_member', 'birth_date']) assert.ok(modal.includes(token), `missing ${token} semantic field`);
+  for (const token of ['default: return <>', 'case \'MEMORY\'', 'case \'ADDRESS_CHANGE\'', 'case \'MARRIAGE\'']) assert.ok(modal.includes(token), `missing ${token} form`);
+  for (const token of ['memory_title', 'memory_content', 'moved_member', 'new_address', 'marriage_person_one', 'marriage_person_two']) assert.ok(modal.includes(token), `missing ${token} semantic field`);
+  assert.match(modal, /\['CUSTOM', 'MEMORY', 'ADDRESS_CHANGE', 'MARRIAGE'\]/);
+  assert.doesNotMatch(modal, /case 'CHILD_BIRTH'/);
+  assert.match(modal, /legacyEventType && <SelectItem value=\{legacyEventType\} disabled/);
+  assert.match(modal, /legacy_event_type/);
   assert.match(modal, /form\.memberId === form\.relatedMemberId/);
   assert.match(modal, /same_marriage_member_error/);
   assert.match(modal, /<Input/);
@@ -103,11 +137,13 @@ test('timeline event badges map every known type and unknown types to translated
   }
   assert.match(mapping, /\?\? 'admin\.family_v2\.type_event'/);
   assert.deepEqual(['birth', 'death', 'marriage', 'child_birth', 'address_change', 'anniversary', 'memory', 'custom'].map(key => vi[`type_${key}`]),
-    ['Sinh nhật', 'Mất', 'Kết hôn', 'Con chào đời', 'Chuyển nơi ở', 'Kỷ niệm', 'Ký ức', 'Sự kiện gia đình']);
+    ['Chào đời', 'Mất', 'Kết hôn', 'Con chào đời', 'Chuyển nơi ở', 'Kỷ niệm', 'Ký ức', 'Sự kiện gia đình']);
   assert.deepEqual(['birth', 'death', 'marriage', 'child_birth', 'address_change', 'anniversary', 'memory', 'custom'].map(key => en[`type_${key}`]),
     ['Birth', 'Death', 'Marriage', 'Child birth', 'Address change', 'Anniversary', 'Memory', 'Family event']);
   assert.equal(vi.type_event, 'Sự kiện');
   assert.equal(en.type_event, 'Event');
+  assert.equal(vi.birth_death_auto_hint, 'Sinh và mất được tự động cập nhật từ hồ sơ thành viên.');
+  assert.equal(en.birth_death_auto_hint, 'Birth and death events are automatically updated from member profiles.');
 });
 
 test('timeline presentation localizes derived titles only and formats date-only values safely', () => {
