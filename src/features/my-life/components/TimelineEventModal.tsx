@@ -1,9 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { AlignLeft, CalendarClock, FileText } from 'lucide-react';
 import { Button, DateInput, formatBackendToDob, formatDobToBackend, Input, Modal, Select, SelectItem, Textarea } from '@/shared/components/ui';
 import { useLanguage } from '@/shared/hooks/useLanguage';
 import type { FamilyMember } from '@/features/admin/components/family-tree/types';
 import type { FamilyTimelineWrite } from '@/features/admin/services/familyV2Service';
 import type { CreatableTimelineEventType } from './timeline/types';
+import { getTimelineEventTypeTranslationKey } from './timeline/eventTypeTranslation';
+import { getTimelinePillClass } from './timeline/timelinePillStyles';
 
 interface TimelineEventModalProps {
   isOpen: boolean; form: FamilyTimelineWrite; members: FamilyMember[]; editing: boolean; saving: boolean;
@@ -47,7 +50,7 @@ export const TimelineEventModal: React.FC<TimelineEventModalProps> = ({ isOpen, 
       {members.map(member => <SelectItem key={member.id} value={String(member.id)}>{member.fullName}</SelectItem>)}
     </Select>
   );
-  const titleField = (label: string) => <Input label={label} floatingLabelAlways placeholder={t('admin.family_v2.enter_title')} required minLength={2} maxLength={200} value={form.title} disabled={saving}
+  const titleField = (label: string, fullWidth = true) => <Input containerClassName={fullWidth ? 'sm:col-span-2' : ''} label={label} floatingLabelAlways placeholder={t('admin.family_v2.enter_title')} required minLength={2} maxLength={200} value={form.title} disabled={saving}
     onChange={event => { setTitleTouched(true); update({ title: event.target.value }); }} />;
   const dateFields = (dateLabel = t('admin.family_v2.event_date')) => <>
     <DateInput label={dateLabel} floatingLabelAlways value={form.eventDate ? formatBackendToDob(form.eventDate) : ''} disabled={saving}
@@ -55,55 +58,84 @@ export const TimelineEventModal: React.FC<TimelineEventModalProps> = ({ isOpen, 
     <Input label={t('admin.family_v2.event_year')} floatingLabelAlways placeholder="YYYY" type="number" min="1" max="9999" value={form.eventYear ?? ''} disabled={saving}
       onChange={event => update({ eventYear: event.target.value ? Number(event.target.value) : null })} />
   </>;
-  const notesField = (label: string, placeholderKey = 'admin.family_v2.enter_notes') => <Textarea containerClassName="sm:col-span-2" label={label} floatingLabelAlways placeholder={t(placeholderKey)} className="min-h-[112px]" maxLength={2000} rows={3} value={form.description ?? ''} disabled={saving}
+  const notesField = (label: string, placeholderKey = 'admin.family_v2.enter_notes') => <Textarea label={label} floatingLabelAlways placeholder={t(placeholderKey)} className="min-h-[112px] w-full" maxLength={2000} rows={3} value={form.description ?? ''} disabled={saving}
     onChange={event => update({ description: event.target.value || null })} />;
-  const locationField = (label: string, full = false, placeholderKey = 'admin.family_v2.enter_location') => <Input containerClassName={full ? 'sm:col-span-2' : ''} label={label} floatingLabelAlways placeholder={t(placeholderKey)} maxLength={500} value={form.location ?? ''} disabled={saving}
+  const locationField = (label: string, placeholderKey = 'admin.family_v2.enter_location') => <Input containerClassName="sm:col-span-2" label={label} floatingLabelAlways placeholder={t(placeholderKey)} maxLength={500} value={form.location ?? ''} disabled={saving}
     onChange={event => update({ location: event.target.value || null })} />;
-  const approximateField = <label className="flex min-h-11 cursor-pointer items-center gap-2 rounded-xl px-1 text-sm text-secondary-text sm:col-span-2">
+  const approximateField = <label className={`inline-flex min-h-10 w-fit cursor-pointer items-center gap-2 rounded-xl px-2 py-2 text-sm text-secondary-text transition-colors ${form.isApproximate ? 'bg-accent/5 text-primary-text' : ''}`}>
     <input type="checkbox" className="size-4 accent-[var(--accent)]" checked={form.isApproximate} disabled={saving} onChange={event => update({ isApproximate: event.target.checked })} />
-    {t('admin.family_v2.approximate_date')}
+    {t('admin.family_v2.approximate_date_short')}
   </label>;
 
-  const semanticFields = () => {
+  const primaryFields = () => {
     switch (type) {
       case 'MEMORY': return <>
         {titleField(t('admin.family_v2.memory_title'))}{personSelect('memberId', t('admin.family_v2.memory_member'))}
-        {personSelect('relatedMemberId', t('admin.family_v2.memory_related'), true)}{dateFields()}
-        {notesField(t('admin.family_v2.memory_content'), 'admin.family_v2.enter_memory_content')}{locationField(t('admin.family_v2.location'), true)}{approximateField}
+        {personSelect('relatedMemberId', t('admin.family_v2.memory_related'), true)}
       </>;
       case 'ADDRESS_CHANGE': return <>
-        {personSelect('memberId', t('admin.family_v2.moved_member'))}{titleField(t('admin.family_v2.title'))}
-        {dateFields()}{locationField(t('admin.family_v2.new_address'), true, 'admin.family_v2.enter_address')}{notesField(t('admin.family_v2.move_notes'))}{approximateField}
+        {personSelect('memberId', t('admin.family_v2.moved_member'))}{titleField(t('admin.family_v2.title'), false)}
       </>;
       case 'MARRIAGE': return <>
         {personSelect('memberId', t('admin.family_v2.marriage_person_one'))}{personSelect('relatedMemberId', t('admin.family_v2.marriage_person_two'))}
         {titleField(t('admin.family_v2.title'))}
-        {dateFields(t('admin.family_v2.marriage_date'))}{locationField(t('admin.family_v2.marriage_place'), false, 'admin.family_v2.enter_place')}{notesField(t('admin.family_v2.marriage_notes'))}
-        {approximateField}{form.memberId !== null && form.memberId === form.relatedMemberId && <p role="alert" className="m-0 text-sm text-error sm:col-span-2">{t('admin.family_v2.same_marriage_member_error')}</p>}
       </>;
       default: return <>
         {titleField(t('admin.family_v2.title'))}{personSelect('memberId', t('admin.family_v2.member_optional'), true)}
-        {personSelect('relatedMemberId', t('admin.family_v2.related_member_optional'), true)}{dateFields()}
-        {notesField(t('admin.family_v2.description'))}{locationField(t('admin.family_v2.location'), true)}{approximateField}
+        {personSelect('relatedMemberId', t('admin.family_v2.related_member_optional'), true)}
       </>;
     }
   };
+  const dateLabel = type === 'MARRIAGE' ? t('admin.family_v2.marriage_date') : t('admin.family_v2.event_date');
+  const locationLabel = type === 'ADDRESS_CHANGE' ? t('admin.family_v2.new_address')
+    : type === 'MARRIAGE' ? t('admin.family_v2.marriage_place') : t('admin.family_v2.location');
+  const locationPlaceholder = type === 'ADDRESS_CHANGE' ? 'admin.family_v2.enter_address'
+    : type === 'MARRIAGE' ? 'admin.family_v2.enter_place' : 'admin.family_v2.enter_location';
+  const contentLabel = type === 'MEMORY' ? t('admin.family_v2.memory_content')
+    : type === 'ADDRESS_CHANGE' ? t('admin.family_v2.move_notes')
+      : type === 'MARRIAGE' ? t('admin.family_v2.marriage_notes') : t('admin.family_v2.description');
+  const contentPlaceholder = type === 'MEMORY' ? 'admin.family_v2.enter_memory_content' : 'admin.family_v2.enter_notes';
   const criticalError = form.eventDate || form.eventYear ? '' : t('admin.family_v2.date_or_year_required');
   const sameMarriageMember = type === 'MARRIAGE' && form.memberId !== null && form.memberId === form.relatedMemberId;
-  const changeType = (eventType: string) => { setTypeError(''); if (!titleTouched) update({ eventType, title: '' }); else update({ eventType }); };
+  const changeType = (eventType: string) => {
+    if (eventType === form.eventType) return;
+    setTypeError('');
+    if (!titleTouched) update({ eventType, title: '' });
+    else update({ eventType });
+  };
 
-  return <Modal isOpen={isOpen} title={title} ariaLabel={title} onClose={() => { if (!saving) onClose(); }} closeOnBackdropClick={!saving} closeOnEsc={!saving} maxWidth="xl" className="!max-h-[min(90vh,760px)]"
+  return <Modal isOpen={isOpen} title={title} description={t('admin.family_v2.timeline_event_modal_description')} ariaLabel={title} onClose={() => { if (!saving) onClose(); }} closeOnBackdropClick={!saving} closeOnEsc={!saving} maxWidth="2xl" className="!max-h-[min(88vh,780px)]"
     footer={<div className="flex w-full flex-wrap justify-end gap-2 sm:gap-3"><Button type="button" variant="secondary" disabled={saving} onClick={onClose}>{t('admin.cancel')}</Button>
       <Button type="submit" form="familyTimelineEventForm" isLoading={saving} disabled={saving || Boolean(criticalError) || sameMarriageMember || form.title.trim().length < 2}>{t('admin.family_v2.save_event')}</Button></div>}>
-    <form id="familyTimelineEventForm" onSubmit={event => { if (sameMarriageMember) { event.preventDefault(); setTypeError(t('admin.family_v2.same_marriage_member_error')); return; } if (criticalError || form.title.trim().length < 2) { event.preventDefault(); setTypeError(criticalError || t('admin.family_v2.title_required')); return; } onSubmit(event); }} className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-      <Select label={t('admin.family_v2.event_type')} floatingLabel appearance="simple" value={form.eventType} disabled={saving} onValueChange={changeType}>
-        {legacyEventType && <SelectItem value={legacyEventType} disabled>{t(`admin.family_v2.type_${legacyEventType.toLowerCase()}`)} ({t('admin.family_v2.legacy_event_type')})</SelectItem>}
-        {EVENT_TYPES.map(eventType => <SelectItem key={eventType} value={eventType}>{t(`admin.family_v2.type_${eventType.toLowerCase()}`)}</SelectItem>)}
-      </Select>
-      <p className="m-0 self-center text-xs text-secondary-text sm:pt-5">{eventTypeHelp}</p>
-      {semanticFields()}
-      {criticalError && <p role="alert" className="m-0 text-sm text-secondary-text sm:col-span-2">{criticalError}</p>}
-      {typeError && <p role="alert" className="m-0 text-sm text-error sm:col-span-2">{typeError}</p>}
+    <form id="familyTimelineEventForm" onSubmit={event => { if (sameMarriageMember) { event.preventDefault(); setTypeError(t('admin.family_v2.same_marriage_member_error')); return; } if (criticalError || form.title.trim().length < 2) { event.preventDefault(); setTypeError(criticalError || t('admin.family_v2.title_required')); return; } onSubmit(event); }} className="flex flex-col gap-4">
+      <section className="space-y-2" aria-labelledby="timeline-event-type-heading">
+        <h4 id="timeline-event-type-heading" className="m-0 text-sm font-semibold text-primary-text">{t('admin.family_v2.event_type')}</h4>
+        <div className="-mx-1 flex flex-nowrap gap-2 overflow-x-auto px-1 pb-1" role="group" aria-label={t('admin.family_v2.event_type')}>
+          {EVENT_TYPES.map(eventType => <button key={eventType} type="button" aria-pressed={type === eventType} disabled={saving} onClick={() => changeType(eventType)} className={getTimelinePillClass(type === eventType)}>{t(getTimelineEventTypeTranslationKey(eventType))}</button>)}
+        </div>
+        {legacyEventType && <p className="m-0 text-xs text-secondary-text">{t('admin.family_v2.legacy_event_type')}: {t(getTimelineEventTypeTranslationKey(legacyEventType))}</p>}
+        <p className="m-0 text-xs text-secondary-text">{eventTypeHelp}</p>
+      </section>
+
+      <section className="space-y-3 rounded-2xl border border-custom-border bg-secondary-bg/30 p-4 sm:p-5" aria-labelledby="timeline-event-primary-heading">
+        <h4 id="timeline-event-primary-heading" className="flex items-center gap-2 text-sm font-semibold text-primary-text"><FileText size={17} aria-hidden="true" />{t('admin.family_v2.event_section_primary')}</h4>
+        <div className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2">{primaryFields()}</div>
+        {sameMarriageMember && <p role="alert" className="m-0 text-sm text-error">{t('admin.family_v2.same_marriage_member_error')}</p>}
+      </section>
+
+      <section className="space-y-3 rounded-2xl border border-custom-border bg-secondary-bg/30 p-4 sm:p-5" aria-labelledby="timeline-event-time-heading">
+        <h4 id="timeline-event-time-heading" className="flex items-center gap-2 text-sm font-semibold text-primary-text"><CalendarClock size={17} aria-hidden="true" />{t('admin.family_v2.event_section_time_location')}</h4>
+        <div className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2">{dateFields(dateLabel)}</div>
+        {approximateField}
+        {locationField(locationLabel, locationPlaceholder)}
+      </section>
+
+      <section className="space-y-3 rounded-2xl border border-custom-border bg-secondary-bg/30 p-4 sm:p-5" aria-labelledby="timeline-event-content-heading">
+        <h4 id="timeline-event-content-heading" className="flex items-center gap-2 text-sm font-semibold text-primary-text"><AlignLeft size={17} aria-hidden="true" />{t('admin.family_v2.event_section_content')}</h4>
+        {notesField(contentLabel, contentPlaceholder)}
+      </section>
+      {criticalError && <p role="alert" className="m-0 text-sm text-secondary-text">{criticalError}</p>}
+      {typeError && <p role="alert" className="m-0 text-sm text-error">{typeError}</p>}
     </form>
   </Modal>;
 };
