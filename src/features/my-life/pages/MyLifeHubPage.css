@@ -1,7 +1,16 @@
 .my-life-hub-scroll {
+  --mylife-motion-fast: 180ms;
+  --mylife-motion-normal: 260ms;
+  --mylife-motion-slow: 420ms;
+  --mylife-card-lift: -3px;
+  --mylife-image-scale: 1.025;
+  --mylife-grain-opacity: 0.025;
   position: relative;
   isolation: isolate;
   background-color: color-mix(in srgb, var(--primary-bg) 95%, #e7ddca);
+  background-image:
+    radial-gradient(ellipse at 8% 4%, rgb(230 205 164 / 0.12), transparent 36rem),
+    radial-gradient(ellipse at 94% 82%, rgb(157 174 139 / 0.10), transparent 42rem);
 }
 
 .my-life-hub-scroll::before {
@@ -15,6 +24,17 @@
   pointer-events: none;
 }
 
+.my-life-hub-scroll::after {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.42'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+  content: "";
+  opacity: var(--mylife-grain-opacity);
+  pointer-events: none;
+}
+
 .my-life-hub {
   position: relative;
   z-index: 1;
@@ -22,6 +42,7 @@
 
 .my-life-hero {
   position: relative;
+  isolation: isolate;
   min-height: 215px;
   background: linear-gradient(112deg, #fbf8f1 0%, #f1eadc 100%);
   box-shadow: 0 4px 16px color-mix(in srgb, var(--primary-text) 4%, transparent);
@@ -36,10 +57,29 @@
   display: flex;
   width: 48%;
   height: 100%;
+  z-index: 2;
   align-items: center;
   justify-content: center;
   opacity: 0.97;
 }
+
+.my-life-hero__photo {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  background-size: cover;
+}
+
+.my-life-hero__photo::after {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgb(250 247 239 / 96%) 0%, rgb(250 247 239 / 88%) 38%, rgb(250 247 239 / 58%) 62%, rgb(250 247 239 / 18%) 100%),
+    linear-gradient(0deg, rgb(86 71 49 / 10%), transparent 44%, rgb(255 255 255 / 10%));
+  content: "";
+}
+
+.my-life-hero--photo .my-life-hero__art { opacity: 0.3; }
 
 .my-life-hero__svg { width: 100%; height: 100%; overflow: visible; }
 .my-life-hero__arch { stroke: color-mix(in srgb, #9b8b70 20%, transparent); stroke-width: 1.5; }
@@ -63,6 +103,7 @@
   background: var(--secondary-bg);
   box-shadow: 0 2px 8px color-mix(in srgb, var(--primary-text) 4%, transparent);
   isolation: isolate;
+  transition: transform var(--mylife-motion-normal) ease, border-color var(--mylife-motion-normal) ease, box-shadow var(--mylife-motion-normal) ease;
 }
 
 .my-life-module-card--family { --module-accent: var(--accent-color); }
@@ -70,6 +111,11 @@
 .my-life-module-card--library { --module-accent: #8b5cf6; }
 .my-life-module-card--map { --module-accent: #0891b2; }
 .my-life-module-card--timeline { --module-accent: #0f766e; }
+
+.my-life-module-card:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--module-accent) 72%, var(--primary-text));
+  outline-offset: 3px;
+}
 
 .my-life-module-card:hover {
   border-color: color-mix(in srgb, var(--module-accent) 38%, var(--custom-border));
@@ -99,10 +145,15 @@
   color: color-mix(in srgb, var(--module-accent) 44%, var(--secondary-bg));
   opacity: 0.9;
   pointer-events: none;
-  transition: transform 240ms ease, opacity 240ms ease;
+  transition: transform var(--mylife-motion-normal) ease, opacity var(--mylife-motion-normal) ease;
 }
 
 .my-life-module-card:hover .my-life-module-card__art { transform: translateY(-2px); opacity: 1; }
+
+@media (hover: hover) and (pointer: fine) {
+  .my-life-module-card:hover { transform: translateY(var(--mylife-card-lift)); }
+  .my-life-module-card:hover .my-life-module-card__art { transform: translateY(-2px) scale(var(--mylife-image-scale)); }
+}
 
 .my-life-module-card__art--family {
   top: 0;
@@ -218,6 +269,9 @@
   .my-life-hero { min-height: 210px; padding: 1rem 1.25rem; }
   .my-life-hero__copy { max-width: 78%; }
   .my-life-hero__art { top: 0; right: -4%; width: 62%; height: 66%; opacity: 0.2; }
+  .my-life-hero__photo::after {
+    background: linear-gradient(90deg, rgb(250 247 239 / 97%) 0%, rgb(250 247 239 / 88%) 58%, rgb(250 247 239 / 48%) 100%), linear-gradient(0deg, rgb(86 71 49 / 12%), transparent 55%);
+  }
   .my-life-module-card__visual { height: 132px; flex-basis: 132px; }
   .my-life-module-card__art--family { width: 100%; height: 100%; opacity: 0.9; }
   .timeline-track { top: 60%; }
@@ -234,9 +288,21 @@
 }
 
 .dark .my-life-hub-scroll { background-color: color-mix(in srgb, var(--primary-bg) 96%, #887451); }
+.dark .my-life-hub-scroll {
+  --mylife-grain-opacity: 0.035;
+  background-image:
+    radial-gradient(ellipse at 8% 4%, rgb(130 119 82 / 0.08), transparent 36rem),
+    radial-gradient(ellipse at 94% 82%, rgb(116 132 99 / 0.065), transparent 42rem);
+}
 .dark .my-life-hub-scroll::before { opacity: 0.045; }
 .dark .my-life-hero { background: linear-gradient(112deg, #1c1b18 0%, #171715 100%); }
 .dark .my-life-hero__art { opacity: 0.72; }
+.dark .my-life-hero__photo::after {
+  background:
+    linear-gradient(90deg, rgb(27 27 25 / 96%) 0%, rgb(27 27 25 / 90%) 38%, rgb(27 27 25 / 68%) 65%, rgb(27 27 25 / 32%) 100%),
+    linear-gradient(0deg, rgb(0 0 0 / 22%), transparent 48%, rgb(0 0 0 / 12%));
+}
+.dark .my-life-hero--photo .my-life-hero__art { opacity: 0.4; }
 .dark .my-life-hero__ground { fill: color-mix(in srgb, #8f9974 18%, transparent); }
 .dark .family-portrait__person { opacity: 0.84; }
 .dark .family-portrait__face { fill: #c99073; }
@@ -250,8 +316,15 @@
 
 @media (max-width: 767px) {
   .dark .my-life-hero__art { opacity: 0.18; }
+  .dark .my-life-hero__photo::after {
+    background: linear-gradient(90deg, rgb(27 27 25 / 97%) 0%, rgb(27 27 25 / 92%) 58%, rgb(27 27 25 / 66%) 100%), linear-gradient(0deg, rgb(0 0 0 / 24%), transparent 55%);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .my-life-module-card__art { transition-duration: 0.01ms; }
+  .my-life-module-card,
+  .my-life-module-card__art,
+  .my-life-module-card .group-hover\:translate-x-1 { transition-duration: 0.01ms; }
+  .my-life-module-card:hover,
+  .my-life-module-card:hover .my-life-module-card__art { transform: none; }
 }

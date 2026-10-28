@@ -52,7 +52,8 @@ test('hub renders five configured real modules with semantic route links', () =>
   assert.match(card, /<Link[\s\S]*to=\{module\.route\}/);
   assert.match(globalStyles, /:where\(button, \[tabindex\], input, select, textarea\)[\s\S]*?:focus-visible/);
   assert.match(globalStyles, /box-shadow: inset 0 0 0 1px var\(--focus-border\)/);
-  assert.match(card, /duration-\[240ms\]/);
+  assert.match(hubCss, /--mylife-motion-normal:\s*260ms/);
+  assert.match(hubCss, /:focus-visible/);
   assert.doesNotMatch(modules, /Finance|Tasks|Goals/);
 });
 
@@ -75,12 +76,25 @@ test('hub uses an even responsive grid with shared visual and content regions', 
   assert.match(card, /my-life-module-card__visual[\s\S]*?my-life-module-card__content/);
   assert.match(card, /min-h-\[290px\]/);
   assert.match(hub, /<IllustrationSlot definition=\{illustrationSlots\.familyHero\} \/>/);
-  assert.doesNotMatch(hubCss, /radial-gradient|filter:\s*blur|mask-image/);
+  assert.match(hubCss, /radial-gradient/);
+  assert.doesNotMatch(hubCss, /filter:\s*blur|mask-image/);
   assert.match(hub, /overflow-hidden/);
   assert.match(hubCss, /@media \(max-width: 767px\)/);
   assert.match(hubCss, /\.dark \.my-life-hero/);
   assert.match(hubCss, /\.timeline-track \{[^}]*top: 61\.5%/);
   assert.match(hubCss, /prefers-reduced-motion/);
+  assert.match(hubCss, /my-life-hub-scroll::after[\s\S]*?pointer-events:\s*none/);
+  assert.match(hubCss, /--mylife-grain-opacity:\s*0\.025/);
+  assert.match(hubCss, /\.dark \.my-life-hub-scroll\s*\{[\s\S]*?--mylife-grain-opacity:\s*0\.035/);
+  assert.match(hubCss, /@media \(hover: hover\) and \(pointer: fine\)/);
+  assert.match(hubCss, /\.my-life-module-card:focus-visible/);
+  assert.match(hubCss, /@media \(prefers-reduced-motion: reduce\)[\s\S]*?transform: none/);
+  assert.match(hub, /myLifeVisualConfig\.heroBackgroundImage/);
+  assert.match(hub, /my-life-hero__photo/);
+  assert.match(hubCss, /\.my-life-hero__photo::after[\s\S]*?linear-gradient/);
+  assert.match(hubCss, /\.dark \.my-life-hero__photo::after/);
+  assert.match(hubCss, /\.my-life-hero__photo::after[\s\S]*?\n@media \(max-width: 767px\)/);
+  assert.match(read('src/features/my-life/components/visual/myLifeVisualConfig.ts'), /heroBackgroundImage: undefined/);
 });
 
 test('semantic illustration slots map to local decorative artwork with a null fallback', () => {
