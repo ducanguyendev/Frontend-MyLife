@@ -45,12 +45,13 @@ test('location editor is bounded, isolated, resize-aware, and owns one map contr
   assert.match(component, /className="family-location-modal"/);
   assert.match(component, /maxWidth="full"/);
   assert.match(component, /zoomControl=\{false\}/);
-  assert.equal((component.match(/<MapControls\b/g) || []).length, 2);
-  assert.equal((component.match(/<LocationEditorControls\b/g) || []).length, 1);
-  assert.match(component, /L\.DomEvent\.disableClickPropagation/);
+  assert.equal((component.match(/<FamilyMapControls\b/g) || []).length, 2, 'one shared toolbar for main map and one for editor');
+  assert.match(resize, /L\.DomEvent\.disableClickPropagation/);
+  assert.match(resize, /<Focus size=\{17\}/);
+  assert.doesNotMatch(resize, /<Layers3/);
   assert.match(css, /family-map-canvas[^}]*isolation:isolate/);
   assert.match(css, /family-location-modal__map[^}]*contain:layout paint size/);
-  assert.match(css, /family-map-controls button:focus-visible/);
+  assert.match(read('src/features/admin/components/family-tree/FamilyMapSurface.css'), /family-map-controls button:focus-visible/);
   assert.match(resize, /map\.invalidateSize/);
   assert.match(resize, /ResizeObserver/);
   assert.match(modal, /createPortal\([\s\S]*document\.body/);
@@ -62,7 +63,34 @@ test('member detail uses the shared VietMap layer at the stored coordinates', ()
   assert.match(page, /center=\{\[member\.latitude!,member\.longitude!\]\}/);
   assert.match(page, /<FamilyLocationMap latitude=\{member\.latitude!\} longitude=\{member\.longitude!\}/);
   assert.match(map, /<VietMapBaseLayer\s*\/>/);
+  assert.match(map, /<FamilyMapControls/);
+  assert.match(page, /zoomControl=\{false\}/);
   assert.doesNotMatch(page, /TileLayer|openstreetmap\.org/);
+});
+
+test('map visibility resize cancels pending frames, observers and listeners after unmount', () => {
+  const ts = require('typescript');
+  const vm = require('node:vm');
+  const effects = [], frames = new Map(), listeners = new Map();
+  let nextFrame = 0, invalidations = 0, disconnected = false, observed;
+  const map = { getContainer: () => ({ isConnected: true }), invalidateSize: () => invalidations++ };
+  const compiled = ts.transpileModule(read('src/features/admin/components/family-tree/FamilyLocationMap.tsx'), {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, target: ts.ScriptTarget.ES2022 },
+  }).outputText;
+  const module = { exports: {} };
+  const mocks = { react: { useEffect: effect => effects.push(effect) }, 'react/jsx-runtime': {}, 'react-leaflet': { useMap: () => map }, leaflet: {}, 'lucide-react': {}, '@/shared/hooks/useLanguage': {}, './VietMapBaseLayer': {} };
+  vm.runInNewContext(compiled, { exports: module.exports, require: name => mocks[name],
+    requestAnimationFrame: callback => { frames.set(++nextFrame, callback); return nextFrame; }, cancelAnimationFrame: id => frames.delete(id),
+    ResizeObserver: class { constructor(callback) { observed = callback; } observe() {} disconnect() { disconnected = true; } },
+    window: { addEventListener: (type, callback) => listeners.set(type, callback), removeEventListener: type => listeners.delete(type) },
+  });
+  module.exports.MapVisibilityResize();
+  const cleanup = effects[0]();
+  const flush = () => { const pending = [...frames.values()]; frames.clear(); pending.forEach(callback => callback()); };
+  flush(); flush(); assert.equal(invalidations, 1, 'visible map is resized after mounting');
+  observed(); cleanup(); flush();
+  assert.equal(invalidations, 1, 'queued resize cannot run on a removed map');
+  assert.equal(disconnected, true); assert.equal(listeners.size, 0); assert.equal(frames.size, 0);
 });
 
 test('Family Map normalization tolerates missing members and preserves valid coordinates', () => {

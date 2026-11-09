@@ -60,11 +60,17 @@ export const FamilyPersonCard = memo(function FamilyPersonCard({
     return () => document.removeEventListener("pointerdown", closeOnOutsidePointer);
   }, [menuOpen]);
 
-  return <motion.article ref={cardRef} initial={{ opacity: 0 }} animate={{ opacity: dimmed ? 0.6 : 1 }} exit={{ opacity: 0 }}
+  return <motion.article ref={cardRef} initial={{ opacity: 0 }} animate={{ opacity: dimmed ? 0.38 : 1 }} exit={{ opacity: 0 }}
     transition={{ duration: reducedMotion ? 0.01 : 0.32, ease: "easeOut" }} aria-hidden={!isPresent}
     className={`family-person-card${focused ? " is-focused" : ""}${highlighted ? " is-related" : ""}${dimmed ? " is-dimmed" : ""}${member.lifeStatus === "DECEASED" ? " is-deceased" : ""}`}
     data-gender={genderKind}
     data-member-id={member.id}
+    tabIndex={0} aria-label={`${t('family.selectMember')}: ${name}`} aria-current={focused || undefined}
+    onKeyDown={event => {
+      if (event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) {
+        event.preventDefault(); onFocus(member.id);
+      }
+    }}
     onClick={event => { if (!(event.target as HTMLElement).closest('button, a')) onFocus(member.id); }}
     style={{ left: x, top: y, pointerEvents: isPresent ? undefined : "none" }}
   >

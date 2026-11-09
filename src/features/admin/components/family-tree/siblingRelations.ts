@@ -1,6 +1,6 @@
 import type { FamilyMember } from './types';
 
-export type SiblingKind = 'biological' | 'cousin';
+export type SiblingKind = 'biological' | 'cousin' | 'unknown';
 export type SiblingSeniority =
   | 'older-brother' | 'older-sister' | 'older-unknown'
   | 'younger-brother' | 'younger-sister' | 'younger-unknown'
@@ -26,7 +26,12 @@ export function hasExplicitSiblingRelation(a: FamilyMember, b: FamilyMember): bo
 
 export function getSiblingKind(current: FamilyMember, other: FamilyMember): SiblingKind | null {
   if (isBiologicalSibling(current, other)) return 'biological';
-  return hasExplicitSiblingRelation(current, other) ? 'cousin' : null;
+  const confirmedCousin = (from: FamilyMember, toId: number) => (from.horizontalRelations ?? []).some(relation =>
+    Number(relation.memberId) === toId && relation.relationType?.trim().toLowerCase() === 'cousin');
+  if (confirmedCousin(current, other.id) || confirmedCousin(other, current.id)) return 'cousin';
+  // A generic sibling record can describe incomplete parentage. It is not
+  // evidence of either a biological sibling or a cousin relationship.
+  return hasExplicitSiblingRelation(current, other) ? 'unknown' : null;
 }
 
 function parseBirthDate(value?: string): number | null {
@@ -59,6 +64,7 @@ export function getSiblingSeniority(
 }
 
 export function getSiblingDisplayLabelKey(kind: SiblingKind, seniority: SiblingSeniority): string {
+  if (kind === 'unknown') return 'sibling_neutral_unknown';
   if (seniority === 'unknown') return kind === 'biological' ? 'sibling_neutral_biological' : 'sibling_neutral_cousin';
   return `sibling_${kind}_${seniority.replace('-', '_')}`;
 }

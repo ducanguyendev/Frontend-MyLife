@@ -134,7 +134,7 @@
 .shadcn-family-tree { background:var(--surface-canvas, var(--primary-bg)); }
 .shadcn-family-tree__scene { z-index:1; }
 .shadcn-family-tree__link path { vector-effect:non-scaling-stroke; }
-.shadcn-family-tree__link.is-dimmed { opacity:.45; }
+.shadcn-family-tree__link.is-dimmed { opacity:.18; }
 .shadcn-family-tree__person.is-related { border-color:color-mix(in srgb, var(--sft-accent) 55%, var(--sft-border)); }
 .shadcn-family-tree__person[data-gender].is-focused { border-color:var(--sft-accent); box-shadow:0 0 0 2px color-mix(in srgb, var(--sft-accent) 18%, transparent), 0 8px 20px rgb(47 55 48 / 14%); }
 .shadcn-family-tree.is-exporting .family-tree-selection { display:none; }

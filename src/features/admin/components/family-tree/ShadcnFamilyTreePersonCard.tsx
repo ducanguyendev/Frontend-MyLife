@@ -48,7 +48,7 @@ export const ShadcnFamilyTreePersonCard = memo(function ShadcnFamilyTreePersonCa
     data-member-id={member.id}
     data-gender={genderKind}
     style={{ left: x, top: y }}
-    initial={{ opacity: 0, y: 8 }} animate={{ opacity: dimmed ? .62 : 1, y: 0 }} exit={{ opacity: 0 }}
+    initial={{ opacity: 0, y: 8 }} animate={{ opacity: dimmed ? .38 : 1, y: 0 }} exit={{ opacity: 0 }}
     transition={{ duration: reduceMotion ? .01 : .32, ease: "easeOut" }}
     onClick={() => onSelect(member.id)}
   >

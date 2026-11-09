@@ -42,6 +42,7 @@ export const FamilyMemberProfilePage: React.FC = () => {
   const children = relatives.filter(item => item.fatherId === memberId || item.motherId === memberId || member?.childIds?.includes(item.id));
   const siblings = relatives.filter(item => item.id !== memberId && getSiblingKind(member!, item) === 'biological');
   const cousins = relatives.filter(item => item.id !== memberId && getSiblingKind(member!, item) === 'cousin');
+  const unknownRelations = relatives.filter(item => item.id !== memberId && getSiblingKind(member!, item) === 'unknown');
   const dateLocale = language === 'vi' ? 'vi-VN' : 'en-GB';
   const birth = member?.dateOfBirth ? new Date(`${member.dateOfBirth.slice(0, 10)}T00:00:00Z`) : null;
   const death = member?.lifeStatus === 'DECEASED' && member.deathDate ? new Date(`${member.deathDate.slice(0, 10)}T00:00:00Z`) : null;
@@ -79,6 +80,7 @@ export const FamilyMemberProfilePage: React.FC = () => {
               {relationGroup(t('admin.field_children'), children)}
               {relationGroup(t('admin.family_v2.biological_siblings'), siblings)}
               {relationGroup(t('admin.family_v2.cousins'), cousins)}
+              {unknownRelations.length > 0 && relationGroup(t('admin.family_v2.unknown_relations'), unknownRelations)}
             </div></section>
             <RelationshipExplorer key={member.id} members={[member, ...relatives]} initialMemberId={member.id}/>
             <section className="family-profile__section"><h2><CalendarDays/>{normalizeDisplayText(t('admin.family_v2.member_timeline', { name: member.fullName }))}</h2>
@@ -96,7 +98,7 @@ export const FamilyMemberProfilePage: React.FC = () => {
               {profile.anniversaries.length ? <ul className="m-0 space-y-3 p-0">{profile.anniversaries.map(item => <li key={item.id} className="family-profile__anniversary list-none rounded-xl border border-custom-border p-3"><strong className="text-sm text-primary-text">{normalizeDisplayText(item.title)}</strong>{item.originalSolarDate && <p className="mb-0 mt-1 text-xs text-secondary-text">{new Date(`${item.originalSolarDate.slice(0,10)}T00:00:00Z`).toLocaleDateString(dateLocale, {timeZone:'UTC'})}</p>}{item.place && <p className="m-0 text-xs text-secondary-text">{item.place}</p>}</li>)}</ul> : <p className="m-0 text-sm text-secondary-text">{t('admin.family_v2.no_anniversaries')}</p>}
             </section>
             <section className="family-profile__section"><h2><MapPin/>{t('admin.family_v2.location')}</h2><p className="text-sm text-secondary-text">{member.address || t('admin.family_v2.not_updated')}</p>
-              {hasCoordinates && <div className="family-profile__map"><MapContainer center={[member.latitude!,member.longitude!]} zoom={13} scrollWheelZoom={false} className="family-profile__map-leaflet"><FamilyLocationMap latitude={member.latitude!} longitude={member.longitude!}/></MapContainer></div>}
+              {hasCoordinates && <div className="family-profile__map"><MapContainer center={[member.latitude!,member.longitude!]} zoom={13} scrollWheelZoom={false} zoomControl={false} className="family-profile__map-leaflet"><FamilyLocationMap latitude={member.latitude!} longitude={member.longitude!}/></MapContainer></div>}
               <Link to="/map" className="mt-4 inline-block text-sm font-semibold text-accent hover:underline">{t('family.openMap')} →</Link>
             </section>
             <section className="family-profile__section"><h2><BookOpen/>{t('admin.family_v2.library')}</h2><p className="text-sm text-secondary-text">{profile.libraryMemberLinkAvailable ? t('admin.family_v2.library_related') : t('admin.family_v2.library_not_linked')}</p><Link to="/library" className="text-sm font-semibold text-accent hover:underline">{t('family.openLibrary')} →</Link></section>

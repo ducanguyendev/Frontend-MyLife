@@ -32,7 +32,7 @@ test('scroll locks are reference counted, restore original inline styles and tol
   assert.equal(body.style.overflow, 'clip'); assert.equal(html.style.overflow, 'auto'); assert.equal(body.style.paddingRight, '3px');
 });
 
-test('biological siblings share at least one known parent; explicit cousins are suppressed for them', () => {
+test('shared parents verify siblings; generic sibling metadata without shared parents stays unknown', () => {
   const s = loadTs('src/features/admin/components/family-tree/siblingRelations.ts');
   const a = member(1, { fatherId: 10, motherId: 20 });
   const full = member(2, { fatherId: 10, motherId: 20 });
@@ -48,7 +48,9 @@ test('biological siblings share at least one known parent; explicit cousins are 
   assert.equal(s.hasExplicitSiblingRelation(a, half), true);
   assert.equal(s.getSiblingKind(a, half), 'biological');
   unrelated.horizontalRelations = [{ memberId: a.id, relationType: 'SIBLING' }];
-  assert.equal(s.getSiblingKind(a, unrelated), 'cousin');
+  assert.equal(s.getSiblingKind(a, unrelated), 'unknown');
+  unrelated.horizontalRelations = [{ memberId: a.id, relationType: 'cousin' }];
+  assert.equal(s.getSiblingKind(a, unrelated), 'cousin', 'cousins require explicit confirmed cousin metadata');
   full.horizontalRelations = [{ memberId: a.id, relationType: 'sibling' }];
   assert.equal(s.getSiblingKind(a, full), 'biological');
 });
@@ -68,7 +70,7 @@ test('sibling seniority uses DOB and gender and stays neutral for ambiguous date
   assert.equal(s.getSiblingDisplayLabelKey('biological', 'unknown'), 'sibling_neutral_biological');
 });
 
-test('confirmed sibling examples classify half siblings, cousins and missing-DOB members correctly', () => {
+test('confirmed sibling examples distinguish half siblings from unverified horizontal records', () => {
   const s = loadTs('src/features/admin/components/family-tree/siblingRelations.ts');
   const duc = member(100, { fullName: 'Nguyễn Huỳnh Minh Đức', fatherId: 1, motherId: 2, dateOfBirth: '2005-12-16', gender: 'Nam' });
   const bao = member(101, { fullName: 'Nguyễn Huỳnh Quốc Bảo', fatherId: 3, motherId: 2, dateOfBirth: '2009-03-16', gender: 'Nam' });
@@ -78,14 +80,14 @@ test('confirmed sibling examples classify half siblings, cousins and missing-DOB
   assert.equal(s.getSiblingSeniority(bao, duc), 'older-brother');
 
   const tung = member(102, { fullName: 'Nguyễn Sơn Tùng', fatherId: 4, motherId: 5, dateOfBirth: '1998-10-13', gender: 'Nam', horizontalRelations: [{ memberId: duc.id, relationType: 'Sibling' }] });
-  assert.equal(s.getSiblingKind(duc, tung), 'cousin');
+  assert.equal(s.getSiblingKind(duc, tung), 'unknown');
   assert.equal(s.getSiblingSeniority(duc, tung), 'older-brother');
-  assert.equal(s.getSiblingDisplayLabelKey('cousin', s.getSiblingSeniority(duc, tung)), 'sibling_cousin_older_brother');
+  assert.equal(s.getSiblingDisplayLabelKey('unknown', s.getSiblingSeniority(duc, tung)), 'sibling_neutral_unknown');
 
   const hoangMinh = member(103, { fullName: 'Nguyễn Hoàng Minh', horizontalRelations: [{ memberId: duc.id, relationType: 'sibling' }] });
-  assert.equal(s.getSiblingKind(duc, hoangMinh), 'cousin');
+  assert.equal(s.getSiblingKind(duc, hoangMinh), 'unknown');
   assert.equal(s.getSiblingSeniority(duc, hoangMinh), 'unknown');
-  assert.equal(s.getSiblingDisplayLabelKey('cousin', s.getSiblingSeniority(duc, hoangMinh)), 'sibling_neutral_cousin');
+  assert.equal(s.getSiblingDisplayLabelKey('unknown', s.getSiblingSeniority(duc, hoangMinh)), 'sibling_neutral_unknown');
 });
 
 test('modal and custom overlays share scroll locks; Select and action picker portal and reposition', () => {
@@ -112,7 +114,7 @@ test('FamilyTree form unifies inferred and explicit siblings; details retain sep
   assert.ok(form.includes('!selectedSiblingIds.has(m.id)'));
   assert.ok(form.includes('siblings_group') && form.includes('select_sibling'));
   assert.equal((form.match(/<FamilyMemberPicker/g) || []).length, 2);
-  assert.ok(form.includes('kind === "cousin"'));
+  assert.ok(form.includes('kind !== "biological"'), 'unverified stored relations remain removable');
   assert.doesNotMatch(form, /siblings_biological_group|siblings_cousin_group/);
   assert.ok(manager.includes('horizontalRelations: []'));
   assert.ok(manager.includes("relation.relationType?.trim().toLowerCase() === 'sibling' ? 'sibling'"));

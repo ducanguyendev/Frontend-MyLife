@@ -74,8 +74,8 @@ export function getAncestralLineageHighlight(graph: FamilyRelationshipGraph, sel
   for (const siblingId of candidates) {
     if (siblingId === selectedMemberId) continue;
     const siblingMember = graph.membersById.get(siblingId);
-    // Horizontal "sibling" metadata is also used to store cousins. Only known
-    // shared father/mother IDs confirm a biological sibling for lineage focus.
+    // Generic horizontal relationships do not verify parentage. Only known
+    // shared father/mother IDs confirm a sibling for lineage focus.
     if (!siblingMember || getSiblingKind(selectedMember, siblingMember) !== 'biological') continue;
     const siblingParents = graph.parentsByChild.get(siblingId) ?? new Set<number>();
     const siblingKnownParents = new Set([siblingMember.fatherId, siblingMember.motherId].filter((id): id is number => id != null));

@@ -46,10 +46,10 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({ member, me
     (m) => m.fatherId === member.id || m.motherId === member.id || member.childIds?.includes(m.id)
   );
 
-  // Keep the existing biological-sibling and cousin classification unchanged.
   const ruotSiblings = members.filter(m => m.id !== member.id && isBiologicalSibling(member, m));
   const hoSiblings = members.filter(m => m.id !== member.id && getSiblingKind(member, m) === 'cousin');
-  const getSiblingLabel = (sibling: FamilyMember, kind: 'biological' | 'cousin') =>
+  const unknownRelations = members.filter(m => m.id !== member.id && getSiblingKind(member, m) === 'unknown');
+  const getSiblingLabel = (sibling: FamilyMember, kind: 'biological' | 'cousin' | 'unknown') =>
     t('admin.' + getSiblingDisplayLabelKey(kind, getSiblingSeniority(member, sibling)));
 
   const renderRelationMember = (related: FamilyMember, roleLabel?: string) => (
@@ -154,6 +154,7 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({ member, me
                   {hoSiblings.length ? hoSiblings.map(s => renderRelationMember(s, getSiblingLabel(s, 'cousin'))) : <span className="pt-1 text-xs text-secondary-text">{t("admin.siblings_cousin_empty")}</span>}
                 </dd>
               </div>
+              {unknownRelations.length > 0 && renderRelationGroup(t('admin.siblings_unknown_group'), unknownRelations)}
             </dl>
           </section>
 

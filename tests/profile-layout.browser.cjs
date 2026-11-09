@@ -1,7 +1,8 @@
-// Profile layout review: API requests are fulfilled locally; account writes are blocked.
+// Isolated profile review: every API request, including account action smoke tests, is mocked.
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const os = require('node:os');
 const puppeteer = require('../scratch_puppeteer/node_modules/puppeteer');
 const base = process.env.MYLIFE_UI_URL || 'http://127.0.0.1:7004';
 const output = path.resolve('docs/review-w80');
@@ -17,7 +18,7 @@ async function main() {
   const browser = await puppeteer.launch({ headless: true, pipe: true, timeout: 15000 });
   const results = [];
   try {
-    for (const [width, height, language] of [[1440, 900, 'vi'], [390, 844, 'vi'], [820, 1180, 'en'], [1440, 600, 'en']]) {
+    for (const [width, height, language] of (process.env.PROFILE_AUDIT ? [[1440,900,'vi']] : [[1440, 900, 'vi'], [1920, 1080, 'vi'], [390, 844, 'vi'], [820, 1180, 'en'], [1440, 600, 'en']])) {
       for (const theme of ['light', 'dark']) {
         const page = await browser.newPage();
         const errors = [], writes = [];
@@ -30,8 +31,9 @@ async function main() {
           if (url.pathname === '/profile-review-avatar.svg') return request.respond({ status: 200, contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96"><rect width="96" height="96" fill="#66816e"/><circle cx="48" cy="35" r="17" fill="#e7eee7"/><path d="M16 96c0-40 64-40 64 0" fill="#e7eee7"/></svg>' });
           if (!url.pathname.startsWith('/api/')) return request.continue();
           if (!['GET', 'OPTIONS'].includes(request.method())) writes.push(url.pathname);
-          const body = url.pathname === '/api/me' ? account : { success: true, data: [] };
-          return request.respond({ status: 200, contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': request.headers().origin || '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Headers': request.headers()['access-control-request-headers'] || 'content-type,x-requested-with', 'Access-Control-Allow-Methods': 'GET,OPTIONS' }, body: JSON.stringify(body) });
+          const body = url.pathname === '/api/me' ? account : url.pathname === '/api/avatar/upload'
+            ? { success: true, message: 'ok', avatarUrl: base + '/profile-review-avatar.svg' } : { success: true, message: 'ok', data: [] };
+          return request.respond({ status: 200, contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': request.headers().origin || '*', 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Headers': request.headers()['access-control-request-headers'] || 'content-type,x-requested-with', 'Access-Control-Allow-Methods': 'GET,OPTIONS,POST,PUT,DELETE' }, body: JSON.stringify(body) });
         });
         await page.evaluateOnNewDocument(({ theme, language }) => {
           localStorage.setItem('app_language', language);
@@ -45,6 +47,7 @@ async function main() {
         await page.evaluate(() => document.querySelector('[data-user-menu] button:has(svg.lucide-user)')?.click());
         await page.waitForSelector('.user-profile__facts');
         await page.waitForFunction(() => document.querySelector('.user-profile__facts')?.textContent.includes('0912345678'));
+        await page.waitForFunction(() => +getComputedStyle(document.querySelector('.user-profile__content')).opacity === 1);
         const metrics = await page.evaluate(() => {
           const root = document.querySelector('.user-profile-modal');
           const rect = el => { const r = el.getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width, height: r.height, right: r.right, bottom: r.bottom }; };
@@ -70,22 +73,44 @@ async function main() {
         assert.equal(metrics.theme, theme);
         if (height === 600) assert.equal(metrics.scrollable, true);
         await page.screenshot({ path: path.join(output, `${theme}-${width}x${height}-${language}-profile.png`) });
+        if (width === 1440 && height === 900 && theme === 'light') {
+          const data = await page.evaluate(() => { const canvas=document.createElement('canvas');canvas.width=canvas.height=8;canvas.getContext('2d').fillRect(0,0,8,8);return canvas.toDataURL('image/png').split(',')[1]; });
+          const tempDir=fs.mkdtempSync(path.join(os.tmpdir(),'mylife-avatar-review-')), file=path.join(tempDir,'avatar.png');fs.writeFileSync(file,Buffer.from(data,'base64'));
+          await (await page.$('.user-profile__avatar-wrap input[type=file]')).uploadFile(file);
+          await page.waitForResponse(response=>new URL(response.url()).pathname==='/api/avatar/upload').catch(()=>{});
+          await page.waitForFunction(() => document.querySelector('.user-profile__remove-avatar') && !document.querySelector('.user-profile__remove-avatar').disabled);
+          await page.waitForFunction(() => document.querySelector('.user-profile-modal')?.textContent.includes('Cập nhật ảnh đại diện thành công'));
+          await page.$eval('.user-profile__remove-avatar',el=>el.click());
+          await page.waitForFunction(() => !document.querySelector('.user-profile__remove-avatar')).catch(async error=>{ console.log('Avatar diagnostics', writes, await page.$eval('.user-profile-modal',el=>el.innerText.slice(-600)));throw error;});
+          fs.unlinkSync(file);fs.rmdirSync(tempDir);
+        }
         await page.click('.user-profile__tabs button:last-child');
         await page.waitForSelector('.user-profile__security input[type=password]');
+        await page.waitForFunction(() => +getComputedStyle(document.querySelector('.user-profile__security')).opacity === 1);
         await page.screenshot({ path: path.join(output, `${theme}-${width}x${height}-${language}-security.png`) });
+        await page.$eval('.user-profile__security form',el=>el.requestSubmit());
+        await page.waitForSelector('.user-profile__security [aria-invalid=true]');
         await page.focus('.user-profile__tabs button:last-child'); await page.keyboard.press('ArrowLeft');
         await page.waitForSelector('.user-profile__facts');
         await page.click('.user-profile__edit-button'); await page.waitForSelector('.user-profile__edit-form input[readonly]');
         assert.equal(await page.$eval('.user-profile__edit-form', el => el.scrollWidth > el.clientWidth), false);
         await page.click('.user-profile-modal > div:first-child button');
         await page.waitForFunction(() => !document.querySelector('.user-profile-modal'));
-        assert.deepEqual(errors, []); assert.deepEqual(writes, []);
+        if (width===1440 && height===900) {
+          await page.click('button[aria-label="Mở menu tài khoản"]');await page.waitForSelector('[data-user-menu]');
+          await page.$eval('[data-user-menu] button:has(svg.lucide-user)',el=>el.click());await page.waitForSelector('.user-profile__footer');
+          await page.click('.user-profile__footer > button:'+(theme==='light'?'first':'last')+'-child');
+          await page.waitForFunction(()=>location.pathname==='/' && !document.querySelector('.user-profile-modal'));
+          assert.ok(writes.includes('/api/logout'));
+        }
+        assert.deepEqual(errors, []);
+        assert.ok(writes.every(p=>['/api/avatar/upload','/api/avatar','/api/logout'].includes(p)), 'no password/profile changes submitted');
         results.push({ width, height, language, theme, ...metrics });
         await page.close();
       }
     }
     fs.writeFileSync(path.join(output, 'results.json'), JSON.stringify(results, null, 2));
-    console.log('PASS: 8 profile/security layout cases, tab keyboard switching, edit entry and close; no API writes.');
+    console.log('PASS: 10 profile/security layout cases, keyboard tabs, edit entry, password validation, isolated avatar removal/upload and switch/logout actions.');
   } finally { await browser.close(); }
 }
 main().catch(error => { console.error(error); process.exitCode = 1; });

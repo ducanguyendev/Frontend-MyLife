@@ -18,7 +18,7 @@ import {
   validateDob,
 } from "@/shared/components/ui";
 import { type FamilyMember, type Generation, removeVietnameseTones } from "./types";
-import { getSiblingKind, isBiologicalSibling } from "./siblingRelations";
+import { getSiblingKind, isBiologicalSibling, type SiblingKind } from "./siblingRelations";
 import { MemberAvatarImage } from "./MemberAvatarImage";
 import { FamilyRelationSelect } from "./FamilyRelationSelect";
 import { FamilyMemberPicker } from "./FamilyMemberPicker";
@@ -172,14 +172,14 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
 
   const siblings = useMemo(() => {
     if (!editingMember) return [];
-    const siblingById = new Map<number, { member: FamilyMember; kind: "biological" | "cousin" }>();
+    const siblingById = new Map<number, { member: FamilyMember; kind: SiblingKind }>();
     for (const member of members) {
       if (member.id !== editingMember.id && isBiologicalSibling(editingMember, member)) {
         siblingById.set(member.id, { member, kind: "biological" });
       }
     }
     for (const relation of editingMember.horizontalRelations || []) {
-      if (relation.relationType?.trim().toLowerCase() !== "sibling") continue;
+      if (!['sibling', 'cousin'].includes(relation.relationType?.trim().toLowerCase())) continue;
       const member = members.find((candidate) => candidate.id === relation.memberId);
       if (!member || member.id === editingMember.id) continue;
       const kind = getSiblingKind(editingMember as FamilyMember, member);
@@ -217,7 +217,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
     const current = editingMember.horizontalRelations || [];
     onChange({
       ...editingMember,
-      horizontalRelations: current.filter((r) => !(r.memberId === siblingId && r.relationType?.trim().toLowerCase() === "sibling")),
+      horizontalRelations: current.filter((r) => !(r.memberId === siblingId && ['sibling', 'cousin'].includes(r.relationType?.trim().toLowerCase()))),
     });
   };
 
@@ -741,9 +741,9 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                     {siblings.length > 0 && (
                       <div className="flex flex-wrap gap-2 p-2.5 rounded-xl bg-primary-bg/70 border border-custom-border/60">
                         {siblings.map(({ member: sibling, kind }) => (
-                          <span key={sibling.id} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-secondary-bg text-primary-text text-xs border border-custom-border shadow-xs">
+                          <span key={sibling.id} title={kind === 'unknown' ? t('admin.sibling_neutral_unknown') : undefined} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-secondary-bg text-primary-text text-xs border border-custom-border shadow-xs">
                             <MemberAvatarImage member={sibling} alt="" className="h-5 w-5 shrink-0 rounded-full object-cover"/><span className="font-medium">{normalizeDisplayText(formatName(sibling.fullName))}</span>
-                            {kind === "cousin" && (
+                            {kind !== "biological" && (
                               <button
                                 type="button"
                                 onClick={() => handleRemoveSibling(sibling.id)}

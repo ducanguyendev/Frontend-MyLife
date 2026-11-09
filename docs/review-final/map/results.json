@@ -1,0 +1,250 @@
+[
+  {
+    "width": 1920,
+    "height": 1080,
+    "theme": "light",
+    "glLayers": 1,
+    "providerError": false,
+    "controls": 1,
+    "defaultZoom": 0,
+    "overflow": false,
+    "providerStyles": [
+      {
+        "path": "/maps/styles/lm/style.json",
+        "status": 200
+      },
+      {
+        "path": "/maps/styles/lm/style.json",
+        "status": 200
+      },
+      {
+        "path": "/maps/styles/lm/style.json",
+        "status": 304
+      },
+      {
+        "path": "/maps/styles/lm/style.json",
+        "status": 304
+      }
+    ],
+    "tileResponses": 30,
+    "errors": []
+  },
+  {
+    "width": 1920,
+    "height": 1080,
+    "theme": "dark",
+    "glLayers": 1,
+    "providerError": false,
+    "controls": 1,
+    "defaultZoom": 0,
+    "overflow": false,
+    "providerStyles": [
+      {
+        "path": "/maps/styles/dm/style.json",
+        "status": 200
+      },
+      {
+        "path": "/maps/styles/dm/style.json",
+        "status": 200
+      },
+      {
+        "path": "/maps/styles/dm/style.json",
+        "status": 200
+      },
+      {
+        "path": "/maps/styles/dm/style.json",
+        "status": 200
+      }
+    ],
+    "tileResponses": 14,
+    "errors": []
+  },
+  {
+    "width": 820,
+    "height": 1180,
+    "theme": "light",
+    "glLayers": 1,
+    "providerError": false,
+    "controls": 1,
+    "defaultZoom": 0,
+    "overflow": false,
+    "providerStyles": [
+      {
+        "path": "/maps/styles/lm/style.json",
+        "status": 200
+      },
+      {
+        "path": "/maps/styles/lm/style.json",
+        "status": 200
+      },
+      {
+        "path": "/maps/styles/lm/style.json",
+        "status": 200
+      },
+      {
+        "path": "/maps/styles/lm/style.json",
+        "status": 200
+      }
+    ],
+    "tileResponses": 9,
+    "errors": []
+  },
+  {
+    "width": 820,
+    "height": 1180,
+    "theme": "dark",
+    "glLayers": 1,
+    "providerError": false,
+    "controls": 1,
+    "defaultZoom": 0,
+    "overflow": false,
+    "providerStyles": [
+      {
+        "path": "/maps/styles/dm/style.json",
+        "status": 200
+      },
+      {
+        "path": "/maps/styles/dm/style.json",
+        "status": 304
+      },
+      {
+        "path": "/maps/styles/dm/style.json",
+        "status": 304
+      },
+      {
+        "path": "/maps/styles/dm/style.json",
+        "status": 200
+      }
+    ],
+    "tileResponses": 20,
+    "errors": []
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "theme": "light",
+    "glLayers": 1,
+    "providerError": false,
+    "controls": 1,
+    "defaultZoom": 0,
+    "overflow": false,
+    "providerStyles": [
+      {
+        "path": "/maps/styles/lm/style.json",
+        "status": 200
+      },
+      {
+        "path": "/maps/styles/lm/style.json",
+        "status": 200
+      },
+      {
+        "path": "/maps/styles/lm/style.json",
+        "status": 304
+      },
+      {
+        "path": "/maps/styles/dm/style.json",
+        "status": 200
+      },
+      {
+        "path": "/maps/styles/lm/style.json",
+        "status": 200
+      }
+    ],
+    "tileResponses": 19,
+    "errors": []
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "theme": "dark",
+    "glLayers": 1,
+    "providerError": false,
+    "controls": 1,
+    "defaultZoom": 0,
+    "overflow": false,
+    "providerStyles": [
+      {
+        "path": "/maps/styles/dm/style.json",
+        "status": 304
+      },
+      {
+        "path": "/maps/styles/dm/style.json",
+        "status": 304
+      },
+      {
+        "path": "/maps/styles/dm/style.json",
+        "status": 304
+      },
+      {
+        "path": "/maps/styles/lm/style.json",
+        "status": 304
+      },
+      {
+        "path": "/maps/styles/dm/style.json",
+        "status": 200
+      }
+    ],
+    "tileResponses": 18,
+    "errors": []
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "glLayers": 1,
+    "providerError": false,
+    "controls": 1,
+    "defaultZoom": 0,
+    "overflow": false,
+    "providerStyles": [
+      {
+        "path": "/maps/styles/lm/style.json",
+        "status": 200
+      },
+      {
+        "path": "/maps/styles/lm/style.json",
+        "status": 200
+      },
+      {
+        "path": "/maps/styles/lm/style.json",
+        "status": 200
+      },
+      {
+        "path": "/maps/styles/lm/style.json",
+        "status": 200
+      }
+    ],
+    "tileResponses": 5,
+    "errors": []
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "theme": "dark",
+    "glLayers": 1,
+    "providerError": false,
+    "controls": 1,
+    "defaultZoom": 0,
+    "overflow": false,
+    "providerStyles": [
+      {
+        "path": "/maps/styles/dm/style.json",
+        "status": 200
+      },
+      {
+        "path": "/maps/styles/dm/style.json",
+        "status": 304
+      },
+      {
+        "path": "/maps/styles/dm/style.json",
+        "status": 304
+      },
+      {
+        "path": "/maps/styles/dm/style.json",
+        "status": 200
+      }
+    ],
+    "tileResponses": 3,
+    "errors": []
+  }
+]

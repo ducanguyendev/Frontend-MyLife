@@ -5,6 +5,7 @@ import { useTheme } from '@/shared/context/ThemeContext';
 import { useLanguage } from '@/shared/hooks/useLanguage';
 import '@vietmap/vietmap-gl-js/dist/vietmap-gl.css';
 import '@vietmap/vietmap-gl-leaflet';
+import './FamilyMapSurface.css';
 
 type VietMapLayer = L.Layer & { getVietmapMap: () => unknown };
 type VietMapLeaflet = typeof L & { vietmapGL?: (options: { style: string }) => VietMapLayer };

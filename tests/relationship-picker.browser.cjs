@@ -15,7 +15,7 @@ const report = [];
 
 async function main() {
   fs.mkdirSync(artifacts, { recursive: true });
-  const browser = await puppeteer.launch({ headless: true, executablePath: 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe', args: ['--no-first-run', '--disable-extensions'] });
+  const browser = await puppeteer.launch({ headless: true, pipe: true, timeout: 20000 });
   const page = await browser.newPage(); page.setDefaultTimeout(15000);
   const errors = [], relationships = [], writes = [];
   let delayRelationship = 0;
@@ -56,7 +56,7 @@ async function main() {
     assert.equal(await page.$eval(calculate, element => element.disabled), true);
   };
   try {
-    for (const [width, height] of [[1440, 900], [820, 1180], [390, 844]]) for (const theme of ['light', 'dark']) {
+    for (const [width, height] of [[1440, 900], [1920, 1080], [820, 1180], [390, 844]]) for (const theme of ['light', 'dark']) {
       console.log('Review', width, theme);
       await page.setViewport({ width, height, isMobile: width === 390, hasTouch: width <= 820 });
       await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: theme === 'dark' ? 'reduce' : 'no-preference' }]);
@@ -141,7 +141,7 @@ async function main() {
     await page.waitForSelector(input + ':not(:disabled)'); await isEmpty(); assert.equal(await page.$('.family-explorer__result'), null);
     assert.deepEqual(errors, []); assert.deepEqual(writes, []);
     fs.writeFileSync(path.join(artifacts, 'results.json'), JSON.stringify({ report, lateResponse: 'pass', routeReset: 'pass', errors, writes, relationships }, null, 2));
-    console.log('PASS: 6 theme/viewport cases, keyboard, ID-based toggle, stale API response and route reset.');
+    console.log('PASS: 8 theme/viewport cases, keyboard, ID-based toggle, stale API response and route reset.');
   } catch (error) {
     console.log('Failure', page.url(), await page.evaluate(() => document.body.innerText.slice(-1800)));
     await page.screenshot({ path: path.join(artifacts, 'failure.png') }); throw error;

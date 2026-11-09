@@ -202,7 +202,8 @@
 .family-manager__viewport .family-tree-view-shell { background:radial-gradient(ellipse at 50% 3%,color-mix(in srgb,var(--brand-primary) 7%,transparent),transparent 58%),var(--surface-canvas); }
 .dark .family-manager__viewport .family-tree-view-shell, [data-theme="dark"] .family-manager__viewport .family-tree-view-shell { background:radial-gradient(ellipse at 50% 3%,color-mix(in srgb,#93a78d 8%,transparent),transparent 58%),var(--surface-canvas); }
 .family-tree-link path { vector-effect:non-scaling-stroke; }
-.family-tree-link.is-dimmed { opacity:.45; }
+.family-tree-link.is-dimmed { opacity:.18; }
+.family-person-card:focus-visible { outline:2px solid var(--family-tree-view-accent); outline-offset:3px; }
 .family-person-card.is-related { border-color:color-mix(in srgb, var(--family-tree-view-accent) 55%, var(--family-tree-view-border)); }
 .family-tree-view-shell .family-person-card.is-focused { border-color:var(--family-tree-view-accent); box-shadow:0 0 0 2px color-mix(in srgb, var(--family-tree-view-accent) 18%, transparent), var(--shadow-sm); }
 .family-tree-view-shell.is-exporting .family-tree-selection { display:none; }

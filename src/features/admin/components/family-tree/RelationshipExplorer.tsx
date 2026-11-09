@@ -8,10 +8,9 @@ import { useLanguage } from '@/shared/hooks/useLanguage';
 import { fetchFamilyMembers, fetchRelationship, type RelationshipResult } from '../../services/familyV2Service';
 import { MemberAvatarImage } from './MemberAvatarImage';
 import type { FamilyMember } from './types';
+import { getRelationshipPresentation } from './relationshipPresentation';
 
 const normalizeSearch = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[đĐ]/g, 'd').toLocaleLowerCase().trim();
-const ancestorCodes = new Set(['father', 'mother', 'grandfather', 'grandmother', 'great_grandfather', 'great_grandmother', 'ancestor']);
-const descendantCodes = new Set(['son', 'daughter', 'grandson', 'granddaughter', 'descendant']);
 
 export const RelationshipExplorer: React.FC<{ members: FamilyMember[]; initialMemberId?: number }> = ({ members: nearbyMembers, initialMemberId }) => {
   const { t } = useLanguage();
@@ -145,6 +144,7 @@ export const RelationshipExplorer: React.FC<{ members: FamilyMember[]; initialMe
     setResult(null);
     try {
       const relation = await fetchRelationship(referenceId, requestedTarget, controller.signal);
+      if (!getRelationshipPresentation(relation, referenceId, requestedTarget)) throw new Error('Relationship endpoints do not match the request.');
       if (!controller.signal.aborted && requestRef.current === controller) setResult(relation);
     } catch {
       if (!controller.signal.aborted && requestRef.current === controller) setError(true);
@@ -153,26 +153,11 @@ export const RelationshipExplorer: React.FC<{ members: FamilyMember[]; initialMe
     }
   };
 
-  const resultStartsAtReference = result?.fromMemberId === referenceId;
-  const sourceMember = members.find(item => item.id === (result ? (resultStartsAtReference ? result.fromMemberId : result.toMemberId) : referenceId)) ?? reference;
-  const targetMember = members.find(item => item.id === (result ? (resultStartsAtReference ? result.toMemberId : result.fromMemberId) : toId));
-  const relationshipCode = result ? (resultStartsAtReference ? result.relationshipCode : result.reverseRelationshipCode).toLowerCase() : '';
-  let relationshipKey = relationshipCode;
-  if (['grandson', 'granddaughter'].includes(relationshipCode) && result?.path.length === 3) {
-    const route = resultStartsAtReference ? result.path : [...result.path].reverse();
-    const middle = members.find(item => item.id === route[1]?.memberId);
-    const parentGender = middle?.gender?.toLowerCase();
-    const lineage = parentGender === 'male' || parentGender === 'm' || parentGender === 'nam' ? 'paternal'
-      : parentGender === 'female' || parentGender === 'f' || parentGender === 'nữ' || parentGender === 'nu' ? 'maternal' : null;
-    if (lineage) relationshipKey = `${relationshipCode}_${lineage}`;
-  }
-  const targetIsAncestor = ancestorCodes.has(relationshipCode);
-  const invertEdge = (edge?: string | null) => edge?.toLowerCase() === 'parent' ? 'child' : edge?.toLowerCase() === 'child' ? 'parent' : edge;
-  const route = result ? (resultStartsAtReference ? result.path : [...result.path].reverse()) : [];
-  const displayPath = targetIsAncestor
-    ? [...route].reverse().map((node, index) => ({ ...node, edge: index === 0 ? null : invertEdge(route[route.length - index]?.edge) }))
-    : route;
-  const verticalPath = targetIsAncestor || descendantCodes.has(relationshipCode);
+  const presentation = result && referenceId != null && toId != null ? getRelationshipPresentation(result, referenceId, toId) : null;
+  const sourceMember = members.find(item => item.id === referenceId) ?? reference;
+  const targetMember = selectedTarget;
+  const displayPath = presentation?.displayPath ?? [];
+  const verticalPath = presentation?.verticalPath ?? false;
 
   return <section className="family-explorer space-y-4" aria-labelledby="relationship-explorer-title">
     <div className="flex items-center gap-2"><Network size={18} className="text-accent" aria-hidden="true" /><h2 id="relationship-explorer-title" className="m-0 text-base font-semibold text-primary-text">{t('admin.family_v2.relationship')}</h2></div>
@@ -210,15 +195,15 @@ export const RelationshipExplorer: React.FC<{ members: FamilyMember[]; initialMe
         {loading && <Loader2 size={16} className="animate-spin" aria-hidden="true" />}{t('admin.family_v2.view_relationship')}
       </Button>
       {error && <p role="alert" className="m-0 text-sm text-error">{t('admin.family_v2.relationship_error')} <button type="button" className="underline" onClick={() => void calculate()}>{t('admin.family_v2.retry')}</button></p>}
-      {result && <div className="family-explorer__result" aria-live="polite">
-        <p className="family-explorer__answer"><strong>{normalizeDisplayText(targetMember?.fullName)}</strong> {t('admin.family_v2.is_the')} <b>{t(`admin.family_v2.code_${relationshipKey}`, { defaultValue: resultStartsAtReference ? result.relationshipLabel : result.reverseRelationshipLabel })}</b> {t('admin.family_v2.of_the')} <strong>{normalizeDisplayText(sourceMember?.fullName)}</strong>.</p>
+      {presentation && <div className="family-explorer__result" aria-live="polite">
+        <p className="family-explorer__answer"><strong>{normalizeDisplayText(targetMember?.fullName)}</strong> {t('admin.family_v2.is_the')} <b>{t(`admin.family_v2.code_${presentation.code}`, { defaultValue: presentation.label })}</b> {t('admin.family_v2.of_the')} <strong>{normalizeDisplayText(sourceMember?.fullName)}</strong>.</p>
         {displayPath.length > 0 && <ol className={`family-explorer__path${verticalPath ? ' is-vertical' : ''}`}>
           {displayPath.map((node, index) => <React.Fragment key={`${node.memberId}-${index}`}>
             {index > 0 && <li aria-label={t(`admin.family_v2.edge_${(node.edge ?? 'related').toLowerCase()}`)} className="family-explorer__edge"><span aria-hidden="true">{verticalPath ? '↓' : '→'}</span><small>{t(`admin.family_v2.edge_${(node.edge ?? 'related').toLowerCase()}`)}</small></li>}
             <li className="list-none"><button type="button" className="family-explorer__step" onClick={() => navigate(`/mylife/family/member/${node.memberId}`)}><MemberAvatarImage member={members.find(item => item.id === node.memberId) ?? { id: node.memberId, fullName: node.fullName } as FamilyMember} alt="" className="family-relation-avatar"/>{normalizeDisplayText(node.fullName)}</button></li>
           </React.Fragment>)}
         </ol>}
-        {result.relationshipCode.toLowerCase() === 'unknown' && <p className="m-0 text-sm text-secondary-text">{t('admin.family_v2.no_relationship_path')}</p>}
+        {presentation.code === 'unknown' && <p className="m-0 text-sm text-secondary-text">{t('admin.family_v2.no_relationship_path')}</p>}
       </div>}
     </>}
   </section>;

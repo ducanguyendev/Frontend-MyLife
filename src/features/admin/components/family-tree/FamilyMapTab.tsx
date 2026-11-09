@@ -1,20 +1,20 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CircleMarker, MapContainer, Popup, Tooltip, useMap, useMapEvents } from 'react-leaflet';
 import { Link } from 'react-router-dom';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { ArrowUpRight, Layers3, Loader2, MapPin, Minus, Plus, RefreshCw, Search, Users } from 'lucide-react';
+import { ArrowUpRight, Layers3, Loader2, MapPin, RefreshCw, Search, Users } from 'lucide-react';
 import { Button, Modal, Select, SelectItem, PageHeader, Loading, ErrorState, EmptyState } from '@/shared/components/ui';
 import './FamilyMapTab.css';
 import { useLanguage } from '@/shared/hooks/useLanguage';
 import { getFamilyMapDistribution, retryFamilyMapGeocoding, updateFamilyMemberLocation, type FamilyMapData, type FamilyMapLocation, type FamilyMapMember } from '../../services/familyMapService';
 import { VietMapBaseLayer } from './VietMapBaseLayer';
-import { MapVisibilityResize } from './FamilyLocationMap';
+import { FamilyMapControls, MapVisibilityResize } from './FamilyLocationMap';
 
 const VIETNAM_CENTER: [number, number] = [16.2, 106.2];
 type ExplorerFilter = 'all' | 'located' | 'unlocated';
 
-const searchValue = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase().trim();
+const searchValue = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[đĐ]/g, 'd').toLocaleLowerCase().trim();
 
 function MapViewport({ locations, fitRequest, selected }: { locations: FamilyMapLocation[]; fitRequest: number; selected: FamilyMapLocation | null }) {
   const map = useMap();
@@ -43,29 +43,6 @@ function MapViewport({ locations, fitRequest, selected }: { locations: FamilyMap
     map.flyTo([selectedLatitude, selectedLongitude], Math.max(map.getZoom(), 12), { duration: 0.45 });
   }, [map, selectedKey, selectedLatitude, selectedLongitude]);
   return null;
-}
-
-function MapControls({ onFit, fitLabel, zoomInLabel, zoomOutLabel }: { onFit: () => void; fitLabel: string; zoomInLabel: string; zoomOutLabel: string }) {
-  const map = useMap();
-  const toolbarRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const toolbar = toolbarRef.current;
-    if (!toolbar) return;
-    L.DomEvent.disableClickPropagation(toolbar);
-    L.DomEvent.disableScrollPropagation(toolbar);
-    return () => { L.DomEvent.off(toolbar); };
-  }, []);
-  return <div ref={toolbarRef} className="family-map-controls" role="group" aria-label={fitLabel}>
-    <button type="button" aria-label={zoomInLabel} title={zoomInLabel} onClick={() => map.zoomIn()}><Plus size={17}/></button>
-    <button type="button" aria-label={zoomOutLabel} title={zoomOutLabel} onClick={() => map.zoomOut()}><Minus size={17}/></button>
-    <span className="family-map-controls__divider"/>
-    <button type="button" aria-label={fitLabel} title={fitLabel} onClick={onFit}><Layers3 size={17}/></button>
-  </div>;
-}
-
-function LocationEditorControls({ point, fitLabel, zoomInLabel, zoomOutLabel }: { point: [number, number] | null; fitLabel: string; zoomInLabel: string; zoomOutLabel: string }) {
-  const map = useMap();
-  return <MapControls onFit={() => map.setView(point ?? VIETNAM_CENTER, point ? 13 : 5)} fitLabel={fitLabel} zoomInLabel={zoomInLabel} zoomOutLabel={zoomOutLabel}/>;
 }
 
 function LocationPickerEvents({ point, onPick }: { point: [number, number] | null; onPick: (point: [number, number]) => void }) {
@@ -109,19 +86,22 @@ export const FamilyMapTab: React.FC = () => {
   }, [load]);
   useEffect(() => {
     if (!data?.pendingGeocodingMembers) return;
-    const timer = window.setInterval(() => void load(), 5000);
-    return () => window.clearInterval(timer);
+    const controller = new AbortController();
+    const timer = window.setInterval(() => void load(controller.signal), 5000);
+    return () => { controller.abort(); window.clearInterval(timer); };
   }, [data?.pendingGeocodingMembers, load]);
 
   const locations = data?.locations ?? [];
   const members = data?.members ?? [];
+  const memberById = useMemo(() => new Map((data?.members ?? []).map(member => [member.id, member])), [data?.members]);
   const selected = locations.find(location => location.key === selectedKey) ?? null;
   const unlocatedMembers = members.filter(member => !(typeof member.latitude === 'number' && typeof member.longitude === 'number'));
   const normalizedQuery = searchValue(query);
   const visibleLocations = locations.filter(location => {
     if (filter === 'unlocated') return false;
     if (!normalizedQuery) return true;
-    return searchValue(location.displayName).includes(normalizedQuery) || location.members.some(member => searchValue(member.fullName).includes(normalizedQuery));
+    return searchValue(location.displayName).includes(normalizedQuery) || location.members.some(member =>
+      searchValue(`${member.fullName} ${memberById.get(member.id)?.address ?? ''}`).includes(normalizedQuery));
   });
   const visibleUnlocated = unlocatedMembers.filter(member => {
     if (filter === 'located') return false;
@@ -189,8 +169,8 @@ export const FamilyMapTab: React.FC = () => {
       </aside>
       <section className="family-map-canvas" aria-label={t('admin.family_map.canvas_label')}>
         <MapContainer center={VIETNAM_CENTER} zoom={5} scrollWheelZoom zoomControl={false} className="family-distribution-map">
-          <VietMapBaseLayer/><MapViewport locations={locations} fitRequest={fitRequest} selected={selected}/>
-          <MapControls onFit={() => setFitRequest(value => value + 1)} fitLabel={t('admin.family_map.fit_all')} zoomInLabel={t('admin.family_map.zoom_in')} zoomOutLabel={t('admin.family_map.zoom_out')}/>
+          <VietMapBaseLayer/><MapVisibilityResize/><MapViewport locations={locations} fitRequest={fitRequest} selected={selected}/>
+          <FamilyMapControls onFit={() => setFitRequest(value => value + 1)}/>
           {locations.map(location => {
             const active = selectedKey === location.key;
             const radius = Math.min(22, Math.max(9, 8 + Math.sqrt(location.memberCount) * 2.5));
@@ -205,7 +185,7 @@ export const FamilyMapTab: React.FC = () => {
     </div>}
 
     <Modal isOpen={locationMember !== null} onClose={() => setLocationMember(null)} title={t('admin.family_map.adjust_location')} ariaLabel={t('admin.family_map.adjust_location')} maxWidth="full" className="family-location-modal" footer={<div className="flex w-full items-center justify-end gap-3"><Button type="button" variant="secondary" disabled={savingLocation} onClick={() => setLocationMember(null)}>{t('admin.cancel', { defaultValue: 'Cancel' })}</Button><Button type="button" variant="primary" disabled={!locationPoint || savingLocation} isLoading={savingLocation} onClick={() => void confirmLocation()}>{t('admin.family_map.confirm_location')}</Button></div>}>
-      {locationMember && <div className="family-location-modal__body"><aside className="family-location-modal__info"><Select aria-label={t('admin.family_map.member')} appearance="simple" value={String(locationMember.id)} onValueChange={value => { const member = members.find(item => item.id === Number(value)); if (member) openLocationPicker(member); }}>{members.map(member => <SelectItem key={member.id} value={String(member.id)}>{member.fullName} · {member.address || t('admin.family_map.no_address')}</SelectItem>)}</Select><p className="m-0 text-sm text-secondary-text">{t('admin.family_map.tap_map_to_pick')}</p><div><span className="text-xs font-semibold text-secondary-text">{t('admin.family_map.member')}</span><p className="m-0 font-medium text-primary-text">{locationMember.fullName}</p><p className="m-0 text-sm text-secondary-text">{locationMember.address || t('admin.family_map.no_address')}</p></div><div><span className="text-xs font-semibold text-secondary-text">{t('admin.family_map.selected_coordinates')}</span><p className="m-0 font-mono text-xs text-primary-text">{locationPoint ? `${locationPoint[0].toFixed(6)}, ${locationPoint[1].toFixed(6)}` : '—'}</p></div></aside><div className="family-location-modal__map"><MapContainer key={locationMember.id} center={locationPoint ?? VIETNAM_CENTER} zoom={locationPoint ? 13 : 5} scrollWheelZoom zoomControl={false} className="family-location-modal__leaflet"><VietMapBaseLayer/><LocationPickerEvents point={locationPoint} onPick={setLocationPoint}/><LocationEditorControls point={locationPoint} fitLabel={t('admin.family_map.fit_all')} zoomInLabel={t('admin.family_map.zoom_in')} zoomOutLabel={t('admin.family_map.zoom_out')}/></MapContainer></div></div>}
+      {locationMember && <div className="family-location-modal__body"><aside className="family-location-modal__info"><Select aria-label={t('admin.family_map.member')} appearance="simple" value={String(locationMember.id)} onValueChange={value => { const member = members.find(item => item.id === Number(value)); if (member) openLocationPicker(member); }}>{members.map(member => <SelectItem key={member.id} value={String(member.id)}>{member.fullName} · {member.address || t('admin.family_map.no_address')}</SelectItem>)}</Select><p className="m-0 text-sm text-secondary-text">{t('admin.family_map.tap_map_to_pick')}</p><div><span className="text-xs font-semibold text-secondary-text">{t('admin.family_map.member')}</span><p className="m-0 font-medium text-primary-text">{locationMember.fullName}</p><p className="m-0 text-sm text-secondary-text">{locationMember.address || t('admin.family_map.no_address')}</p></div><div><span className="text-xs font-semibold text-secondary-text">{t('admin.family_map.selected_coordinates')}</span><p className="m-0 font-mono text-xs text-primary-text">{locationPoint ? `${locationPoint[0].toFixed(6)}, ${locationPoint[1].toFixed(6)}` : '—'}</p></div></aside><div className="family-location-modal__map"><MapContainer key={locationMember.id} center={locationPoint ?? VIETNAM_CENTER} zoom={locationPoint ? 13 : 5} scrollWheelZoom zoomControl={false} className="family-location-modal__leaflet"><VietMapBaseLayer/><LocationPickerEvents point={locationPoint} onPick={setLocationPoint}/><FamilyMapControls onFit={map => map.setView(locationPoint ?? VIETNAM_CENTER, locationPoint ? 13 : 5)}/></MapContainer></div></div>}
     </Modal>
   </div>;
 };
