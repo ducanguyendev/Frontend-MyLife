@@ -17,7 +17,7 @@ const logs=[
   {id:105,attemptEmail:'long.address.for.admin.layout.review.with.multiple.parts.and.extra.characters@example.test',status:'SUCCESS',ipAddress:'2001:db8:1234:5678:abcd:abcd:abcd:abcd',createdAt:'2026-11-09T11:00:00Z'},
 ];
 const stats=records=>({totalUsers:records.length,totalActive:records.filter(user=>user.isActive).length,totalLocked:records.filter(user=>!user.isActive).length,last7Days:{successLogins:24,failedLogins:3,newRegistrations:2}});
-const directory=()=>{const dir=path.resolve('docs/review-w8');fs.mkdirSync(dir,{recursive:true});return dir;};
+const directory=()=>{const dir=path.resolve(process.env.MYLIFE_REVIEW_DIR||'docs/review-w8');fs.mkdirSync(dir,{recursive:true});return dir;};
 const deferred=()=>{let resolve;const promise=new Promise(done=>{resolve=done;});return{promise,resolve};};
 async function adminPage(browser,{width=1440,height=1000,theme='light',language='vi',role='ADMIN',anonymous=false}={}){
   const page=await browser.newPage();page.setDefaultTimeout(15000);await page.setViewport({width,height});

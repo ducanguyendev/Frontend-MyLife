@@ -109,7 +109,7 @@ test('VI/EN Admin labels resolve with no missing keys or raw interpolation',asyn
   const keys=Object.keys(resources.vi.translation.admin.console);assert.deepEqual(keys.sort(),Object.keys(resources.en.translation.admin.console).sort());
   for(const language of['vi','en']){
     const i18n=i18next.createInstance();await i18n.init({lng:language,resources,fallbackLng:false});
-    for(const key of keys){const translated=i18n.t('admin.console.'+key,{email:'fixture@example.test',shown:2,total:6,active:4,locked:2});assert.notEqual(translated,'admin.console.'+key);assert.ok(!translated.includes('{{'),key);}
+    for(const key of keys){const translated=i18n.t('admin.console.'+key,{email:'fixture@example.test',count:6,shown:2,total:6,active:4,locked:2});assert.notEqual(translated,'admin.console.'+key);assert.ok(!translated.includes('{{'),key);}
   }
 });
 

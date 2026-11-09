@@ -53,7 +53,7 @@ async function main(){
     });
     for(const failed of['stats','users','logs'])await scenario(failed+' failure is isolated; section retry restores data',async()=>{
       const{page,state,go}=await adminPage(browser);current=page;state.readFailures[failed]=503;await go();await page.waitForSelector('.admin-console');await settle(page);
-      if(failed!=='stats')assert.equal(await page.$$eval('.admin-kpi',els=>els.length),6);
+      if(failed!=='stats')assert.equal(await page.$$eval('.admin-kpi',els=>els.length),3);
       await tab(page,1);if(failed!=='users')assert.equal(await page.$$eval('[data-admin-user]',els=>els.length),6);
       await tab(page,2);if(failed!=='logs')assert.equal(await page.$$eval('[data-admin-log]',els=>els.length),5);
       await tab(page,failed==='stats'?0:failed==='users'?1:2);await page.waitForSelector('.admin-console__panel:not([hidden]) .ds-feedback--error');
@@ -63,7 +63,7 @@ async function main(){
       const reads=state.reads.length;await page.waitForNetworkIdle({idleTime:400,timeout:5000});assert.equal(state.reads.length,reads,'no request loop');assert.deepEqual(state.errors,[]);await page.close();
     });
     await scenario('independent loading and empty responses',async()=>{
-      const{page,state,go}=await adminPage(browser);current=page;const gate=deferred();state.readGates.stats=gate.promise;await go();await page.waitForSelector('.admin-stat-skeleton');assert.equal(await page.$$eval('.admin-stat-skeleton',els=>els.length),6);
+      const{page,state,go}=await adminPage(browser);current=page;const gate=deferred();state.readGates.stats=gate.promise;await go();await page.waitForSelector('.admin-stat-skeleton');assert.equal(await page.$$eval('.admin-stat-skeleton',els=>els.length),3);
       await tab(page,1);await page.waitForSelector('[data-admin-user]',{visible:true});assert.equal(await page.$$eval('[data-admin-user]',els=>els.length),6);
       await tab(page,2);assert.equal(await page.$$eval('[data-admin-log]',els=>els.length),5);gate.resolve();await settle(page);
       state.users=[];state.logs=[];await page.click('.admin-console .ds-page-header button');await settle(page);await tab(page,0);

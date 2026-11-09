@@ -1,19 +1,12 @@
 import { useMemo, useState } from 'react';
 import { Globe, Loader2, LockKeyhole, Mail, Trash2, UnlockKeyhole } from 'lucide-react';
-import { authService } from '@/features/auth/services/authService';
 import { EmptyState, ErrorState, IconButton, Loading, StatusPill } from '@/design-system';
 import { Button, Select, SelectItem } from '@/shared/components/ui';
 import { SearchBar } from '@/shared/components/SearchBar';
 import { useLanguage } from '@/shared/hooks/useLanguage';
 import { adminErrorKey, loginProvider, selectAdminUsers, type AdminUser, type UserRoleFilter, type UserSort, type UserStatusFilter } from '../../services/adminConsoleService';
 import type { AdminAction, AdminResource } from '../../hooks/useAdminConsole';
-import { AdminResourceWarning, AdminSortHeading, AdminTable, formatAdminDate } from './AdminShared';
-
-function UserAvatar({ user }: { user: AdminUser }) {
-  const [failedSource, setFailedSource] = useState<string | null>(null);
-  const source = user.avatarUrl && user.avatarUrl !== 'none' ? authService.getDisplayAvatarUrl(user.avatarUrl, user.email) : authService.getAvatarUrl(user.email);
-  return <span className="admin-user-avatar" aria-hidden="true">{source && failedSource !== source ? <img src={source} alt="" referrerPolicy="no-referrer" onError={() => setFailedSource(source)}/> : user.email.slice(0, 2).toLocaleUpperCase()}</span>;
-}
+import { AdminResourceWarning, AdminSortHeading, AdminTable, AdminUserAvatar, formatAdminDate } from './AdminShared';
 export function AdminUsers({ resource, currentUserId, pending, retry, onRole, onStatus, onDelete }: {
   resource: AdminResource<AdminUser[]>; currentUserId?: number; pending: ReadonlyMap<number, AdminAction>; retry: () => void;
   onRole: (user: AdminUser, role: AdminUser['role']) => void; onStatus: (user: AdminUser) => void; onDelete: (user: AdminUser) => void;
@@ -42,12 +35,12 @@ export function AdminUsers({ resource, currentUserId, pending, retry, onRole, on
       </tr></thead><tbody>{filtered.map(user => {
         const busy = pending.has(user.id), provider = loginProvider(user), isSelf = currentUserId === user.id;
         return <tr key={user.id} data-admin-user={user.id} aria-busy={busy || undefined}>
-          <td><div className="admin-user-identity"><UserAvatar user={user}/><div><span className="admin-user-email" title={user.email}>{user.email}</span>{isSelf && <small>{t('admin.console.you')}</small>}</div></div></td>
-          <td><div className="admin-role-control"><Select value={user.role} disabled={busy || isSelf} onValueChange={value => { if (value === 'USER' || value === 'ADMIN') onRole(user, value); }} variant="compact" aria-label={t('admin.console.change_role', { email: user.email })}><SelectItem value="USER">User</SelectItem><SelectItem value="ADMIN">Admin</SelectItem></Select>{pending.get(user.id) === 'role' && <span role="status" aria-label={t('admin.console.updating')}><Loader2 size={15} className="animate-spin" aria-hidden="true"/></span>}</div></td>
-          <td><span className="admin-provider">{provider === 'email' ? <Mail size={14} aria-hidden="true"/> : <Globe size={14} aria-hidden="true"/>}{provider === 'unknown' && user.authProviderName ? user.authProviderName : t(`admin.console.provider_${provider}`)}</span></td>
-          <td><StatusPill tone={user.isActive ? 'success' : 'danger'}>{t(user.isActive ? 'admin.console.active' : 'admin.console.locked')}</StatusPill></td>
-          <td><time dateTime={Number.isFinite(Date.parse(user.createdAt ?? '')) ? user.createdAt : undefined}>{formatAdminDate(user.createdAt, language)}</time></td>
-          <td><div className="admin-row-actions">{user.role !== 'ADMIN' && <><IconButton variant="ghost" label={t(user.isActive ? 'admin.console.lock_user' : 'admin.console.unlock_user', { email: user.email })} disabled={busy || isSelf} onClick={() => onStatus(user)}>{pending.get(user.id) === 'status' ? <Loader2 size={17} className="animate-spin"/> : user.isActive ? <LockKeyhole size={17}/> : <UnlockKeyhole size={17}/>}</IconButton><IconButton variant="ghost" label={t('admin.console.delete_user', { email: user.email })} disabled={busy || isSelf} onClick={() => onDelete(user)}><Trash2 size={17}/></IconButton></>}{user.role === 'ADMIN' && <span className="admin-protected-label">{t('admin.console.protected_account')}</span>}</div></td>
+          <td className="admin-cell--identity"><div className="admin-user-identity"><AdminUserAvatar user={user}/><div><span className="admin-user-email" title={user.email}>{user.email}</span>{isSelf && <small>{t('admin.console.you')}</small>}</div></div></td>
+          <td className="admin-cell--role"><span className="admin-cell-label" aria-hidden="true">{t('admin.col_role')}</span><div className="admin-role-control"><Select value={user.role} disabled={busy || isSelf} onValueChange={value => { if (value === 'USER' || value === 'ADMIN') onRole(user, value); }} variant="compact" aria-label={t('admin.console.change_role', { email: user.email })}><SelectItem value="USER">User</SelectItem><SelectItem value="ADMIN">Admin</SelectItem></Select>{pending.get(user.id) === 'role' && <span role="status" aria-label={t('admin.console.updating')}><Loader2 size={15} className="animate-spin" aria-hidden="true"/></span>}</div></td>
+          <td className="admin-cell--provider"><span className="admin-cell-label" aria-hidden="true">{t('admin.console.login_provider')}</span><span className="admin-provider">{provider === 'email' ? <Mail size={14} aria-hidden="true"/> : <Globe size={14} aria-hidden="true"/>}{provider === 'unknown' && user.authProviderName ? user.authProviderName : t(`admin.console.provider_${provider}`)}</span></td>
+          <td className="admin-cell--status"><span className="admin-cell-label" aria-hidden="true">{t('admin.col_status')}</span><StatusPill tone={user.isActive ? 'success' : 'danger'}>{t(user.isActive ? 'admin.console.active' : 'admin.console.locked')}</StatusPill></td>
+          <td className="admin-cell--date"><span className="admin-cell-label" aria-hidden="true">{t('admin.console.created_date')}</span><time dateTime={Number.isFinite(Date.parse(user.createdAt ?? '')) ? user.createdAt : undefined}>{formatAdminDate(user.createdAt, language)}</time></td>
+          <td className="admin-cell--actions"><span className="admin-cell-label" aria-hidden="true">{t('admin.col_action')}</span><div className="admin-row-actions">{user.role !== 'ADMIN' && <><IconButton variant="ghost" label={t(user.isActive ? 'admin.console.lock_user' : 'admin.console.unlock_user', { email: user.email })} disabled={busy || isSelf} onClick={() => onStatus(user)}>{pending.get(user.id) === 'status' ? <Loader2 size={17} className="animate-spin"/> : user.isActive ? <LockKeyhole size={17}/> : <UnlockKeyhole size={17}/>}</IconButton><IconButton variant="ghost" label={t('admin.console.delete_user', { email: user.email })} disabled={busy || isSelf} onClick={() => onDelete(user)}><Trash2 size={17}/></IconButton></>}{user.role === 'ADMIN' && <span className="admin-protected-label">{t('admin.console.protected_account')}</span>}</div></td>
         </tr>;
       })}</tbody></table></AdminTable>}
   </div>;
