@@ -1,7 +1,9 @@
-import React from 'react';
-import { Search } from 'lucide-react';
+import React, { useRef } from 'react';
+import { X } from 'lucide-react';
+import { SearchInput } from '@/design-system/components/Controls';
 
 export interface SearchBarProps {
+  clearLabel?: string;
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
@@ -15,7 +17,7 @@ export interface SearchBarProps {
 
 /** Shared keyword search field. Layout width is controlled by its parent. */
 export const SearchBar: React.FC<SearchBarProps> = ({
-  value,
+  value, clearLabel,
   onChange,
   placeholder,
   disabled = false,
@@ -24,24 +26,21 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   id,
   name,
   autoFocus = false,
-}) => (
-  <div className={`relative w-full ${className}`.trim()}>
-    <Search
-      aria-hidden="true"
-      className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-secondary-text"
-      size={16}
-    />
-    <input
+}) => {
+  const inputRef = useRef<HTMLInputElement>(null);
+  return (
+    <SearchInput
+      ref={inputRef}
+      rightIcon={value && clearLabel ? <button type="button" disabled={disabled} aria-label={clearLabel} title={clearLabel} className="family-search-clear" onClick={() => { onChange(''); inputRef.current?.focus(); }}><X size={16}/></button> : undefined}
       id={id}
       name={name}
-      type="text"
       value={value}
       onChange={event => onChange(event.target.value)}
       placeholder={placeholder}
       aria-label={ariaLabel ?? placeholder}
       autoFocus={autoFocus}
       disabled={disabled}
-      className="w-full rounded-xl border border-custom-border bg-secondary-bg py-2 pl-9 pr-4 text-sm text-primary-text shadow-sm transition-colors placeholder:text-secondary-text/60 focus-visible:border-[var(--focus-border)]    disabled:cursor-not-allowed disabled:opacity-50"
+      containerClassName={className}
     />
-  </div>
 );
+};

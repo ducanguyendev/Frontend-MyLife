@@ -23,7 +23,7 @@
   "notFound": "Not Found",
   "notFoundDesc": "The page you are looking for doesn't exist or has been moved to another editorial section.",
   "btnBackHome": "Return Home",
-  "logo": "NGUYEN DUC",
+  "logo": "MyLife",
   "login": "Login",
   "loginDesc": "Enter your account credentials to continue.",
   "email": "Email",
@@ -70,6 +70,7 @@
     "accountLevel": "Account role:",
     "statusActive": "Active",
     "deletePhoto": "Remove photo",
+    "uploadPhoto": "Change profile photo",
     "switchAccount": "Switch account",
     "logout": "Log out",
     "googleAuthTitle": "Google OAuth Account",
@@ -127,10 +128,10 @@
   },
   "name": "NGUYEN DUC",
   "seo": {
-    "title": "NGUYEN DUC | Premium UI/UX & Graphic Designer Portfolio",
-    "desc": "Welcome to the premium portfolio of NGUYEN DUC. Explore minimal luxury UI/UX designs and high-quality graphic works.",
-    "ogTitle": "NGUYEN DUC | Personal Portfolio",
-    "ogDesc": "Discover fine editorial graphic layouts and minimal elegant interface designs by NGUYEN DUC."
+    "title": "MyLife — Living Family Archive",
+    "desc": "Connect generations and preserve your family's story with MyLife: family trees, timelines, anniversaries, photo albums, and the places that bring us together.",
+    "ogTitle": "MyLife — Living Family Archive",
+    "ogDesc": "Connect generations and preserve your family's story with MyLife: family trees, timelines, anniversaries, photo albums, and the places that bring us together."
   },
   "stats": {
     "projects": "Projects Completed",

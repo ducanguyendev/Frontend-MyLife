@@ -1,0 +1,54 @@
+import { normalizeDisplayText } from '@/shared/utils/normalizeDisplayText';
+import { useEffect } from 'react';
+import { ChevronLeft, ChevronRight, ExternalLink, Pencil, Trash2, X } from 'lucide-react';
+import { Button, IconButton, Modal } from '@/shared/components/ui';
+import { useLanguage } from '@/shared/hooks/useLanguage';
+import type { LibraryPhoto } from '@/features/admin/components/family-tree/types';
+import { LibraryImage, libraryOriginalUrl } from '@/features/admin/components/family-tree/LibraryImage';
+import './Memories.css';
+
+interface Props {
+  photo: LibraryPhoto | null;
+  photos?: LibraryPhoto[];
+  onClose: () => void;
+  onEdit?: (photo: LibraryPhoto) => void;
+  onDelete?: (photo: LibraryPhoto) => void;
+  onNavigate?: (photo: LibraryPhoto) => void;
+}
+
+export function LibraryLightbox({ photo, photos = [], onClose, onEdit, onDelete, onNavigate }: Props) {
+  const { t } = useLanguage();
+  const index = photos.findIndex(item => item.id === photo?.id);
+  const canNavigate = Boolean(onNavigate && photos.length > 1 && index >= 0);
+  const navigate = (delta: number) => { if (canNavigate) onNavigate?.(photos[(index + delta + photos.length) % photos.length]); };
+  useEffect(() => {
+    if (!photo || !canNavigate) return;
+    const keyboard = (event: KeyboardEvent) => {
+      if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+      event.preventDefault(); onNavigate?.(photos[(index + (event.key === 'ArrowRight' ? 1 : -1) + photos.length) % photos.length]);
+    };
+    window.addEventListener('keydown', keyboard);
+    return () => window.removeEventListener('keydown', keyboard);
+  }, [photo, canNavigate, index, photos, onNavigate]);
+  if (!photo) return null;
+  return <Modal isOpen onClose={onClose} showTitle={false} hideCloseButton ariaLabel={normalizeDisplayText(photo.title)} maxWidth="full" className="memory-lightbox">
+    <div className="library-lightbox-layout">
+      <IconButton variant="secondary" label={t('admin.library_ui.close')} className="library-lightbox__close" onClick={onClose}><X size={20}/></IconButton>
+      <div className="library-lightbox__image-pane">
+        <LibraryImage photoId={photo.id} variant="lightbox" url={photo.url} driveFileId={photo.driveFileId} alt={normalizeDisplayText(photo.title)} className="library-lightbox__image"/>
+        {canNavigate && <><IconButton variant="ghost" className="library-lightbox__previous" label={t('memories.previousPhoto')} onClick={() => navigate(-1)}><ChevronLeft size={23}/></IconButton><IconButton variant="ghost" className="library-lightbox__next" label={t('memories.nextPhoto')} onClick={() => navigate(1)}><ChevronRight size={23}/></IconButton><span className="library-lightbox__position" aria-live="polite">{index + 1} / {photos.length}</span></>}
+      </div>
+      <aside className="library-lightbox__metadata">
+        <p className="library-lightbox__eyebrow">{t('memories.photoDetails')}</p><h2>{normalizeDisplayText(photo.title)}</h2>
+        {photo.year && <p className="library-lightbox__date">{photo.year}</p>}
+        {photo.author && <div><h3>{t('admin.library_ui.field_author')}</h3><p>{photo.author}</p></div>}
+        {photo.desc && <div className="library-lightbox__description"><h3>{t('admin.library_ui.field_description')}</h3><p>{photo.desc}</p></div>}
+        <div className="library-lightbox__actions">
+          {onEdit && <Button variant="secondary" leftIcon={<Pencil size={15}/>} onClick={() => onEdit(photo)}>{t('admin.library_ui.edit_photo')}</Button>}
+          <Button variant="ghost" leftIcon={<ExternalLink size={15}/>} onClick={() => window.open(libraryOriginalUrl(photo.url, photo.driveFileId), '_blank', 'noopener,noreferrer')}>{t('admin.library_ui.open_original')}</Button>
+          {onDelete && <Button variant="ghost" size="sm" leftIcon={<Trash2 size={14}/>} onClick={() => onDelete(photo)}>{t('admin.library_ui.delete')}</Button>}
+        </div>
+      </aside>
+    </div>
+  </Modal>;
+}

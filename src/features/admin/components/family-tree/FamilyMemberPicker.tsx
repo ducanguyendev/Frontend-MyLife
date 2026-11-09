@@ -1,5 +1,8 @@
+import { FloatingField } from '@/shared/components/ui/FloatingField';
+import { normalizeDisplayText } from '@/shared/utils/normalizeDisplayText';
 import React, { useCallback, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { MemberAvatarImage } from './MemberAvatarImage';
 import { ChevronDown } from "lucide-react";
 
 export interface FamilyMemberPickerOption {
@@ -7,6 +10,9 @@ export interface FamilyMemberPickerOption {
   fullName: string;
   generation: number;
   gender?: string;
+  avatarUrl?: string;
+  hasManagedAvatar?: boolean;
+  updatedAt?: string;
 }
 
 export interface FamilyMemberPickerProps {
@@ -23,11 +29,12 @@ export const FamilyMemberPicker: React.FC<FamilyMemberPickerProps> = ({
   options,
   placeholder,
   onSelect,
-  generationLabel,
+  generationLabel: _generationLabel,
   disabled = false,
   ariaLabel,
   emptyMessage,
 }) => {
+  void _generationLabel;
   const popupId = useId();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const popupRef = useRef<HTMLDivElement>(null);
@@ -133,11 +140,11 @@ export const FamilyMemberPicker: React.FC<FamilyMemberPickerProps> = ({
           choose(activeIndex);
         } else if (event.key === "Escape" || event.key === "Tab") {
           event.preventDefault();
-          if (event.key === "Escape") close(true);
+          if (event.key === "Escape") { event.stopPropagation(); close(true); }
           else closeAndMoveFocus(event.shiftKey);
         }
       }}
-      className="overflow-y-auto rounded-2xl border border-custom-border bg-secondary-bg p-1.5 text-primary-text shadow-xl outline-none"
+      className="ds-field-menu"
     >
       {options.map((option, index) => (
         <div
@@ -148,10 +155,12 @@ export const FamilyMemberPicker: React.FC<FamilyMemberPickerProps> = ({
           aria-selected={false}
           onMouseMove={() => setActiveIndex(index)}
           onClick={() => choose(index)}
-          className={`flex min-h-10 cursor-pointer select-none items-center rounded-xl px-3 py-2 text-sm text-primary-text outline-none ${activeIndex === index ? "bg-accent/10" : ""}`}
+          data-active={activeIndex === index}
+          className={`ds-field-option flex min-h-10 cursor-pointer select-none items-center rounded-xl px-3 py-2 text-sm text-primary-text outline-none ${activeIndex === index ? "bg-accent/10" : ""}`}
         >
-          <span className="min-w-0 flex-1 truncate">
-            {option.fullName} ({generationLabel} {option.generation}{option.gender ? ` • ${option.gender}` : ""})
+          <MemberAvatarImage member={{ ...option, updatedAt: option.updatedAt ?? '' }} alt="" className="mr-2 h-8 w-8 shrink-0 rounded-full object-cover"/>
+          <span className="min-w-0 flex-1 whitespace-normal break-words">
+            {normalizeDisplayText(option.fullName)}
           </span>
         </div>
       ))}
@@ -161,6 +170,7 @@ export const FamilyMemberPicker: React.FC<FamilyMemberPickerProps> = ({
 
   return (
     <div className="flex w-full flex-col">
+      <FloatingField label={placeholder} fieldId={`${popupId}-trigger`} active={open} hasValue={false} disabled={disabled || options.length === 0} trailing={<ChevronDown size={18} aria-hidden="true"/>}>
       <button
         ref={triggerRef}
         type="button"
@@ -176,11 +186,13 @@ export const FamilyMemberPicker: React.FC<FamilyMemberPickerProps> = ({
             openPopup();
           }
         }}
-        className="flex min-h-[56px] w-full items-center justify-between gap-2 rounded-2xl border border-custom-border bg-primary-bg px-4 py-3 text-left text-sm font-medium text-secondary-text outline-none transition-all hover:border-custom-border/80 focus:border-[var(--focus-border)]   disabled:cursor-not-allowed disabled:opacity-50"
+        data-ui-control
+        id={`${popupId}-trigger`}
       >
-        <span className="min-w-0 flex-1 truncate">{placeholder}</span>
-        <ChevronDown size={18} aria-hidden="true" className="shrink-0 text-secondary-text" />
+        <span className="min-w-0 flex-1" aria-hidden="true">&nbsp;</span>
+
       </button>
+      </FloatingField>
       {options.length === 0 && emptyMessage && (
         <p className="mt-1 px-1 text-xs italic text-secondary-text">{emptyMessage}</p>
       )}

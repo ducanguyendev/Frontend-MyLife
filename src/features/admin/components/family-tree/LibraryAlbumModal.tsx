@@ -1,3 +1,5 @@
+import { Images } from 'lucide-react';
+import { FormSectionHeader } from '@/shared/components/ui/FormSectionHeader';
 import { useState } from 'react';
 import { useLanguage } from '@/shared/hooks/useLanguage';
 import { Button, Modal } from '@/shared/components/ui';
@@ -22,9 +24,10 @@ export function LibraryAlbumModal({ album, onClose, onSubmit }: {
     catch (failure) { setError(getFeatureErrorKey(failure, 'album_save')); }
     finally { setIsSaving(false); }
   };
-  return <Modal isOpen onClose={() => { if (!isSaving) onClose(); }} maxWidth="md"
+  return <Modal className="memory-form memory-form--library" isOpen onClose={() => { if (!isSaving) onClose(); }} maxWidth="md"
     closeOnBackdropClick={!isSaving} closeOnEsc={!isSaving} title={t(album ? 'admin.library_ui.edit_album' : 'admin.library_ui.create_album')}>
     <form onSubmit={submit} noValidate className="space-y-4">
+<FormSectionHeader title={t('admin.library_ui.field_album_name')} icon={<Images size={16} aria-hidden="true"/>}/>
       <LibraryTextField label={t('admin.library_ui.field_album_name')} maxLength={150} value={name} disabled={isSaving} onChange={e => setName(e.target.value)} />
       <LibraryTextArea label={t('admin.library_ui.field_description')} rows={3} maxLength={2000} value={description} disabled={isSaving} onChange={e => setDescription(e.target.value)} />
       {error && <p role="alert" className="text-sm text-error">{t(error)}</p>}

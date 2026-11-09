@@ -58,7 +58,7 @@ for (const roles of [['ADMIN'], ['USER']]) {
     if (state.isUser) assert.equal(tree.props.children, 'FamilyTreeChild');
     else { assert.equal(tree.type, 'Navigate'); assert.equal(tree.props.to, '/Home/Admin'); assert.equal(tree.props.children, undefined); }
     const Menu = load('src/features/auth/components/UserMenu.tsx', mocks).UserMenu;
-    find(h.render(Menu), node => node.props?.['aria-label'] === 'User profile menu').onClick();
+    find(h.render(Menu), node => node.props?.['aria-label'] === 'appShell.profileMenu').onClick();
     const menu = h.render(Menu);
     const familyButtons = nodes(menu).filter(node => node.type === 'button' && nodes(node).some(child => child.props?.children === 'admin.family_tree'));
     assert.equal(familyButtons.length, 0);
@@ -103,8 +103,8 @@ test('AuthProvider uses exclusive server business role; ADMIN never implies USER
 
 test('workspace canonical routes use USER guard, legacy FamilyTree paths redirect, and admin dashboard has no FamilyTree mount', () => {
   const app = readFileSync(join(__dirname, '../src/App.tsx'), 'utf8');
-  assert.equal((app.match(/<ProtectedRoute requiredRole="USER">/g) || []).length, 5);
-  for (const route of ['/mylife', '/familytree', '/anniversaries', '/library', '/map']) {
+
+  for (const route of ['/mylife', '/familytree', '/anniversaries', '/library', '/map', '/timeline', '/mylife/family/member/:id']) {
     const at = app.indexOf('path="' + route + '"'); assert.ok(at >= 0);
     assert.ok(app.slice(at, app.indexOf('</ProtectedRoute>', at)).includes('requiredRole="USER"'));
   }

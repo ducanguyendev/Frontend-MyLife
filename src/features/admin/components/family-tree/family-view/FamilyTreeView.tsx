@@ -1,9 +1,14 @@
+import { fitTreeContent } from '../treeViewportFit';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Download, Expand, Focus, GitBranch, Shrink, ZoomIn, ZoomOut } from "lucide-react";
 import { toPng } from "html-to-image";
 import { AnimatePresence, useReducedMotion } from "framer-motion";
 import { useLanguage } from "@/shared/hooks/useLanguage";
-import { buildFamilyTreeIndex, getHiddenDescendantCount, getRelatedFamilyMemberIds, getVisibleFamilyMembers } from "../familyTreeAdapter";
+import { buildFamilyTreeIndex, getHiddenDescendantCount, getVisibleFamilyMembers } from "../familyTreeAdapter";
+import { buildFamilyRelationshipGraph, getAncestralLineageHighlight, getBranchSemanticEdgeIds, getHighlightedRenderSegmentIds } from '../familyTreeHighlight';
+import { FamilyTreeBackdrop } from '../FamilyTreeBackdrop';
+import { FamilyTreeSelectionSummary } from '../FamilyTreeSelectionSummary';
+import { withTreeSvgStyles } from '../treeSvgExport';
 import type { FamilyMember } from "../types";
 import { FamilyBranch } from "./FamilyBranch";
 import { FamilyPersonCard } from "./FamilyPersonCard";
@@ -33,59 +38,99 @@ export const FamilyTreeView: React.FC<FamilyTreeViewProps> = ({ members, searchF
   const [focusedMemberId, setFocusedMemberId] = useState<number | null>(null);
   const [branchMemberId, setBranchMemberId] = useState<number | null>(null);
   const focusedMemberIdRef = useRef<number | null>(focusedMemberId);
+  const previousSearchIdRef = useRef<number | null | undefined>(null);
   const [focusHistory, setFocusHistory] = useState<number[]>([]);
   const [expandedIds, setExpandedIds] = useState<Set<number>>(() => new Set());
   const [showExtendedRelations, setShowExtendedRelations] = useState(false);
-  const [hoveredMemberId, setHoveredMemberId] = useState<number | null>(null);
+  const [highlightMode, setHighlightMode] = useState<'lineage' | 'branch'>('lineage');
+  const highlightModeRef = useRef(highlightMode);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [transform, setTransform] = useState<ViewTransform>({ x: 0, y: 0, scale: 1 });
 
-  const treeMembers = useMemo(() => generationFilterId == null ? members : members.filter(member => member.generation === generationFilterId), [members, generationFilterId]);
+  const graph = useMemo(() => buildFamilyRelationshipGraph(members), [members]);
+  const requiredSelectionIds = useMemo(() => focusedMemberId == null || highlightMode !== 'lineage'
+    ? new Set<number>() : getAncestralLineageHighlight(graph, focusedMemberId).highlightedNodeIds, [graph, focusedMemberId, highlightMode]);
+  // A selected person's verified lineage and siblings stay visible across a generation filter.
+  const treeMembers = useMemo(() => generationFilterId == null ? members : members.filter(member => member.generation === generationFilterId || requiredSelectionIds.has(member.id)), [members, generationFilterId, requiredSelectionIds]);
   const treeIndex = useMemo(() => buildFamilyTreeIndex(treeMembers), [treeMembers]);
   const visibleMembers = useMemo(() => branchMemberId == null
     ? treeMembers
     : getVisibleFamilyMembers(treeMembers, branchMemberId, expandedIds, false, treeIndex), [treeMembers, branchMemberId, expandedIds, treeIndex]);
   const visibleIds = useMemo(() => new Set(visibleMembers.map(member => member.id)), [visibleMembers]);
-  const hiddenCounts = useMemo(() => new Map(visibleMembers.map(member => [member.id, getHiddenDescendantCount(member, treeIndex, visibleIds)])), [visibleMembers, treeIndex, visibleIds]);
+  const hiddenCounts = useMemo(() => new Map(visibleMembers.map(member => {
+    // Expansion reveals immediate children. Show the control at the visible frontier,
+    // rather than on ancestors whose direct children are already on the canvas.
+    const canRevealChildren = [...(treeIndex.childrenByParent.get(member.id) ?? [])].some(id => !visibleIds.has(id));
+    return [member.id, canRevealChildren ? getHiddenDescendantCount(member, treeIndex, visibleIds) : 0];
+  })), [visibleMembers, treeIndex, visibleIds]);
   const layout = useMemo(() => layoutFamilyView(visibleMembers, showExtendedRelations), [visibleMembers, showExtendedRelations]);
-  const activeMemberId = hoveredMemberId ?? focusedMemberId;
-  const relatedMemberIds = useMemo(() => getRelatedFamilyMemberIds(treeMembers, activeMemberId, showExtendedRelations), [treeMembers, activeMemberId, showExtendedRelations]);
+  // Hover is local card feedback; only a deliberate selection activates the graph focus.
+  const activeMemberId = focusedMemberId;
+  const lineageHighlight = useMemo(() => getAncestralLineageHighlight(graph, focusedMemberId, layout.links), [graph, focusedMemberId, layout.links]);
+  const relatedMemberIds = highlightMode === 'branch' ? visibleIds : lineageHighlight.highlightedNodeIds;
+  const highlightedSegmentIds = useMemo(() => highlightMode === 'branch'
+    ? getHighlightedRenderSegmentIds(layout.links, getBranchSemanticEdgeIds(graph, visibleIds))
+    : lineageHighlight.highlightedRenderSegmentIds, [highlightMode, graph, visibleIds, layout.links, lineageHighlight]);
 
-  const fitView = useCallback((animate = true) => {
+  const fitView = useCallback((animate = true, contain = false) => {
     const viewport = viewportRef.current;
     if (!viewport || !layout.width || !layout.height) return;
     const bounds = viewport.getBoundingClientRect();
     const toolbarHeight = shellRef.current?.querySelector(".family-tree-view__toolbar")?.getBoundingClientRect().height ?? 64;
-    const availableHeight = Math.max(160, bounds.height - toolbarHeight - 34);
-    const fitScale = Math.min((bounds.width - 48) / layout.width, availableHeight / layout.height, 1);
-    const scale = clampScale(fitScale);
-    const focusCenterX = layout.width / 2;
-    const contentCenterY = (Math.min(...layout.nodes.map(node => node.y)) + Math.max(...layout.nodes.map(node => node.y + node.height))) / 2;
-    const viewportCenterY = toolbarHeight + availableHeight / 2;
+    const fitted = fitTreeContent(layout.nodes, bounds, toolbarHeight, !contain);
+    if (!fitted) return;
     if (!animate || reduceMotion) {
       viewport.classList.add("is-still");
       requestAnimationFrame(() => requestAnimationFrame(() => viewport.classList.remove("is-still")));
     } else viewport.classList.remove("is-still");
-    setTransform({ x: bounds.width / 2 - focusCenterX * scale, y: viewportCenterY - contentCenterY * scale, scale });
-  }, [layout.width, layout.height, reduceMotion]);
+    setTransform(fitted);
+  }, [layout.width, layout.height, layout.nodes, reduceMotion]);
+  const focusSelectedLineage = useCallback((animate = true) => {
+    const viewport = viewportRef.current;
+    const selectedId = focusedMemberIdRef.current;
+    if (!viewport || selectedId == null) return;
+    const bounds = viewport.getBoundingClientRect();
+    const toolbarHeight = shellRef.current?.querySelector(".family-tree-view__toolbar")?.getBoundingClientRect().height ?? 64;
+    const ids = getAncestralLineageHighlight(graph, selectedId).highlightedNodeIds;
+    const fitted = fitTreeContent(layout.nodes.filter(node => ids.has(node.member.id)), bounds, toolbarHeight, true);
+    if (!fitted) return;
+    if (!animate || reduceMotion) { viewport.classList.add("is-still"); requestAnimationFrame(() => requestAnimationFrame(() => viewport.classList.remove("is-still"))); }
+    else viewport.classList.remove("is-still");
+    setTransform(fitted);
+  }, [graph, layout.nodes, reduceMotion]);
 
   useEffect(() => { focusedMemberIdRef.current = focusedMemberId; }, [focusedMemberId]);
+  useEffect(() => { highlightModeRef.current = highlightMode; }, [highlightMode]);
   useEffect(() => {
     if (focusedMemberId != null && !treeMembers.some(member => member.id === focusedMemberId)) setFocusedMemberId(null);
     if (branchMemberId != null && !treeMembers.some(member => member.id === branchMemberId)) setBranchMemberId(null);
   }, [treeMembers, focusedMemberId, branchMemberId]);
   useEffect(() => {
+    const previousSearchId = previousSearchIdRef.current;
+    previousSearchIdRef.current = searchFocusMemberId;
+    if (searchFocusMemberId == null && previousSearchId != null) { setFocusedMemberId(null); setHighlightMode('lineage'); }
     if (searchFocusMemberId == null || !treeMembers.some(member => member.id === searchFocusMemberId)) return;
     const currentFocus = focusedMemberIdRef.current;
     if (currentFocus !== searchFocusMemberId && currentFocus != null) setFocusHistory(history => [...history, currentFocus]);
     setFocusedMemberId(searchFocusMemberId);
+    setHighlightMode('lineage');
   }, [searchFocusMemberId, treeMembers]);
-  useEffect(() => { fitView(false); }, [fitView, layout.width, layout.height, branchMemberId]);
+  useEffect(() => { if (focusedMemberId != null && highlightMode === 'lineage') focusSelectedLineage(true); }, [focusedMemberId, highlightMode, focusSelectedLineage]);
+  useEffect(() => { if (focusedMemberIdRef.current != null && highlightModeRef.current === 'lineage') focusSelectedLineage(false); else fitView(false); }, [fitView, focusSelectedLineage, layout.width, layout.height, branchMemberId]);
   useEffect(() => {
     const viewport = viewportRef.current;
     if (!viewport || typeof ResizeObserver === "undefined") return;
-    const observer = new ResizeObserver(() => fitView(false));
+    // Keep the same world point at the centre when entering/leaving fullscreen.
+    // Layout changes still fit via the effect above; viewport changes retain zoom.
+    let previous = viewport.getBoundingClientRect();
+    const observer = new ResizeObserver(() => {
+      const next = viewport.getBoundingClientRect();
+      const dx = (next.width - previous.width) / 2;
+      const dy = (next.height - previous.height) / 2;
+      if (dx || dy) setTransform(current => ({ ...current, x: current.x + dx, y: current.y + dy }));
+      previous = next;
+    });
     observer.observe(viewport);
     return () => observer.disconnect();
   }, [fitView]);
@@ -98,12 +143,13 @@ export const FamilyTreeView: React.FC<FamilyTreeViewProps> = ({ members, searchF
   const focusMember = useCallback((id: number) => {
     if (focusedMemberId !== id && focusedMemberId != null) setFocusHistory(history => [...history, focusedMemberId]);
     setFocusedMemberId(id);
-    setHoveredMemberId(null);
+    setHighlightMode('lineage');
   }, [focusedMemberId]);
   const focusBranch = useCallback((id: number) => {
     focusMember(id);
     setBranchMemberId(id);
     setExpandedIds(new Set());
+    setHighlightMode('branch');
   }, [focusMember]);
   const restoreFocus = useCallback(() => {
     const previous = focusHistory.at(-1);
@@ -112,6 +158,7 @@ export const FamilyTreeView: React.FC<FamilyTreeViewProps> = ({ members, searchF
     setFocusedMemberId(previous);
     setBranchMemberId(previous);
     setExpandedIds(new Set());
+    setHighlightMode('branch');
   }, [focusHistory]);
   const toggleExpanded = useCallback((id: number) => setExpandedIds(current => {
     const next = new Set(current);
@@ -143,9 +190,15 @@ export const FamilyTreeView: React.FC<FamilyTreeViewProps> = ({ members, searchF
     setTransform(current => ({ ...current, x: drag.originX + event.clientX - drag.x, y: drag.originY + event.clientY - drag.y }));
   };
   const onPointerEnd = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (dragRef.current?.pointerId === event.pointerId) dragRef.current = null;
+    const drag = dragRef.current;
+    if (drag?.pointerId !== event.pointerId) return;
+    if (event.type === 'pointerup' && Math.hypot(event.clientX - drag.x, event.clientY - drag.y) < 4) {
+      setFocusedMemberId(null); setHighlightMode('lineage');
+    }
+    dragRef.current = null;
   };
   const onViewportKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'Escape') { setFocusedMemberId(null); setHighlightMode('lineage'); return; }
     if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key)) {
       event.preventDefault();
       const delta = 48;
@@ -161,16 +214,17 @@ export const FamilyTreeView: React.FC<FamilyTreeViewProps> = ({ members, searchF
   };
   const downloadPng = async () => {
     if (!shellRef.current) return;
-    setHoveredMemberId(null);
-    fitView(false);
+    const previousTransform = transform;
+    fitView(false, true);
     setIsExporting(true);
     await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
     if (!reduceMotion) await new Promise<void>(resolve => window.setTimeout(resolve, 340));
     try {
-      const dataUrl = await toPng(shellRef.current, { pixelRatio: members.length > 100 ? 1.5 : 2, skipFonts: true });
+      const root = shellRef.current;
+      const dataUrl = await withTreeSvgStyles(root, () => toPng(root, { pixelRatio: members.length > 100 ? 1.5 : 2, skipFonts: true }));
       const anchor = document.createElement("a"); anchor.download = "mylife-family-tree.png"; anchor.href = dataUrl; anchor.click();
     } catch (error) { console.error("Could not export the family tree image.", error); }
-    finally { setIsExporting(false); }
+    finally { setIsExporting(false); setTransform(previousTransform); }
   };
 
   if (!members.length) return <div className="family-mindmap-empty" role="status"><span className="family-mindmap-empty__icon">✳</span><strong>{t("admin.mindmap_empty_title", { defaultValue: "Bắt đầu dựng gia phả" })}</strong><span>{t("admin.mindmap_empty", { defaultValue: "Thêm thành viên để xem các thế hệ và mối quan hệ gia đình tại đây." })}</span></div>;
@@ -179,22 +233,24 @@ export const FamilyTreeView: React.FC<FamilyTreeViewProps> = ({ members, searchF
   const sceneStyle: React.CSSProperties = { width: layout.width, height: layout.height, transform: `translate(${transform.x}px, ${transform.y}px) scale(${transform.scale})` };
 
   return <div ref={shellRef} className={`family-tree-view-shell${isExporting ? " is-exporting" : ""}`}>
-    <div className="family-tree-view__toolbar" role="toolbar" aria-label={toolbarLabel("admin.mindmap_toolbar", "Công cụ sơ đồ gia phả")}>
-      {branchMemberId != null && <button type="button" className="family-tree-view__tool family-tree-view__overview is-active" aria-pressed="true" onClick={() => { setBranchMemberId(null); setExpandedIds(new Set()); }}>{toolbarLabel("admin.mindmap_all_tree", "Xem toàn bộ cây")}</button>}
+    <div className="family-tree-view__toolbar" role="toolbar" aria-label={toolbarLabel("admin.mindmap_toolbar", "Công cụ sơ đồ gia phả")} title={toolbarLabel("admin.mindmap_toolbar", "Công cụ sơ đồ gia phả")}>
+      {branchMemberId != null && <button type="button" className="family-tree-view__tool family-tree-view__overview is-active" aria-pressed="true" onClick={() => { setBranchMemberId(null); setExpandedIds(new Set()); setHighlightMode('lineage'); }}>{toolbarLabel("admin.mindmap_all_tree", "Xem toàn bộ cây")}</button>}
       {branchMemberId != null && focusHistory.length > 0 && <button type="button" className="family-tree-view__tool family-tree-view__back" onClick={restoreFocus}>{toolbarLabel("admin.mindmap_previous_branch", "← Nhánh trước")}</button>}
-      <button type="button" className="family-tree-view__tool" aria-label={toolbarLabel("admin.mindmap_zoom_out", "Thu nhỏ")} onClick={() => zoomAt(transform.scale / 1.18)}><ZoomOut size={17} /></button>
-      <button type="button" className="family-tree-view__tool" aria-label={toolbarLabel("admin.mindmap_zoom_in", "Phóng to")} onClick={() => zoomAt(transform.scale * 1.18)}><ZoomIn size={17} /></button>
-      <button type="button" className="family-tree-view__tool" aria-label={toolbarLabel("admin.mindmap_fit_view", "Vừa khung nhánh")} onClick={() => fitView()}><Focus size={16} /></button>
+      <button type="button" className="family-tree-view__tool" aria-label={toolbarLabel("admin.mindmap_zoom_out", "Thu nhỏ")} title={toolbarLabel("admin.mindmap_zoom_out", "Thu nhỏ")} onClick={() => zoomAt(transform.scale / 1.18)}><ZoomOut size={17} /></button>
+      <button type="button" className="family-tree-view__tool" aria-label={toolbarLabel("admin.mindmap_zoom_in", "Phóng to")} title={toolbarLabel("admin.mindmap_zoom_in", "Phóng to")} onClick={() => zoomAt(transform.scale * 1.18)}><ZoomIn size={17} /></button>
+      <button type="button" className="family-tree-view__tool" aria-label={toolbarLabel("admin.mindmap_fit_view", "Vừa khung nhánh")} title={toolbarLabel("admin.mindmap_fit_view", "Vừa khung nhánh")} onClick={() => focusedMemberId != null ? focusSelectedLineage(true) : fitView(true, true)}><Focus size={16} /></button>
+      <button type="button" className="family-tree-view__tool" aria-label={toolbarLabel("admin.mindmap_fit_all", "Fit all")} title={toolbarLabel("admin.mindmap_fit_all", "Fit all")} onClick={() => fitView(true, true)}><Shrink size={16} /></button>
       <span className="family-tree-view__divider" />
       <button type="button" className={`family-tree-view__tool${showExtendedRelations ? " is-active" : ""}`} aria-pressed={showExtendedRelations}
-        aria-label={toolbarLabel("admin.mindmap_extended_relations", "Bật/tắt quan hệ mở rộng")} onClick={() => setShowExtendedRelations(value => !value)}><GitBranch size={15} /><span className="family-tree-view__tool-text">{toolbarLabel("admin.mindmap_extended_relations_short", "Quan hệ mở rộng")}</span></button>
-      <button type="button" className="family-tree-view__tool" aria-label={toolbarLabel("admin.mindmap_fullscreen", "Toàn màn hình")} onClick={() => void toggleFullscreen()}>{isFullscreen ? <Shrink size={16} /> : <Expand size={16} />}</button>
-      <button type="button" className="family-tree-view__tool family-tree-view__export" aria-label={toolbarLabel("admin.export_png", "Xuất PNG")} onClick={() => void downloadPng()}><Download size={16} /><span>PNG</span></button>
+        aria-label={toolbarLabel("admin.mindmap_extended_relations", "Bật/tắt quan hệ mở rộng")} title={toolbarLabel("admin.mindmap_extended_relations", "Bật/tắt quan hệ mở rộng")} onClick={() => setShowExtendedRelations(value => !value)}><GitBranch size={15} /><span className="family-tree-view__tool-text">{toolbarLabel("admin.mindmap_extended_relations_short", "Quan hệ mở rộng")}</span></button>
+      <button type="button" className="family-tree-view__tool" aria-label={isFullscreen ? t("family.exitFullscreen") : toolbarLabel("admin.mindmap_fullscreen", "Toàn màn hình")} title={isFullscreen ? t("family.exitFullscreen") : toolbarLabel("admin.mindmap_fullscreen", "Toàn màn hình")} onClick={() => void toggleFullscreen()}>{isFullscreen ? <Shrink size={16} /> : <Expand size={16} />}</button>
+      <button type="button" className="family-tree-view__tool family-tree-view__export" aria-label={toolbarLabel("admin.export_png", "Xuất PNG")} title={toolbarLabel("admin.export_png", "Xuất PNG")} onClick={() => void downloadPng()}><Download size={16} /><span>PNG</span></button>
     </div>
     <div ref={viewportRef} className="family-tree-view__viewport" role="application" aria-label={toolbarLabel("admin.mindmap_canvas", "Cây gia phả")}
       tabIndex={0} onKeyDown={onViewportKeyDown} onWheel={onWheel} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerEnd} onPointerCancel={onPointerEnd}>
+      <FamilyTreeBackdrop />
       <div ref={sceneRef} className="family-tree-view__scene" style={sceneStyle}>
-        <FamilyBranch links={layout.links} width={layout.width} height={layout.height} activeMemberId={activeMemberId} relatedMemberIds={relatedMemberIds} />
+        <FamilyBranch links={layout.links} width={layout.width} height={layout.height} activeMemberId={activeMemberId} highlightedSegmentIds={highlightedSegmentIds} />
         <AnimatePresence initial={false}>
           {layout.nodes.map(node => {
             const member = node.member;
@@ -202,13 +258,14 @@ export const FamilyTreeView: React.FC<FamilyTreeViewProps> = ({ members, searchF
             return <FamilyPersonCard key={member.id} member={member} x={node.x} y={node.y} focused={member.id === focusedMemberId}
               highlighted={activeMemberId != null && related} dimmed={activeMemberId != null && !related} reducedMotion={Boolean(reduceMotion)}
               hiddenCount={hiddenCounts.get(member.id) ?? 0} expanded={expandedIds.has(member.id)} onFocus={focusMember} onViewBranch={focusBranch}
-              onHover={setHoveredMemberId} onExpand={toggleExpanded} onView={onView} onEdit={onEdit} onDelete={onDelete} />;
+              onExpand={toggleExpanded} onView={onView} onEdit={onEdit} onDelete={onDelete} />;
           })}
         </AnimatePresence>
       </div>
       <div className="family-tree-view__hint" aria-hidden="true">{toolbarLabel("admin.mindmap_drag_hint", "Kéo để di chuyển · Cuộn để thu phóng")}</div>
+      {focusedMemberId != null && highlightMode === 'lineage' && <FamilyTreeSelectionSummary highlight={lineageHighlight} members={members} />}
     </div>
-    {branchMemberId != null && <div className="family-tree-view__status" role="status">{toolbarLabel("admin.mindmap_focus_branch", "Nhánh đang xem")} · {visibleMembers.length} {toolbarLabel("admin.members", "thành viên")}</div>}
+    {branchMemberId != null && <div className="family-tree-view__status" role="status">{toolbarLabel("admin.mindmap_focus_branch", "Nhánh đang xem")} · {visibleMembers.length} {t("family.memberCountLabel")}</div>}
   </div>;
 };
 

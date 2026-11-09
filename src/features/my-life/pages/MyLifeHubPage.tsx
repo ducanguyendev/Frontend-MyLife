@@ -29,7 +29,7 @@ export const MyLifeHubPage: React.FC = () => {
   const hasHeroPhoto = Boolean(myLifeVisualConfig.heroBackgroundImage);
 
   return (
-    <MyLifeWorkspaceLayout backTo="/Home" contentClassName="my-life-hub-scroll px-4 py-4 sm:px-6 sm:py-5 lg:px-8">
+    <MyLifeWorkspaceLayout backTo="/Home" contentClassName="my-life-hub-scroll">
       <div className="my-life-hub mx-auto flex min-h-full w-full max-w-[1200px] flex-1 flex-col">
         <section className={`my-life-hero mb-6 flex shrink-0 items-center overflow-hidden rounded-[2rem] border border-custom-border px-5 py-6 sm:px-8 md:mb-8 md:min-h-[286px] md:px-10${hasHeroPhoto ? ' my-life-hero--photo' : ''}`}>
           {hasHeroPhoto && <div className="my-life-hero__photo" style={heroPhotoStyle} aria-hidden="true" />}

@@ -1,0 +1,178 @@
+{
+  "report": [
+    {
+      "width": 1440,
+      "height": 900,
+      "theme": "light",
+      "reducedMotion": false,
+      "initial": "pass",
+      "focus": "pass",
+      "search": "pass",
+      "selectionById": "pass",
+      "toggle": "pass",
+      "staleResult": "pass",
+      "keyboard": "pass",
+      "geometry": "pass"
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "theme": "dark",
+      "reducedMotion": true,
+      "initial": "pass",
+      "focus": "pass",
+      "search": "pass",
+      "selectionById": "pass",
+      "toggle": "pass",
+      "staleResult": "pass",
+      "keyboard": "pass",
+      "geometry": "pass"
+    },
+    {
+      "width": 820,
+      "height": 1180,
+      "theme": "light",
+      "reducedMotion": false,
+      "initial": "pass",
+      "focus": "pass",
+      "search": "pass",
+      "selectionById": "pass",
+      "toggle": "pass",
+      "staleResult": "pass",
+      "keyboard": "pass",
+      "geometry": "pass"
+    },
+    {
+      "width": 820,
+      "height": 1180,
+      "theme": "dark",
+      "reducedMotion": true,
+      "initial": "pass",
+      "focus": "pass",
+      "search": "pass",
+      "selectionById": "pass",
+      "toggle": "pass",
+      "staleResult": "pass",
+      "keyboard": "pass",
+      "geometry": "pass"
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "theme": "light",
+      "reducedMotion": false,
+      "initial": "pass",
+      "focus": "pass",
+      "search": "pass",
+      "selectionById": "pass",
+      "toggle": "pass",
+      "staleResult": "pass",
+      "keyboard": "pass",
+      "geometry": "pass"
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "theme": "dark",
+      "reducedMotion": true,
+      "initial": "pass",
+      "focus": "pass",
+      "search": "pass",
+      "selectionById": "pass",
+      "toggle": "pass",
+      "staleResult": "pass",
+      "keyboard": "pass",
+      "geometry": "pass"
+    }
+  ],
+  "lateResponse": "pass",
+  "routeReset": "pass",
+  "errors": [],
+  "writes": [],
+  "relationships": [
+    {
+      "from": 1,
+      "to": 2
+    },
+    {
+      "from": 1,
+      "to": 2
+    },
+    {
+      "from": 1,
+      "to": 3
+    },
+    {
+      "from": 1,
+      "to": 3
+    },
+    {
+      "from": 1,
+      "to": 2
+    },
+    {
+      "from": 1,
+      "to": 3
+    },
+    {
+      "from": 1,
+      "to": 2
+    },
+    {
+      "from": 1,
+      "to": 2
+    },
+    {
+      "from": 1,
+      "to": 3
+    },
+    {
+      "from": 1,
+      "to": 3
+    },
+    {
+      "from": 1,
+      "to": 2
+    },
+    {
+      "from": 1,
+      "to": 3
+    },
+    {
+      "from": 1,
+      "to": 2
+    },
+    {
+      "from": 1,
+      "to": 2
+    },
+    {
+      "from": 1,
+      "to": 3
+    },
+    {
+      "from": 1,
+      "to": 3
+    },
+    {
+      "from": 1,
+      "to": 2
+    },
+    {
+      "from": 1,
+      "to": 3
+    },
+    {
+      "from": 1,
+      "to": 2
+    },
+    {
+      "from": 1,
+      "to": 2
+    },
+    {
+      "from": 1,
+      "to": 2
+    }
+  ]
+}

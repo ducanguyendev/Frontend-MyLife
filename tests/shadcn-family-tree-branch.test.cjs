@@ -10,10 +10,8 @@ const resolver = {};
 const resolverSource = readFileSync(join(base, 'familyBranchResolver.ts'), 'utf8');
 const resolverOutput = ts.transpileModule(resolverSource, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
 new vm.Script(resolverOutput).runInNewContext({ exports: resolver, require: () => ({}) });
-const layoutModule = {};
-const layoutSource = readFileSync(join(base, 'shadcnFamilyTreeLayout.ts'), 'utf8');
-const layoutOutput = ts.transpileModule(layoutSource, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
-new vm.Script(layoutOutput).runInNewContext({ exports: layoutModule, require: () => ({}) });
+const { loadTreeModule } = require('./helpers/load-tree-module.cjs');
+const layoutModule = loadTreeModule(join(base, 'shadcnFamilyTreeLayout.ts'));
 const person = (id, name, generation, values = {}) => ({ id, fullName: name, generation, createdAt: '', updatedAt: '', ...values });
 
 function branchFixture() {
@@ -47,13 +45,13 @@ test('branch edge preview highlights the ancestry rail and selected child drop, 
   assert.ok(!edges.has('family-child-uncle'));
 });
 
-test('hover preview and node click share one branch resolver; branch subset is relaid out and centered', () => {
+test('ordinary selection uses ancestral lineage focus; explicit branch subset is relaid out and centered', () => {
   const component = readFileSync(join(base, 'ShadcnFamilyTreeView.tsx'), 'utf8');
   const card = readFileSync(join(base, 'ShadcnFamilyTreePersonCard.tsx'), 'utf8');
-  assert.match(component, /getFamilyBranchMemberIds\(layoutMembers, activeId\)/);
+  assert.match(component, /getAncestralLineageHighlight\(graph, focusedId, layout.links\)/);
   assert.match(component, /branchMemberId == null \? null : getFamilyBranchMemberIds\(layoutMembers, branchMemberId\)/);
   assert.match(component, /setBranchMemberId\(id\)/);
-  assert.match(card, /onClick=\{\(\) => onViewBranch\(member\.id\)\}/);
+  assert.match(card, /onClick=\{\(\) => onSelect\(member\.id\)\}/);
 
   const branch = resolver.getFamilyBranchMemberIds(branchFixture(), 5);
   const subset = branchFixture().filter(member => branch.has(member.id));

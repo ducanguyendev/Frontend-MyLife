@@ -1,0 +1,320 @@
+[
+  {
+    "file": "src/features/admin/components/family-tree/lunarYearUtils.ts",
+    "check": "entire API / DTO / business module",
+    "pass": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/types.ts",
+    "check": "entire API / DTO / business module",
+    "pass": true
+  },
+  {
+    "file": "src/features/admin/services/anniversaryService.ts",
+    "check": "entire API / DTO / business module",
+    "pass": true
+  },
+  {
+    "file": "src/features/admin/services/familyMapService.ts",
+    "check": "entire API / DTO / business module",
+    "pass": true
+  },
+  {
+    "file": "src/features/admin/services/familyV2Service.ts",
+    "check": "entire API / DTO / business module",
+    "pass": true
+  },
+  {
+    "file": "src/features/admin/services/featureMessages.ts",
+    "check": "entire API / DTO / business module",
+    "pass": true
+  },
+  {
+    "file": "src/features/admin/services/libraryService.ts",
+    "check": "entire API / DTO / business module",
+    "pass": true
+  },
+  {
+    "file": "src/features/auth/services/authService.ts",
+    "check": "entire API / DTO / business module",
+    "pass": true
+  },
+  {
+    "file": "src/features/my-life/components/timeline/types.ts",
+    "check": "entire API / DTO / business module",
+    "pass": true
+  },
+  {
+    "file": "src/features/portfolio/components/projects/types.ts",
+    "check": "entire API / DTO / business module",
+    "pass": true
+  },
+  {
+    "file": "src/shared/api/apiClient.ts",
+    "check": "entire API / DTO / business module",
+    "pass": true
+  },
+  {
+    "file": "src/shared/components/illustration/types.ts",
+    "check": "entire API / DTO / business module",
+    "pass": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/MemberFormModal.tsx",
+    "check": "potentialFathers",
+    "pass": true,
+    "exists": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/MemberFormModal.tsx",
+    "check": "potentialMothers",
+    "pass": true,
+    "exists": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/MemberFormModal.tsx",
+    "check": "potentialSpouses",
+    "pass": true,
+    "exists": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/MemberFormModal.tsx",
+    "check": "availableForChildren",
+    "pass": true,
+    "exists": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/MemberFormModal.tsx",
+    "check": "availableForSiblings",
+    "pass": true,
+    "exists": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/MemberFormModal.tsx",
+    "check": "handleAddChild",
+    "pass": true,
+    "exists": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/MemberFormModal.tsx",
+    "check": "handleRemoveChild",
+    "pass": true,
+    "exists": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/MemberFormModal.tsx",
+    "check": "handleAddSibling",
+    "pass": true,
+    "exists": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/MemberFormModal.tsx",
+    "check": "handleRemoveSibling",
+    "pass": true,
+    "exists": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/MemberFormModal.tsx",
+    "check": "handleFormSubmit",
+    "pass": true,
+    "exists": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/MemberFormModal.tsx",
+    "check": "handleFullNameChange",
+    "pass": true,
+    "exists": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/MemberFormModal.tsx",
+    "check": "handlePhoneChange",
+    "pass": true,
+    "exists": true
+  },
+  {
+    "file": "src/features/my-life/pages/FamilyTimelinePage.tsx",
+    "check": "blank",
+    "pass": true,
+    "exists": true
+  },
+  {
+    "file": "src/features/my-life/pages/FamilyTimelinePage.tsx",
+    "check": "load",
+    "pass": true,
+    "exists": true
+  },
+  {
+    "file": "src/features/my-life/pages/FamilyTimelinePage.tsx",
+    "check": "beginEdit",
+    "pass": true,
+    "exists": true
+  },
+  {
+    "file": "src/features/my-life/pages/FamilyTimelinePage.tsx",
+    "check": "save",
+    "pass": true,
+    "exists": true
+  },
+  {
+    "file": "src/features/my-life/pages/FamilyTimelinePage.tsx",
+    "check": "remove",
+    "pass": true,
+    "exists": true
+  },
+  {
+    "file": "src/features/my-life/pages/FamilyTimelinePage.tsx",
+    "check": "filtered",
+    "pass": true,
+    "exists": true
+  },
+  {
+    "file": "src/features/my-life/pages/FamilyTimelinePage.tsx",
+    "check": "yearGroups",
+    "pass": true,
+    "exists": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/FamilyAnniversaryModal.tsx",
+    "check": "submit",
+    "pass": true,
+    "exists": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/FamilyAnniversaryModal.tsx",
+    "check": "handleRelatedMemberChange",
+    "pass": true,
+    "exists": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/FamilyAnniversaryModal.tsx",
+    "check": "validSolarDate",
+    "pass": true,
+    "exists": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/FamilyAnniversaryModal.tsx",
+    "check": "validLunarParts",
+    "pass": true,
+    "exists": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/AnniversaryTab.tsx",
+    "check": "save",
+    "pass": true,
+    "exists": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/AnniversaryTab.tsx",
+    "check": "load",
+    "pass": true,
+    "exists": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/AnniversaryTab.tsx",
+    "check": "confirmDelete",
+    "pass": true,
+    "exists": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/AnniversaryTab.tsx",
+    "check": "filtered",
+    "pass": true,
+    "exists": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/AnniversaryTab.tsx",
+    "check": "eventsByDate",
+    "pass": true,
+    "exists": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/LibraryAlbumModal.tsx",
+    "check": "submit",
+    "pass": true,
+    "exists": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/LibraryUploadModal.tsx",
+    "check": "submit",
+    "pass": true,
+    "exists": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/LibraryPhotoEditModal.tsx",
+    "check": "submit",
+    "pass": true,
+    "exists": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/LibraryTab.tsx",
+    "check": "savePhoto",
+    "pass": true,
+    "exists": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/LibraryTab.tsx",
+    "check": "confirmDelete",
+    "pass": true,
+    "exists": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/LibraryTab.tsx",
+    "check": "filteredPhotos",
+    "pass": true,
+    "exists": true
+  },
+  {
+    "file": "src/shared/components/ui/DateInput.tsx",
+    "check": "handleOpenPicker",
+    "pass": true,
+    "exists": true
+  },
+  {
+    "file": "src/shared/components/ui/DateInput.tsx",
+    "check": "handleSelectDate",
+    "pass": true,
+    "exists": true
+  },
+  {
+    "file": "src/shared/components/ui/DateInput.tsx",
+    "check": "handleInputChange",
+    "pass": true,
+    "exists": true
+  },
+  {
+    "file": "src/shared/components/ui/DateInput.tsx",
+    "check": "handlePaste",
+    "pass": true,
+    "exists": true
+  },
+  {
+    "file": "src/shared/components/ui/DateInput.tsx",
+    "check": "handleKeyDown",
+    "pass": true,
+    "exists": true
+  },
+  {
+    "file": "src/shared/components/ui/DateInput.tsx",
+    "check": "handlePopupKeyDown",
+    "pass": true,
+    "exists": true
+  },
+  {
+    "file": "src/features/profile/components/UserProfileModal.tsx",
+    "check": "handleSaveProfile",
+    "pass": true,
+    "exists": true
+  },
+  {
+    "file": "src/features/profile/components/UserProfileModal.tsx",
+    "check": "handleChangePassword",
+    "pass": true,
+    "exists": true
+  },
+  {
+    "file": "src/features/profile/components/UserProfileModal.tsx",
+    "check": "validateNewPassword",
+    "pass": true,
+    "exists": true
+  }
+]

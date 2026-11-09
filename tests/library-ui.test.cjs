@@ -48,6 +48,8 @@ async function setup() {
   const mocks = {
     react: hooks, 'react/jsx-runtime': { jsx, jsxs: jsx },
     'lucide-react': new Proxy({}, { get: (_, key) => key }),
+    '@/shared/utils/normalizeDisplayText': { normalizeDisplayText:value => value?.normalize('NFC') ?? '' },
+    '@/shared/components/ui/FormSectionHeader': { FormSectionHeader:'FormSectionHeader' },
     '@/shared/hooks/useLanguage': { useLanguage: () => ({ t: i18n.t.bind(i18n), language: i18n.language }) },
     '@/shared/api/apiClient': { apiClient: { url: path => `http://localhost:5274${path}` } },
     '@/shared/components/ui': { Button: 'Button', Modal: 'Modal' },
@@ -62,7 +64,7 @@ async function setup() {
     './Input': { Input: 'Input' }, '@/shared/hooks/useLanguage': { useLanguage: () => ({ language: 'vi', t: (_key, options) => options.defaultValue }) },
   });
   const selectItem = function SelectItem() {};
-  mocks['@/shared/components/ui'] = { Button: 'Button', Modal: 'Modal', Select: 'Select', SelectItem: selectItem, DateInput: 'DateInput',
+  mocks['@/shared/components/ui'] = { Button: 'Button', Modal: 'Modal', Input: 'Input', Textarea: 'Textarea', Select: 'Select', SelectItem: selectItem, DateInput: 'DateInput',
     validateCalendarDate: dateHelpers.validateCalendarDate };
   const fields = load('LibraryPhotoFormFields.tsx', mocks);
   mocks['./LibraryPhotoFormFields'] = fields;
@@ -158,8 +160,9 @@ test('upload rejects empty/21/zero-byte/oversize/MIME files and accepts exact li
 test('photo fields keep rounded sizing and a localized date control without category selection', async () => {
   const h = await setup(); const f = h.fields;
   const text = f.LibraryTextField({ label: 'Date' });
-  assert.ok(find(text, 'input').className.includes('rounded-2xl'));
-  assert.ok(f.libraryFieldClass.includes('min-h-[56px]')); assert.ok(f.libraryFieldClass.includes('rounded-2xl'));
+  assert.equal(find(text, 'Input').floatingLabel, true);
+  assert.equal(find(text, 'Input').label, 'Date');
+  assert.equal(f.libraryFieldClass, undefined, 'Library does not define a competing field geometry');
   const fields = f.LibraryPhotoFormFields({ value: {}, onChange() {}, disabled: false });
   const date = find(fields, 'DateInput');
   assert.equal(date.label, h.i18n.t('admin.library_ui.field_date'));
@@ -223,25 +226,15 @@ test('Library flow is album-only while keeping overview loading and client-side 
   assert.doesNotMatch(source, /[Cc]ategories|[Cc]ategory|libraryCategory|categoryDialog/);
   assert.match(source, /setAlbumDialog\('create'\)/);
   assert.match(source, /kind: 'album' \| 'photo'/);
-  assert.match(source, /variant="primary"[\s\S]*?onClick=\{\(\) => setUploadOpen\(true\)\}/);
+  assert.match(source, /onClick=\{\(\) => setUploadOpen\(true\)\}/);
 });
 
-test('Library is a single-title workspace with a compact toolbar and gallery-owned scrolling', () => {
+test('Library uses the page scroll area with visual albums, photos and contextual loading/error states', () => {
   const page = readFileSync(join(__dirname, '../src/features/my-life/pages/LibraryPage.tsx'), 'utf8');
   const source = readFileSync(join(__dirname, '../src/features/admin/components/family-tree/LibraryTab.tsx'), 'utf8');
-  const css = readFileSync(join(__dirname, '../src/features/admin/components/family-tree/LibraryTab.css'), 'utf8');
-  assert.match(page, /contentScroll="hidden"/);
-  assert.doesNotMatch(page, /myLife\.modules\.library\.(title|description)/);
-  assert.match(source, /library-workspace flex min-h-0 flex-1 flex-col overflow-hidden/);
-  assert.match(source, /library-gallery custom-scrollbar min-h-0 flex-1 overflow-y-auto/);
-  assert.match(source, /variant="primary"[\s\S]*?onClick=\{\(\) => setUploadOpen\(true\)\}/);
-  assert.match(source, /variant="secondary"[\s\S]*?setAlbumDialog\('create'\)/);
-  assert.match(source, /library-media-card__image/);
-  assert.match(css, /transform 320ms/);
-  assert.match(css, /prefers-reduced-motion: reduce/);
-  assert.match(source, /role="status"[\s\S]*?library_ui\.loading/);
-  assert.match(source, /role="alert"[\s\S]*?onClick=\{refresh\}/);
-  assert.match(source, /library_ui\.no_albums[\s\S]*?library_ui\.no_matches/);
+  assert.ok(page.includes('contentScroll="auto"'));
+  for (const token of ['<PageHeader', '<AlbumCard', '<PhotoCard', '<MemorySkeleton', '<ErrorState', '<EmptyState', 'no_albums', 'no_matches']) assert.ok(source.includes(token), token);
+  assert.doesNotMatch(source, /categoryDialog|LibraryCategoryModal/);
 });
 
 test('editing a legacy photo exposes only shared non-category metadata fields', async () => {
@@ -331,7 +324,9 @@ test('closed lightbox renders no image; an open lightbox renders one high-resolu
   h.mocks['./LibraryImage'] = { LibraryImage: 'LibraryImage', libraryOriginalUrl: url => url };
   const document = { body: { style: {} }, documentElement: { style: {} } };
   const window = { addEventListener() {}, removeEventListener() {} };
-  const { PhotoLightboxModal } = load('PhotoLightboxModal.tsx', h.mocks, { document, window });
+  h.mocks['@/features/admin/components/family-tree/LibraryImage'] = h.mocks['./LibraryImage'];
+  h.mocks['./Memories.css'] = {};
+  const { LibraryLightbox: PhotoLightboxModal } = load('../../../my-life/components/memories/LibraryLightbox.tsx', h.mocks, { document, window });
   assert.equal(h.render(PhotoLightboxModal, { photo: null, onClose() {} }), null);
   const tree = h.render(PhotoLightboxModal, { photo: { id: 7, title: 'WebP', url: 'primary', driveFileId: 'drive-id' }, onClose() {} });
   const images = nodes(tree).filter(node => node.type === 'LibraryImage');

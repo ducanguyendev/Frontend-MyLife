@@ -1,11 +1,11 @@
+import { Image } from 'lucide-react';
+import { FormSectionHeader } from '@/shared/components/ui/FormSectionHeader';
 import type { InputHTMLAttributes, TextareaHTMLAttributes } from 'react';
 import { useLanguage } from '@/shared/hooks/useLanguage';
-import { DateInput, Select, validateCalendarDate, type SelectProps } from '@/shared/components/ui';
+import { Input, Textarea, DateInput, Select, validateCalendarDate, type SelectProps } from '@/shared/components/ui';
 import { type LibraryPhotoMetadata } from '../../services/libraryService';
 
-// Library-only floating labels and matching text/select sizing.
-export const libraryFieldClass = 'w-full min-h-[56px] rounded-2xl border border-custom-border bg-primary-bg px-4 pt-5 pb-1.5 text-sm text-primary-text outline-none focus:border-[var(--focus-border)]   disabled:opacity-50';
-const labelClass = 'absolute top-2 left-4 right-4 text-[11px] font-semibold text-secondary-text pointer-events-none truncate';
+// Library metadata uses the same field primitives as the Member form.
 const libraryDateErrorKeys = {
   required: 'date_required', format: 'date_format_invalid', month: 'date_month_invalid',
   day: 'date_day_invalid', calendar: 'date_invalid', future: 'date_future',
@@ -17,19 +17,20 @@ export function libraryDisplayDateError(value: string): string | null {
 }
 
 export function LibraryTextField({ label, ...props }: InputHTMLAttributes<HTMLInputElement> & { label: string }) {
-  return <label className="relative block min-h-[56px]"><span className={labelClass}>{label}</span><input {...props} className={libraryFieldClass} /></label>;
+  return <Input {...props} label={label} floatingLabel/>;
 }
 export function LibrarySelectField({ label, children, ...props }: SelectProps & { label: string }) {
-  return <Select label={label} {...props} className="border-0">{children}</Select>;
+  return <Select label={label} {...props}>{children}</Select>;
 }
 export function LibraryTextArea({ label, ...props }: TextareaHTMLAttributes<HTMLTextAreaElement> & { label: string }) {
-  return <label className="relative block"><span className={labelClass}>{label}</span><textarea {...props} className={`${libraryFieldClass} min-h-28 pb-3`} /></label>;
+  return <Textarea {...props} label={label} floatingLabel/>;
 }
 export function LibraryPhotoFormFields({ value, onChange, disabled }: {
   value: LibraryPhotoMetadata; onChange: (value: LibraryPhotoMetadata) => void; disabled: boolean;
 }) {
   const { t } = useLanguage();
   return <div className="space-y-4">
+<FormSectionHeader title={t('admin.library_ui.edit_photo')} icon={<Image size={16} aria-hidden="true"/>}/>
     <LibraryTextField label={t('admin.library_ui.field_title')} maxLength={200} value={value.title ?? ''}
       disabled={disabled} onChange={e => onChange({ ...value, title: e.target.value })} />
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">

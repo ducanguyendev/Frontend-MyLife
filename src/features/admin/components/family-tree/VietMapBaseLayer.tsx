@@ -1,6 +1,8 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useMap } from 'react-leaflet';
 import L from 'leaflet';
+import { useTheme } from '@/shared/context/ThemeContext';
+import { useLanguage } from '@/shared/hooks/useLanguage';
 import '@vietmap/vietmap-gl-js/dist/vietmap-gl.css';
 import '@vietmap/vietmap-gl-leaflet';
 
@@ -9,35 +11,39 @@ type VietMapLeaflet = typeof L & { vietmapGL?: (options: { style: string }) => V
 
 const tileKey = import.meta.env.VITE_VIETMAP_TILE_KEY?.trim();
 const vietMapLeaflet = L as VietMapLeaflet;
-let missingKeyWarningShown = false;
+export const VIETMAP_STYLE_URL = (key: string, theme: 'light' | 'dark') => `https://maps.vietmap.vn/maps/styles/${theme === 'dark' ? 'dm' : 'lm'}/style.json?apikey=${encodeURIComponent(key)}`;
 
-export function VietMapBaseLayer() {
+export function VietMapBaseLayer({ onFailure, retryKey = 0 }: { onFailure?: (failed: boolean) => void; retryKey?: number }) {
   const map = useMap();
+  const { theme } = useTheme();
+  const { t } = useLanguage();
+  const [failed, setFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  const reportFailure = useCallback((value: boolean) => { setFailed(value); onFailure?.(value); }, [onFailure]);
 
   useEffect(() => {
     if (!tileKey || !vietMapLeaflet.vietmapGL) {
-      if (import.meta.env.DEV && !missingKeyWarningShown) {
-        console.warn('VIETMAP tile key or Leaflet GL binding is unavailable; using OpenStreetMap.');
-        missingKeyWarningShown = true;
-      }
-      const fallback = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
-      });
-      fallback.addTo(map);
-      return () => { map.removeLayer(fallback); };
+      reportFailure(true);
+      return;
     }
 
-    const layer = vietMapLeaflet.vietmapGL({
-      style: `https://maps.vietmap.vn/maps/styles/tm/style.json?apikey=${encodeURIComponent(tileKey)}`,
-    });
-    layer.addTo(map);
-    const attribution = '&copy; <a href="https://maps.vietmap.vn/">VIETMAP</a> contributors';
-    map.attributionControl?.addAttribution(attribution);
+    reportFailure(false);
+    let layer: VietMapLayer;
+    try {
+      layer = vietMapLeaflet.vietmapGL({ style: VIETMAP_STYLE_URL(tileKey, theme) });
+      layer.addTo(map);
+    } catch {
+      reportFailure(true);
+      return;
+    }
+    const glMap = layer.getVietmapMap() as { on?: (event: string, handler: () => void) => void; off?: (event: string, handler: () => void) => void };
+    const onError = () => reportFailure(true);
+    glMap.on?.('error', onError);
     return () => {
+      glMap.off?.('error', onError);
       map.removeLayer(layer);
-      map.attributionControl?.removeAttribution(attribution);
     };
-  }, [map]);
+  }, [map, retryKey, attempt, reportFailure, theme]);
 
-  return null;
+  return failed ? <div className="family-map-provider-error" role="alert">{t('admin.family_map.vietmap_error')} <button type="button" onClick={() => setAttempt(value => value + 1)}>{t('admin.family_map.retry')}</button></div> : null;
 }

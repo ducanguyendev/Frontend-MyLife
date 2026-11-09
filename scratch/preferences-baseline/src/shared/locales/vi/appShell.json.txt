@@ -1,0 +1,7 @@
+{
+  "home": "Trang chủ", "family": "Gia đình", "memories": "Ký ức", "timeline": "Dòng thời gian", "calendar": "Lịch", "library": "Thư viện", "map": "Bản đồ", "me": "Tôi", "member": "Thành viên", "admin": "Quản trị",
+  "navigation": "Điều hướng MyLife", "openNavigation": "Mở điều hướng", "skipContent": "Đến nội dung chính", "tagline": "Lưu giữ câu chuyện gia đình", "archiveNote": "Nơi lưu giữ những câu chuyện chung.",
+  "appearance": "Giao diện", "language": "Ngôn ngữ", "light": "Sáng", "dark": "Tối", "system": "Hệ thống", "vietnamese": "Tiếng Việt", "english": "Tiếng Anh", "profileMenu": "Mở menu tài khoản", "preferences": "Giao diện & ngôn ngữ",
+  "familyDescription": "Những người làm nên câu chuyện của bạn.", "views": "Chế độ xem gia đình", "overview": "Tổng quan & số liệu", "loginWeek": "Đăng nhập (7 ngày)", "failedWeek": "Thất bại (7 ngày)", "refresh": "Làm mới", "dismiss": "Đóng thông báo", "filter": "Bộ lọc", "saved": "Đã lưu thành công", "passwordShow": "Hiện mật khẩu", "passwordHide": "Ẩn mật khẩu",
+  "treeDragHint": "Kéo để di chuyển · Cuộn để thu phóng", "treeStatus": "{{visible}} / {{total}} thành viên · {{families}} gia đình", "centerSelection": "Đưa người đang chọn vào giữa", "chooseOption": "Chọn một giá trị"
+}

@@ -1,21 +1,18 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
 import {
-  Users, LogIn, LogOut, Lock, Unlock,
-  RefreshCw, Home, LayoutDashboard, Globe, Mail,
-  CheckCircle, AlertCircle, Clock, Trash2, AlertTriangle, Loader2
+  Users, LogIn, Lock, Unlock,
+  RefreshCw, LayoutDashboard, Globe, Mail,
+  CheckCircle, AlertCircle, Clock, Trash2, Loader2
 } from "lucide-react";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { authService } from "@/features/auth/services/authService";
 import { useLanguage } from "@/shared/hooks/useLanguage";
-import { LanguageSwitcher } from "@/shared/components/LanguageSwitcher";
-import { ThemeSwitch } from "@/shared/components";
 import { Select, SelectItem } from "@/shared/components/ui";
 import { SearchBar } from "@/shared/components/SearchBar";
 import { useNotification } from "@/shared/contexts/NotificationContext";
 import { apiClient, getApiErrorMessage } from "@/shared/api/apiClient";
-import { useBodyScrollLock } from "@/shared/hooks/useBodyScrollLock";
+import { MyLifeWorkspaceLayout } from "@/shared/layouts/MyLifeWorkspaceLayout";
+import { PageHeader, StatCard, StatusPill, IconButton, SegmentedControl, TableShell, ConfirmDialog, Loading, EmptyState } from "@/design-system";
 
 interface AdminStats {
   totalUsers: number;
@@ -44,33 +41,10 @@ interface LoginLog {
   createdAt: string;
 }
 
-function StatCard({ icon, label, value, color }: { icon: React.ReactNode; label: string; value: number; color: string }) {
-  return (
-    <div className="glass-pill rounded-[28px] p-6 flex flex-col justify-between gap-4 group hover:-translate-y-1 transition-transform duration-300">
-      <div className="flex justify-between items-start">
-        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 bg-secondary-bg border border-custom-border shadow-sm ${color}`}>{icon}</div>
-      </div>
-      <div>
-        <p className="text-3xl font-black text-primary-text font-display tracking-tight mb-1">{value}</p>
-        <p className="text-[10px] text-secondary-text font-bold tracking-widest uppercase">{label}</p>
-      </div>
-    </div>
-  );
-}
-
 function StatusBadge({ status, t }: { status: string; t: ReturnType<typeof useLanguage>['t'] }) {
-  const map: Record<string, { label: string; cls: string, dot: string, bg: string }> = {
-    SUCCESS: { label: t("admin.success", { defaultValue: "Thành công" }), cls: "text-emerald-700 dark:text-emerald-400", dot: "bg-emerald-500", bg: "bg-emerald-500/10" },
-    FAILED: { label: t("admin.failed", { defaultValue: "Thất bại" }), cls: "text-rose-700 dark:text-rose-400", dot: "bg-rose-500", bg: "bg-rose-500/10" },
-    REGISTERED: { label: t("admin.registered", { defaultValue: "Đăng ký" }), cls: "text-blue-700 dark:text-blue-400", dot: "bg-blue-500", bg: "bg-blue-500/10" },
-  };
-  const s = map[status] ?? { label: status, cls: "text-secondary-text", dot: "bg-secondary-text", bg: "bg-secondary-text/10" };
-  return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase ${s.cls} ${s.bg} border border-transparent dark:border-custom-border/50`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`}></span>
-      {s.label}
-    </span>
-  );
+  const states = { SUCCESS: { label: t('admin.success'), tone: 'success' }, FAILED: { label: t('admin.failed'), tone: 'danger' }, REGISTERED: { label: t('admin.registered'), tone: 'info' } } as const;
+  const state = states[status as keyof typeof states];
+  return <StatusPill tone={state?.tone ?? 'neutral'}>{state?.label ?? status}</StatusPill>;
 }
 
 function UserAvatarItem({ email, avatarUrl }: { email: string; avatarUrl?: string }) {
@@ -115,8 +89,7 @@ function UserAvatarItem({ email, avatarUrl }: { email: string; avatarUrl?: strin
 }
 
 export const AdminDashboard: React.FC = () => {
-  const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const { t } = useLanguage();
 
   const [stats, setStats] = useState<AdminStats | null>(null);
@@ -130,7 +103,6 @@ export const AdminDashboard: React.FC = () => {
   const [roleUpdating, setRoleUpdating] = useState<number | null>(null);
 
   const [userToDelete, setUserToDelete] = useState<AdminUser | null>(null);
-  useBodyScrollLock(!!userToDelete);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const showToast = useCallback((text: string, ok: boolean) => {
@@ -258,93 +230,13 @@ export const AdminDashboard: React.FC = () => {
   ] as const;
 
   return (
-    <div className="relative h-screen bg-primary-bg font-sans overflow-hidden transition-colors duration-300">
-      
-      {/* Background Image Overlay */}
-      <div className="absolute inset-0 z-0 opacity-10 dark:opacity-[0.03] pointer-events-none bg-[url('/src/assets/admin-bg.png')] bg-cover bg-center" />
-
-      {/* Floating Top Navigation */}
-      <header className="absolute top-4 left-1/2 -translate-x-1/2 w-[96%] max-w-[1400px] z-50 glass-nav rounded-2xl md:rounded-full px-4 py-3 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm">
-        
-        {/* Left: Logo & Nav */}
-        <div className="flex items-center gap-8 w-full md:w-auto overflow-x-auto no-scrollbar justify-between md:justify-start">
-          <div className="flex items-center gap-2 shrink-0">
-            <div className="w-8 h-8 rounded-full bg-primary-text text-primary-bg flex items-center justify-center font-bold text-sm shadow-md">ML</div>
-            <span className="font-bold tracking-tight text-primary-text text-lg hidden lg:block">MyLife</span>
-          </div>
-
-          <nav className="flex items-center gap-1 bg-secondary-bg/50 p-1 rounded-full border border-custom-border/50">
-            {navItems.map((item) => {
-              const isActive = activeTab === item.id;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveTab(item.id)}
-                  className={`relative flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-300 cursor-pointer shrink-0 ${
-                    isActive
-                      ? "text-primary-bg"
-                      : "text-secondary-text hover:text-primary-text"
-                  }`}
-                >
-                  {isActive && (
-                    <motion.div
-                      layoutId="navTabIndicator"
-                      className="absolute inset-0 bg-primary-text rounded-full z-[-1]"
-                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                    />
-                  )}
-                  <span className={isActive ? "text-primary-bg" : "text-secondary-text"}>{item.icon}</span>
-                  <span className="hidden sm:inline-block">{item.label}</span>
-                </button>
-              );
-            })}
-          </nav>
-        </div>
-
-        {/* Right: Actions */}
-        <div className="flex items-center gap-2 shrink-0">
-          <SearchBar className="hidden xl:block w-48" ariaLabel={t("common.search", { defaultValue: "Search..." })}
-            placeholder={t("common.search", { defaultValue: "Search..." })} value={adminSearch} onChange={setAdminSearch} />
-          
-          <button onClick={fetchAll} className="w-10 h-10 flex items-center justify-center rounded-full bg-secondary-bg/50 hover:bg-secondary-bg border border-custom-border text-secondary-text hover:text-primary-text transition-colors cursor-pointer   " title="Refresh" aria-label={t("common.refresh", { defaultValue: "Refresh" })}>
-            <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
-          </button>
-          
-          <ThemeSwitch />
-          
-          <LanguageSwitcher />
-          
-          <div className="h-4 w-px bg-custom-border"></div>
-          
-          <button onClick={() => navigate("/")} className="w-10 h-10 flex items-center justify-center rounded-full bg-secondary-bg/50 hover:bg-secondary-bg border border-custom-border text-secondary-text hover:text-primary-text transition-colors cursor-pointer   " title={t("navigation.home", { defaultValue: "Home" })} aria-label={t("navigation.home", { defaultValue: "Home" })}>
-            <Home size={16} />
-          </button>
-
-          <button onClick={async () => { await logout(); navigate("/"); }} className="w-10 h-10 flex items-center justify-center rounded-full bg-secondary-bg/50 hover:bg-error/10 border border-custom-border hover:border-error/30 text-secondary-text hover:text-error transition-colors cursor-pointer   " title={t("navigation.logout", { defaultValue: "Logout" })} aria-label={t("navigation.logout", { defaultValue: "Logout" })}>
-            <LogOut size={16} />
-          </button>
-          
-          <div className="flex items-center gap-2 pl-2">
-             <UserAvatarItem email={user?.email || "Admin"} avatarUrl={user?.avatar} />
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content Area */}
-      <main className="relative z-10 w-full h-full pt-[120px] pb-8 px-4 md:px-8 overflow-y-auto custom-scrollbar flex flex-col items-center">
-        <div className="w-full max-w-[1400px] flex-1">
-          {/* Header Title Section */}
-          <div className="mb-8 flex items-end justify-between">
-            <div>
-              <h2 className="text-3xl md:text-4xl font-black text-primary-text tracking-tight uppercase font-display">{getPageTitle()}</h2>
-              <p className="text-sm font-medium text-secondary-text mt-2 uppercase tracking-widest">
-                {activeTab === "users" && `${users.length} ${t("admin.users_found", { defaultValue: "users found" })}`}
-                {activeTab === "logs" && `${logs.length} ${t("admin.logs_found", { defaultValue: "logs found" })}`}
-                {activeTab === "dashboard" && "OVERVIEW & METRICS"}
-              </p>
-            </div>
-          </div>
-          
+    <MyLifeWorkspaceLayout backTo="/mylife">
+      <PageHeader eyebrow={t('appShell.admin')} title={getPageTitle()} description={activeTab === 'users' ? users.length + ' ' + t('admin.users_found') : activeTab === 'logs' ? logs.length + ' ' + t('admin.logs_found') : t('appShell.overview')}
+        actions={<IconButton label={t('appShell.refresh')} variant="secondary" disabled={loading} onClick={() => void fetchAll()}><RefreshCw size={17} className={loading ? 'animate-spin' : ''}/></IconButton>}/>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+        <SegmentedControl label={t('appShell.admin')} value={activeTab} onChange={setActiveTab} options={navItems.map(item => ({ value: item.id, label: item.label, icon: item.icon }))}/>
+        <SearchBar className="sm:!w-72" ariaLabel={t('common.search')} placeholder={t('common.search')} value={adminSearch} onChange={setAdminSearch}/>
+      </div>
           {/* Dashboard Tab */}
           {activeTab === "dashboard" && (
             <div className="space-y-6">
@@ -356,187 +248,32 @@ export const AdminDashboard: React.FC = () => {
                 </div>
               ) : stats ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-                  <StatCard icon={<Users size={20} />} label={t("admin.total_users", { defaultValue: "Tổng Users" })} value={stats.totalUsers} color="text-primary-text" />
-                  <StatCard icon={<CheckCircle size={20} />} label={t("admin.active", { defaultValue: "Hoạt động" })} value={stats.totalActive} color="text-emerald-500" />
-                  <StatCard icon={<Lock size={20} />} label={t("admin.locked", { defaultValue: "Bị khóa" })} value={stats.totalLocked} color="text-red-500" />
-                  <StatCard icon={<LogIn size={20} />} label="Login (7d)" value={stats.last7Days.successLogins} color="text-purple-500" />
-                  <StatCard icon={<AlertCircle size={20} />} label="Failed (7d)" value={stats.last7Days.failedLogins} color="text-orange-500" />
+                  <StatCard icon={<Users size={20} />} label={t("admin.total_users", { defaultValue: "Tổng Users" })} value={stats.totalUsers} />
+                  <StatCard icon={<CheckCircle size={20} />} label={t("admin.active", { defaultValue: "Hoạt động" })} value={stats.totalActive} />
+                  <StatCard icon={<Lock size={20} />} label={t("admin.locked", { defaultValue: "Bị khóa" })} value={stats.totalLocked} />
+                  <StatCard icon={<LogIn size={20} />} label={t('appShell.loginWeek')} value={stats.last7Days.successLogins} />
+                  <StatCard icon={<AlertCircle size={20} />} label={t('appShell.failedWeek')} value={stats.last7Days.failedLogins} />
                 </div>
               ) : null}
             </div>
           )}
 
-          {/* Users Tab */}
-          {activeTab === "users" && (
-            <div className="glass-pill rounded-3xl overflow-hidden p-2">
-              {/* Header Row */}
-              <div className="grid grid-cols-12 gap-4 px-6 py-4 text-[11px] font-bold text-secondary-text uppercase tracking-widest border-b border-custom-border/30">
-                <div className="col-span-4 md:col-span-3">{t("admin.col_email", { defaultValue: "Email" })}</div>
-                <div className="col-span-2 hidden md:block">{t("admin.col_role", { defaultValue: "Role" })}</div>
-                <div className="col-span-2 hidden md:block">{t("admin.col_auth", { defaultValue: "Auth" })}</div>
-                <div className="col-span-4 md:col-span-2">{t("admin.col_status", { defaultValue: "Status" })}</div>
-                <div className="col-span-2 hidden md:block">{t("admin.col_date", { defaultValue: "Date" })}</div>
-                <div className="col-span-4 md:col-span-1 text-right">{t("admin.col_action", { defaultValue: "Action" })}</div>
-              </div>
-
-              {/* Data Rows */}
-              <div className="space-y-1 mt-1 p-1">
-                {users.length === 0 && !loading && (
-                  <div className="py-10 text-center text-secondary-text text-sm">{t("admin.no_users", { defaultValue: "Không có người dùng nào." })}</div>
-                )}
-                {users.map((u, i) => (
-                  <motion.div
-                    key={u.id}
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.02 }}
-                    className="grid grid-cols-12 gap-4 items-center hover:bg-secondary-bg/40 transition-colors duration-200 px-5 py-3 rounded-2xl"
-                  >
-                    <div className="col-span-4 md:col-span-3 flex items-center gap-3 overflow-hidden">
-                      <UserAvatarItem email={u.email} avatarUrl={u.avatarUrl} />
-                      <span className="text-primary-text font-semibold text-sm truncate">{u.email}</span>
-                    </div>
-                    <div className="col-span-2 hidden md:flex items-center">
-                      <Select
-                        value={u.role}
-                        disabled={roleUpdating === u.id || user?.id === u.id}
-                        onValueChange={(value) => void handleRoleChange(u, value as AdminUser['role'])}
-                        containerClassName="!w-auto"
-                        variant="compact"
-                        className="uppercase font-bold tracking-wider"
-                        aria-label={`Change role for ${u.email}`}
-                      >
-                        <SelectItem value="USER">User</SelectItem>
-                        <SelectItem value="ADMIN">Admin</SelectItem>
-                      </Select>
-                    </div>
-                    <div className="col-span-2 hidden md:flex items-center text-secondary-text text-xs font-medium gap-1.5">
-                      {u.authProvider === 1 ? <Globe size={14} className="text-blue-500" /> : <Mail size={14} />}
-                       {u.authProviderName ?? (u.loginProviders?.local && u.loginProviders?.google
-                         ? 'Email + Google'
-                         : u.authProvider === 1 ? 'Google OAuth 2.0' : 'Email & Password')}
-                    </div>
-                    <div className="col-span-4 md:col-span-2 flex items-center">
-                      <StatusBadge status={u.isActive ? "SUCCESS" : "FAILED"} t={t} />
-                    </div>
-                    <div className="col-span-2 hidden md:flex items-center text-secondary-text text-[11px] font-medium font-mono">
-                      {fmtDate(u.createdAt)}
-                    </div>
-                    <div className="col-span-4 md:col-span-1 flex items-center justify-end gap-1">
-                      {u.role !== "ADMIN" && (
-                        <>
-                          <button
-                            onClick={() => handleToggle(u)}
-                            disabled={toggling === u.id || isDeleting}
-                            title={u.isActive ? t("admin.lock_acc", { defaultValue: "Khóa tài khoản" }) : t("admin.unlock_acc", { defaultValue: "Mở khóa tài khoản" })}
-                            className="w-8 h-8 rounded-full flex items-center justify-center text-secondary-text hover:text-primary-text hover:bg-secondary-bg transition-colors cursor-pointer border border-transparent hover:border-custom-border"
-                          >
-                            {toggling === u.id ? <Loader2 size={14} className="animate-spin" /> : u.isActive ? <Lock size={14} /> : <Unlock size={14} />}
-                          </button>
-                          <button
-                            onClick={() => setUserToDelete(u)}
-                            disabled={toggling === u.id || isDeleting}
-                            className="w-8 h-8 rounded-full flex items-center justify-center text-secondary-text hover:text-error hover:bg-error/10 transition-colors cursor-pointer border border-transparent hover:border-error/20"
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Logs Tab */}
-          {activeTab === "logs" && (
-            <div className="glass-pill rounded-3xl overflow-hidden p-2">
-              <div className="grid grid-cols-12 gap-4 px-6 py-4 text-[11px] font-bold text-secondary-text uppercase tracking-widest border-b border-custom-border/30">
-                <div className="col-span-5 md:col-span-4">{t("admin.col_email", { defaultValue: "Email" })}</div>
-                <div className="col-span-4 md:col-span-3">{t("admin.col_status", { defaultValue: "Trạng thái" })}</div>
-                <div className="col-span-2 hidden md:block">IP Address</div>
-                <div className="col-span-3">{t("admin.col_date", { defaultValue: "Thời gian" })}</div>
-              </div>
-              
-              <div className="space-y-1 mt-1 p-1">
-                {logs.length === 0 && !loading && (
-                  <div className="py-10 text-center text-secondary-text text-sm">{t("admin.no_data", { defaultValue: "Không có dữ liệu." })}</div>
-                )}
-                {logs.map((log, i) => (
-                  <motion.div
-                    key={log.id}
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.02 }}
-                    className="grid grid-cols-12 gap-4 items-center hover:bg-secondary-bg/40 transition-colors duration-200 px-5 py-3 rounded-2xl"
-                  >
-                    <div className="col-span-5 md:col-span-4 text-primary-text font-semibold text-sm truncate pr-4">{log.attemptEmail}</div>
-                    <div className="col-span-4 md:col-span-3"><StatusBadge status={log.status} t={t} /></div>
-                    <div className="col-span-2 hidden md:block text-secondary-text text-xs font-mono">{log.ipAddress ?? "—"}</div>
-                    <div className="col-span-3 text-secondary-text text-[11px] font-medium font-mono">{fmtDate(log.createdAt)}</div>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-          )}
-
-        </div>
-      </main>
-
-      {/* Delete Confirmation Modal */}
-      <AnimatePresence>
-        {userToDelete && (
-          <div
-            className="fixed inset-0 z-[60] flex items-center justify-center p-4 overflow-hidden"
-            onClick={(e) => {
-              if (e.target === e.currentTarget && !isDeleting) setUserToDelete(null);
-            }}
-          >
-            <motion.div
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              onClick={() => !isDeleting && setUserToDelete(null)}
-              className="absolute inset-0 bg-black/40 backdrop-blur-md cursor-pointer"
-            />
-            <motion.div
-              layout
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-md bg-secondary-bg p-8 rounded-[32px] shadow-2xl z-10 border border-custom-border"
-            >
-              <div className="w-16 h-16 rounded-full bg-error/10 text-error flex items-center justify-center mb-6 border border-error/20 mx-auto">
-                <AlertTriangle size={28} />
-              </div>
-              <h3 className="text-2xl font-bold text-primary-text mb-3 text-center">{t("admin.delete_user_title", { defaultValue: "Xóa người dùng?" })}</h3>
-              <p className="text-secondary-text text-sm mb-8 text-center leading-relaxed">
-                {t("admin.delete_user_desc", { email: userToDelete.email, defaultValue: `Bạn sắp xóa vĩnh viễn tài khoản ${userToDelete.email}. Hành động này không thể hoàn tác.` })}
-              </p>
-              
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  disabled={isDeleting}
-                  onClick={() => setUserToDelete(null)}
-                  className="flex-1 py-3 px-4 rounded-full bg-secondary-bg hover:bg-custom-border text-primary-text text-sm font-bold transition-all cursor-pointer disabled:opacity-50 border border-custom-border"
-                >
-                  {t("admin.cancel", { defaultValue: "Hủy bỏ" })}
-                </button>
-                <button
-                  type="button"
-                  disabled={isDeleting}
-                  onClick={handleDeleteUser}
-                  className="flex-1 py-3 px-4 rounded-full bg-error hover:bg-red-600 text-white text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-error/20 disabled:opacity-50 border border-transparent"
-                >
-                  {isDeleting ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
-                  <span>{t("admin.delete_forever", { defaultValue: "Xóa vĩnh viễn" })}</span>
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-    </div>
+      {activeTab === 'users' && <TableShell><table className="min-w-[860px]">
+        <thead><tr>{['col_email','col_role','col_auth','col_status','col_date','col_action'].map(key => <th key={key} scope="col">{t('admin.' + key)}</th>)}</tr></thead>
+        <tbody>{loading ? <tr><td colSpan={6}><Loading label={t('admin.library_ui.loading')}/></td></tr> : users.length === 0 ? <tr><td colSpan={6}><EmptyState title={t('admin.no_users')}/></td></tr> : users.map(u => <tr key={u.id}>
+          <td><div className="flex items-center gap-3"><UserAvatarItem email={u.email} avatarUrl={u.avatarUrl}/><span className="font-medium text-primary-text">{u.email}</span></div></td>
+          <td><Select value={u.role} disabled={roleUpdating === u.id || user?.id === u.id} onValueChange={value => void handleRoleChange(u, value as AdminUser['role'])} variant="compact" aria-label={t('admin.col_role') + ': ' + u.email}><SelectItem value="USER">User</SelectItem><SelectItem value="ADMIN">Admin</SelectItem></Select></td>
+          <td><span className="inline-flex items-center gap-2 text-xs text-secondary-text">{u.authProvider === 1 ? <Globe size={14}/> : <Mail size={14}/>} {u.authProviderName ?? (u.loginProviders?.local && u.loginProviders?.google ? 'Email + Google' : u.authProvider === 1 ? 'Google OAuth 2.0' : 'Email & Password')}</span></td>
+          <td><StatusBadge status={u.isActive ? 'SUCCESS' : 'FAILED'} t={t}/></td><td className="whitespace-nowrap text-xs text-secondary-text">{fmtDate(u.createdAt)}</td>
+          <td><div className="flex items-center justify-end gap-1">{u.role !== 'ADMIN' && <><IconButton size="sm" variant="ghost" label={t(u.isActive ? 'admin.lock_acc' : 'admin.unlock_acc')} disabled={toggling === u.id || isDeleting} onClick={() => void handleToggle(u)}>{toggling === u.id ? <Loader2 size={15} className="animate-spin"/> : u.isActive ? <Lock size={15}/> : <Unlock size={15}/>}</IconButton><IconButton size="sm" variant="ghost" label={t('admin.delete_user_title')} disabled={toggling === u.id || isDeleting} onClick={() => setUserToDelete(u)}><Trash2 size={15} className="text-[var(--state-danger)]"/></IconButton></>}</div></td>
+        </tr>)}</tbody>
+      </table></TableShell>}
+      {activeTab === 'logs' && <TableShell><table className="min-w-[640px]"><thead><tr><th scope="col">{t('admin.col_email')}</th><th scope="col">{t('admin.col_status')}</th><th scope="col">IP</th><th scope="col">{t('admin.col_date')}</th></tr></thead><tbody>
+        {loading ? <tr><td colSpan={4}><Loading label={t('admin.library_ui.loading')}/></td></tr> : logs.length === 0 ? <tr><td colSpan={4}><EmptyState title={t('admin.no_data')}/></td></tr> : logs.map(log => <tr key={log.id}><td className="font-medium">{log.attemptEmail}</td><td><StatusBadge status={log.status} t={t}/></td><td className="text-xs text-secondary-text">{log.ipAddress ?? '?'}</td><td className="text-xs text-secondary-text">{fmtDate(log.createdAt)}</td></tr>)}
+      </tbody></table></TableShell>}
+      <ConfirmDialog isOpen={!!userToDelete} title={t('admin.delete_user_title')} busy={isDeleting} confirmLabel={t('admin.delete_forever')} cancelLabel={t('admin.cancel')} onClose={() => setUserToDelete(null)} onConfirm={() => void handleDeleteUser()}>
+        {t('admin.delete_user_desc', { email: userToDelete?.email })}
+      </ConfirmDialog>
+    </MyLifeWorkspaceLayout>
   );
 };

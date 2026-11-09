@@ -1,6 +1,11 @@
+import { normalizeDisplayText } from '@/shared/utils/normalizeDisplayText';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { CalendarDays, ChevronLeft, ChevronRight, Loader2, MapPin, Pencil, Plus, RotateCcw, Trash2, Users, X } from 'lucide-react';
-import { Button, Modal, Select, SelectItem } from '@/shared/components/ui';
+import { CalendarDays, ChevronLeft, ChevronRight, MapPin, Pencil, Plus, RotateCcw, Trash2, Users, X } from 'lucide-react';
+import { Button, Select, SelectItem, PageHeader, Chip, ErrorState, EmptyState, ConfirmDialog } from '@/shared/components/ui';
+import { MemorySkeleton } from '@/features/my-life/components/memories/MemorySkeleton';
+import { MemoryActions } from '@/features/my-life/components/memories/MemoryActions';
+import { AnniversaryDateTile } from '@/features/my-life/components/memories/AnniversaryDateTile';
+import '@/features/my-life/components/memories/Memories.css';
 import { SearchBar } from '@/shared/components/SearchBar';
 import { useLanguage } from '@/shared/hooks/useLanguage';
 import { anniversaryService, type FamilyAnniversary, type FamilyAnniversaryPayload } from '../../services/anniversaryService';
@@ -39,6 +44,7 @@ export const AnniversaryTab: React.FC<Props> = ({ showToast, members: initialMem
   const membersRequest = useRef<Promise<FamilyMember[] | null> | null>(null);
   const membersController = useRef<AbortController | null>(null);
   const pendingEditor = useRef<FamilyAnniversary | null>(null);
+  const monthButton = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (initialMembers !== undefined) setMembers(initialMembers);
@@ -191,23 +197,18 @@ export const AnniversaryTab: React.FC<Props> = ({ showToast, members: initialMem
   const eventLabel = (item: FamilyAnniversary) => t(item.eventType === 'DEATH_ANNIVERSARY' ? 'admin.anniversary_ui.death_anniversary' : 'admin.anniversary_ui.family_event');
   const hasFilters = Boolean(search.trim() || filterDate || eventTypeFilter !== 'ALL');
 
-  return <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain p-3 custom-scrollbar xl:overflow-hidden sm:p-4">
-    <header className="mb-3 flex shrink-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <div className="min-w-0 flex-1">
-        <h1 className="text-xl font-black tracking-tight text-primary-text sm:text-2xl">{t('myLife.modules.anniversaries.title')}</h1>
-        <p className="mt-0.5 text-xs text-secondary-text sm:text-sm">{t('myLife.modules.anniversaries.description')}</p>
-      </div>
-      <Button className="w-full shrink-0 whitespace-nowrap sm:w-auto" disabled={membersLoading} leftIcon={<Plus size={16} />} onClick={() => void openEditor(null)}>{t('admin.anniversary_ui.add_action')}</Button>
-    </header>
+  return <div className="memory-page memory-page--calendar">
+    <PageHeader eyebrow={t('appShell.memories')} title={t('appShell.calendar')} description={t('memories.calendarDescription')} actions={<Button disabled={membersLoading} leftIcon={<Plus size={16}/>} onClick={() => void openEditor(null)}>{t('admin.anniversary_ui.add_action')}</Button>}/>
 
-    <main className="flex min-h-0 flex-1 flex-col gap-3 xl:grid xl:grid-cols-[minmax(300px,0.4fr)_minmax(0,0.6fr)]">
-      <section aria-label={t('admin.anniversary_ui.calendar')} className="shrink-0 rounded-2xl border border-custom-border bg-secondary-bg p-3 sm:p-4 xl:flex xl:min-h-0 xl:flex-col">
+    <div className={`memory-calendar-layout ${loading ? 'is-loading' : ''}`}>
+      {loading && <MemorySkeleton module="calendar"/>}
+      <section aria-label={t('admin.anniversary_ui.calendar')} className="memory-calendar">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <div className="flex min-w-0 flex-1 items-center gap-2">
             <CalendarDays size={18} className="shrink-0 text-accent" aria-hidden="true" />
             <div className="relative min-w-0">
-              <button type="button" className="truncate rounded-lg px-2 py-1 text-left font-bold capitalize text-primary-text hover:bg-primary-bg focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent" aria-expanded={monthPickerOpen} aria-haspopup="dialog" aria-controls="anniversary-month-picker" onClick={openMonthPicker}>{monthLabel}</button>
-              {monthPickerOpen && <div id="anniversary-month-picker" role="dialog" aria-label={t('admin.anniversary_ui.month_picker')} onKeyDown={event => { if (event.key === 'Escape') setMonthPickerOpen(false); }} className="absolute left-0 top-full z-30 mt-2 w-64 rounded-xl border border-custom-border bg-secondary-bg p-3 shadow-lg">
+              <button ref={monthButton} type="button" className="max-w-full truncate rounded-lg px-2 py-1 text-left font-bold capitalize text-primary-text hover:bg-primary-bg focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent" aria-expanded={monthPickerOpen} aria-haspopup="dialog" aria-controls="anniversary-month-picker" onClick={openMonthPicker}>{monthLabel}</button>
+              {monthPickerOpen && <div id="anniversary-month-picker" role="dialog" aria-label={t('admin.anniversary_ui.month_picker')} onKeyDown={event => { if (event.key === 'Escape') { event.stopPropagation(); setMonthPickerOpen(false); monthButton.current?.focus(); } }} className="absolute left-0 top-full z-30 mt-2 w-64 rounded-xl border border-custom-border bg-secondary-bg p-3 shadow-lg">
                 <div className="grid grid-cols-2 gap-2">
                   <label className="space-y-1 text-xs font-semibold text-secondary-text"><span>{t('admin.anniversary_ui.month')}</span>
                     <Select aria-label={t('admin.anniversary_ui.month')} appearance="simple" variant="compact" value={String(draftMonth?.month ?? currentMonth.month)} onValueChange={value => setDraftMonth(current => ({ year: current?.year ?? currentMonth.year, month: Number(value) }))}>
@@ -218,7 +219,7 @@ export const AnniversaryTab: React.FC<Props> = ({ showToast, members: initialMem
                     <input className="h-10 w-full rounded-lg border border-custom-border bg-primary-bg px-2 text-sm text-primary-text" aria-label={t('admin.anniversary_ui.year')} type="number" min={1800} max={2200} value={draftMonth?.year ?? currentMonth.year} onChange={event => setDraftMonth(current => ({ year: Number(event.target.value), month: current?.month ?? currentMonth.month }))} />
                   </label>
                 </div>
-                <div className="mt-3 flex justify-end"><Button type="button" className="min-h-9 px-3 text-xs" onClick={applyMonthPicker}>{t('admin.anniversary_ui.go_to_month')}</Button></div>
+                <div className="mt-3 flex justify-end"><Button type="button" className="min-h-9 px-3 text-xs" onClick={() => { applyMonthPicker(); monthButton.current?.focus(); }}>{t('admin.anniversary_ui.go_to_month')}</Button></div>
               </div>}
             </div>
             <span className="hidden shrink-0 whitespace-nowrap rounded-full bg-accent/10 px-2 py-0.5 text-xs font-semibold text-accent sm:inline-flex sm:items-center">{t('admin.anniversary_ui.event_count', { count: visibleMonthEventCount })}</span>
@@ -229,24 +230,23 @@ export const AnniversaryTab: React.FC<Props> = ({ showToast, members: initialMem
             <Button variant="outline" className="min-h-9 shrink-0 whitespace-nowrap px-2 text-xs" leftIcon={<RotateCcw size={13} />} onClick={() => { setVisibleMonth({ year: today.year, month: today.month }); setCalendarSelectedDate(todayKey); setFilterDate(null); setSelectedEventId(null); setMonthPickerOpen(false); }}>{t('admin.anniversary_ui.today')}</Button>
           </div>
         </div>
-        <div className="grid grid-cols-7 gap-1" role="grid" aria-label={monthLabel}>
-          {weekdayLabels.map((label, index) => <div key={`${label}-${index}`} role="columnheader" className="py-1 text-center text-[10px] font-semibold uppercase text-secondary-text sm:text-xs">{label}</div>)}
-          {cells.map(({ year, month, day, inMonth }) => {
+        <div className="memory-calendar__grid" role="grid" onKeyDown={event => {
+          const offsets: Record<string,number> = { ArrowLeft:-1, ArrowRight:1, ArrowUp:-7, ArrowDown:7 };
+          const days = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('[role=gridcell]'));
+          const index = days.indexOf(event.target as HTMLButtonElement);
+          if (index < 0) return;
+          const next = event.key === 'Home' ? index - index % 7 : event.key === 'End' ? index + 6 - index % 7 : index + (offsets[event.key] ?? 0);
+          if (event.key in offsets || event.key === 'Home' || event.key === 'End') { event.preventDefault(); days[Math.max(0,Math.min(days.length - 1,next))]?.focus(); }
+        }} aria-label={monthLabel}>
+          <div role="row" className="memory-calendar__row">{weekdayLabels.map((label, index) => <div key={`${label}-${index}`} role="columnheader" className="py-1 text-center text-[10px] font-semibold uppercase text-secondary-text sm:text-xs">{label}</div>)}</div>
+          {Array.from({ length:Math.ceil(cells.length / 7) }, (_, week) => <div role="row" className="memory-calendar__row" key={week}>{cells.slice(week * 7,week * 7 + 7).map(({ year, month, day, inMonth }) => {
             const key = anniversaryDateKey(year, month, day);
             const dayEvents = eventsByDate.get(key) ?? [];
             const dayVisual = getDayEventVisual(dayEvents);
             const isToday = key === todayKey;
             const isSelected = key === calendarSelectedDate;
-            const eventTone = dayVisual.type === 'death-anniversary' ? 'border-amber-300/80 bg-amber-50 text-amber-800 hover:bg-amber-100 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-300'
-              : dayVisual.type === 'family-event' ? 'border-teal-300/80 bg-teal-50 text-teal-800 hover:bg-teal-100 dark:border-teal-400/30 dark:bg-teal-400/10 dark:text-teal-300'
-                : dayVisual.type === 'mixed' ? 'border-accent/30 bg-accent/5 text-accent hover:bg-accent/10' : '';
-            const selectedEventTone = dayVisual.type === 'death-anniversary' ? 'border-amber-500 ring-amber-500/50 dark:border-amber-400 dark:ring-amber-400/40'
-              : dayVisual.type === 'family-event' ? 'border-teal-500 ring-teal-500/50 dark:border-teal-400 dark:ring-teal-400/40'
-                : dayVisual.type === 'mixed' ? 'border-accent/70 ring-accent/40' : 'border-[var(--calendar-selected-border)] ring-[var(--calendar-selected-ring)]';
-            const dayState = isSelected ? `${selectedEventTone} bg-[var(--calendar-selected-bg)] font-bold text-[var(--calendar-selected-text)] ring-2 shadow-sm`
-              : isToday ? 'border-accent/70 bg-[var(--focus-surface)] font-semibold text-primary-text ring-1 ring-accent/50'
-                : dayEvents.length ? `${eventTone} font-bold` : 'border-transparent text-primary-text hover:bg-primary-bg';
-            return <button key={key} type="button" role="gridcell" aria-current={isToday ? 'date' : undefined} aria-label={`${fullDateFormat.format(new Date(Date.UTC(year, month, day, 12)))}${dayVisual.count ? `, ${t('admin.anniversary_ui.event_count', { count: dayVisual.count })}` : ''}${isToday ? `, ${t('admin.anniversary_ui.today')}` : ''}`} aria-pressed={isSelected} onClick={() => selectDay(key)} className={`relative flex aspect-square min-h-9 cursor-pointer flex-col items-center justify-center rounded-lg border text-sm transition-colors duration-200 motion-reduce:transition-none sm:min-h-10 ${inMonth || isSelected ? '' : 'text-secondary-text/50'} ${dayState}`}>
+            const dayState = `memory-calendar__day ${isSelected ? 'is-selected' : ''} ${isToday ? 'is-today' : ''} ${dayEvents.length ? 'has-events' : ''} ${inMonth ? '' : 'is-outside'}`;
+            return <button key={key} type="button" role="gridcell" aria-current={isToday ? 'date' : undefined} aria-label={`${fullDateFormat.format(new Date(Date.UTC(year, month, day, 12)))}${dayVisual.count ? `, ${t('admin.anniversary_ui.event_count', { count: dayVisual.count })}` : ''}${isToday ? `, ${t('admin.anniversary_ui.today')}` : ''}`} aria-selected={isSelected} aria-pressed={isSelected} onClick={() => selectDay(key)} data-event-type={dayVisual.type} className={dayState}>
               <span>{day}</span>
               {dayVisual.count > 0 && <span aria-hidden="true" className="absolute bottom-1 flex h-3 items-center gap-0.5">
                 {dayVisual.count === 1
@@ -255,7 +255,7 @@ export const AnniversaryTab: React.FC<Props> = ({ showToast, members: initialMem
                     {dayVisual.type === 'mixed' && <span className="flex items-center gap-0.5"><i className="h-1 w-1 rounded-full bg-amber-500" /><i className="h-1 w-1 rounded-full bg-teal-500" /></span>}</> : null}
               </span>}
             </button>;
-          })}
+          })}</div>)}
         </div>
         <div className="mt-3 flex min-h-6 flex-wrap items-center justify-between gap-2 border-t border-custom-border pt-2 text-xs text-secondary-text">
           <span>{t('admin.anniversary_ui.calendar_solar')}</span>
@@ -263,8 +263,8 @@ export const AnniversaryTab: React.FC<Props> = ({ showToast, members: initialMem
         </div>
       </section>
 
-      <section aria-labelledby="anniversary-events-heading" className="flex min-h-[18rem] flex-1 flex-col overflow-hidden rounded-2xl border border-custom-border bg-primary-bg xl:min-h-0">
-        <header className="flex shrink-0 flex-col gap-3 border-b border-custom-border px-4 py-3">
+      <section aria-labelledby="anniversary-events-heading" className="memory-upcoming">
+        <header className="memory-upcoming__header">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="min-w-0">
               <h2 id="anniversary-events-heading" className="font-bold text-primary-text">{t('admin.anniversary_ui.upcoming_events')}</h2>
@@ -272,37 +272,32 @@ export const AnniversaryTab: React.FC<Props> = ({ showToast, members: initialMem
             </div>
             <span className="shrink-0 whitespace-nowrap rounded-full bg-accent/10 px-2.5 py-1 text-xs font-semibold text-accent">{t('admin.anniversary_ui.event_count', { count: filtered.length })}</span>
           </div>
-          <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
-            <SearchBar className="w-full sm:w-[20rem] sm:max-w-[40vw] sm:shrink" ariaLabel={t('admin.anniversary_ui.search')} placeholder={t('admin.anniversary_ui.search')} value={search} onChange={setSearch} />
-            <div role="group" aria-label={t('admin.anniversary_ui.event_type_filter')} className="flex w-max min-w-full flex-nowrap items-center gap-1 overflow-x-auto sm:w-auto sm:min-w-0 sm:shrink-0">
+          <div className="memory-upcoming__filters">
+            <SearchBar className="memory-upcoming__search" clearLabel={t('family.clearSearch')} ariaLabel={t('admin.anniversary_ui.search')} placeholder={t('admin.anniversary_ui.search')} value={search} onChange={setSearch} />
+            <div role="group" aria-label={t('admin.anniversary_ui.event_type_filter')} className="memory-type-filters">
               {([
                 ['ALL', 'admin.anniversary_ui.all_events'],
                 ['DEATH_ANNIVERSARY', 'admin.anniversary_ui.death_anniversary'],
                 ['FAMILY_EVENT', 'admin.anniversary_ui.family_event'],
-              ] as const).map(([value, label]) => <button key={value} type="button" aria-pressed={eventTypeFilter === value} onClick={() => { setEventTypeFilter(value); setSelectedEventId(null); }} className={`min-h-9 shrink-0 whitespace-nowrap rounded-full border px-3 text-xs font-semibold transition-colors ${eventTypeFilter === value ? 'border-accent bg-accent/10 text-accent' : 'border-custom-border bg-secondary-bg text-secondary-text hover:border-accent/30 hover:text-primary-text'}`}>{t(label)}</button>)}
+              ] as const).map(([value, label]) => <Chip key={value} selected={eventTypeFilter === value} onClick={() => { setEventTypeFilter(value); setSelectedEventId(null); }}>{t(label)}</Chip>)}
               {filterDate && <button type="button" onClick={clearDateFilter} aria-label={t('admin.anniversary_ui.clear_date')} className="inline-flex min-h-9 shrink-0 items-center gap-1 rounded-full px-2 text-xs font-semibold text-accent transition-colors duration-200 hover:bg-accent/10"><X size={13} />{t('admin.anniversary_ui.all_events')}</button>}
             </div>
           </div>
         </header>
 
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3 custom-scrollbar sm:p-4">
-          {loading ? <div role="status" className="flex min-h-40 items-center justify-center gap-2 text-sm text-secondary-text"><Loader2 className="animate-spin" size={18} />{t('admin.anniversary_ui.loading')}</div>
-            : loadError ? <div role="alert" className="flex min-h-40 flex-col items-center justify-center text-center"><p className="mb-3 text-sm text-primary-text">{t('admin.anniversary_ui.load_failed')}</p><Button className="min-h-10" variant="outline" onClick={() => void load()}>{t('admin.anniversary_ui.retry')}</Button></div>
-              : filtered.length === 0 ? <div className="flex min-h-40 flex-col items-center justify-center px-4 text-center">
-                <CalendarDays className="mb-2 text-secondary-text" size={28} aria-hidden="true" />
-                <p className="font-semibold text-primary-text">{filterDate ? t('admin.anniversary_ui.no_events_date') : hasFilters ? t('admin.anniversary_ui.no_results') : t('admin.anniversary_ui.empty')}</p>
-                {!hasFilters && !items.length && <p className="mt-1 text-sm text-secondary-text">{t('admin.anniversary_ui.empty_desc')}</p>}
-                {hasFilters && <button type="button" onClick={clearAllFilters} className="mt-2 rounded-md px-2 py-1 text-sm font-semibold text-accent hover:bg-accent/10   ">{t('admin.anniversary_ui.clear_filters')}</button>}
-              </div>
-                : <div className="space-y-2.5">{filtered.map(item => <article key={item.id} role="button" tabIndex={0} aria-pressed={selectedEventId === item.id} aria-label={`${item.title}, ${dateFormat.format(new Date(`${item.nextSolarDate}T12:00:00Z`))}`} onClick={() => handleSelectEvent(item)} onKeyDown={event => { if (event.target !== event.currentTarget) return; if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); handleSelectEvent(item); } }} className={`cursor-pointer rounded-xl border p-3 shadow-sm transition-colors duration-200 motion-reduce:transition-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent sm:p-4 ${selectedEventId === item.id ? 'border-accent bg-accent/5 shadow-md' : 'border-custom-border bg-secondary-bg hover:border-accent/30'}`}>
-                  <div className="flex items-start justify-between gap-3">
+        <div className="memory-upcoming__list">
+          {loading ? <MemorySkeleton module="calendar"/>
+            : loadError ? <ErrorState message={t('admin.anniversary_ui.load_failed')} action={<Button variant="secondary" onClick={() => void load()}>{t('admin.anniversary_ui.retry')}</Button>}/>
+              : filtered.length === 0 ? <EmptyState title={filterDate ? t('admin.anniversary_ui.no_events_date') : hasFilters ? t('admin.anniversary_ui.no_results') : t('memories.emptyCalendar')} description={!hasFilters && !items.length ? t('admin.anniversary_ui.empty_desc') : undefined} action={hasFilters ? <Button variant="ghost" onClick={clearAllFilters}>{t('admin.anniversary_ui.clear_filters')}</Button> : undefined}/>
+                : <div className="space-y-2.5">{filtered.map(item => <article key={item.id} role="button" tabIndex={0} aria-pressed={selectedEventId === item.id} aria-label={`${normalizeDisplayText(item.title)}, ${dateFormat.format(new Date(`${item.nextSolarDate}T12:00:00Z`))}`} onClick={() => handleSelectEvent(item)} onKeyDown={event => { if (event.target !== event.currentTarget) return; if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); handleSelectEvent(item); } }} className={`anniversary-event ${selectedEventId === item.id ? 'is-selected' : ''}`}>
+                  <div className="anniversary-event__summary"><AnniversaryDateTile date={item.nextSolarDate}/>
                     <div className="min-w-0 flex-1">
                       <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
                         <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${item.daysUntil === 0 ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : item.eventType === 'DEATH_ANNIVERSARY' ? 'border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-400' : 'border-accent/20 bg-accent/10 text-accent'}`}>{item.daysUntil === 0 ? t('admin.anniversary_ui.today') : t('admin.anniversary_ui.days_left', { count: item.daysUntil })}</span>
                         <span className="text-[11px] text-secondary-text">{eventLabel(item)}</span>
                       </div>
-                      <h3 className="break-words text-sm font-bold text-primary-text sm:text-base">{item.title}</h3>
-                      {item.relatedMemberName && <p className="mt-0.5 truncate text-xs text-secondary-text">{item.relatedMemberName}{item.relatedMemberGeneration ? ` · ${t('admin.generation')} ${item.relatedMemberGeneration}` : ''}{item.relatedMemberRole ? ` · ${item.relatedMemberRole}` : ''}</p>}
+                      <h3 className="break-words text-sm font-bold text-primary-text sm:text-base">{normalizeDisplayText(item.title)}</h3>
+                      {item.relatedMemberName && <p className="mt-0.5 truncate text-xs text-secondary-text">{normalizeDisplayText(item.relatedMemberName)}{item.relatedMemberGeneration ? ` · ${t('admin.generation')} ${item.relatedMemberGeneration}` : ''}{item.relatedMemberRole ? ` · ${item.relatedMemberRole}` : ''}</p>}
                     </div>
                     <div className="shrink-0 text-right">
                       {item.eventType === 'DEATH_ANNIVERSARY' && item.lunarDay && item.lunarMonth && <>
@@ -318,23 +313,19 @@ export const AnniversaryTab: React.FC<Props> = ({ showToast, members: initialMem
                     {item.host && <p className="flex items-start gap-1.5"><Users size={13} className="mt-0.5 shrink-0 text-blue-400" /><span><strong className="text-primary-text">{t(getAnniversaryOrganizationLabelKeys(item.eventType).host)}</strong> {item.host}</span></p>}
                     {item.notes && <p className="whitespace-pre-wrap break-words text-secondary-text">{item.notes}</p>}
                   </div>}
-                  <div className="mt-2 flex justify-end gap-1 border-t border-custom-border/60 pt-1.5">
-                    <Button className="min-h-9 px-2 text-xs" variant="ghost" disabled={membersLoading} leftIcon={<Pencil size={13} />} onClick={event => { event.stopPropagation(); void openEditor(item); }}>{t('admin.anniversary_ui.edit')}</Button>
-                    <Button className="min-h-9 px-2 text-xs text-error hover:text-error" variant="ghost" leftIcon={<Trash2 size={13} />} onClick={event => { event.stopPropagation(); setDeleting(item); }}>{t('admin.anniversary_ui.delete')}</Button>
-                  </div>
+                  <div className="anniversary-event__actions"><MemoryActions label={t('memories.eventActions')} actions={[
+                    { label:t('admin.anniversary_ui.edit'), icon:<Pencil size={14}/>, disabled:membersLoading, onClick:() => void openEditor(item) },
+                    { label:t('admin.anniversary_ui.delete'), icon:<Trash2 size={14}/>, danger:true, onClick:() => setDeleting(item) },
+                  ]}/></div>
                 </article>)}</div>}
         </div>
       </section>
-    </main>
+    </div>
 
     {membersLoadError && <div role="alert" className="fixed bottom-4 right-4 z-50 max-w-sm rounded-xl border border-error/30 bg-secondary-bg p-4 text-sm text-primary-text shadow-lg">
       <p>{t(membersLoadError)}</p><Button className="mt-3 min-h-9" variant="outline" disabled={membersLoading} onClick={() => void openEditor(pendingEditor.current)}>{t('admin.library_ui.retry')}</Button>
     </div>}
     {editing !== undefined && members !== null && <FamilyAnniversaryModal anniversary={editing ?? undefined} members={members} onClose={() => setEditing(undefined)} onSubmit={save} />}
-    <Modal isOpen={!!deleting} title={t('admin.anniversary_ui.delete_title')} onClose={() => !isDeleting && setDeleting(null)} maxWidth="sm" closeOnBackdropClick={!isDeleting} closeOnEsc={!isDeleting}>
-      <div className="space-y-5"><p className="text-sm text-secondary-text">{t('admin.anniversary_ui.delete_confirm', { title: deleting?.title ?? '' })}</p>
-        <div className="flex justify-end gap-3"><Button className="min-h-11" variant="secondary" disabled={isDeleting} onClick={() => setDeleting(null)}>{t('admin.anniversary_ui.cancel')}</Button>
-          <Button className="min-h-11" variant="danger" isLoading={isDeleting} onClick={() => void confirmDelete()}>{t('admin.anniversary_ui.delete')}</Button></div></div>
-    </Modal>
+    <ConfirmDialog isOpen={!!deleting} title={t('admin.anniversary_ui.delete_title')} busy={isDeleting} cancelLabel={t('admin.cancel')} confirmLabel={t('admin.delete_forever')} onClose={() => setDeleting(null)} onConfirm={() => void confirmDelete()}><p className="text-sm text-secondary-text">{t('admin.anniversary_ui.delete_confirm', { title: deleting?.title ?? '' })}</p></ConfirmDialog>
   </div>;
 };

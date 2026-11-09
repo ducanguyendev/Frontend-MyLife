@@ -7,7 +7,7 @@ export const LibraryPage: React.FC = () => {
   const showToast = useWorkspaceToast();
 
   return (
-    <MyLifeWorkspaceLayout backTo="/mylife" showDock contentScroll="hidden" contentClassName="px-3 py-2 sm:px-5 sm:py-3">
+    <MyLifeWorkspaceLayout backTo="/mylife" showDock contentScroll="auto">
       <LibraryTab showToast={showToast} />
     </MyLifeWorkspaceLayout>
   );

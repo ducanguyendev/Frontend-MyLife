@@ -48,7 +48,7 @@ test('parents, spouse, children, both sibling groups, and relation navigation re
 
 test('empty biography and contact fields use compact localized copy and allow safe scrolling', () => {
   assert.match(modal, /profile_no_information/);
-  assert.match(modal, /className="!max-h-\[calc\(100vh-24px\)\] sm:!max-h-\[calc\(100vh-40px\)\]"/);
+  assert.match(modal, /className="family-quick-detail !max-h-\[calc\(100vh-24px\)\] sm:!max-h-\[calc\(100vh-40px\)\]"/);
   assert.match(read('src/shared/components/ui/Modal.tsx'), /overflow-y-auto/);
 });
 

@@ -20,8 +20,13 @@ test('relationship UI uses the authenticated server relationship graph and displ
   const explorer = read('src/features/admin/components/family-tree/RelationshipExplorer.tsx');
   const routes = read('src/App.tsx');
   assert.match(service, /\/api\/family-tree\/relationship\?fromMemberId=/);
-  assert.match(explorer, /fetchRelationship\(Number\(fromId\), Number\(toId\)\)/);
-  assert.match(explorer, /result\.path\.map/);
+  assert.match(explorer, /fetchRelationship\(referenceId, requestedTarget, controller\.signal\)/);
+  assert.match(explorer, /fetchFamilyMembers\(controller\.signal\)/);
+  assert.match(explorer, /normalizeSearch\(`\$\{item\.fullName\} \$\{item\.address \?\? ''\}`\)/);
+  assert.match(explorer, /item\.id !== referenceId/);
+  assert.match(explorer, /<FloatingField[\s\S]*label=\{t\('admin\.family_v2\.choose_person'\)\}/);
+  assert.match(explorer, /aria-activedescendant/);
+  assert.match(explorer, /displayPath\.map/);
   assert.match(explorer, /navigate\(`\/mylife\/family\/member\/\$\{node\.memberId\}`\)/);
   assert.match(routes, /path="\/mylife\/family\/member\/:id"/);
 });
@@ -41,7 +46,7 @@ test('family timeline UI exposes source data, safe event CRUD and useful filters
   assert.match(page, /matchesTimelineFilter/);
   assert.match(card, /event\.latitude !== null && event\.longitude !== null/);
   assert.match(page, /groupTimelineEventsByYear\(filtered\)/);
-  assert.match(page, /disabled=\{!defaultEventType\}/);
+  assert.match(page, /actions=\{defaultEventType &&/);
   assert.match(page, /birth_death_auto_hint/);
   assert.match(page, /other_events_readonly_hint/);
   assert.match(page, /matchesTimelineFilter\(event\.eventType, filter\)/);
@@ -74,14 +79,14 @@ test('timeline groups legacy and derived event types and chooses safe create def
   assert.equal(getDefaultEventTypeForFilter('OTHER'), null);
 });
 
-test('family timeline uses the shared floating add button and shared modal for create and edit', () => {
+test('family timeline uses a page-header action and shared modal for create and edit', () => {
   const page = read('src/features/my-life/pages/FamilyTimelinePage.tsx');
   const modal = read('src/features/my-life/components/TimelineEventModal.tsx');
   const input = read('src/shared/components/ui/Input.tsx');
   const textarea = read('src/shared/components/ui/Textarea.tsx');
   const memberForm = read('src/features/admin/components/family-tree/MemberFormModal.tsx');
   const card = read('src/features/my-life/components/timeline/TimelineEventCard.tsx');
-  assert.match(page, /FloatingAddButton ariaLabel=\{t\('admin\.family_v2\.add_event'\)\} tooltip=\{t\(defaultEventType/);
+  assert.match(page, /PageHeader/); assert.match(page, /defaultEventType &&/);
   assert.match(page, /onClick=\{openCreateModal\}/);
   assert.match(page, /onEdit=\{beginEdit\}/);
   assert.match(page, /TimelineYearSection/);
@@ -93,13 +98,13 @@ test('family timeline uses the shared floating add button and shared modal for c
   assert.match(modal, /<Textarea/);
   assert.match(modal, /floatingLabel appearance="simple"/);
   assert.match(modal, /<DateInput[\s\S]*?formatBackendToDob[\s\S]*?formatDobToBackend/);
-  assert.match(modal, /floatingLabelAlways/);
+  assert.match(modal, /floatingLabel/);
   assert.match(input, /floatingLabelAlways/);
   assert.match(textarea, /floatingLabelAlways/);
   assert.match(memberForm, /<DateInput/);
   assert.equal(JSON.parse(read('src/shared/locales/vi/admin.json')).family_v2.event_year, 'Năm');
   assert.equal(JSON.parse(read('src/shared/locales/en/admin.json')).family_v2.event_year, 'Year');
-  assert.match(card, /!event\.isDerived/);
+  assert.match(card, /event\.isDerived \|\| isDerivedOnlyEventType/);
 });
 
 test('timeline modal renders type-specific semantic forms with shared controls and marriage validation', () => {
@@ -122,14 +127,14 @@ test('timeline modal renders type-specific semantic forms with shared controls a
   assert.match(modal, /eventTypeHelp/);
   assert.match(modal, /event_type_\$\{type\.toLowerCase\(\)\}_help/);
   assert.match(modal, /if \(eventType === form\.eventType\) return/);
-  assert.match(modal, /maxWidth="2xl"/);
-  assert.match(modal, /!max-h-\[min\(88vh,780px\)\]/);
+  assert.match(modal, /maxWidth="full"/);
+  assert.match(modal, /memory-form--timeline/);
   assert.match(modal, /event_section_primary/);
   assert.match(modal, /event_section_time_location[\s\S]*?\{approximateField\}/);
   assert.match(modal, /event_section_content/);
   assert.match(modal, /primaryFields\(\)[\s\S]*?dateFields\(dateLabel\)[\s\S]*?notesField\(contentLabel, contentPlaceholder\)/);
   assert.match(modal, /description=\{t\('admin\.family_v2\.timeline_event_modal_description'\)\}/);
-  assert.match(read('src/features/my-life/components/timeline/TimelineFilterBar.tsx'), /getTimelinePillClass/);
+  assert.match(read('src/features/my-life/components/timeline/TimelineFilterBar.tsx'), /<Chip/);
   assert.match(read('src/features/my-life/components/timeline/timelinePillStyles.ts'), /getTimelinePillClass\(active: boolean\)/);
   assert.match(modal, /<Modal/);
   assert.match(modal, /<Textarea/);

@@ -1,5 +1,7 @@
+import { FormSectionHeader } from '@/shared/components/ui/FormSectionHeader';
+import { normalizeDisplayText } from '@/shared/utils/normalizeDisplayText';
 import React, { useState, useEffect, useMemo } from "react";
-import { ChevronDown, Users, Phone, FileText, X, ImagePlus, Trash2 } from "lucide-react";
+import { Users, Phone, FileText, X, ImagePlus, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/shared/hooks/useLanguage";
 import { apiClient } from "@/shared/api/apiClient";
@@ -82,7 +84,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
   ]);
 
   // Collapsible accordion state
-  const [openSections, setOpenSections] = useState<string[]>(["bio"]);
+  const [openSections, setOpenSections] = useState<string[]>(["basic", "relations", "contact", "bio"]);
 
   const toggleSection = (section: string) => {
     setOpenSections((prev) =>
@@ -416,8 +418,9 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      maxWidth="2xl"
-      showTitle={false}
+      maxWidth="full"
+      className="family-member-form"
+      title={t(isUpdate ? "admin.edit_member" : "admin.add_new_member")}
       ariaLabel={isUpdate
         ? t("admin.edit_member", { defaultValue: "Cập nhật thông tin thành viên" })
         : t("admin.add_new_member", { defaultValue: "Thêm thành viên mới" })}
@@ -444,104 +447,13 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
         </div>
       }
     >
-      <form id="familyForm" onSubmit={handleFormSubmit} noValidate className="space-y-4">
+      <form id="familyForm" onSubmit={handleFormSubmit} noValidate className="family-form-grid">
         {/* ========================================================= */}
         {/* KHỐI 1: ẢNH ĐẠI DIỆN & TIỂU SỬ */}
         {/* ========================================================= */}
-        <div className="border border-custom-border/70 rounded-xl bg-secondary-bg/30 overflow-hidden transition-all">
-          <button
-            type="button"
-            aria-expanded={openSections.includes("bio")}
-            onClick={() => toggleSection("bio")}
-            className="w-full flex items-center justify-between p-3.5 hover:bg-secondary-bg/60 transition-colors text-left cursor-pointer"
-          >
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-accent/15 text-accent flex items-center justify-center">
-                <ImagePlus size={16} />
-              </div>
-              <span className="font-semibold text-sm text-primary-text">
-                {t("admin.section_avatar_bio", { defaultValue: "Ảnh đại diện & Tiểu sử" })}
-              </span>
-            </div>
-            <ChevronDown
-              size={16}
-              className={`text-secondary-text transition-transform duration-200 ${
-                openSections.includes("bio") ? "rotate-180" : ""
-              }`}
-            />
-          </button>
-
-          <AnimatePresence initial={false}>
-            {openSections.includes("bio") && (
-              <motion.div
-                key="bio-section"
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="overflow-hidden"
-              >
-                <div className="p-3.5 pt-1 border-t border-custom-border/40 space-y-3.5">
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium text-primary-text">{t("admin.member_avatar_label")}</label>
-                    <div className="flex items-center gap-3">
-                      {!removeAvatar && <MemberAvatarImage member={editingMember as FamilyMember} sourceOverride={previewUrl} alt={editingMember.fullName || ""} className="h-16 w-16 rounded-xl object-cover border border-custom-border" />}
-                      <div className="flex flex-wrap gap-2">
-                        <label className="inline-flex items-center gap-2 rounded-xl border border-custom-border px-3 py-2 text-sm cursor-pointer hover:bg-primary-bg">
-                          <ImagePlus size={16} /> {t("admin.member_avatar_choose")}
-                          <input className="sr-only" type="file" accept="image/jpeg,image/png,image/webp,image/gif" disabled={isSaving} onChange={event => {
-                            const file = event.currentTarget.files?.[0]; event.currentTarget.value = ""; if (!file) return;
-                            if (!["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"].includes(file.type) || file.size <= 0 || file.size > 5 * 1024 * 1024) {
-                              onPendingAvatarChange(null); onRemoveAvatarChange(false);
-                              setErrors(prev => ({ ...prev, avatarUrl: "admin.member_avatar_errors.invalid_file" }));
-                              setOpenSections((prev) => prev.includes("bio") ? prev : [...prev, "bio"]);
-                              return;
-                            }
-                            setErrors(prev => ({ ...prev, avatarUrl: undefined })); onRemoveAvatarChange(false); onPendingAvatarChange(file);
-                          }} />
-                        </label>
-                        {(hasAvatar || pendingAvatar) && <button type="button" disabled={isSaving} onClick={() => { onPendingAvatarChange(null); onRemoveAvatarChange(hasAvatar); }} className="inline-flex items-center gap-2 rounded-xl border border-custom-border px-3 py-2 text-sm text-error"><Trash2 size={16} />{t("admin.member_avatar_remove")}</button>}
-                      </div>
-                    </div>
-                    {errors.avatarUrl && <p role="alert" className="text-xs text-error">{t(errors.avatarUrl)}</p>}
-                  </div>
-                  {/* Tiểu sử */}
-                  <Textarea
-                    label={t("admin.field_biography", { defaultValue: "Tiểu sử & Ghi chú cuộc đời" })}
-                    rows={3}
-                    value={editingMember.biography || ""}
-                    onChange={(e) => onChange({ ...editingMember, biography: e.target.value })}
-                  />
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-
-        {/* KHỐI 2: THÔNG TIN CƠ BẢN */}
-        {/* ========================================================= */}
-        <div className="border border-custom-border/70 rounded-xl bg-secondary-bg/30 overflow-hidden transition-all">
-          <button
-            type="button"
-            aria-expanded={openSections.includes("basic")}
-            onClick={() => toggleSection("basic")}
-            className="w-full flex items-center justify-between p-3.5 hover:bg-secondary-bg/60 transition-colors text-left cursor-pointer"
-          >
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-accent/15 text-accent flex items-center justify-center">
-                <FileText size={16} />
-              </div>
-              <span className="font-semibold text-sm text-primary-text">
-                {t("admin.section_basic_info", { defaultValue: "Thông tin cơ bản" })}
-              </span>
-            </div>
-            <ChevronDown
-              size={16}
-              className={`text-secondary-text transition-transform duration-200 ${
-                openSections.includes("basic") ? "rotate-180" : ""
-              }`}
-            />
-          </button>
+<div className="family-form-column">
+        <div className="family-form-section" data-section="basic">
+          <FormSectionHeader title={t("admin.section_basic_info", { defaultValue: "Thông tin cơ bản" })} icon={<FileText size={16} aria-hidden="true"/>} expanded={openSections.includes("basic")} onToggle={() => toggleSection("basic")}/>
 
           <AnimatePresence initial={false}>
             {openSections.includes("basic") && (
@@ -674,28 +586,61 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
         {/* ========================================================= */}
         {/* KHỐI 3: QUAN HỆ GIA ĐÌNH & CON CÁI */}
         {/* ========================================================= */}
-        <div className="border border-custom-border/70 rounded-xl bg-secondary-bg/30 overflow-hidden transition-all">
-          <button
-            type="button"
-            aria-expanded={openSections.includes("relations")}
-            onClick={() => toggleSection("relations")}
-            className="w-full flex items-center justify-between p-3.5 hover:bg-secondary-bg/60 transition-colors text-left cursor-pointer"
-          >
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-accent/15 text-accent flex items-center justify-center">
-                <Users size={16} />
-              </div>
-              <span className="font-semibold text-sm text-primary-text">
-                {t("admin.section_family_relations", { defaultValue: "Quan hệ gia đình & Con cái" })}
-              </span>
-            </div>
-            <ChevronDown
-              size={16}
-              className={`text-secondary-text transition-transform duration-200 ${
-                openSections.includes("relations") ? "rotate-180" : ""
-              }`}
-            />
-          </button>
+        <div className="family-form-section" data-section="bio">
+          <FormSectionHeader title={t("admin.section_avatar_bio", { defaultValue: "Ảnh đại diện & Tiểu sử" })} icon={<ImagePlus size={16} aria-hidden="true"/>} expanded={openSections.includes("bio")} onToggle={() => toggleSection("bio")}/>
+
+          <AnimatePresence initial={false}>
+            {openSections.includes("bio") && (
+              <motion.div
+                key="bio-section"
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden"
+              >
+                <div className="p-3.5 pt-1 border-t border-custom-border/40 space-y-3.5">
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-primary-text">{t("admin.member_avatar_label")}</label>
+                    <div className="flex items-center gap-3">
+                      {!removeAvatar && <MemberAvatarImage member={editingMember as FamilyMember} sourceOverride={previewUrl} alt={editingMember.fullName || ""} className="h-16 w-16 rounded-xl object-cover border border-custom-border" />}
+                      <div className="flex flex-wrap gap-2">
+                        <label className="inline-flex items-center gap-2 rounded-xl border border-custom-border px-3 py-2 text-sm cursor-pointer hover:bg-primary-bg">
+                          <ImagePlus size={16} /> {t("admin.member_avatar_choose")}
+                          <input className="sr-only" type="file" accept="image/jpeg,image/png,image/webp,image/gif" disabled={isSaving} onChange={event => {
+                            const file = event.currentTarget.files?.[0]; event.currentTarget.value = ""; if (!file) return;
+                            if (!["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"].includes(file.type) || file.size <= 0 || file.size > 5 * 1024 * 1024) {
+                              onPendingAvatarChange(null); onRemoveAvatarChange(false);
+                              setErrors(prev => ({ ...prev, avatarUrl: "admin.member_avatar_errors.invalid_file" }));
+                              setOpenSections((prev) => prev.includes("bio") ? prev : [...prev, "bio"]);
+                              return;
+                            }
+                            setErrors(prev => ({ ...prev, avatarUrl: undefined })); onRemoveAvatarChange(false); onPendingAvatarChange(file);
+                          }} />
+                        </label>
+                        {(hasAvatar || pendingAvatar) && <button type="button" disabled={isSaving} onClick={() => { onPendingAvatarChange(null); onRemoveAvatarChange(hasAvatar); }} className="inline-flex items-center gap-2 rounded-xl border border-custom-border px-3 py-2 text-sm text-secondary-text hover:text-error"><Trash2 size={16} />{t("admin.member_avatar_remove")}</button>}
+                      </div>
+                    </div>
+                    {errors.avatarUrl && <p role="alert" className="text-xs text-error">{t(errors.avatarUrl)}</p>}
+                  </div>
+                  {/* Tiểu sử */}
+                  <Textarea
+                    label={t("admin.field_biography", { defaultValue: "Tiểu sử & Ghi chú cuộc đời" })}
+                    rows={3}
+                    value={editingMember.biography || ""}
+                    onChange={(e) => onChange({ ...editingMember, biography: e.target.value })}
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* KHỐI 2: THÔNG TIN CƠ BẢN */}
+        {/* ========================================================= */}
+</div><div className="family-form-column">
+        <div className="family-form-section" data-section="relations">
+          <FormSectionHeader title={t("admin.section_family_relations", { defaultValue: "Quan hệ gia đình & Con cái" })} icon={<Users size={16} aria-hidden="true"/>} expanded={openSections.includes("relations")} onToggle={() => toggleSection("relations")}/>
 
           <AnimatePresence initial={false}>
             {openSections.includes("relations") && (
@@ -712,7 +657,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                   <FamilyRelationSelect
                     label={t("admin.field_father", { defaultValue: "Cha (Bố)" })}
                     value={editingMember.fatherId}
-                    options={potentialFathers.map((member) => ({ id: member.id, fullName: formatName(member.fullName), generation: member.generation }))}
+                    options={potentialFathers.map((member) => ({ id: member.id, fullName: formatName(member.fullName), generation: member.generation, avatarUrl: member.avatarUrl, hasManagedAvatar: member.hasManagedAvatar, updatedAt: member.updatedAt }))}
                     generationLabel={t("admin.generation_label")}
                     placeholder={t("admin.select_father")}
                     ariaLabel={t("admin.select_father")}
@@ -723,7 +668,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                   <FamilyRelationSelect
                     label={t("admin.field_mother", { defaultValue: "Mẹ" })}
                     value={editingMember.motherId}
-                    options={potentialMothers.map((member) => ({ id: member.id, fullName: formatName(member.fullName), generation: member.generation }))}
+                    options={potentialMothers.map((member) => ({ id: member.id, fullName: formatName(member.fullName), generation: member.generation, avatarUrl: member.avatarUrl, hasManagedAvatar: member.hasManagedAvatar, updatedAt: member.updatedAt }))}
                     generationLabel={t("admin.generation_label")}
                     placeholder={t("admin.select_mother")}
                     ariaLabel={t("admin.select_mother")}
@@ -735,7 +680,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                     <FamilyRelationSelect
                       label={t("admin.field_spouse", { defaultValue: "Vợ / Chồng" })}
                       value={editingMember.spouseId}
-                      options={potentialSpouses.map((member) => ({ id: member.id, fullName: formatName(member.fullName), generation: member.generation }))}
+                      options={potentialSpouses.map((member) => ({ id: member.id, fullName: formatName(member.fullName), generation: member.generation, avatarUrl: member.avatarUrl, hasManagedAvatar: member.hasManagedAvatar, updatedAt: member.updatedAt }))}
                       generationLabel={t("admin.generation_label")}
                       placeholder={t("admin.select_spouse")}
                       ariaLabel={t("admin.select_spouse")}
@@ -762,10 +707,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                             key={child.id}
                             className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-secondary-bg text-primary-text text-xs border border-custom-border shadow-xs"
                           >
-                            <span className="font-medium">{formatName(child.fullName)}</span>
-                            <span className="text-[10px] text-secondary-text px-1 py-0.5 rounded bg-primary-bg">
-                              {t("admin.generation", { defaultValue: "Đời" })} {child.generation}
-                            </span>
+                            <MemberAvatarImage member={child} alt="" className="h-5 w-5 shrink-0 rounded-full object-cover"/><span className="font-medium">{normalizeDisplayText(formatName(child.fullName))}</span>
                             <button
                               type="button"
                               onClick={() => handleRemoveChild(child.id)}
@@ -781,7 +723,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                     )}
 
                     <FamilyMemberPicker
-                      options={availableForChildren.map((member) => ({ id: member.id, fullName: formatName(member.fullName), generation: member.generation, gender: member.gender }))}
+                      options={availableForChildren.map((member) => ({ id: member.id, fullName: formatName(member.fullName), generation: member.generation, gender: member.gender, avatarUrl: member.avatarUrl, hasManagedAvatar: member.hasManagedAvatar, updatedAt: member.updatedAt }))}
                       generationLabel={t("admin.generation_label")}
                       placeholder={t("admin.select_children")}
                       ariaLabel={t("admin.select_children")}
@@ -800,10 +742,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                       <div className="flex flex-wrap gap-2 p-2.5 rounded-xl bg-primary-bg/70 border border-custom-border/60">
                         {siblings.map(({ member: sibling, kind }) => (
                           <span key={sibling.id} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-secondary-bg text-primary-text text-xs border border-custom-border shadow-xs">
-                            <span className="font-medium">{formatName(sibling.fullName)}</span>
-                            <span className="text-[10px] text-secondary-text px-1 py-0.5 rounded bg-primary-bg">
-                              {t("admin.generation_label")} {sibling.generation}
-                            </span>
+                            <MemberAvatarImage member={sibling} alt="" className="h-5 w-5 shrink-0 rounded-full object-cover"/><span className="font-medium">{normalizeDisplayText(formatName(sibling.fullName))}</span>
                             {kind === "cousin" && (
                               <button
                                 type="button"
@@ -821,7 +760,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                     )}
 
                     <FamilyMemberPicker
-                      options={availableForSiblings.map((member) => ({ id: member.id, fullName: formatName(member.fullName), generation: member.generation, gender: member.gender }))}
+                      options={availableForSiblings.map((member) => ({ id: member.id, fullName: formatName(member.fullName), generation: member.generation, gender: member.gender, avatarUrl: member.avatarUrl, hasManagedAvatar: member.hasManagedAvatar, updatedAt: member.updatedAt }))}
                       generationLabel={t("admin.generation_label")}
                       placeholder={t("admin.select_sibling")}
                       ariaLabel={t("admin.select_sibling")}
@@ -838,28 +777,8 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
         {/* ========================================================= */}
         {/* KHỐI 4: THÔNG TIN LIÊN HỆ & NƠI Ở */}
         {/* ========================================================= */}
-        <div className="border border-custom-border/70 rounded-xl bg-secondary-bg/30 overflow-hidden transition-all">
-          <button
-            type="button"
-            aria-expanded={openSections.includes("contact")}
-            onClick={() => toggleSection("contact")}
-            className="w-full flex items-center justify-between p-3.5 hover:bg-secondary-bg/60 transition-colors text-left cursor-pointer"
-          >
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-accent/15 text-accent flex items-center justify-center">
-                <Phone size={16} />
-              </div>
-              <span className="font-semibold text-sm text-primary-text">
-                {t("admin.section_contact_address", { defaultValue: "Thông tin liên hệ & Nơi ở" })}
-              </span>
-            </div>
-            <ChevronDown
-              size={16}
-              className={`text-secondary-text transition-transform duration-200 ${
-                openSections.includes("contact") ? "rotate-180" : ""
-              }`}
-            />
-          </button>
+        <div className="family-form-section" data-section="contact">
+          <FormSectionHeader title={t("admin.section_contact_address", { defaultValue: "Thông tin liên hệ & Nơi ở" })} icon={<Phone size={16} aria-hidden="true"/>} expanded={openSections.includes("contact")} onToggle={() => toggleSection("contact")}/>
 
           <AnimatePresence initial={false}>
             {openSections.includes("contact") && (
@@ -919,6 +838,7 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
         </div>
 
         {/* ========================================================= */}
+</div>
       </form>
     </Modal>
   );

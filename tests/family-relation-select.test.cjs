@@ -15,6 +15,7 @@ const transpiled = ts.transpileModule(component, { compilerOptions: {
 const relationExports = {};
 new vm.Script(transpiled).runInNewContext({ exports: relationExports, require: name => ({
   react: { default: {} }, 'react-dom': { createPortal: value => value }, 'lucide-react': { Check: 'Check', ChevronDown: 'ChevronDown' },
+  '@/shared/utils/normalizeDisplayText': { normalizeDisplayText: value => value?.normalize('NFC') ?? '' },
   'react/jsx-runtime': { jsx: () => null, jsxs: () => null },
 }[name]) });
 
@@ -53,10 +54,12 @@ test('selecting a relation replaces the current member and selecting it again cl
   assert.equal(toggle(undefined, 25), 25);
 });
 
-test('generation display is optional and defaults to the current parent relation label', () => {
+test('relation labels normalize Vietnamese without exposing generation metadata', () => {
   const format = relationExports.formatFamilyRelationOption;
   const option = { id: 12, fullName: 'Nguyễn Bửu', generation: 1 };
-  assert.equal(format(option, 'Đời'), 'Nguyễn Bửu (Đời 1)');
+  assert.equal(format(option, 'Đời'), 'Nguyễn Bửu');
+  assert.equal(format({ ...option, fullName: option.fullName.normalize('NFD') }, 'Đời', true), 'Nguyễn Bửu');
+  assert.equal(option.generation, 1);
   assert.equal(format(option, 'Đời', false), 'Nguyễn Bửu');
   assert.match(component, /showGeneration\?: boolean/);
   assert.match(component, /showGeneration = true/);

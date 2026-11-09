@@ -1,17 +1,8 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/features/auth/context/AuthContext';
-import { ScrollProgressBar } from '@/shared/components/ScrollProgressBar';
 import { LoadingScreen } from '@/shared/components/LoadingScreen';
-import { Header } from '@/shared/layouts/Header';
-import { Footer } from '@/shared/layouts/Footer';
-import { Hero } from '@/features/portfolio/pages/Hero';
-import { About } from '@/features/portfolio/pages/About';
-import { Skills } from '@/features/portfolio/pages/Skills';
-import { Projects } from '@/features/portfolio/pages/Projects';
-import { Experience } from '@/features/portfolio/pages/Experience';
-import { Stats } from '@/features/portfolio/pages/Stats';
-import { Contact } from '@/features/portfolio/pages/Contact';
+const MyLifeLandingPage = lazy(() => import('@/features/landing/pages/MyLifeLandingPage').then(module => ({ default: module.MyLifeLandingPage })));
 const Register = lazy(() => import('@/features/auth/pages/Register').then(module => ({ default: module.Register })));
 const AdminDashboard = lazy(() => import('@/features/admin/pages/AdminDashboard').then(module => ({ default: module.AdminDashboard })));
 const FamilyTreePage = lazy(() => import('@/features/family-tree/pages/FamilyTreePage').then(module => ({ default: module.FamilyTreePage })));
@@ -21,6 +12,7 @@ const LibraryPage = lazy(() => import('@/features/my-life/pages/LibraryPage').th
 const FamilyMapPage = lazy(() => import('@/features/my-life/pages/FamilyMapPage').then(module => ({ default: module.FamilyMapPage })));
 const FamilyTimelinePage = lazy(() => import('@/features/my-life/pages/FamilyTimelinePage').then(module => ({ default: module.FamilyTimelinePage })));
 const FamilyMemberProfilePage = lazy(() => import('@/features/my-life/pages/FamilyMemberProfilePage').then(module => ({ default: module.FamilyMemberProfilePage })));
+const DesignSystemPage = import.meta.env.DEV ? lazy(() => import('@/design-system/pages/DesignSystemPage').then(module => ({ default: module.DesignSystemPage }))) : null;
 import { Forbidden } from '@/features/portfolio/pages/Forbidden';
 import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute';
 import { useLanguage } from '@/shared/hooks/useLanguage';
@@ -28,32 +20,6 @@ import { NotificationProvider } from '@/shared/contexts/NotificationContext';
 import { SessionExpiredModal } from '@/features/auth/components/SessionExpiredModal';
 import { ErrorBoundary } from '@/shared/components/ErrorBoundary';
 import { LoginModal } from '@/features/auth/components/LoginModal';
-
-function MainPortfolio() {
-  return (
-    <div className="flex flex-col min-h-screen bg-primary-bg font-sans overflow-x-hidden transition-colors duration-300 relative antialiased">
-      {/* Global UI Extras */}
-      <ScrollProgressBar />
-
-      {/* Sticky Navigation Header */}
-      <Header />
-
-      {/* Main Layout Sections */}
-      <main className="flex-grow">
-        <Hero />
-        <About />
-        <Stats />
-        <Skills />
-        <Projects />
-        <Experience />
-        <Contact />
-      </main>
-
-      {/* Footer */}
-      <Footer />
-    </div>
-  );
-}
 
 function App() {
   const navigate = useNavigate();
@@ -70,9 +36,19 @@ function App() {
       setIsSessionExpiredOpen(true);
     };
 
+    // Match the former public header's event scope. A transient protected-route
+    // render during intentional logout must not reopen the login overlay.
+    const isAppRoute = /^\/(mylife(?:\/family\/member\/[^/]+)?|familytree|anniversaries|library|map|timeline|home\/admin)\/?$/i.test(location.pathname);
+    const handleOpenLogin = () => {
+      if (!isAppRoute) queueMicrotask(() => setIsGlobalLoginOpen(true));
+    };
     window.addEventListener('auth:expired', handleExpired);
-    return () => window.removeEventListener('auth:expired', handleExpired);
-  }, []);
+    window.addEventListener('ui:openLogin', handleOpenLogin);
+    return () => {
+      window.removeEventListener('auth:expired', handleExpired);
+      window.removeEventListener('ui:openLogin', handleOpenLogin);
+    };
+  }, [location.pathname]);
 
   const handleConfirmSessionExpired = () => {
     setIsSessionExpiredOpen(false);
@@ -107,9 +83,10 @@ function App() {
           <ErrorBoundary key={location.pathname}>
           <Suspense fallback={<LoadingScreen />}>
           <Routes>
-            <Route path="/" element={<MainPortfolio />} />
-            <Route path="/home" element={<MainPortfolio />} />
-            <Route path="/Home" element={<MainPortfolio />} />
+            {DesignSystemPage && <Route caseSensitive path="/dev/design-system" element={<DesignSystemPage />} />}
+            <Route path="/" element={<MyLifeLandingPage />} />
+            <Route path="/home" element={<MyLifeLandingPage />} />
+            <Route path="/Home" element={<MyLifeLandingPage />} />
             <Route path="/Register" element={<Register />} />
             <Route path="/register" element={<Register />} />
             <Route caseSensitive path="/mylife" element={<ProtectedRoute requiredRole="USER"><MyLifeHubPage /></ProtectedRoute>} />
@@ -144,7 +121,7 @@ function App() {
               }
             />
             <Route path="/403" element={<Forbidden />} />
-            <Route path="*" element={<MainPortfolio />} />
+            <Route path="*" element={<MyLifeLandingPage />} />
           </Routes>
           </Suspense>
           </ErrorBoundary>

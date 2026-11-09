@@ -9,6 +9,12 @@ export interface FamilyViewNode {
   generation: number;
 }
 
+export interface FamilyRenderSegment {
+  id: string;
+  path: string;
+  semanticEdgeIds: string[];
+}
+
 export interface FamilyViewLink {
   id: string;
   path: string;
@@ -16,6 +22,7 @@ export interface FamilyViewLink {
   memberIds: number[];
   sourceMemberIds?: number[];
   targetMemberIds?: number[];
+  segments?: FamilyRenderSegment[];
   labelX?: number;
   labelY?: number;
 }

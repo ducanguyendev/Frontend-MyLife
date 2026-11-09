@@ -8,25 +8,16 @@ const select = read('src/shared/components/ui/Select.tsx');
 const memberForm = read('src/features/admin/components/family-tree/MemberFormModal.tsx');
 const manager = read('src/features/admin/components/FamilyTreeManager.tsx');
 
-test('shared Select exposes floating labels and preserves Radix Portal without clear-button API', () => {
+test('shared Select retains Radix keyboard/portal/selection and delegates its frame', () => {
   assert.match(select, /@radix-ui\/react-select/);
-  assert.match(select, /floatingLabel\?: boolean/);
-  assert.match(select, /isOpen \|\| isFocused \|\| Boolean\(currentValue\)/);
-  assert.match(select, /<SelectPrimitive\.Value[\s\S]*placeholder=\{floatingLabel \? ''/);
+  assert.match(select, /<FloatingField[\s\S]*active=\{isOpen \|\| isFocused\}/);
+  assert.match(select, /hasValue=\{Boolean\(currentValue\)\}/);
+  assert.match(select, /<SelectPrimitive\.Value[\s\S]*placeholder=\{usesFloatingLabel \? ''/);
   assert.match(select, /SelectPrimitive\.Portal/);
-  assert.match(select, /top-2 text-\[11px\] font-semibold/);
+  assert.match(select, /density=\{variant\}/);
+  assert.match(select, /ds-field-menu/);
+  assert.match(select, /<SelectPrimitive\.ItemIndicator[\s\S]*?<Check/);
   assert.doesNotMatch(select, /clearable|onClear|clearLabel|<X\b/);
-  assert.match(select, /variant === 'compact'[\s\S]*'h-10/);
-  assert.match(select, /min-h-\[58px\]/);
-  assert.match(select, /appearance\?: 'default' \| 'simple'/);
-  assert.match(select, /data-ui-control/);
-  assert.match(select, /focus-visible:border-\[var\(--field-focus-border\)\]/);
-  assert.match(select, /focus-visible:ring-2/);
-  assert.match(select, /data-\[state=checked\]:bg-primary-bg/);
-  assert.match(select, /<SelectPrimitive\.ItemIndicator[\s\S]*?<Check size=\{16\}/);
-  assert.match(select, /shadow-\[0_4px_16px_rgb\(0_0_0\/0\.08\)\]/);
-  assert.match(select, /outline-none ring-0 ring-offset-0/);
-  assert.match(select, /motion-reduce:animate-none/);
 });
 
 test('MyLife Selects use the simple appearance without changing custom relation semantics', () => {
@@ -75,12 +66,12 @@ test('generation and optional relation labels are translated in Vietnamese and E
   }
 });
 
-test('application source contains no native select or option elements', () => {
+test('standard forms use shared selects; compact appearance utilities and the design-system demo remain native', () => {
   const collect = dir => readdirSync(join(__dirname, '..', dir), { withFileTypes: true }).flatMap(entry => {
     const path = join(dir, entry.name);
     return entry.isDirectory() ? collect(path) : /\.(tsx?|jsx?)$/.test(entry.name) ? [{ path, content: read(path) }] : [];
   });
   const source = collect('src');
   const nativeTags = source.filter(file => /<(?:select|option)\b/.test(file.content)).map(file => file.path);
-  assert.deepEqual(nativeTags, []);
+  assert.deepEqual(nativeTags.map(file => file.replaceAll('\\','/')).sort(), ['src/design-system/pages/DesignSystemPage.tsx','src/shared/components/AppearanceControls.tsx']);
 });

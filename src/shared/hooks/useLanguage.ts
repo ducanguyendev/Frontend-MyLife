@@ -1,17 +1,15 @@
 import { useTranslation } from 'react-i18next';
+import { normalizeSupportedLanguage, type LanguageCode } from '@/shared/i18n/languages';
 
-export const normalizeLanguage = (lang?: string | null): 'vi' | 'en' => {
-  if (!lang) return 'vi';
-  return lang.toLowerCase().startsWith('en') ? 'en' : 'vi';
-};
+export const normalizeLanguage = normalizeSupportedLanguage;
 
 export const useLanguage = () => {
   const { t, i18n } = useTranslation();
 
   const currentRaw = i18n.language || localStorage.getItem('app_language') || localStorage.getItem('i18nextLng') || 'vi';
-  const language: 'vi' | 'en' = normalizeLanguage(currentRaw);
+  const language = normalizeLanguage(currentRaw);
 
-  const setLanguage = (lang: 'vi' | 'en') => {
+  const setLanguage = (lang: LanguageCode) => {
     i18n.changeLanguage(lang);
     localStorage.setItem('i18nextLng', lang);
     localStorage.setItem('app_language', lang);

@@ -1,3 +1,4 @@
+import { buildParentChildLinks } from './familyTreeConnectors';
 import type { FamilyMember } from "./types";
 import type { FamilyViewLayout, FamilyViewLink, FamilyViewNode } from "./family-view/familyTreeTypes";
 
@@ -157,23 +158,6 @@ export function layoutShadcnFamilyTree(members: FamilyMember[], showExtendedRela
     const spouse = members.find(candidate => candidate.spouseId === member.id);
     if (spouse) spousePairs.set(householdKey(member.id, spouse.id), [member.id, spouse.id].sort((a, b) => a - b));
   }
-  const coupleKeys = new Set(spousePairs.keys());
-
-  // Complete a single known parent into that parent's visible couple unless the
-  // child explicitly names a different second parent.
-  for (const child of members) {
-    const parents = parentsByChild.get(child.id);
-    if (parents?.size !== 1) continue;
-    const parentId = [...parents][0];
-    const parent = byId.get(parentId);
-    const spouseId = parent?.spouseId != null && visibleIds.has(parent.spouseId)
-      ? parent.spouseId
-      : members.find(candidate => candidate.spouseId === parentId)?.id;
-    if (spouseId == null || spouseId === child.id || !visibleIds.has(spouseId)) continue;
-    const childExplicitParents = [child.fatherId, child.motherId].filter((id): id is number => id != null && visibleIds.has(id));
-    if (childExplicitParents.some(id => id !== parentId && id !== spouseId)) continue;
-    parents.add(spouseId);
-  }
 
   const generations = [...new Set(members.map(member => member.generation))].sort((a, b) => a - b);
   const minGeneration = generations[0];
@@ -289,51 +273,19 @@ export function layoutShadcnFamilyTree(members: FamilyMember[], showExtendedRela
     links.push({ id: `spouse-${key}`, path: `M ${x1} ${y} L ${x2} ${y}`, kind: "spouse", memberIds: ids, labelX: (x1 + x2) / 2, labelY: y });
   }
 
-  const childrenByUnion = new Map<string, { parentIds: number[]; households: HouseholdUnit[] }>();
-  for (const unit of units) {
-    for (const childId of unit.ids) {
-      const parentIds = [...(parentsByChild.get(childId) ?? [])].sort((a, b) => a - b);
-      if (!parentIds.length) continue;
-      const key = `${pairKey(parentIds)}:${unit.generation}`;
-      const group = childrenByUnion.get(key) ?? { parentIds, households: [] };
-      if (!group.households.some(household => household.key === unit.key)) group.households.push(unit);
-      childrenByUnion.set(key, group);
-    }
+  const childrenByUnion = new Map<string, { parentIds: number[]; childIds: number[] }>();
+  for (const child of members) {
+    const parentIds = [...(parentsByChild.get(child.id) ?? [])].sort((a, b) => a - b);
+    if (!parentIds.length) continue;
+    const key = pairKey(parentIds) + ':' + child.generation;
+    const group = childrenByUnion.get(key) ?? { parentIds, childIds: [] };
+    group.childIds.push(child.id);
+    childrenByUnion.set(key, group);
   }
   for (const [key, group] of childrenByUnion) {
-    group.households.sort((a, b) => {
-      const aX = a.ids.reduce((sum, id) => sum + (byNodeId.get(id)?.x ?? 0) + SHADCN_TREE_CARD_WIDTH / 2, 0) / a.ids.length;
-      const bX = b.ids.reduce((sum, id) => sum + (byNodeId.get(id)?.x ?? 0) + SHADCN_TREE_CARD_WIDTH / 2, 0) / b.ids.length;
-      return aX - bX || a.ids[0] - b.ids[0];
-    });
     const parents = group.parentIds.map(id => byNodeId.get(id)).filter((node): node is FamilyViewNode => Boolean(node));
-    const childHouseholds = group.households.map(household => household.ids.map(id => byNodeId.get(id)).filter((node): node is FamilyViewNode => Boolean(node))).filter(household => household.length);
-    const children = childHouseholds.flat();
-    if (!parents.length || !childHouseholds.length) continue;
-    const source = getParentUnionSource(parents.map(node => ({ id: node.member.id, x: node.x, y: node.y, width: node.width, height: node.height })), coupleKeys);
-    if (!source) continue;
-    const connectorSourceX = source.sourceX;
-    const connectorSourceY = source.sourceY;
-    const childCenters = childHouseholds.map(household => (Math.min(...household.map(node => node.x)) + Math.max(...household.map(node => node.x + node.width)))/2);
-    const parentBottom = Math.max(...parents.map(node => node.y + node.height));
-    const childTop = Math.min(...children.map(node => node.y));
-    const railY = parentBottom + (childTop - parentBottom) * .5;
-    const familyMemberIds = [...group.parentIds, ...group.households.flatMap(household => household.ids)];
-    if (childHouseholds.length === 1) {
-      const childHousehold = childHouseholds[0]; const childX = childCenters[0]; const childY = Math.min(...childHousehold.map(node => node.y));
-      const path = !source.singleParent
-        ? `M ${connectorSourceX} ${connectorSourceY} L ${connectorSourceX} ${railY} L ${childX} ${railY} L ${childX} ${childY}`
-        : Math.abs(connectorSourceX - childX) < .5 ? `M ${connectorSourceX} ${connectorSourceY} L ${childX} ${childY}` : `M ${connectorSourceX} ${connectorSourceY} L ${connectorSourceX} ${railY} L ${childX} ${railY} L ${childX} ${childY}`;
-      links.push({ id: `family-${key}`, path, kind: "family", memberIds: familyMemberIds, sourceMemberIds: group.parentIds, targetMemberIds: childHousehold.flatMap(node => [node.member.id]) });
-      continue;
-    }
-    const connector = buildFamilyConnectorGeometry(connectorSourceX, connectorSourceY, railY, childCenters);
-    if (!connector) continue;
-    links.push({ id: `family-${key}`, path: connector.path, kind: "family", memberIds: familyMemberIds, sourceMemberIds: group.parentIds, targetMemberIds: group.households.flatMap(household => household.ids) });
-    childHouseholds.forEach((household, index) => {
-      const childX = childCenters[index]; const childY = Math.min(...household.map(node => node.y));
-      links.push({ id: `family-child-${key}-${group.households[index].key}`, path: `M ${childX} ${railY} L ${childX} ${childY}`, kind: "family-child", memberIds: familyMemberIds, sourceMemberIds: group.parentIds, targetMemberIds: group.households[index].ids });
-    });
+    const children = group.childIds.map(id => byNodeId.get(id)).filter((node): node is FamilyViewNode => Boolean(node));
+    links.push(...buildParentChildLinks(key, parents, children));
   }
 
   if (showExtendedRelations) {

@@ -4,8 +4,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { UserMenu } from '@/features/auth/components/UserMenu';
 import { UserProfileModal } from '@/features/profile/components/UserProfileModal';
-import { LanguageSwitcher } from '@/shared/components/LanguageSwitcher';
-import { ThemeSwitch } from '@/shared/components';
 import { useLanguage } from '@/shared/hooks/useLanguage';
 import { MyLifeModuleNav } from '@/features/my-life/components/MyLifeModuleNav';
 
@@ -44,8 +42,6 @@ export const UserWorkspaceHeader: React.FC<UserWorkspaceHeaderProps> = ({ backTo
         {showModuleNavigation && <MyLifeModuleNav variant="header" />}
 
         <div className={`col-start-2 flex min-w-0 shrink-0 items-center justify-self-end gap-1 sm:gap-2 ${showModuleNavigation ? 'xl:col-start-3' : ''}`}>
-          <ThemeSwitch />
-          <LanguageSwitcher />
           <UserMenu
             onOpenProfile={() => setIsProfileModalOpen(true)}
             onSwitchAccount={handleSwitchAccount}

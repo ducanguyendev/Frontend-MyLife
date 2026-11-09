@@ -32,7 +32,7 @@ test('member life status requires an explicit shared-select choice and condition
 test('anniversary member options follow event type and selected death dates come from the member profile', () => {
   const modal = read('src/features/admin/components/family-tree/FamilyAnniversaryModal.tsx');
   assert.match(modal, /members\.filter\(member => !isDeathAnniversary \|\| member\.lifeStatus === 'DECEASED'\)/);
-  assert.match(modal, /setRelatedMemberId\(''\)/);
+  assert.match(modal, /setRelatedMemberId\(undefined\)/);
   assert.match(modal, /nextMember\?\.lifeStatus === 'DECEASED' && nextMember\.deathDate/);
   assert.match(modal, /disabled=\{isSaving \|\| Boolean\(linkedDeathDate\)\}/);
   assert.match(modal, /hasLinkedMemberWithoutDeathDate/);

@@ -1,11 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/shared/hooks/useLanguage';
-import { useBodyScrollLock } from '@/shared/hooks/useBodyScrollLock';
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { authService } from '@/features/auth/services/authService';
 import { getApiErrorMessage } from '@/shared/api/apiClient';
-import { DateInput, Input, PasswordInput, Select, SelectItem, formatBackendToDob, validateCalendarDate } from '@/shared/components/ui';
+import { Modal, Button, SegmentedControl, DateInput, Input, PasswordInput, Select, SelectItem, formatBackendToDob, validateCalendarDate } from '@/shared/components/ui';
 import { getDisplayNameInitials, getUserDisplayName, normalizeNameWhitespace } from '@/shared/utils/userDisplayName';
 import {
   X, Mail, Shield, LogOut, ArrowLeftRight, CheckCircle2,
@@ -13,6 +12,7 @@ import {
   Lock, KeyRound, Save, Check, ShieldCheck, Phone
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import './UserProfileModal.css';
 
 interface UserProfileModalProps {
   isOpen: boolean;
@@ -27,7 +27,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 }) => {
   const { t } = useLanguage();
   const { user, isAdmin, logout, updateUser } = useAuth();
-  useBodyScrollLock(isOpen && !!user);
   const navigate = useNavigate();
 
   // Tab State
@@ -379,42 +378,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   };
 
   return (
-    <AnimatePresence>
-      <div
-        className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-hidden"
-        onClick={(e) => {
-          if (e.target === e.currentTarget) onClose();
-        }}
-      >
-        {/* Backdrop */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={onClose}
-          className="absolute inset-0 bg-slate-950/75 backdrop-blur-md cursor-pointer"
-        />
-
-        {/* Modal Card */}
-        <motion.div
-          layout
-          initial={{ opacity: 0, scale: 0.96, y: 16 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.96, y: 16 }}
-          transition={{ type: 'spring', duration: 0.35, bounce: 0.15 }}
-          onClick={(e) => e.stopPropagation()}
-          className="relative w-full max-w-lg bg-secondary-bg border border-custom-border p-6 md:p-8 rounded-3xl shadow-2xl z-10 font-sans text-primary-text max-h-[90vh] overflow-y-auto overscroll-contain touch-pan-y"
-          style={{ WebkitOverflowScrolling: 'touch' }}
-        >
-          {/* Close Button */}
-          <button
-            onClick={onClose}
-            className="absolute top-5 right-5 z-20 text-secondary-text hover:text-primary-text p-2 rounded-full hover:bg-primary-bg transition-colors cursor-pointer"
-            aria-label="Close"
-          >
-            <X size={20} />
-          </button>
-
+    <Modal isOpen={isOpen} onClose={onClose} showTitle={false} ariaLabel={t('navigation.profile')} maxWidth="2xl" className="user-profile-modal">
           {/* Error Banner */}
           <AnimatePresence>
             {errorMessage && (
@@ -454,9 +418,9 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
           </AnimatePresence>
 
           {/* Profile Header Block */}
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 mb-6 pb-6 border-b border-custom-border/60">
+          <div className="user-profile__header">
             {/* Avatar with Camera Hover */}
-            <div className="relative group shrink-0">
+            <div className="user-profile__avatar-wrap group">
               <input
                 ref={fileInputRef}
                 type="file"
@@ -466,9 +430,12 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 className="hidden"
               />
 
-              <div 
+              <button
+                type="button"
+                aria-label={t('common.userProfile.uploadPhoto', { defaultValue: 'Change profile photo' })}
+                disabled={isUploading}
                 onClick={() => !isUploading && fileInputRef.current?.click()}
-                className="w-20 h-20 rounded-full overflow-hidden border-2 border-accent/50 shadow-xl bg-primary-bg relative cursor-pointer"
+                className="user-profile__avatar"
               >
                 {!imgError && currentSrc ? (
                   <img
@@ -480,13 +447,13 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full bg-gradient-to-tr from-accent to-accent-hover text-primary-bg flex items-center justify-center text-xl font-bold font-mono">
+                  <span className="w-full h-full bg-gradient-to-tr from-accent to-accent-hover text-primary-bg flex items-center justify-center text-xl font-bold font-mono">
                     {getDisplayNameInitials(userDisplayName)}
-                  </div>
+                  </span>
                 )}
 
                 {/* Upload Hover Overlay (Chỉ hiển thị icon Camera, không có chữ Đổi ảnh) */}
-                <div
+                <span
                   className="absolute inset-0 rounded-full bg-black/35 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                 >
                   {isUploading ? (
@@ -494,21 +461,21 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   ) : (
                     <Camera size={22} className="text-accent" />
                   )}
-                </div>
-              </div>
+                </span>
+              </button>
 
               {/* Chấm xanh trạng thái Online (Đồng nhất, không bị che) */}
-              <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-emerald-500 rounded-full border-2 border-secondary-bg z-10 shadow-sm" />
+              <span className="user-profile__availability" aria-hidden="true" />
             </div>
 
             {/* Profile Info Summary */}
-            <div className="text-center sm:text-left flex-1 min-w-0">
-              <h2 className="text-lg font-bold text-primary-text truncate">
+            <div className="user-profile__identity">
+              <h2 className="text-lg font-bold text-primary-text">
                 {userDisplayName}
               </h2>
 
-              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-2">
-                <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${
+              <div className="user-profile__badges">
+                <span className={`user-profile__badge ${
                   isAdmin 
                     ? 'bg-accent/15 text-accent border-accent/30' 
                     : 'bg-secondary-bg text-secondary-text border-custom-border'
@@ -519,20 +486,20 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     : t('navigation.roleMember', { defaultValue: 'Thành viên' })}
                 </span>
 
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                  <CheckCircle2 size={10} />
+                <span className="user-profile__badge user-profile__badge--active">
+                  <CheckCircle2 size={11} />
                   {t('common.userProfile.statusActive', { defaultValue: 'Hoạt động' })}
                 </span>
               </div>
 
               {/* Nút Xóa ảnh (Chỉ hiển thị khi có ảnh) */}
               {(!!currentSrc || (!!user.avatar && user.avatar !== 'none')) && (
-                <div className="flex items-center justify-center sm:justify-start mt-2">
+                <div className="user-profile__avatar-actions">
                   <button
                     type="button"
                     onClick={handleDeleteAvatar}
                     disabled={isUploading}
-                    className="text-xs text-red-400 hover:text-red-300 hover:underline flex items-center gap-1 cursor-pointer font-medium disabled:opacity-50"
+                    className="user-profile__remove-avatar"
                   >
                     <Trash2 size={13} />
                     <span>{t('common.userProfile.deletePhoto', { defaultValue: 'Xóa ảnh' })}</span>
@@ -543,33 +510,11 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
           </div>
 
           {/* Navigation Tabs */}
-          <div className="flex gap-1.5 p-1 bg-primary-bg/80 border border-custom-border rounded-2xl mb-6">
-            <button
-              type="button"
-              onClick={() => setActiveTab('info')}
-              className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                activeTab === 'info'
-                  ? 'bg-secondary-bg text-primary-text border border-custom-border shadow-sm font-bold'
-                  : 'text-secondary-text hover:text-primary-text'
-              }`}
-            >
-              <User size={14} className={activeTab === 'info' ? 'text-accent' : ''} />
-              <span>{t('common.userProfile.tabInfo', { defaultValue: 'Hồ sơ & Thông tin' })}</span>
-            </button>
+          <SegmentedControl label={t('navigation.profile')} value={activeTab} onChange={setActiveTab} className="user-profile__tabs" options={[
+            { value: 'info', label: t('common.userProfile.tabInfo'), icon: <User size={14}/> },
+            { value: 'security', label: t('common.userProfile.tabSecurity'), icon: <KeyRound size={14}/> },
+          ]}/>
 
-            <button
-              type="button"
-              onClick={() => setActiveTab('security')}
-              className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                activeTab === 'security'
-                  ? 'bg-secondary-bg text-primary-text border border-custom-border shadow-sm font-bold'
-                  : 'text-secondary-text hover:text-primary-text'
-              }`}
-            >
-              <KeyRound size={14} className={activeTab === 'security' ? 'text-accent' : ''} />
-              <span>{t('common.userProfile.tabSecurity', { defaultValue: 'Bảo mật & Mật khẩu' })}</span>
-            </button>
-          </div>
 
           {/* ───────────────────────────────────────────────────────────────── */}
           {/* TAB 1: Profile Info & Edit Name                                   */}
@@ -579,16 +524,16 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2 }}
-              className="space-y-5"
+              className="user-profile__content"
             >
               {/* Form Sửa Hồ Sơ */}
               {!isEditingProfile ? (
-                <div className="space-y-4 bg-primary-bg/50 border border-custom-border rounded-2xl p-4">
+                <div className="user-profile__panel">
                   {isFetchingInfo ? (
                      <div className="flex justify-center p-4"><Loader2 size={24} className="animate-spin text-accent" /></div>
                   ) : (
                     <>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="user-profile__facts">
                         <div className="flex flex-col">
                           <span className="text-[11px] font-semibold text-secondary-text mb-1 uppercase">{t('common.userProfile.fullName', { defaultValue: 'Full name' })}</span>
                           <span className="text-sm font-bold text-primary-text">{fullName || t('common.userProfile.notProvided', { defaultValue: 'Not provided' })}</span>
@@ -606,18 +551,18 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                           <span className="text-sm font-bold text-primary-text">{gender || t('common.userProfile.notProvided', { defaultValue: 'Not provided' })}</span>
                         </div>
                       </div>
-                      <button
+                      <Button
                         type="button"
                         onClick={() => setIsEditingProfile(true)}
-                        className="w-full h-[40px] rounded-xl border border-accent text-accent font-semibold text-xs hover:bg-accent hover:text-primary-bg transition-all flex items-center justify-center gap-1.5 mt-2 cursor-pointer"
+                        variant="outline" className="user-profile__edit-button"
                       >
                         {t('common.userProfile.editProfile', { defaultValue: 'Edit profile' })}
-                      </button>
+                      </Button>
                     </>
                   )}
                 </div>
               ) : (
-                <form onSubmit={handleSaveProfile} className="space-y-3 bg-primary-bg/50 border border-custom-border rounded-2xl p-4">
+                <form onSubmit={handleSaveProfile} className="user-profile__panel user-profile__edit-form">
                   {isFetchingInfo ? (
                      <div className="flex justify-center p-4"><Loader2 size={24} className="animate-spin text-accent" /></div>
                   ) : (
@@ -687,17 +632,17 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     </Select>
 
                     <div className="flex gap-2 mt-2">
-                      <button
+                      <Button
                         type="button"
                         onClick={() => setIsEditingProfile(false)}
-                        className="flex-1 h-[48px] rounded-xl bg-secondary-bg border border-custom-border text-primary-text font-semibold text-xs hover:opacity-90 transition-all cursor-pointer"
+                        variant="secondary" className="flex-1"
                       >
                         {t('common.userProfile.cancel', { defaultValue: 'Cancel' })}
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         type="submit"
                         disabled={isSavingProfile}
-                        className="flex-1 h-[48px] rounded-xl bg-accent text-primary-bg font-semibold text-xs hover:opacity-90 transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                        variant="primary" className="flex-1"
                       >
                         {isSavingProfile ? (
                           <Loader2 size={15} className="animate-spin" />
@@ -705,7 +650,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                           <Save size={15} />
                         )}
                         <span>{t('common.userProfile.save', { defaultValue: 'Lưu thay đổi' })}</span>
-                      </button>
+                      </Button>
                     </div>
                     </>
                   )}
@@ -713,8 +658,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               )}
 
               {/* Thông tin chi tiết */}
-              <div className="space-y-2.5 bg-primary-bg/50 border border-custom-border rounded-2xl p-4 text-xs">
-                <div className="flex items-center justify-between py-1.5 border-b border-custom-border/50">
+              <div className="user-profile__metadata">
+                <div className="user-profile__metadata-row">
                   <span className="text-secondary-text flex items-center gap-2">
                     <Mail size={14} />
                     <span>{t('common.userProfile.emailLabel', { defaultValue: 'Email:' })}</span>
@@ -722,18 +667,15 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   <span className="font-semibold text-primary-text">{user.email}</span>
                 </div>
 
-                <div className="flex items-center justify-between py-1.5 border-b border-custom-border/50">
+                <div className="user-profile__metadata-row">
                   <span className="text-secondary-text flex items-center gap-2">
                     <ShieldCheck size={14} className="text-accent" />
                     <span>{t('common.userProfile.loginMethod', { defaultValue: 'Phương thức đăng nhập:' })}</span>
                   </span>
-                  <span className="font-semibold text-accent text-[0px]" aria-label={loginMethod}>
-                    <span className="text-xs">{loginMethod}</span>
-                    {user.authProvider === 1 ? 'Google OAuth 2.0' : t('common.userProfile.authLocal', { defaultValue: 'Email & Mật khẩu (Local)' })}
-                  </span>
+                  <span className="font-semibold text-primary-text">{loginMethod}</span>
                 </div>
 
-                <div className="flex items-center justify-between py-1.5">
+                <div className="user-profile__metadata-row">
                   <span className="text-secondary-text flex items-center gap-2">
                     <Shield size={14} />
                     <span>{t('common.userProfile.accountLevel', { defaultValue: 'Cấp độ tài khoản:' })}</span>
@@ -752,7 +694,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2 }}
-              className="space-y-4"
+              className="user-profile__security"
             >
               {!hasLocalLogin ? (
                 // Google Account Info
@@ -865,10 +807,10 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     )}
                   </div>
 
-                  <button
+                  <Button
                     type="submit"
                     disabled={isChangingPassword || !currentPassword || !newPassword || !confirmPassword}
-                    className="w-full mt-2 py-3.5 rounded-2xl bg-accent text-primary-bg font-semibold text-xs hover:opacity-90 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                    variant="primary" className="mt-2 w-full"
                   >
                     {isChangingPassword ? (
                       <Loader2 size={15} className="animate-spin" />
@@ -876,7 +818,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                       <Save size={15} />
                     )}
                     <span>{t('common.userProfile.updatePassword', { defaultValue: 'Cập nhật mật khẩu' })}</span>
-                  </button>
+                  </Button>
                 </form>
               )}
             </motion.div>
@@ -885,34 +827,32 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
           {/* ───────────────────────────────────────────────────────────────── */}
           {/* Footer Actions                                                    */}
           {/* ───────────────────────────────────────────────────────────────── */}
-          <div className="mt-6 pt-5 border-t border-custom-border/60 flex items-center gap-3">
-            <button
+          <div className="user-profile__footer">
+            <Button
               type="button"
               onClick={async () => {
                 onClose();
                 await onSwitchAccount();
               }}
-              className="flex-1 py-2.5 px-3 rounded-xl border border-custom-border text-primary-text hover:bg-primary-bg font-semibold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
+              variant="secondary"
             >
               <ArrowLeftRight size={14} />
-              <span>Chuyển tài khoản</span>
-            </button>
+              <span>{t('common.switchAccount')}</span>
+            </Button>
 
-            <button
+            <Button
               type="button"
               onClick={async () => {
                 await logout();
                 onClose();
                 navigate('/');
               }}
-              className="flex-1 py-2.5 px-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 font-semibold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
+              variant="destructive" className="user-profile__logout"
             >
               <LogOut size={14} />
-              <span>Đăng xuất</span>
-            </button>
+              <span>{t('common.logout')}</span>
+            </Button>
           </div>
-        </motion.div>
-      </div>
-    </AnimatePresence>
+    </Modal>
   );
 };

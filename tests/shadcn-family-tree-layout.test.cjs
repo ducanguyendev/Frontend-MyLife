@@ -6,9 +6,8 @@ const vm = require('node:vm');
 const ts = require('typescript');
 
 const source = readFileSync(join(__dirname, '../src/features/admin/components/family-tree/shadcnFamilyTreeLayout.ts'), 'utf8');
-const familyLayout = {};
-const output = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
-new vm.Script(output).runInNewContext({ exports: familyLayout, require: () => ({}) });
+const { loadTreeModule } = require('./helpers/load-tree-module.cjs');
+const familyLayout = loadTreeModule(join(__dirname, '../src/features/admin/components/family-tree/shadcnFamilyTreeLayout.ts'));
 
 const person = (id, fullName, generation, values = {}) => ({ id, fullName, generation, createdAt: '', updatedAt: '', ...values });
 const center = node => node.x + node.width / 2;
@@ -35,7 +34,7 @@ test('Mai Anh and Mai Son child groups stay centered as fairly as collision allo
     assert.ok(Math.abs(parentX - childGroupCenter) <= 165, `parent ${parentId} displacement stays shared under adjacent-family pressure`);
     const familyLink = result.links.find(link => link.id.startsWith(`family-${parentId}:`));
     assert.ok(familyLink, `family connector exists for parent ${parentId}`);
-    assert.equal((familyLink.path.match(/M /g) ?? []).length, 1, 'family trunk and sibling rail use one continuous path');
+    assert.equal(familyLink.segments.filter(segment => segment.id.endsWith(':trunk')).length, 1, 'one trunk feeds individually addressable rail segments');
     assert.ok(!familyLink.path.includes('NaN'));
     const commands = familyLink.path.match(/[ML] [-\d.]+ [-\d.]+/g).map(command => command.slice(2).split(' ').map(Number));
     assert.deepEqual(commands[0], [parentX, nodeFor(result, parentId).y + nodeFor(result, parentId).height]);
@@ -47,7 +46,8 @@ test('Mai Anh and Mai Son child groups stay centered as fairly as collision allo
     for (const childId of childIds) {
       const drop = result.links.find(link => link.id.startsWith(`family-child-${parentId}:`) && link.id.endsWith(`-${childId}`));
       assert.ok(drop, `child ${childId} has a drop`);
-      assert.deepEqual(Array.from(drop.memberIds).sort((a, b) => a - b), [parentId, ...childIds].sort((a, b) => a - b), 'all family drops share highlight state with the parent rail');
+      assert.deepEqual(drop.targetMemberIds, [childId], 'each drop represents only its actual child');
+      assert.deepEqual(drop.segments[0].semanticEdgeIds, [`parent:${parentId}:${childId}`]);
       assert.match(drop.path, new RegExp(`^M ${center(nodeFor(result, childId))} ${commands[1][1]} L ${center(nodeFor(result, childId))} ${nodeFor(result, childId).y}$`));
     }
   }
@@ -73,11 +73,12 @@ test('couple union uses spouse midpoint for one shared sibling rail', () => {
   const childGroupCenter = (center(childNodes[0]) + center(childNodes[1])) / 2;
   assert.ok(Math.abs(coupleMidpoint - childGroupCenter) < 1);
   const family = result.links.find(link => link.id.startsWith('family-10:11:'));
-  assert.equal((family.path.match(/M /g) ?? []).length, 1);
+  assert.equal(family.segments.filter(segment => segment.id.endsWith(':trunk')).length, 1);
   assert.equal(result.links.filter(link => link.id.startsWith('family-child-10:11:')).length, 2);
   const spouse = result.links.find(link => link.kind === 'spouse' && link.memberIds.includes(10));
-  const source = family.path.match(/^M ([-\d.]+) ([-\d.]+)/);
-  assert.deepEqual(source.slice(1).map(Number), [spouse.labelX, spouse.labelY], 'family trunk starts exactly at heart center');
+  const source = family.segments.find(segment => segment.id.endsWith(':trunk')).path.match(/^M ([-\d.]+) ([-\d.]+)/);
+  assert.equal(Number(source[1]), spouse.labelX, 'shared trunk keeps the couple midpoint');
+  assert.ok(Number(source[2]) > parentA.y + parentA.height, 'parent ports join below the cards without sharing the marriage line');
 });
 
 test('three children share one couple rail with three drops', () => {
@@ -89,7 +90,7 @@ test('three children share one couple rail with three drops', () => {
   ]);
   const family = result.links.find(link => link.id.startsWith('family-20:21:'));
   assert.ok(family);
-  assert.equal((family.path.match(/M /g) ?? []).length, 1);
+  assert.equal(family.segments.filter(segment => segment.id.endsWith(':trunk')).length, 1);
   assert.equal(result.links.filter(link => link.id.startsWith('family-child-20:21:')).length, 3);
   assert.equal(new Set(result.links.filter(link => link.id.startsWith('family-child-20:21:')).map(link => link.path.split(' ')[1])).size, 3);
 });
@@ -144,22 +145,24 @@ test('two parents and three children share one trunk, sibling rail and one drop 
   ]);
   assert.equal(result.links.filter(link => link.id.startsWith('family-30:31:')).length, 1);
   assert.equal(result.links.filter(link => link.id.startsWith('family-child-30:31:')).length, 3);
-  const trunkPath = result.links.find(link => link.id.startsWith('family-30:31:')).path;
-  const railY = Number(trunkPath.match(/L [-\d.]+ ([-\d.]+) L [-\d.]+ \1/)[1]);
+  const trunkPath = result.links.find(link => link.id.startsWith('family-30:31:')).segments.find(segment => segment.id.endsWith(':trunk')).path;
+  const railY = Number(trunkPath.match(/L [-\d.]+ ([-\d.]+)/)[1]);
   assert.equal(new Set(result.links.filter(link => link.id.startsWith('family-child-30:31:')).map(link => Number(link.path.match(/M [-\d.]+ ([-\d.]+)/)[1]))).size, 1);
-  assert.equal(railY, Number(result.nodes.find(node => node.member.id === 30).y + 90 + (result.nodes.find(node => node.member.id === 32).y - (result.nodes.find(node => node.member.id === 30).y + 90)) * .5));
+  const parentJoinY = nodeFor(result, 30).y + nodeFor(result, 30).height + 14;
+  assert.equal(railY, parentJoinY + (nodeFor(result, 32).y - parentJoinY) / 2);
 });
 
-test('single-parent child is normalized into visible spouse union when non-conflicting', () => {
+test('single-parent record never acquires an unrecorded parent from a spouse union', () => {
   const result = familyLayout.layoutShadcnFamilyTree([
     person(40, 'Father', 1, { spouseId: 41 }), person(41, 'Mother', 1),
     person(42, 'Child with one parent recorded', 2, { fatherId: 40 }),
     person(43, 'Child with both parents', 2, { fatherId: 40, motherId: 41 }),
   ]);
   const unions = result.links.filter(link => link.kind === 'family' && link.memberIds.includes(40));
-  assert.equal(unions.length, 1);
-  assert.deepEqual([...unions[0].memberIds].sort((a, b) => a - b), [40, 41, 42, 43]);
-  assert.equal(result.links.filter(link => link.id.startsWith('family-child-40:41:')).length, 2);
+  assert.equal(unions.length, 2);
+  assert.deepEqual(unions.find(link => link.targetMemberIds.includes(42)).sourceMemberIds, [40]);
+  assert.deepEqual(unions.find(link => link.targetMemberIds.includes(43)).sourceMemberIds, [40, 41]);
+  assert.equal(result.links.filter(link => link.id.startsWith('family-child-40:41:')).length, 1);
 });
 
 test('conflicting explicit parent is not silently replaced by a spouse', () => {
@@ -181,10 +184,10 @@ test('one-sided spouseId still aligns couple source to spouse connector midpoint
   const spouse = result.links.find(link => link.kind === 'spouse');
   const family = result.links.find(link => link.kind === 'family' && link.memberIds.includes(62));
   assert.ok(spouse);
-  assert.deepEqual(family.path.match(/^M ([-\d.]+) ([-\d.]+)/).slice(1).map(Number), [spouse.labelX, spouse.labelY]);
+  assert.equal(Number(family.segments.find(segment => segment.id.endsWith(':trunk')).path.match(/^M ([-\d.]+)/)[1]), spouse.labelX);
 });
 
-test('married child receives parent drop at household midpoint; descendant trunk starts at couple heart', () => {
+test('married child receives its own parent drop; spouse has no invented parent edge', () => {
   const result = familyLayout.layoutShadcnFamilyTree([
     person(70, 'Grandparent A', 1, { spouseId: 71 }), person(71, 'Grandparent B', 1),
     person(72, 'Biological child', 2, { fatherId: 70, motherId: 71, spouseId: 73 }), person(73, 'Child spouse', 2),
@@ -192,11 +195,12 @@ test('married child receives parent drop at household midpoint; descendant trunk
   ]);
   const parentDrop = result.links.find(link => link.kind === 'family' && link.memberIds.includes(72) && link.memberIds.includes(70));
   assert.ok(parentDrop);
-  const childHouseholdCenter = (center(nodeFor(result, 72)) + center(nodeFor(result, 73))) / 2;
-  assert.match(parentDrop.path, new RegExp(`L ${childHouseholdCenter} ${nodeFor(result, 72).y}$`));
+  const drop = result.links.find(link => link.kind === 'family-child' && link.targetMemberIds.includes(72));
+  assert.match(drop.path, new RegExp(`L ${center(nodeFor(result, 72))} ${nodeFor(result, 72).y}$`));
+  assert.ok(!parentDrop.memberIds.includes(73));
   const spouse = result.links.find(link => link.kind === 'spouse' && link.memberIds.includes(72));
   const descendantTrunk = result.links.find(link => link.kind === 'family' && link.memberIds.includes(74));
-  assert.deepEqual(descendantTrunk.path.match(/^M ([-\d.]+) ([-\d.]+)/).slice(1).map(Number), [spouse.labelX, spouse.labelY]);
+  assert.equal(Number(descendantTrunk.segments.find(segment => segment.id.endsWith(':trunk')).path.match(/^M ([-\d.]+)/)[1]), spouse.labelX);
 });
 
 test('true single parent starts connector at bottom-center and multi-generation coordinates stay finite', () => {

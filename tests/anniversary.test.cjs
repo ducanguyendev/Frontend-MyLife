@@ -56,16 +56,16 @@ test('Anniversary workspace is data-backed with calendar filtering and CRUD stat
   assert.match(source, /filterDate \? typeFiltered\.filter/);
   assert.match(source, /setCalendarSelectedDate\(target\.selectedDate\)/);
   assert.match(source, /setFilterDate\(null\)/);
-  assert.match(source, /overflow-y-auto overscroll-contain p-3/);
-  assert.match(source, /xl:grid-cols-\[minmax\(300px,0\.4fr\)_minmax\(0,0\.6fr\)\]/);
+  assert.match(source, /memory-calendar-layout/);
+  assert.match(source, /memory-upcoming/);
   assert.match(source, /const \[eventTypeFilter, setEventTypeFilter\] = useState<EventTypeFilter>\('ALL'\)/);
   assert.match(source, /eventTypeFilter === 'ALL' \? textFiltered : textFiltered\.filter\(item => item\.eventType === eventTypeFilter\)/);
   assert.match(source, /\[items, search, eventTypeFilter, filterDate\]/);
   assert.match(source, /setEventTypeFilter\('ALL'\)/);
   assert.match(source, /event_type_filter/);
-  assert.match(source, /w-full sm:w-\[20rem\] sm:max-w-\[40vw\] sm:shrink/);
-  assert.match(source, /flex w-max min-w-full flex-nowrap items-center gap-1 overflow-x-auto sm:w-auto sm:min-w-0 sm:shrink-0/);
-  assert.match(source, /min-h-9 shrink-0 whitespace-nowrap rounded-full border px-3 text-xs font-semibold/);
+  assert.match(source, /memory-upcoming__search/);
+  assert.match(source, /memory-type-filters/);
+  assert.match(source, /<Chip key=\{value\} selected=\{eventTypeFilter === value\}/);
   assert.match(source, /event_count', \{ count: filtered\.length \}/);
   assert.doesNotMatch(source.match(/<header className="mb-3[\s\S]*?<\/header>/)?.[0] ?? '', /<SearchBar/);
   assert.doesNotMatch(source, /banner_title|admin\.anniversary_ui\.total|admin\.anniversary_ui\.nearest/);
@@ -104,35 +104,25 @@ test('solar calendar utilities handle month edges, leap February, and UTC-safe I
   assert.deepEqual(JSON.parse(JSON.stringify(getDayEventVisual([{ eventType: 'DEATH_ANNIVERSARY' }, { eventType: 'FAMILY_EVENT' }]))), { count: 2, type: 'mixed', hasDeathAnniversary: true, hasFamilyEvent: true });
 });
 
-test('calendar day cells distinguish event types, count badges, selected priority, and today semantics', () => {
+test('calendar keeps event types and counts while selected and today states have non-color semantics', () => {
   const source = readFileSync(join(__dirname, '../src/features/admin/components/family-tree/AnniversaryTab.tsx'), 'utf8');
-  assert.match(source, /dayVisual\.type === 'death-anniversary' \? 'border-amber/);
-  assert.match(source, /dayVisual\.type === 'family-event' \? 'border-teal/);
-  assert.match(source, /dayVisual\.type === 'mixed' \? 'border-accent/);
-  assert.match(source, /dayVisual\.count > 1/);
-  assert.match(source, /aria-current=\{isToday \? 'date' : undefined\}/);
-  assert.match(source, /const dayState = isSelected \? `\$\{selectedEventTone\} bg-\[var\(--calendar-selected-bg\)\] font-bold text-\[var\(--calendar-selected-text\)\] ring-2/);
-  assert.match(source, /dayVisual\.type === 'death-anniversary' \? 'border-amber-500 ring-amber-500\/50 dark:border-amber-400 dark:ring-amber-400\/40'/);
-  assert.match(source, /dayVisual\.type === 'family-event' \? 'border-teal-500 ring-teal-500\/50 dark:border-teal-400 dark:ring-teal-400\/40'/);
-  assert.match(source, /dayVisual\.count > 0 && <span aria-hidden="true"/);
-  assert.match(source, /dayVisual\.type === 'death-anniversary' \? 'bg-amber-600 dark:bg-amber-300' : dayVisual\.type === 'family-event' \? 'bg-teal-600 dark:bg-teal-300'/);
-  assert.match(source, /: isToday \? 'border-accent\/70 bg-\[var\(--focus-surface\)\]/);
-  assert.match(source, /aria-label=\{`\$\{fullDateFormat\.format[\s\S]*dayVisual\.count \? `, \$\{t\('admin\.anniversary_ui\.event_count'/);
+  const css = readFileSync(join(__dirname, '../src/features/my-life/components/memories/Memories.css'), 'utf8');
+  assert.ok(source.includes('data-event-type={dayVisual.type}'));
+  assert.ok(source.includes('dayVisual.count > 1'));
+  assert.ok(source.includes("aria-current={isToday ? 'date' : undefined}"));
+  assert.ok(source.includes('aria-pressed={isSelected}'));
+  assert.ok(source.includes('memory-calendar__day'));
+  assert.ok(css.includes('.memory-calendar__day.is-today'));
+  assert.ok(css.includes('.memory-calendar__day.is-selected'));
+  assert.ok(css.includes('outline:1px solid var(--memory-accent)'));
 });
 
-test('calendar selected colors use light and dark semantic tokens without overriding the app accent', () => {
-  const css = readFileSync(join(__dirname, '../src/index.css'), 'utf8');
+test('calendar selected colors inherit semantic light/dark action tokens', () => {
+  const css = readFileSync(join(__dirname, '../src/design-system/tokens/tokens.css'), 'utf8');
   const source = readFileSync(join(__dirname, '../src/features/admin/components/family-tree/AnniversaryTab.tsx'), 'utf8');
-  const root = css.match(/:root\s*\{([\s\S]*?)\n\s*\}/)?.[1] ?? '';
-  const dark = css.match(/\.dark\s*\{([\s\S]*?)\n\s*\}/)?.[1] ?? '';
-  for (const token of ['--calendar-selected-bg', '--calendar-selected-text', '--calendar-selected-border', '--calendar-selected-ring']) {
-    assert.match(root, new RegExp(`${token}:\\s*[^;]+;`));
-    assert.match(dark, new RegExp(`${token}:\\s*[^;]+;`));
-  }
-  assert.match(root, /--calendar-selected-bg:\s*#18181b;/);
-  assert.match(dark, /--calendar-selected-bg:\s*#27272a;/);
-  assert.doesNotMatch(dark, /--calendar-selected-bg:\s*#(?:fff(?:fff)?|ffffff);/i);
-  assert.match(dark, /--accent-color:\s*#ffffff;/);
+  for (const token of ['--calendar-selected-bg', '--calendar-selected-text', '--calendar-selected-border', '--calendar-selected-ring']) assert.ok(css.includes(token));
+  assert.ok(css.includes('--calendar-selected-bg: var(--action-primary)'));
+  assert.ok(css.includes('--calendar-selected-text: var(--on-action-primary)'));
   assert.match(source, /aria-current=\{isToday \? 'date' : undefined\}/);
   assert.match(source, /aria-pressed=\{isSelected\}/);
 });
@@ -160,8 +150,8 @@ test('event card selection navigates without filtering the list; actions remain 
   const source = readFileSync(join(__dirname, '../src/features/admin/components/family-tree/AnniversaryTab.tsx'), 'utf8');
   assert.match(source, /const handleSelectEvent = \(item: FamilyAnniversary\)[\s\S]*setVisibleMonth\(target\.visibleMonth\)[\s\S]*setCalendarSelectedDate\(target\.selectedDate\)[\s\S]*setSelectedEventId\(item\.id\)/);
   assert.match(source, /aria-pressed=\{selectedEventId === item\.id\}/);
-  assert.match(source, /onClick=\{event => \{ event\.stopPropagation\(\); void openEditor\(item\); \}\}/);
-  assert.match(source, /onClick=\{event => \{ event\.stopPropagation\(\); setDeleting\(item\); \}\}/);
+  assert.ok(source.includes('onClick:() => void openEditor(item)'));
+  assert.ok(source.includes('onClick:() => setDeleting(item)'));
   assert.match(source, /setVisibleMonth\(draftMonth\);\s*setMonthPickerOpen\(false\)/);
   assert.match(source, /setCalendarSelectedDate\(todayKey\)/);
   assert.doesNotMatch(source.match(/const handleSelectEvent = \(item: FamilyAnniversary\) => \{[\s\S]*?\n  \};/)?.[0] ?? '', /setFilterDate/);
@@ -200,7 +190,7 @@ test('anniversary modal keeps accessible naming, original date checks, and backe
   const service = readFileSync(join(__dirname, '../src/features/admin/services/anniversaryService.ts'), 'utf8');
   const familyTree = readFileSync(join(__dirname, '../src/features/admin/components/FamilyTreeManager.tsx'), 'utf8');
   const floatingAdd = readFileSync(join(__dirname, '../src/shared/components/ui/FloatingAddButton.tsx'), 'utf8');
-  assert.match(modal, /showTitle=\{false\}\s+ariaLabel=\{ariaLabel\}/);
+  assert.match(modal, /title=\{ariaLabel\}\s+ariaLabel=\{ariaLabel\}/);
   assert.match(modal, /<DateInput\s+label=\{t\(isDeathAnniversary \? 'admin\.anniversary_ui\.solar_death_date'/);
   assert.match(modal, /label=\{t\('admin\.anniversary_ui\.lunar_year'\)\}/);
   assert.match(modal, /type="checkbox" checked=\{isLeapMonth\}/);
@@ -211,7 +201,7 @@ test('anniversary modal keeps accessible naming, original date checks, and backe
   assert.match(service, /nextLunarYear: number/);
   assert.match(modal, /dateCheck\?\.status === 'mismatch'/);
   assert.match(modal, /footer=\{/);
-  assert.match(modal, /maxWidth="2xl"/);
+  assert.match(modal, /maxWidth="full"/);
   assert.match(modal, /<FamilyRelationSelect[\s\S]*?showGeneration=\{false\}/);
   assert.doesNotMatch(modal, /NO_RELATED_MEMBER|<Select\s[\s\S]{0,180}related_member/);
   assert.match(modal, /placeholder=\{t\('admin\.anniversary_ui\.select_member'\)\}/);
@@ -226,17 +216,17 @@ test('anniversary modal keeps accessible naming, original date checks, and backe
   assert.match(modal, /setTitle\(`\$\{t\('admin\.anniversary_ui\.death_prefix'\)\} \$\{selectedMember\.fullName\}`\)/);
   assert.doesNotMatch(modal, /vietnameseToday|year \+ offset|offset <= 4/);
   assert.match(service, /next-occurrence\?/);
-  assert.match(tab, /leftIcon=\{<Plus size=\{16\} \/>\}/);
+  assert.match(tab, /leftIcon=\{<Plus size=\{16\}\s*\/>\}/);
   assert.match(tab, /t\('admin\.anniversary_ui\.add_action'\)/);
-  assert.match(tab, /<SearchBar className="w-full sm:w-\[20rem\] sm:max-w-\[40vw\] sm:shrink"/);
+  assert.match(tab, /<SearchBar className="memory-upcoming__search"/);
   assert.match(tab, /role="group" aria-label=\{t\('admin\.anniversary_ui\.event_type_filter'\)\}/);
-  assert.match(tab, /aria-pressed=\{eventTypeFilter === value\}/);
+  assert.match(tab, /selected=\{eventTypeFilter === value\}/);
   assert.match(tab, /const clearAllFilters = \(\) => \{[\s\S]*setSearch\(''\);[\s\S]*setFilterDate\(null\);[\s\S]*setCalendarSelectedDate\(null\);[\s\S]*setEventTypeFilter\('ALL'\);[\s\S]*setSelectedEventId\(null\)/);
   assert.match(tab, /onClick=\{clearAllFilters\}/);
   assert.match(tab, /onClick=\{\(\) => void openEditor\(null\)\}/);
   assert.match(tab, /\{editing !== undefined && members !== null && <FamilyAnniversaryModal/);
   assert.doesNotMatch(tab, /admin\.anniversary_ui\.add_first/);
-  assert.match(familyTree, /<FloatingAddButton[\s\S]*?ariaLabel=\{t\("admin\.add_member"\)\}[\s\S]*?onClick=\{\(\) => handleOpenModal\(\)\}/);
+  assert.match(familyTree, /<Button[\s\S]*?onClick=\{\(\) => handleOpenModal\(\)\}[\s\S]*?t\('admin\.add_member'\)/);
   assert.match(floatingAdd, /className="!p-3 !rounded-full aspect-square"/);
   assert.match(floatingAdd, /<Plus size=\{20\}/);
   assert.match(floatingAdd, /aria-label=\{ariaLabel\}/);

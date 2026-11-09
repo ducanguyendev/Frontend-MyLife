@@ -1,0 +1,58 @@
+[
+  {
+    "selector": "#sample00",
+    "fonts": [
+      {
+        "familyName": "Times New Roman",
+        "postScriptName": "TimesNewRomanPSMT",
+        "isCustomFont": false,
+        "glyphCount": 8
+      },
+      {
+        "familyName": "Georgia",
+        "postScriptName": "Georgia",
+        "isCustomFont": false,
+        "glyphCount": 77
+      }
+    ]
+  },
+  {
+    "selector": "#sample01",
+    "fonts": [
+      {
+        "familyName": "Times New Roman",
+        "postScriptName": "TimesNewRomanPSMT",
+        "isCustomFont": false,
+        "glyphCount": 8
+      },
+      {
+        "familyName": "Georgia",
+        "postScriptName": "Georgia",
+        "isCustomFont": false,
+        "glyphCount": 77
+      }
+    ]
+  },
+  {
+    "selector": "#sample10",
+    "fonts": [
+      {
+        "familyName": "Inter Variable",
+        "postScriptName": "InterVariable-Display",
+        "isCustomFont": true,
+        "glyphCount": 81
+      }
+    ]
+  },
+  {
+    "selector": "#sample11",
+    "fonts": [
+      {
+        "familyName": "Inter Variable",
+        "postScriptName": "InterVariable-Display",
+        "isCustomFont": true,
+        "glyphCount": 81
+      }
+    ]
+  }
+]

@@ -18,7 +18,7 @@ export const Badge: React.FC<BadgeProps> = ({
   ...props
 }) => {
   const baseStyles =
-    'inline-flex items-center justify-center font-bold tracking-wider uppercase rounded-full select-none';
+    'inline-flex items-center justify-center font-semibold rounded-full select-none';
 
   const sizeStyles: Record<BadgeSize, string> = {
     sm: 'text-[10px] px-2 py-0.5 gap-1',
@@ -29,7 +29,7 @@ export const Badge: React.FC<BadgeProps> = ({
     default: 'bg-custom-border/50 text-secondary-text border border-custom-border',
     accent: 'bg-accent/15 text-accent border border-accent/30',
     success: 'bg-success/15 text-success border border-success/30',
-    warning: 'bg-amber-500/15 text-amber-500 border border-amber-500/30',
+    warning: 'bg-[var(--state-warning-soft)] text-[var(--state-warning)] border border-transparent',
     error: 'bg-error/15 text-error border border-error/30',
     outline: 'bg-transparent text-primary-text border border-custom-border',
   };

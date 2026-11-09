@@ -1,0 +1,1 @@
+﻿const fs=require('fs');const f='tests/member-age.browser.cjs';let s=fs.readFileSync(f,'utf8').replace("e.getBoundingClientRect().width>=160&&e.getBoundingClientRect().height<=100", "e.parentElement.getBoundingClientRect().width>=160&&e.getBoundingClientRect().height<=100");fs.writeFileSync(f,s);

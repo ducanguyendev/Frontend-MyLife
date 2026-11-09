@@ -1,6 +1,7 @@
+import { normalizeDisplayText } from '@/shared/utils/normalizeDisplayText';
 import React, { useEffect, useState, useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useLanguage } from '@/shared/hooks/useLanguage';
 import { X } from 'lucide-react';
 import { useBodyScrollLock } from '@/shared/hooks/useBodyScrollLock';
@@ -23,6 +24,7 @@ export interface ModalProps {
   closeOnEsc?: boolean;
   backdropClassName?: string;
   reducedMotion?: boolean;
+  placement?: 'center' | 'drawer';
 }
 
 const maxWidthMap: Record<ModalMaxWidth, string> = {
@@ -50,16 +52,19 @@ export const Modal: React.FC<ModalProps> = ({
   closeOnEsc = true,
   backdropClassName = 'bg-black/60 backdrop-blur-xs',
   reducedMotion = false,
+  placement = 'center',
 }) => {
   const [mounted, setMounted] = useState(false);
   const titleId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
   const { t } = useLanguage();
+  const prefersReducedMotion = useReducedMotion();
+  const motionReduced = reducedMotion || prefersReducedMotion;
   useEffect(() => {
     if (!isOpen || !mounted) return;
     const previous = document.activeElement as HTMLElement | null;
     const dialog = dialogRef.current;
-    const selector = 'button:not([disabled]), input:not([disabled]), [role="combobox"]:not([aria-disabled="true"]), textarea:not([disabled]), a[href], [tabindex="0"]';
+    const selector = 'button:not([disabled]), input:not([disabled]), select:not([disabled]), [role="combobox"]:not([aria-disabled="true"]), textarea:not([disabled]), a[href], [tabindex="0"]';
     // Focus once on opening; never steal focus from a user already interacting.
     if (dialog && !dialog.contains(document.activeElement)) {
       (dialog.querySelector<HTMLElement>('input:not([disabled]), [role="combobox"]:not([aria-disabled="true"]), textarea:not([disabled])') ?? dialog.querySelector<HTMLElement>(selector) ?? dialog).focus();
@@ -102,7 +107,7 @@ export const Modal: React.FC<ModalProps> = ({
     <AnimatePresence>
       {isOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 overflow-hidden"
+          className={`fixed inset-0 z-50 flex overflow-hidden ${placement === 'drawer' ? 'items-stretch justify-start' : 'items-center justify-center p-3 sm:p-5'}`}
           onClick={(e) => {
             if (e.target === e.currentTarget && closeOnBackdropClick) {
               onClose();
@@ -114,7 +119,7 @@ export const Modal: React.FC<ModalProps> = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: reducedMotion ? 0.01 : 0.2 }}
+            transition={{ duration: motionReduced ? 0.01 : 0.17 }}
             onClick={closeOnBackdropClick ? onClose : undefined}
             className={`fixed inset-0 ${backdropClassName}`}
             aria-hidden="true"
@@ -122,13 +127,13 @@ export const Modal: React.FC<ModalProps> = ({
 
           {/* Modal Dialog */}
           <motion.div
-            initial={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.96, y: 10 }}
-            animate={reducedMotion ? { opacity: 1 } : { opacity: 1, scale: 1, y: 0 }}
-            exit={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.96, y: 10 }}
-            transition={reducedMotion ? { duration: 0.01 } : { type: 'spring', damping: 28, stiffness: 360 }}
+            initial={motionReduced ? { opacity: 0 } : placement === 'drawer' ? { opacity: 0, x: -30 } : { opacity: 0, scale: 0.98, y: 8 }}
+            animate={motionReduced ? { opacity: 1 } : { opacity: 1, scale: 1, x: 0, y: 0 }}
+            exit={motionReduced ? { opacity: 0 } : placement === 'drawer' ? { opacity: 0, x: -30 } : { opacity: 0, scale: 0.98, y: 8 }}
+            transition={{ duration: motionReduced ? 0.01 : 0.26, ease: [.2, .7, .2, 1] }}
             onClick={(e) => e.stopPropagation()}
-            className={`relative w-full ${maxWidthMap[maxWidth]} flex flex-col min-h-0 bg-secondary-bg border border-custom-border rounded-2xl sm:rounded-3xl shadow-xl z-10 overflow-hidden ${className}`}
-            style={{ maxHeight: 'min(85vh, 720px)' }}
+            className={`ds-modal relative w-full ${maxWidthMap[maxWidth]} flex flex-col min-h-0 border border-custom-border z-10 overflow-hidden ${placement === 'drawer' ? 'ds-drawer' : 'rounded-2xl sm:rounded-3xl'} ${className}`}
+            style={{ maxHeight: placement === 'drawer' ? '100dvh' : 'min(90dvh, 850px)' }}
             ref={dialogRef} tabIndex={-1}
             role="dialog" aria-labelledby={showTitle && title ? titleId : undefined} aria-label={showTitle && title ? undefined : ariaLabel ?? t('common.dialog')}
             aria-modal="true"
@@ -137,7 +142,7 @@ export const Modal: React.FC<ModalProps> = ({
             {((showTitle && (title || description)) || !hideCloseButton) && (
               <div className={`shrink-0 flex items-center ${showTitle ? 'justify-between px-6 py-4 sm:py-5 border-b' : 'justify-end px-4 py-2'} border-custom-border bg-secondary-bg z-10`}>
                 {showTitle && <div className="pr-4">
-                  {title && <h3 id={titleId} className="text-lg sm:text-xl font-bold text-primary-text leading-snug">{title}</h3>}
+                  {title && <h3 id={titleId} className="text-lg sm:text-xl font-bold text-primary-text leading-snug">{typeof title === 'string' ? normalizeDisplayText(title) : title}</h3>}
                   {description && <p className="text-xs text-secondary-text mt-1">{description}</p>}
                 </div>}
 

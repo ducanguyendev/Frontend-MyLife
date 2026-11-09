@@ -9,7 +9,7 @@ export const FamilyMapPage: React.FC = () => (
     backTo="/mylife"
     showDock
     contentScroll="hidden"
-    contentClassName="min-h-0 px-3 pb-2 pt-2 sm:px-5 sm:pt-3"
+
   >
     <Suspense fallback={<div className="flex h-full items-center justify-center"><Loader2 className="animate-spin text-accent" size={28} aria-hidden="true" /></div>}>
       <FamilyMapTab />

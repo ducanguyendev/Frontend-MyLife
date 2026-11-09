@@ -5,8 +5,7 @@ import { useAuth } from '@/features/auth/context/AuthContext';
 import { Menu, X, User as UserIcon, LogOut, ArrowLeftRight, LayoutGrid } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
-import { LanguageSwitcher } from '../components/LanguageSwitcher';
-import { ThemeSwitch } from '../components';
+import { AppearanceControls } from '../components/AppearanceControls';
 import { LoginModal } from '@/features/auth/components/LoginModal';
 import { UserMenu } from '@/features/auth/components/UserMenu';
 import { UserProfileModal } from '@/features/profile/components/UserProfileModal';
@@ -152,8 +151,7 @@ export const Header: React.FC = () => {
 
           {/* Header Right */}
           <div className="hidden md:flex items-center gap-2 justify-end">
-            <ThemeSwitch />
-            <LanguageSwitcher />
+            <AppearanceControls />
 
             {isUser && (
               <button
@@ -307,10 +305,7 @@ export const Header: React.FC = () => {
                   </div>
                 )}
 
-                <div className="pt-4 flex items-center justify-between gap-4">
-                  <ThemeSwitch />
-                  <LanguageSwitcher isMobile />
-                </div>
+                {!isAuthenticated && <div className="pt-4 flex items-center justify-between gap-4"><AppearanceControls /></div>}
               </div>
             </motion.div>
           )}

@@ -1,0 +1,652 @@
+[
+  {
+    "name": "light-1366-Tree",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "light-1366-Cards",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "light-1366-List",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "light-1366-form",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "light-1366-profile",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": true
+  },
+  {
+    "name": "light-1920-Tree",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "light-1920-Cards",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "light-1920-List",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "light-1920-form",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "light-1920-profile",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": true
+  },
+  {
+    "name": "light-820-Tree",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "light-820-Cards",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "light-820-List",
+    "offenders": [
+      {
+        "tag": "TABLE",
+        "class": "family-member-table w-full table-auto border-collapse text-left",
+        "width": 1030
+      },
+      {
+        "tag": "THEAD",
+        "class": "bg-primary-bg/60",
+        "width": 1030
+      },
+      {
+        "tag": "TR",
+        "class": "border-b border-custom-border text-[11px] font-semibold uppercase tracking-wide text-secondary-text",
+        "width": 1030
+      },
+      {
+        "tag": "TH",
+        "class": "px-3 py-3",
+        "width": 133.5
+      },
+      {
+        "tag": "TH",
+        "class": "px-3 py-3",
+        "width": 183.6875
+      },
+      {
+        "tag": "TH",
+        "class": "px-2 py-3",
+        "width": 70.984375
+      },
+      {
+        "tag": "SPAN",
+        "class": "sr-only",
+        "width": 1
+      },
+      {
+        "tag": "TBODY",
+        "class": "",
+        "width": 1030
+      }
+    ],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "light-820-form",
+    "offenders": [
+      {
+        "tag": "TABLE",
+        "class": "family-member-table w-full table-auto border-collapse text-left",
+        "width": 1030
+      },
+      {
+        "tag": "THEAD",
+        "class": "bg-primary-bg/60",
+        "width": 1030
+      },
+      {
+        "tag": "TR",
+        "class": "border-b border-custom-border text-[11px] font-semibold uppercase tracking-wide text-secondary-text",
+        "width": 1030
+      },
+      {
+        "tag": "TH",
+        "class": "px-3 py-3",
+        "width": 133.5
+      },
+      {
+        "tag": "TH",
+        "class": "px-3 py-3",
+        "width": 183.6875
+      },
+      {
+        "tag": "TH",
+        "class": "px-2 py-3",
+        "width": 70.984375
+      },
+      {
+        "tag": "SPAN",
+        "class": "sr-only",
+        "width": 1
+      },
+      {
+        "tag": "TBODY",
+        "class": "",
+        "width": 1030
+      }
+    ],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "light-820-profile",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": true
+  },
+  {
+    "name": "dark-1366-Tree",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "dark-1366-Cards",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "dark-1366-List",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "dark-1366-form",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "dark-1366-profile",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": true
+  },
+  {
+    "name": "dark-1920-Tree",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "dark-1920-Cards",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "dark-1920-List",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "dark-1920-form",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "dark-1920-profile",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": true
+  },
+  {
+    "name": "dark-820-Tree",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "dark-820-Cards",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "dark-820-List",
+    "offenders": [
+      {
+        "tag": "TABLE",
+        "class": "family-member-table w-full table-auto border-collapse text-left",
+        "width": 1030
+      },
+      {
+        "tag": "THEAD",
+        "class": "bg-primary-bg/60",
+        "width": 1030
+      },
+      {
+        "tag": "TR",
+        "class": "border-b border-custom-border text-[11px] font-semibold uppercase tracking-wide text-secondary-text",
+        "width": 1030
+      },
+      {
+        "tag": "TH",
+        "class": "px-3 py-3",
+        "width": 133.5
+      },
+      {
+        "tag": "TH",
+        "class": "px-3 py-3",
+        "width": 183.6875
+      },
+      {
+        "tag": "TH",
+        "class": "px-2 py-3",
+        "width": 70.984375
+      },
+      {
+        "tag": "SPAN",
+        "class": "sr-only",
+        "width": 1
+      },
+      {
+        "tag": "TBODY",
+        "class": "",
+        "width": 1030
+      }
+    ],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "dark-820-form",
+    "offenders": [
+      {
+        "tag": "TABLE",
+        "class": "family-member-table w-full table-auto border-collapse text-left",
+        "width": 1030
+      },
+      {
+        "tag": "THEAD",
+        "class": "bg-primary-bg/60",
+        "width": 1030
+      },
+      {
+        "tag": "TR",
+        "class": "border-b border-custom-border text-[11px] font-semibold uppercase tracking-wide text-secondary-text",
+        "width": 1030
+      },
+      {
+        "tag": "TH",
+        "class": "px-3 py-3",
+        "width": 133.5
+      },
+      {
+        "tag": "TH",
+        "class": "px-3 py-3",
+        "width": 183.6875
+      },
+      {
+        "tag": "TH",
+        "class": "px-2 py-3",
+        "width": 70.984375
+      },
+      {
+        "tag": "SPAN",
+        "class": "sr-only",
+        "width": 1
+      },
+      {
+        "tag": "TBODY",
+        "class": "",
+        "width": 1030
+      }
+    ],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "dark-820-profile",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": true
+  },
+  {
+    "name": "light-390-Tree",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "light-390-Cards",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "light-390-List",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "light-390-quick-detail",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "light-390-form",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "light-390-profile",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": true
+  },
+  {
+    "name": "dark-390-Tree",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "dark-390-Cards",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "dark-390-List",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "dark-390-quick-detail",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "dark-390-form",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "dark-390-profile",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": true
+  },
+  {
+    "name": "light-1440-Tree",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "light-1440-Cards",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "light-1440-List",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "light-1440-quick-detail",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "light-1440-form",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "light-1440-profile",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": true
+  },
+  {
+    "name": "dark-1440-Tree",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "dark-1440-Cards",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "dark-1440-List",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "dark-1440-quick-detail",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "dark-1440-form",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "dark-1440-profile",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": true
+  }
+]

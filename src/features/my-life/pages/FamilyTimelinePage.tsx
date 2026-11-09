@@ -1,5 +1,6 @@
+import { Plus } from 'lucide-react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Button, FloatingAddButton } from '@/shared/components/ui';
+import { Button, PageHeader, ErrorState, EmptyState, ConfirmDialog } from '@/shared/components/ui';
 import { useLanguage } from '@/shared/hooks/useLanguage';
 import { useWorkspaceToast } from '@/shared/hooks/useWorkspaceToast';
 import { MyLifeWorkspaceLayout } from '@/shared/layouts/MyLifeWorkspaceLayout';
@@ -11,6 +12,9 @@ import { TimelineYearSection } from '@/features/my-life/components/timeline/Time
 import { groupTimelineEventsByYear } from '@/features/my-life/components/timeline/timelineUtils';
 import { getDefaultEventTypeForFilter, isDerivedOnlyEventType, matchesTimelineFilter, type Filter } from '@/features/my-life/components/timeline/types';
 import { formatTimelineDate } from '@/features/my-life/components/timeline/timelinePresentation';
+import { TimelineYearRail } from '../components/timeline/TimelineYearRail';
+import { MemorySkeleton } from '../components/memories/MemorySkeleton';
+import '../components/memories/Memories.css';
 
 const blank = (eventType: NonNullable<ReturnType<typeof getDefaultEventTypeForFilter>> = 'CUSTOM'): FamilyTimelineWrite => ({ memberId: null, eventType, title: '', description: null, eventDate: null, eventYear: null, isApproximate: false, location: null, latitude: null, longitude: null, relatedMemberId: null });
 
@@ -25,6 +29,7 @@ export const FamilyTimelinePage: React.FC = () => {
   const [form, setForm] = useState<FamilyTimelineWrite | null>(null);
   const [editingId, setEditingId] = useState<number | undefined>();
   const [saving, setSaving] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<FamilyTimelineEvent | null>(null);
   const closeForm = () => { if (saving) return; setForm(null); setEditingId(undefined); };
   const defaultEventType = getDefaultEventTypeForFilter(filter);
   const openCreateModal = () => {
@@ -64,20 +69,19 @@ export const FamilyTimelinePage: React.FC = () => {
     ? formatTimelineDate(event.eventDate, language)
     : event.eventYear ? (event.isApproximate ? t('admin.family_v2.approximate_year', { year: event.eventYear }) : String(event.eventYear)) : t('admin.family_v2.unknown_date');
 
-  return <MyLifeWorkspaceLayout backTo="/mylife" showDock contentClassName="px-3 py-4 sm:px-5 sm:py-5">
-    <main className="mx-auto w-full max-w-5xl space-y-4">
-      <header className="flex flex-wrap items-end justify-between gap-3"><div className="min-w-0"><p className="mb-1 text-xs font-bold uppercase tracking-[0.18em] text-accent">MyLife</p><h1 className="m-0 text-2xl font-black text-primary-text sm:text-3xl">{t('admin.family_v2.timeline')}</h1><p className="mt-1 text-sm text-secondary-text">{t('admin.family_v2.timeline_description')}</p></div>
-        <div className="flex shrink-0 items-center justify-end"><FloatingAddButton ariaLabel={t('admin.family_v2.add_event')} tooltip={t(defaultEventType ? 'admin.family_v2.add_event' : filter === 'BIRTH' ? 'admin.family_v2.birth_death_auto_hint' : 'admin.family_v2.other_events_readonly_hint')} disabled={!defaultEventType} onClick={openCreateModal} /></div>
-      </header>
-      <TimelineFilterBar value={filter} onChange={setFilter} label={t('admin.family_v2.timeline_filters')} translate={t} />
+  return <MyLifeWorkspaceLayout backTo="/mylife" showDock>
+    <div className="memory-page memory-page--timeline">
+      <PageHeader eyebrow={t('appShell.memories')} title={t('appShell.timeline')} description={t('memories.timelineDescription')} actions={defaultEventType && (events.length > 0 || loading || error) ? <Button leftIcon={<Plus size={16}/>} onClick={openCreateModal}>{t('admin.family_v2.add_event')}</Button> : undefined}/>
+      <div className="memory-toolbar"><TimelineFilterBar value={filter} onChange={setFilter} label={t('admin.family_v2.timeline_filters')} translate={t}/></div>
       {filter === 'BIRTH' && <p className="m-0 text-sm text-secondary-text" role="status">{t('admin.family_v2.birth_death_auto_hint')}</p>}
       {filter === 'OTHER' && <p className="m-0 text-sm text-secondary-text" role="status">{t('admin.family_v2.other_events_readonly_hint')}</p>}
-      {loading ? <div role="status" className="p-10 text-center text-secondary-text">{t('admin.family_v2.loading_timeline')}</div>
-        : error ? <div role="alert" className="p-10 text-center text-secondary-text">{t('admin.family_v2.timeline_error')} <Button variant="secondary" onClick={() => { setLoading(true); void load(); }}>{t('admin.family_v2.retry')}</Button></div>
-          : filtered.length === 0 ? <p className="rounded-2xl border border-custom-border p-10 text-center text-secondary-text">{t('admin.family_v2.empty_timeline')}</p>
-            : <div className="space-y-7">{yearGroups.map(group => <TimelineYearSection key={group.year ?? 'unknown'} group={group} unknown={t('admin.family_v2.unknown_date')} dateLabel={dateLabel} onEdit={beginEdit} onDelete={event => void remove(event)} translate={t} />)}</div>}
-    </main>
+      {loading ? <MemorySkeleton module="timeline"/>
+        : error ? <ErrorState message={t('admin.family_v2.timeline_error')} action={<Button variant="secondary" onClick={() => { setLoading(true); void load(); }}>{t('admin.family_v2.retry')}</Button>}/>
+          : filtered.length === 0 ? <EmptyState title={t(events.length ? 'memories.noTimelineResults' : 'memories.emptyTimeline')} description={t(events.length ? 'memories.clearTimelineFilters' : 'memories.emptyTimelineDescription')} action={events.length ? <Button variant="secondary" onClick={() => setFilter('ALL')}>{t('memories.clearFilters')}</Button> : defaultEventType ? <Button onClick={openCreateModal}>{t('admin.family_v2.add_event')}</Button> : undefined}/>
+            : <div className="timeline-layout"><TimelineYearRail groups={yearGroups}/><div className="timeline-years">{yearGroups.map(group => <TimelineYearSection key={group.year ?? 'unknown'} group={group} unknown={t('admin.family_v2.unknown_date')} dateLabel={dateLabel} onEdit={beginEdit} onDelete={setPendingDelete} translate={t} members={members}/>)}</div></div>}
+    </div>
     {form && <TimelineEventModal isOpen form={form} members={members} editing={editingId !== undefined} saving={saving}
       onClose={closeForm} onSubmit={event => void save(event)} onChange={setForm} />}
+    <ConfirmDialog isOpen={!!pendingDelete} title={t('memories.deleteEventTitle')} confirmLabel={t('admin.family_v2.delete_event')} cancelLabel={t('admin.cancel')} onClose={() => setPendingDelete(null)} onConfirm={() => { if (pendingDelete) void remove(pendingDelete); setPendingDelete(null); }}>{t('memories.deleteEventDescription', { title:pendingDelete?.title ?? '' })}</ConfirmDialog>
   </MyLifeWorkspaceLayout>;
 };

@@ -1,0 +1,38 @@
+{
+  "roots": "From the same roots",
+  "breadcrumb": "Breadcrumb",
+  "members": "Members",
+  "publicLanding": "About MyLife",
+  "clearSearch": "Clear search",
+  "viewTree": "Tree",
+  "viewCards": "Cards",
+  "viewList": "List",
+  "emptyTitle": "Your family starts with one person.",
+  "emptyDescription": "Add your first member to begin building your family story.",
+  "loading": "Loading your family",
+  "contact": "Contact",
+  "openMap": "Open map",
+  "openLibrary": "Open library",
+  "openTimeline": "View timeline",
+  "exploreHint": "Discover the connections between two people in your family.",
+  "archive": "Family portrait",
+  "exitFullscreen": "Exit fullscreen",
+  "memberCountLabel": "members",
+  "age": {
+    "current": "{{age}} years old",
+    "current_one": "{{age}} year old",
+    "current_other": "{{age}} years old",
+    "unknown": "Age unknown",
+    "atDeath": "Passed away at {{age}}",
+    "wouldBe": "if living today: {{age}}",
+    "wouldBeDetail": "If living today: {{age}}",
+    "deceased": "Deceased"
+  },
+  "selectMember": "Select member",
+  "recordedSiblingCount": "Recorded siblings: {{count}}",
+  "siblingKind": {
+    "same-recorded-parents": "Same two recorded parents",
+    "different-recorded-parents": "One shared parent, different recorded second parents",
+    "shared-parent-unknown": "Shared recorded parent; other parent unknown"
+  }
+}

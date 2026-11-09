@@ -1,11 +1,17 @@
+import { FloatingField } from '@/shared/components/ui/FloatingField';
+import { normalizeDisplayText } from '@/shared/utils/normalizeDisplayText';
 import React, { useCallback, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Check, ChevronDown } from "lucide-react";
+import { MemberAvatarImage } from './MemberAvatarImage';
 
 export interface FamilyRelationOption {
   id: number;
   fullName: string;
   generation: number;
+  avatarUrl?: string;
+  hasManagedAvatar?: boolean;
+  updatedAt?: string;
 }
 
 export interface FamilyRelationSelectProps {
@@ -23,8 +29,10 @@ export interface FamilyRelationSelectProps {
 export const toggleFamilyRelationSelection = (currentValue: number | undefined, selectedMemberId: number): number | undefined =>
   currentValue === selectedMemberId ? undefined : selectedMemberId;
 
-export const formatFamilyRelationOption = (option: FamilyRelationOption, generationLabel: string, showGeneration = true) =>
-  showGeneration ? `${option.fullName} (${generationLabel} ${option.generation})` : option.fullName;
+export const formatFamilyRelationOption = (option: FamilyRelationOption, generationLabel: string, showGeneration = true) => {
+  void generationLabel; void showGeneration;
+  return normalizeDisplayText(option.fullName);
+};
 
 export const FamilyRelationSelect: React.FC<FamilyRelationSelectProps> = ({
   value,
@@ -50,6 +58,18 @@ export const FamilyRelationSelect: React.FC<FamilyRelationSelectProps> = ({
   const close = (restoreFocus = false) => {
     setOpen(false);
     if (restoreFocus) requestAnimationFrame(() => triggerRef.current?.focus());
+  };
+
+  const closeAndMoveFocus = (backward: boolean) => {
+    setOpen(false);
+    requestAnimationFrame(() => {
+      const focusable = Array.from(document.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])',
+      )).filter((element) => !listboxRef.current?.contains(element));
+      const triggerIndex = focusable.indexOf(triggerRef.current!);
+      const targetIndex = backward ? triggerIndex - 1 : triggerIndex + 1;
+      (focusable[targetIndex] ?? triggerRef.current)?.focus();
+    });
   };
 
   const updatePosition = useCallback(() => {
@@ -133,11 +153,12 @@ export const FamilyRelationSelect: React.FC<FamilyRelationSelectProps> = ({
           event.preventDefault();
           selectOption(activeIndex);
         } else if (event.key === "Escape" || event.key === "Tab") {
-          if (event.key === "Escape") event.preventDefault();
-          close(event.key === "Escape");
+          event.preventDefault();
+          if (event.key === "Escape") { event.stopPropagation(); close(true); }
+          else closeAndMoveFocus(event.shiftKey);
         }
       }}
-      className="overflow-y-auto rounded-2xl border border-custom-border bg-secondary-bg p-1.5 text-primary-text shadow-xl outline-none"
+      className="ds-field-menu"
     >
       {options.map((option, index) => {
         const isSelected = option.id === value;
@@ -150,9 +171,11 @@ export const FamilyRelationSelect: React.FC<FamilyRelationSelectProps> = ({
             aria-selected={isSelected}
             onMouseMove={() => setActiveIndex(index)}
             onClick={() => selectOption(index)}
-            className={`relative flex min-h-10 cursor-pointer select-none items-center rounded-xl py-2 pl-3 pr-9 text-sm text-primary-text outline-none ${activeIndex === index ? "bg-accent/10" : ""}`}
+            data-active={activeIndex === index}
+            className={`ds-field-option relative flex min-h-10 cursor-pointer select-none items-center rounded-xl py-2 pl-3 pr-9 text-sm text-primary-text outline-none ${activeIndex === index ? "bg-accent/10" : ""}`}
           >
-            <span className="min-w-0 flex-1 truncate">{formatOption(option)}</span>
+            <MemberAvatarImage member={{ ...option, updatedAt: option.updatedAt ?? '' }} alt="" className="mr-2 h-8 w-8 shrink-0 rounded-full object-cover"/>
+            <span className="min-w-0 flex-1 whitespace-normal break-words">{formatOption(option)}</span>
             {isSelected && <Check size={16} aria-hidden="true" className="absolute right-3 text-accent" />}
           </div>
         );
@@ -163,7 +186,7 @@ export const FamilyRelationSelect: React.FC<FamilyRelationSelectProps> = ({
 
   return (
     <div className="flex w-full flex-col">
-      {label && <span className="mb-1.5 px-1 text-xs font-semibold text-secondary-text">{label}</span>}
+      <FloatingField label={label ?? placeholder} fieldId={`${listboxId}-trigger`} active={open} hasValue={Boolean(selected)} disabled={disabled} trailing={<ChevronDown size={18} aria-hidden="true"/>}>
       <button
         ref={triggerRef}
         type="button"
@@ -179,13 +202,16 @@ export const FamilyRelationSelect: React.FC<FamilyRelationSelectProps> = ({
             openList();
           }
         }}
-        className="flex min-h-[56px] w-full items-center justify-between gap-2 rounded-2xl border border-custom-border bg-primary-bg px-4 py-3 text-left text-sm font-medium text-primary-text outline-none transition-all hover:border-custom-border/80 focus:border-[var(--focus-border)]   disabled:cursor-not-allowed disabled:opacity-50"
+        data-ui-control
+        id={`${listboxId}-trigger`}
       >
-        <span className={`min-w-0 flex-1 truncate ${selected ? "text-primary-text" : "text-secondary-text"}`}>
-          {selected ? formatOption(selected) : placeholder}
+        {selected && <MemberAvatarImage member={{ ...selected, updatedAt: selected.updatedAt ?? '' }} alt="" className="h-6 w-6 shrink-0 rounded-full object-cover"/>}
+        <span title={selected ? formatOption(selected) : undefined} className={`min-w-0 flex-1 whitespace-normal break-words ${selected ? "text-primary-text" : "text-secondary-text"}`}>
+          {selected ? formatOption(selected) : ''}
         </span>
-        <ChevronDown size={18} aria-hidden="true" className="shrink-0 text-secondary-text" />
+
       </button>
+      </FloatingField>
       {popup}
     </div>
   );

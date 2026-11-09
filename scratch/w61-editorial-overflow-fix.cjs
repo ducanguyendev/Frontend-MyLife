@@ -1,0 +1,1 @@
+﻿const fs=require('fs');let f='scratch/w61-editorial.tsx',s=fs.readFileSync(f,'utf8').replace('.probes{position:absolute;left:0;top:0;opacity:0;pointer-events:none}', '.probes{position:fixed;left:0;top:0;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none}');fs.writeFileSync(f,s);

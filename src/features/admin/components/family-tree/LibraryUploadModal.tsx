@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { X } from 'lucide-react';
+import { UploadCloud, X } from 'lucide-react';
 import { useLanguage } from '@/shared/hooks/useLanguage';
 import { Button, Modal, SelectItem } from '@/shared/components/ui';
 import { getFeatureErrorKey } from '../../services/featureMessages';
 import { type LibraryAlbum, type LibraryPhotoMetadata } from '../../services/libraryService';
-import { LibraryPhotoFormFields, libraryDisplayDateError, libraryFieldClass, LibrarySelectField } from './LibraryPhotoFormFields';
+import { LibraryPhotoFormFields, libraryDisplayDateError, LibrarySelectField } from './LibraryPhotoFormFields';
 
 export function LibraryUploadModal({ albums, initialAlbumId, onClose, onSubmit }: {
   albums: LibraryAlbum[]; initialAlbumId?: number;
@@ -38,18 +38,18 @@ export function LibraryUploadModal({ albums, initialAlbumId, onClose, onSubmit }
     catch (failure) { setError(getFeatureErrorKey(failure, 'photo_upload')); }
     finally { if (input.current) input.current.value = ''; setIsUploading(false); }
   };
-  return <Modal isOpen onClose={() => { if (!isUploading) onClose(); }} title={t('admin.library_ui.upload')}
-    description={t('admin.library_ui.upload_hint')} maxWidth="lg" closeOnBackdropClick={!isUploading} closeOnEsc={!isUploading}>
-    <form onSubmit={submit} noValidate className="space-y-4">
-      <LibrarySelectField label={t('admin.library_ui.field_album')} value={albumId || undefined} disabled={isUploading}
+  return <Modal isOpen onClose={() => { if (!isUploading) onClose(); }} title={t('memories.uploadPhotos')}
+    description={t('admin.library_ui.upload_hint')} maxWidth="full" className="memory-form memory-form--library" closeOnBackdropClick={!isUploading} closeOnEsc={!isUploading}>
+    <form onSubmit={submit} noValidate id="libraryUploadForm" className="library-upload-form">
+      <div className="memory-form-column"><LibrarySelectField label={t('admin.library_ui.field_album')} value={albumId || undefined} disabled={isUploading}
         appearance="simple"
         placeholder={t('admin.library_ui.choose_album')} onValueChange={setAlbumId}>
           {albums.map(album => <SelectItem key={album.id} value={String(album.id)}>{album.name}</SelectItem>)}
       </LibrarySelectField>
-      <label className="block text-sm text-secondary-text">{t('admin.library_ui.field_images')}
-        <input ref={input} className={`${libraryFieldClass} mt-1.5`} type="file" multiple
-          accept="image/jpeg,image/png,image/webp,image/gif" disabled={isUploading}
-          onChange={e => { setFiles(Array.from(e.target.files ?? [])); setError(null); e.target.value = ''; }} />
+      <label className="library-upload-zone" onDragOver={event => event.preventDefault()} onDrop={event => { event.preventDefault(); if (isUploading) return; setFiles(Array.from(event.dataTransfer.files)); setError(null); }}>
+        <UploadCloud size={30} strokeWidth={1.4}/><strong>{t('memories.dropPhotos')}</strong><span>{t('memories.choosePhotos')}</span><small>{t('admin.library_ui.upload_hint')}</small>
+        <input ref={input} className="sr-only" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif" disabled={isUploading}
+          onChange={e => { setFiles(Array.from(e.target.files ?? [])); setError(null); e.target.value = ''; }}/>
       </label>
       {previews.length > 0 && <div className="grid grid-cols-2 sm:grid-cols-3 gap-3" aria-label={t('admin.library_ui.preview')}>
         {previews.map((preview, index) => <div key={preview.previewUrl} className="relative rounded-2xl border border-custom-border overflow-hidden bg-primary-bg">
@@ -61,11 +61,12 @@ export function LibraryUploadModal({ albums, initialAlbumId, onClose, onSubmit }
             <p className="text-[11px] text-secondary-text">{new Intl.NumberFormat(language, { maximumFractionDigits: 1 }).format(preview.file.size / (preview.file.size >= 1024 * 1024 ? 1024 * 1024 : 1024))} {preview.file.size >= 1024 * 1024 ? 'MB' : 'KB'}</p></div>
         </div>)}
       </div>}
-      <LibraryPhotoFormFields value={metadata} onChange={setMetadata} disabled={isUploading} />
+      </div><div className="memory-form-column"><h2 className="memory-form__heading">{t('memories.photoDetails')}</h2><LibraryPhotoFormFields value={metadata} onChange={setMetadata} disabled={isUploading}/></div>
+      {isUploading && <p className="memory-upload-status" role="status">{t('memories.uploadingPhotos', { count:files.length })}</p>}
       {error && <p role="alert" className="text-sm text-error">{t(error)}</p>}
-      <div className="flex justify-end gap-3 pt-2">
+      <div className="memory-form__footer">
         <Button type="button" variant="secondary" disabled={isUploading} onClick={onClose}>{t('admin.library_ui.cancel')}</Button>
-        <Button type="submit" isLoading={isUploading} disabled={albums.length === 0}>{t('admin.library_ui.upload')}</Button>
+        <Button type="submit" isLoading={isUploading} disabled={albums.length === 0}>{t('memories.uploadPhotos')}</Button>
       </div>
     </form>
   </Modal>;

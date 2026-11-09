@@ -1,3 +1,4 @@
+import { FormSectionHeader } from '@/shared/components/ui/FormSectionHeader';
 import React, { useEffect, useMemo, useState } from 'react';
 import { AlignLeft, CalendarClock, FileText } from 'lucide-react';
 import { Button, DateInput, formatBackendToDob, formatDobToBackend, Input, Modal, Select, SelectItem, Textarea } from '@/shared/components/ui';
@@ -50,17 +51,17 @@ export const TimelineEventModal: React.FC<TimelineEventModalProps> = ({ isOpen, 
       {members.map(member => <SelectItem key={member.id} value={String(member.id)}>{member.fullName}</SelectItem>)}
     </Select>
   );
-  const titleField = (label: string, fullWidth = true) => <Input containerClassName={fullWidth ? 'sm:col-span-2' : ''} label={label} floatingLabelAlways placeholder={t('admin.family_v2.enter_title')} required minLength={2} maxLength={200} value={form.title} disabled={saving}
+  const titleField = (label: string, fullWidth = true) => <Input containerClassName={fullWidth ? 'sm:col-span-2' : ''} label={label} floatingLabel placeholder={t('admin.family_v2.enter_title')} required minLength={2} maxLength={200} value={form.title} disabled={saving}
     onChange={event => { setTitleTouched(true); update({ title: event.target.value }); }} />;
   const dateFields = (dateLabel = t('admin.family_v2.event_date')) => <>
-    <DateInput label={dateLabel} floatingLabelAlways value={form.eventDate ? formatBackendToDob(form.eventDate) : ''} disabled={saving}
+    <DateInput label={dateLabel} floatingLabel value={form.eventDate ? formatBackendToDob(form.eventDate) : ''} disabled={saving}
       onChange={event => { const eventDate = formatDobToBackend(event.target.value); update({ eventDate, eventYear: eventDate ? Number(eventDate.slice(0, 4)) : form.eventYear }); }} />
-    <Input label={t('admin.family_v2.event_year')} floatingLabelAlways placeholder="YYYY" type="number" min="1" max="9999" value={form.eventYear ?? ''} disabled={saving}
+    <Input label={t('admin.family_v2.event_year')} floatingLabel placeholder="YYYY" type="number" min="1" max="9999" value={form.eventYear ?? ''} disabled={saving}
       onChange={event => update({ eventYear: event.target.value ? Number(event.target.value) : null })} />
   </>;
-  const notesField = (label: string, placeholderKey = 'admin.family_v2.enter_notes') => <Textarea label={label} floatingLabelAlways placeholder={t(placeholderKey)} className="min-h-[112px] w-full" maxLength={2000} rows={3} value={form.description ?? ''} disabled={saving}
+  const notesField = (label: string, placeholderKey = 'admin.family_v2.enter_notes') => <Textarea label={label} floatingLabel placeholder={t(placeholderKey)} className="min-h-[112px] w-full" maxLength={2000} rows={3} value={form.description ?? ''} disabled={saving}
     onChange={event => update({ description: event.target.value || null })} />;
-  const locationField = (label: string, placeholderKey = 'admin.family_v2.enter_location') => <Input containerClassName="sm:col-span-2" label={label} floatingLabelAlways placeholder={t(placeholderKey)} maxLength={500} value={form.location ?? ''} disabled={saving}
+  const locationField = (label: string, placeholderKey = 'admin.family_v2.enter_location') => <Input containerClassName="sm:col-span-2" label={label} floatingLabel placeholder={t(placeholderKey)} maxLength={500} value={form.location ?? ''} disabled={saving}
     onChange={event => update({ location: event.target.value || null })} />;
   const approximateField = <label className={`inline-flex min-h-10 w-fit cursor-pointer items-center gap-2 rounded-xl px-2 py-2 text-sm text-secondary-text transition-colors ${form.isApproximate ? 'bg-accent/5 text-primary-text' : ''}`}>
     <input type="checkbox" className="size-4 accent-[var(--accent)]" checked={form.isApproximate} disabled={saving} onChange={event => update({ isApproximate: event.target.checked })} />
@@ -104,10 +105,10 @@ export const TimelineEventModal: React.FC<TimelineEventModalProps> = ({ isOpen, 
     else update({ eventType });
   };
 
-  return <Modal isOpen={isOpen} title={title} description={t('admin.family_v2.timeline_event_modal_description')} ariaLabel={title} onClose={() => { if (!saving) onClose(); }} closeOnBackdropClick={!saving} closeOnEsc={!saving} maxWidth="2xl" className="!max-h-[min(88vh,780px)]"
+  return <Modal isOpen={isOpen} title={title} description={t('admin.family_v2.timeline_event_modal_description')} ariaLabel={title} onClose={() => { if (!saving) onClose(); }} closeOnBackdropClick={!saving} closeOnEsc={!saving} maxWidth="full" className="memory-form memory-form--timeline"
     footer={<div className="flex w-full flex-wrap justify-end gap-2 sm:gap-3"><Button type="button" variant="secondary" disabled={saving} onClick={onClose}>{t('admin.cancel')}</Button>
       <Button type="submit" form="familyTimelineEventForm" isLoading={saving} disabled={saving || Boolean(criticalError) || sameMarriageMember || form.title.trim().length < 2}>{t('admin.family_v2.save_event')}</Button></div>}>
-    <form id="familyTimelineEventForm" onSubmit={event => { if (sameMarriageMember) { event.preventDefault(); setTypeError(t('admin.family_v2.same_marriage_member_error')); return; } if (criticalError || form.title.trim().length < 2) { event.preventDefault(); setTypeError(criticalError || t('admin.family_v2.title_required')); return; } onSubmit(event); }} className="flex flex-col gap-4">
+    <form id="familyTimelineEventForm" onSubmit={event => { if (sameMarriageMember) { event.preventDefault(); setTypeError(t('admin.family_v2.same_marriage_member_error')); return; } if (criticalError || form.title.trim().length < 2) { event.preventDefault(); setTypeError(criticalError || t('admin.family_v2.title_required')); return; } onSubmit(event); }} className="timeline-event-form">
       <section className="space-y-2" aria-labelledby="timeline-event-type-heading">
         <h4 id="timeline-event-type-heading" className="m-0 text-sm font-semibold text-primary-text">{t('admin.family_v2.event_type')}</h4>
         <div className="-mx-1 flex flex-nowrap gap-2 overflow-x-auto px-1 pb-1" role="group" aria-label={t('admin.family_v2.event_type')}>
@@ -118,20 +119,20 @@ export const TimelineEventModal: React.FC<TimelineEventModalProps> = ({ isOpen, 
       </section>
 
       <section className="space-y-3 rounded-2xl border border-custom-border bg-secondary-bg/30 p-4 sm:p-5" aria-labelledby="timeline-event-primary-heading">
-        <h4 id="timeline-event-primary-heading" className="flex items-center gap-2 text-sm font-semibold text-primary-text"><FileText size={17} aria-hidden="true" />{t('admin.family_v2.event_section_primary')}</h4>
+        <FormSectionHeader id="timeline-event-primary-heading" icon={<FileText size={17} aria-hidden="true"/>} title={t('admin.family_v2.event_section_primary')}/>
         <div className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2">{primaryFields()}</div>
         {sameMarriageMember && <p role="alert" className="m-0 text-sm text-error">{t('admin.family_v2.same_marriage_member_error')}</p>}
       </section>
 
       <section className="space-y-3 rounded-2xl border border-custom-border bg-secondary-bg/30 p-4 sm:p-5" aria-labelledby="timeline-event-time-heading">
-        <h4 id="timeline-event-time-heading" className="flex items-center gap-2 text-sm font-semibold text-primary-text"><CalendarClock size={17} aria-hidden="true" />{t('admin.family_v2.event_section_time_location')}</h4>
+        <FormSectionHeader id="timeline-event-time-heading" icon={<CalendarClock size={17} aria-hidden="true"/>} title={t('admin.family_v2.event_section_time_location')}/>
         <div className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2">{dateFields(dateLabel)}</div>
-        {approximateField}
+        {approximateField}<p className="memory-form__hint">{t('memories.approximateHelp')}</p>
         {locationField(locationLabel, locationPlaceholder)}
       </section>
 
       <section className="space-y-3 rounded-2xl border border-custom-border bg-secondary-bg/30 p-4 sm:p-5" aria-labelledby="timeline-event-content-heading">
-        <h4 id="timeline-event-content-heading" className="flex items-center gap-2 text-sm font-semibold text-primary-text"><AlignLeft size={17} aria-hidden="true" />{t('admin.family_v2.event_section_content')}</h4>
+        <FormSectionHeader id="timeline-event-content-heading" icon={<AlignLeft size={17} aria-hidden="true"/>} title={t('admin.family_v2.event_section_content')}/>
         {notesField(contentLabel, contentPlaceholder)}
       </section>
       {criticalError && <p role="alert" className="m-0 text-sm text-secondary-text">{criticalError}</p>}

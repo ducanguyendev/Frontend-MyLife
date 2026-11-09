@@ -11,7 +11,9 @@ const details = read('src/features/admin/components/family-tree/MemberDetailModa
 test('FamilyMemberPicker is a reusable action picker with a persistent placeholder trigger', () => {
   assert.match(picker, /onSelect: \(memberId: number\) => void/);
   assert.match(picker, /onSelect\(option\.id\)/);
-  assert.match(picker, /<span className="min-w-0 flex-1 truncate">\{placeholder\}<\/span>/);
+  assert.match(picker, /<FloatingField label=\{placeholder\}/);
+  assert.match(picker, /MemberAvatarImage/);
+  assert.doesNotMatch(picker, /\{option\.generation\}/);
   assert.match(picker, /createPortal\(/);
   assert.match(picker, /role="listbox"/);
   assert.match(picker, /role="option"/);

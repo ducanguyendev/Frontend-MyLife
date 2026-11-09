@@ -1,3 +1,4 @@
+import { FormSectionHeader } from '@/shared/components/ui/FormSectionHeader';
 import { useEffect, useMemo, useState } from 'react';
 import { CalendarClock, CalendarDays, Loader2, Plus, Users } from 'lucide-react';
 import { Button, DateInput, Input, Modal, Select, SelectItem, Textarea, formatBackendToDob, formatDobToBackend, validateCalendarDate } from '@/shared/components/ui';
@@ -206,17 +207,15 @@ export function FamilyAnniversaryModal({ anniversary, members, onClose, onSubmit
   const formatIsoDate = (isoDate: string) => dateFormat.format(new Date(`${isoDate}T12:00:00Z`));
   const ariaLabel = t(anniversary ? 'admin.anniversary_ui.edit_title' : 'admin.anniversary_ui.add_title');
 
-  return <Modal isOpen showTitle={false} ariaLabel={ariaLabel}
-    onClose={() => { if (!isSaving) onClose(); }} closeOnBackdropClick={!isSaving} closeOnEsc={!isSaving} maxWidth="2xl"
+  return <Modal isOpen title={ariaLabel} ariaLabel={ariaLabel}
+    onClose={() => { if (!isSaving) onClose(); }} closeOnBackdropClick={!isSaving} closeOnEsc={!isSaving} maxWidth="full" className="memory-form memory-form--calendar"
     footer={<div className="flex w-full items-center justify-end gap-3">
       <Button type="button" variant="secondary" disabled={isSaving} onClick={onClose}>{t('admin.anniversary_ui.cancel')}</Button>
       <Button type="submit" form="familyAnniversaryForm" isLoading={isSaving}>{t(anniversary ? 'admin.anniversary_ui.save_changes' : 'admin.anniversary_ui.add_action')}</Button>
     </div>}>
-    <form id="familyAnniversaryForm" onSubmit={submit} noValidate className="space-y-3">
-      <section className="overflow-visible rounded-xl border border-custom-border/70 bg-secondary-bg/30">
-        <h2 className="flex items-center gap-2 border-b border-custom-border/50 px-3.5 py-3 text-sm font-semibold text-primary-text">
-          <Users size={16} className="text-accent" aria-hidden="true" />{t('admin.anniversary_ui.event_information')}
-        </h2>
+    <form id="familyAnniversaryForm" onSubmit={submit} noValidate className="anniversary-form-grid">
+<div className="memory-form-column">      <section className="overflow-visible rounded-xl border border-custom-border/70 bg-secondary-bg/30">
+        <FormSectionHeader icon={<Users size={16} className="text-accent" aria-hidden="true" />} title={t('admin.anniversary_ui.event_information')}/>
         <div className="grid grid-cols-1 gap-3 p-3.5 sm:grid-cols-2">
           <Select appearance="simple" label={t('admin.anniversary_ui.event_type')} value={eventType} disabled={isSaving}
           onValueChange={value => {
@@ -249,13 +248,15 @@ export function FamilyAnniversaryModal({ anniversary, members, onClose, onSubmit
           <Input containerClassName="sm:col-span-2" label={t('admin.anniversary_ui.title')} value={title} maxLength={200} disabled={isSaving}
             error={error === 'admin.anniversary_ui.invalid_title' ? t(error) : null} onChange={event => setTitle(event.target.value)} />
         </div>
-      </section>
-
-      <section className="overflow-visible rounded-xl border border-custom-border/70 bg-secondary-bg/30">
-        <h2 className="flex items-center gap-2 border-b border-custom-border/50 px-3.5 py-3 text-sm font-semibold text-primary-text">
-          {isDeathAnniversary ? <CalendarClock size={16} className="text-accent" aria-hidden="true" /> : <CalendarDays size={16} className="text-accent" aria-hidden="true" />}
-          {t(isDeathAnniversary ? 'admin.anniversary_ui.date_of_death' : 'admin.anniversary_ui.event_date')}
-        </h2>
+      </section>      <section className="overflow-visible rounded-xl border border-custom-border/70 bg-secondary-bg/30">
+        <FormSectionHeader icon={<Plus size={16} className="text-accent" aria-hidden="true" />} title={t('admin.anniversary_ui.organization_notes')}/>
+        <div className="space-y-3 p-3.5">
+          <Input label={t(getAnniversaryOrganizationLabelKeys(eventType).place)} value={place} maxLength={500} disabled={isSaving} onChange={event => setPlace(event.target.value)} />
+          <Input label={t(getAnniversaryOrganizationLabelKeys(eventType).host)} value={host} maxLength={300} disabled={isSaving} onChange={event => setHost(event.target.value)} />
+          <Textarea label={t('admin.anniversary_ui.notes')} rows={3} maxLength={2000} value={notes} disabled={isSaving} onChange={event => setNotes(event.target.value)} />
+        </div>
+      </section></div><div className="memory-form-column">      <section className="overflow-visible rounded-xl border border-custom-border/70 bg-secondary-bg/30">
+        <FormSectionHeader icon={isDeathAnniversary ? <CalendarClock size={16} className="text-accent" aria-hidden="true" /> : <CalendarDays size={16} className="text-accent" aria-hidden="true" />} title={t(isDeathAnniversary ? 'admin.anniversary_ui.date_of_death' : 'admin.anniversary_ui.event_date')}/>
         <div className="space-y-3.5 p-3.5">
           <DateInput label={t(isDeathAnniversary ? 'admin.anniversary_ui.solar_death_date' : 'admin.anniversary_ui.event_date')}
             value={originalSolarDate} onValueChange={value => { setOriginalSolarDate(value); setDateFromMember(false); setDateCheck(null); setError(null); }} disabled={isSaving || Boolean(linkedDeathDate)} />
@@ -303,18 +304,7 @@ export function FamilyAnniversaryModal({ anniversary, members, onClose, onSubmit
                 </div> : <p className="mt-1.5 text-xs text-secondary-text">{t('admin.anniversary_ui.enter_lunar_date')}</p>}
           </div>}
         </div>
-      </section>
-
-      <section className="overflow-visible rounded-xl border border-custom-border/70 bg-secondary-bg/30">
-        <h2 className="flex items-center gap-2 border-b border-custom-border/50 px-3.5 py-3 text-sm font-semibold text-primary-text">
-          <Plus size={16} className="text-accent" aria-hidden="true" />{t('admin.anniversary_ui.organization_notes')}
-        </h2>
-        <div className="space-y-3 p-3.5">
-          <Input label={t(getAnniversaryOrganizationLabelKeys(eventType).place)} value={place} maxLength={500} disabled={isSaving} onChange={event => setPlace(event.target.value)} />
-          <Input label={t(getAnniversaryOrganizationLabelKeys(eventType).host)} value={host} maxLength={300} disabled={isSaving} onChange={event => setHost(event.target.value)} />
-          <Textarea label={t('admin.anniversary_ui.notes')} rows={3} maxLength={2000} value={notes} disabled={isSaving} onChange={event => setNotes(event.target.value)} />
-        </div>
-      </section>
+      </section></div>
       {error && <p role="alert" className="text-sm text-error">{t(error)}</p>}
     </form>
   </Modal>;

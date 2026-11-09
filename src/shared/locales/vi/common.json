@@ -23,7 +23,7 @@
   "notFound": "Không Tìm Thấy Trang",
   "notFoundDesc": "Trang bạn đang tìm kiếm không tồn tại hoặc đã được di chuyển sang danh mục ấn phẩm khác.",
   "btnBackHome": "Quay Lại Trang Chủ",
-  "logo": "NGUYỄN ĐỨC",
+  "logo": "MyLife",
   "login": "Đăng Nhập",
   "loginDesc": "Nhập thông tin tài khoản của bạn để tiếp tục.",
   "email": "Email",
@@ -70,6 +70,7 @@
     "accountLevel": "Cấp độ tài khoản:",
     "statusActive": "Hoạt động",
     "deletePhoto": "Xóa ảnh",
+    "uploadPhoto": "Đổi ảnh đại diện",
     "switchAccount": "Chuyển tài khoản",
     "logout": "Đăng xuất",
     "googleAuthTitle": "Tài khoản Google OAuth",
@@ -127,10 +128,10 @@
   },
   "name": "Nguyễn Huỳnh Minh Đức",
   "seo": {
-    "title": "Nguyễn Huỳnh Minh Đức | Portfolio Thiết Kế Đồ Họa & UI/UX Cao Cấp",
-    "desc": "Chào mừng bạn đến với portfolio của Nguyễn Huỳnh Minh Đức. Khám phá các thiết kế UI/UX tối giản sang trọng và các tác phẩm thiết kế đồ họa chất lượng.",
-    "ogTitle": "Nguyễn Huỳnh Minh Đức | Portfolio Cá Nhân",
-    "ogDesc": "Xem các dự án thiết kế giao diện UI/UX và đồ họa tối giản tinh tế của Nguyễn Huỳnh Minh Đức."
+    "title": "MyLife — Lưu giữ câu chuyện gia đình",
+    "desc": "MyLife kết nối các thế hệ và lưu giữ câu chuyện gia đình qua cây gia đình, dòng thời gian, ngày kỷ niệm, thư viện ảnh và những nơi chốn thân thuộc.",
+    "ogTitle": "MyLife — Lưu giữ câu chuyện gia đình",
+    "ogDesc": "MyLife kết nối các thế hệ và lưu giữ câu chuyện gia đình qua cây gia đình, dòng thời gian, ngày kỷ niệm, thư viện ảnh và những nơi chốn thân thuộc."
   },
   "stats": {
     "projects": "Dự Án Hoàn Thành",

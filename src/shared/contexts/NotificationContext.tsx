@@ -1,8 +1,7 @@
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { CheckCircle, XCircle, AlertTriangle, Info } from 'lucide-react';
+import { CheckCircle, XCircle, AlertTriangle, Info, X } from 'lucide-react';
 import { useLanguage } from '../hooks/useLanguage';
-import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 export type NotificationType = 'success' | 'error' | 'warning' | 'info';
 
@@ -29,27 +28,25 @@ export const useNotification = () => {
 export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   const { t } = useLanguage();
   const [notification, setNotification] = useState<NotificationOptions | null>(null);
-  useBodyScrollLock(!!notification);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
 
-  const showNotification = (options: NotificationOptions) => {
+  const showNotification = useCallback((options: NotificationOptions) => {
+    if (timer.current) clearTimeout(timer.current);
     setNotification(options);
-    if (options.duration !== 0) {
-      setTimeout(() => {
-        setNotification(null);
-      }, options.duration || 3000);
-    }
-  };
+    if (options.duration !== 0) timer.current = setTimeout(() => setNotification(null), options.duration || 4000);
+  }, []);
 
   const getIcon = (type: NotificationType) => {
     switch (type) {
       case 'success':
-        return <CheckCircle className="text-green-500 w-12 h-12 mb-4" />;
+        return <CheckCircle className="text-[var(--state-success)] size-5" />;
       case 'error':
-        return <XCircle className="text-red-500 w-12 h-12 mb-4" />;
+        return <XCircle className="text-[var(--state-danger)] size-5" />;
       case 'warning':
-        return <AlertTriangle className="text-yellow-500 w-12 h-12 mb-4" />;
+        return <AlertTriangle className="text-[var(--state-warning)] size-5" />;
       case 'info':
-        return <Info className="text-blue-500 w-12 h-12 mb-4" />;
+        return <Info className="text-[var(--state-info)] size-5" />;
     }
   };
 
@@ -58,35 +55,11 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
       {children}
       <AnimatePresence>
         {notification && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/50 backdrop-blur-sm cursor-pointer"
-              onClick={() => setNotification(null)}
-            />
-            <motion.div
-              role="alertdialog" aria-modal="true" aria-describedby="notification-message"
-              layout
-              initial={{ opacity: 0, scale: 0.8, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.8, y: 20 }}
-              className="relative w-full max-w-sm bg-secondary-bg border border-custom-border p-6 rounded-2xl shadow-2xl z-10 flex flex-col items-center text-center"
-            >
-              {getIcon(notification.type || 'info')}
-              <p id="notification-message" className="text-primary-text font-semibold text-lg">
-                {notification.message}
-              </p>
-              
-              <button 
-                onClick={() => setNotification(null)}
-                className="mt-6 px-6 py-2 bg-primary-bg hover:bg-custom-border text-secondary-text hover:text-primary-text rounded-xl font-medium border border-custom-border transition-colors w-full"
-              >
-                {t('admin.close')}
-              </button>
-            </motion.div>
-          </div>
+          <motion.div className="ds-toast" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }} transition={{ duration: .17 }}
+            role={notification.type === 'error' ? 'alert' : 'status'} aria-live={notification.type === 'error' ? 'assertive' : 'polite'}>
+            {getIcon(notification.type || 'info')}<p>{notification.message}</p>
+            <button type="button" onClick={() => { if (timer.current) clearTimeout(timer.current); setNotification(null); }} aria-label={t('appShell.dismiss')} title={t('appShell.dismiss')}><X size={16}/></button>
+          </motion.div>
         )}
       </AnimatePresence>
     </NotificationContext.Provider>

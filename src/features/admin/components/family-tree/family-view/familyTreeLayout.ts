@@ -1,5 +1,6 @@
 import type { FamilyMember } from "../types";
 import type { FamilyViewLayout, FamilyViewLink, FamilyViewNode } from "./familyTreeTypes";
+import { buildParentChildLinks } from '../familyTreeConnectors';
 
 export const FAMILY_CARD_WIDTH = 196;
 export const FAMILY_CARD_HEIGHT = 94;
@@ -242,22 +243,7 @@ export function layoutFamilyView(members: FamilyMember[], showExtendedRelations 
     const parents = group.parentIds.map(id => nodeById.get(id)).filter((node): node is FamilyViewNode => !!node);
     const children = group.children.map(child => nodeById.get(child.id)).filter((node): node is FamilyViewNode => !!node);
     if (!parents.length || !children.length) continue;
-    const sourceX = parents.reduce((sum, parent) => sum + parent.x + parent.width / 2, 0) / parents.length;
-    const sourceY = Math.max(...parents.map(parent => parent.y + parent.height));
-    const childCenters = children.map(node => node.x + node.width / 2).sort((a, b) => a - b);
-    const targetY = Math.min(...children.map(node => node.y));
-    const railY = sourceY <= targetY ? sourceY + (targetY - sourceY) / 2 : targetY + (sourceY - targetY) / 2;
-    const linkedIds = [...group.parentIds, ...children.map(node => node.member.id)];
-    links.push({
-      id: `family-${key}`,
-      path: `M ${sourceX} ${sourceY} L ${sourceX} ${railY} M ${childCenters[0]} ${railY} L ${childCenters.at(-1)} ${railY}`,
-      kind: "family",
-      memberIds: linkedIds,
-    });
-    children.forEach(child => {
-      const childCenter = child.x + child.width / 2;
-      links.push({ id: `family-child-${key}-${child.member.id}`, path: `M ${childCenter} ${railY} L ${childCenter} ${child.y}`, kind: "family-child", memberIds: [child.member.id] });
-    });
+    links.push(...buildParentChildLinks(key, parents, children));
   }
 
   if (showExtendedRelations) {

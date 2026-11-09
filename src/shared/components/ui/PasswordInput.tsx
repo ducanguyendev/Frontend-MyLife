@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { Input } from './Input';
 import type { InputProps } from './Input';
+import { useLanguage } from '@/shared/hooks/useLanguage';
 
 export interface PasswordInputProps extends Omit<InputProps, 'type'> {
   showToggle?: boolean;
@@ -10,6 +11,7 @@ export interface PasswordInputProps extends Omit<InputProps, 'type'> {
 export const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(
   ({ showToggle = true, rightIcon, className = '', ...props }, ref) => {
     const [showPassword, setShowPassword] = useState(false);
+    const { t } = useLanguage();
 
     return (
       <Input
@@ -20,10 +22,9 @@ export const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputPro
           showToggle ? (
             <button
               type="button"
-              tabIndex={-1}
               onClick={() => setShowPassword(!showPassword)}
               className="text-secondary-text hover:text-primary-text transition-colors p-1 rounded-md focus:outline-none cursor-pointer"
-              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              aria-label={t(showPassword ? 'appShell.passwordHide' : 'appShell.passwordShow')}
             >
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>

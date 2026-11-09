@@ -360,12 +360,12 @@ export const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(
         <Input ref={setInputRef} type="text" inputMode="numeric" value={value} onChange={handleInputChange}
           onKeyDown={handleKeyDown} onPaste={handlePaste} placeholder={placeholder} maxLength={maxLength}
           leftIcon={leftIcon} rightIcon={calendarButton} disabled={disabled} name={name} {...props}
-          floatingLabelAlways={Boolean(props.floatingLabelAlways || (props.floatingLabel && isOpen))} />
+          floatingLabelAlways={Boolean(props.floatingLabelAlways || (props.floatingLabel !== false && isOpen))} />
         {isOpen && typeof document !== 'undefined' && createPortal(
           <div ref={popupRef} style={popupPosition} role="dialog" aria-label={t('common.date_picker.calendar', {
             defaultValue: language === 'vi' ? 'Lịch chọn ngày' : 'Date picker calendar',
           })} onKeyDown={handlePopupKeyDown}
-            className="rounded-2xl border border-custom-border bg-secondary-bg p-3 text-primary-text shadow-[0_8px_24px_rgb(0_0_0/0.12)]">
+            className="ds-field-menu ds-date-menu">
             <DayPicker
               mode="single" selected={selectedDate} onSelect={handleSelectDate}
               month={month} onMonthChange={setMonth} locale={locale} weekStartsOn={1}
@@ -399,7 +399,7 @@ export const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(
                 month_grid: 'w-full border-collapse', weekdays: '', weekday: 'h-8 text-center text-[10px] font-semibold uppercase text-secondary-text',
                 week: '', day: 'h-9 w-9 p-0 text-center',
                 day_button: 'mx-auto flex size-9 items-center justify-center rounded-full text-xs text-primary-text transition-colors duration-150 hover:bg-primary-bg   ',
-                selected: '[&>button]:bg-accent [&>button]:font-semibold [&>button]:text-white [&>button]:hover:bg-accent',
+                selected: '[&>button]:bg-[var(--calendar-selected-bg)] [&>button]:font-semibold [&>button]:text-[var(--calendar-selected-text)] [&>button]:hover:bg-[var(--calendar-selected-bg)]',
                 today: '[&>button]:text-accent [&>button]:bg-[var(--focus-surface)] [&>button]:font-semibold',
                 outside: 'text-secondary-text/40', disabled: 'cursor-not-allowed text-secondary-text/35 [&>button]:pointer-events-none [&>button]:opacity-40',
                 hidden: 'invisible', footer: 'mt-2',

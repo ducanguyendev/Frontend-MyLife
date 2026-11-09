@@ -1,3 +1,5 @@
+import { MemberAgeStatus } from '@/shared/components/MemberAgeStatus';
+import { normalizeDisplayText } from '@/shared/utils/normalizeDisplayText';
 import React from "react";
 import {
   CalendarDays, MapPin, Phone, ExternalLink, BookOpen, Edit2, X, UsersRound, UserRoundSearch,
@@ -5,7 +7,6 @@ import {
 import { useLanguage } from "@/shared/hooks/useLanguage";
 import { Modal } from "@/shared/components/ui";
 import { type FamilyMember, removeVietnameseTones } from "./types";
-import { getGenerationCardTheme } from "./generationCardThemes";
 import { MemberAvatarImage } from "./MemberAvatarImage";
 import { getSiblingDisplayLabelKey, getSiblingKind, getSiblingSeniority, isBiologicalSibling } from "./siblingRelations";
 
@@ -35,7 +36,7 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({ member, me
 
   if (!member) return null;
 
-  const formatName = (name: string) => !name ? "" : language === "en" ? removeVietnameseTones(name) : name;
+  const formatName = (name: string) => normalizeDisplayText(!name ? "" : language === "en" ? removeVietnameseTones(name) : name);
   const empty = t("admin.profile_no_information", { defaultValue: "Chưa có thông tin" });
   const dateLocale = language === "en" ? "en-GB" : "vi-VN";
   const father = members.find((m) => m.id === member.fatherId);
@@ -59,7 +60,7 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({ member, me
       aria-label={roleLabel ? `${roleLabel}: ${formatName(related.fullName)}` : formatName(related.fullName)}
       className="inline-flex min-h-8 max-w-full cursor-pointer items-center gap-1.5 rounded-lg border border-custom-border bg-secondary-bg px-2.5 py-1 text-left transition-colors hover:border-accent/40 hover:bg-primary-bg   "
     >
-      <span className="max-w-full truncate text-xs font-semibold text-primary-text">{formatName(related.fullName)}</span>
+      <MemberAvatarImage member={related} alt="" className="h-7 w-7 shrink-0 rounded-full object-cover" /><span className="max-w-full truncate text-xs font-semibold text-primary-text">{formatName(related.fullName)}</span>
       {roleLabel && <span className="shrink-0 text-[10px] text-secondary-text">{roleLabel}</span>}
     </button>
   );
@@ -75,7 +76,6 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({ member, me
 
   const role = t(`admin.role_${member.role?.toLowerCase() || "member"}`, { defaultValue: member.role || t("admin.role_member") });
   const gender = t(`admin.gender_${member.gender?.toLowerCase() || "unknown"}`, { defaultValue: member.gender || t("admin.gender_unknown") });
-  const generationTheme = getGenerationCardTheme(member.generation);
 
   return (
     <Modal
@@ -85,7 +85,7 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({ member, me
       showTitle={false}
       hideCloseButton
       ariaLabel={formatName(member.fullName) || t("admin.member_profile")}
-      className="!max-h-[calc(100vh-24px)] sm:!max-h-[calc(100vh-40px)]"
+      className="family-quick-detail !max-h-[calc(100vh-24px)] sm:!max-h-[calc(100vh-40px)]"
     >
       <div className="space-y-4">
         <header className="flex min-w-0 items-start gap-3 border-b border-custom-border pb-4 sm:items-center sm:gap-4">
@@ -99,7 +99,7 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({ member, me
               <h2 className="max-w-full truncate text-xl font-bold leading-tight text-primary-text sm:text-2xl" title={formatName(member.fullName)}>
                 {formatName(member.fullName)}
               </h2>
-              <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${generationTheme.badgeClassName}`}>
+              <span className="rounded-full border border-custom-border bg-primary-bg px-2 py-0.5 text-[10px] font-semibold text-secondary-text">
                 {t("admin.generation", { defaultValue: "Đời" })} {member.generation}
               </span>
             </div>
@@ -108,13 +108,13 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({ member, me
             </p>
             <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-secondary-text">
               {member.dateOfBirth && <span className="inline-flex items-center gap-1.5"><CalendarDays size={13} className="text-accent" />{new Date(member.dateOfBirth).toLocaleDateString(dateLocale)}</span>}
-              <span>{t("admin.member_life_status.label")}: {t(member.lifeStatus === "DECEASED" ? "admin.member_life_status.deceased" : "admin.member_life_status.living")}</span>
+              <MemberAgeStatus member={member}/>
               {member.lifeStatus === "DECEASED" && member.deathDate && <span className="inline-flex items-center gap-1.5"><CalendarDays size={13} className="text-accent" />{t("admin.member_life_status.death_date")}: {new Date(`${member.deathDate.split("T")[0]}T00:00:00Z`).toLocaleDateString(dateLocale, { timeZone: "UTC" })}</span>}
               {member.address && <span className="inline-flex min-w-0 max-w-full items-center gap-1.5"><MapPin size={13} className="shrink-0 text-accent" /><span className="line-clamp-1 break-all">{member.address}</span></span>}
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-1">
-            <button type="button" onClick={() => onOpenProfile(member)} className="inline-flex items-center gap-1.5 rounded-xl border border-custom-border bg-secondary-bg px-2.5 py-2 text-xs font-semibold text-primary-text transition-colors hover:border-accent/50 hover:bg-primary-bg sm:px-3">
+            <button type="button" onClick={() => onOpenProfile(member)} aria-label={t('admin.family_v2.view_profile')} className="inline-flex items-center gap-1.5 rounded-xl border border-custom-border bg-secondary-bg px-2.5 py-2 text-xs font-semibold text-primary-text transition-colors hover:border-accent/50 hover:bg-primary-bg sm:px-3">
               <UserRoundSearch size={14} aria-hidden="true" /><span className="hidden sm:inline">{t('admin.family_v2.view_profile')}</span>
             </button>
             <button

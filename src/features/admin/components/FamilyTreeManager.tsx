@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useMemo, useCallback, lazy, Suspense } from "react";
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
-  Loader2, LayoutGrid, Table2, Network
+  LayoutGrid, Table2, Network, Plus
 } from "lucide-react";
 import { useLanguage } from "@/shared/hooks/useLanguage";
-import { Button, FloatingAddButton, Select, SelectItem } from "@/shared/components/ui";
+import { Button, Select, SelectItem } from "@/shared/components/ui";
+import { PageHeader, SegmentedControl, ErrorState, EmptyState } from "@/shared/components/ui";
+import { FamilyViewSkeleton } from './family-tree/FamilyViewSkeleton';
+import './family-tree/FamilyExperience.css';
 import { SearchBar } from "@/shared/components/SearchBar";
 import { apiClient } from "@/shared/api/apiClient";
 import { featureSuccessKeys, getFeatureErrorKey } from '../services/featureMessages';
@@ -225,53 +228,32 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
   };
 
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-primary-bg">
-      {/* Header Bar */}
-      <div className="p-6 pb-4 border-b border-custom-border bg-secondary-bg/50 backdrop-blur-md sticky top-0 z-20">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h2 className="text-2xl font-black tracking-wide text-primary-text flex items-center gap-3">
-              <span>{t("admin.family_tree_title", { defaultValue: "CÂY GIA PHẢ DÒNG TỘC" })}</span>
-              <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-accent/20 text-accent border border-accent/30 uppercase">
-                {t("admin.my_family_tree")}
-              </span>
-            </h2>
-            <p className="text-secondary-text text-xs mt-1">
-              {t("admin.family_tree_subtitle", { defaultValue: "Hệ thống số hóa phả hệ, lưu trữ thông tin tiền nhân và kết nối các thế hệ con cháu." })}
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <FloatingAddButton
-              ariaLabel={t("admin.add_member")}
-              tooltip={t("admin.add_member", { defaultValue: "Thêm Thành Viên" })}
-              onClick={() => handleOpenModal()}
-            />
-          </div>
-        </div>
-
+    <div className="family-manager flex h-full min-h-0 flex-col overflow-hidden">
+      <div className="family-manager__header">
+        <PageHeader title={t('appShell.family')} description={t('appShell.familyDescription')} eyebrow={t('family.roots')}
+          actions={members.length > 0 || loading || loadError ? <Button leftIcon={<Plus size={16}/>} onClick={() => handleOpenModal()}>{t('admin.add_member')}</Button> : undefined}/>
       </div>
-
       {/* Main Tab Content */}
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
           {/* Toolbar */}
-          <div className="p-6 pb-2 flex flex-col lg:flex-row items-center justify-between gap-4">
+          <div className="family-toolbar">
             <SearchBar
-              className="w-full lg:w-80"
+              className="family-toolbar__search"
+              clearLabel={t('family.clearSearch')}
               ariaLabel={t("admin.search_member")}
               placeholder={t("admin.search_member", { defaultValue: "Tìm kiếm thành viên..." })}
               value={searchQuery}
               onChange={setSearchQuery}
             />
 
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="family-toolbar__filters">
               <Select
                 aria-label={t("admin.all_generations")}
                 value={generationFilter}
                 onValueChange={setGenerationFilter}
                 containerClassName="!w-auto"
-                className="min-w-44 border-0"
+                variant="compact" className="min-w-44"
               >
                 <SelectItem value="all">{t("admin.all_generations", { defaultValue: "Tất cả các đời" })}</SelectItem>
                 {generations.map((g) => (
@@ -281,54 +263,26 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
                 ))}
               </Select>
 
-              {/* View Toggle */}
-              <div className="flex items-center bg-secondary-bg p-1 rounded-xl border border-custom-border shadow-sm">
-                <button
-                  aria-label={t("admin.view_mindmap")} aria-pressed={viewMode === "mindmap"}
-                  onClick={() => setViewMode("mindmap")}
-                  className={`p-1.5 rounded-lg transition-colors cursor-pointer ${viewMode === "mindmap" ? "bg-accent text-primary-bg" : "text-secondary-text hover:text-primary-text"}`}
-                  title={t("admin.view_mindmap", { defaultValue: "Sơ đồ phả hệ" })}
-                >
-                  <Network size={16} />
-                </button>
-                <button
-                  aria-label={t("admin.view_grid")} aria-pressed={viewMode === "grid"}
-                  onClick={() => setViewMode("grid")}
-                  className={`p-1.5 rounded-lg transition-colors cursor-pointer ${viewMode === "grid" ? "bg-accent text-primary-bg" : "text-secondary-text hover:text-primary-text"}`}
-                  title={t("admin.view_grid", { defaultValue: "Lưới" })}
-                >
-                  <LayoutGrid size={16} />
-                </button>
-                <button
-                  aria-label={t("admin.view_table")} aria-pressed={viewMode === "table"}
-                  onClick={() => setViewMode("table")}
-                  className={`p-1.5 rounded-lg transition-colors cursor-pointer ${viewMode === "table" ? "bg-accent text-primary-bg" : "text-secondary-text hover:text-primary-text"}`}
-                  title={t("admin.view_table")}
-                >
-                  <Table2 size={16} />
-                </button>
-              </div>
+              <SegmentedControl label={t('appShell.views')} value={viewMode} onChange={setViewMode} options={[
+                { value: 'mindmap', label: t('family.viewTree'), icon: <Network size={17}/> },
+                { value: 'grid', label: t('family.viewCards'), icon: <LayoutGrid size={17}/> },
+                { value: 'table', label: t('family.viewList'), icon: <Table2 size={17}/> },
+              ]}/>
             </div>
           </div>
 
           {/* Members List/Grid Area */}
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-6 custom-scrollbar">
+          <div className={`family-manager__viewport min-h-0 flex-1 overscroll-contain custom-scrollbar ${viewMode === "mindmap" ? "overflow-hidden" : "overflow-y-auto"}`}>
             {loading ? (
-              <div role="status" aria-label={t("admin.library_ui.loading")} className="flex items-center justify-center h-48">
-                <Loader2 size={32} className="animate-spin text-accent" />
-              </div>
+              <FamilyViewSkeleton view={viewMode}/>
             ) : loadError ? (
-              <div role="alert" className="py-12 text-center space-y-3"><p className="text-error">{t(loadError)}</p>
-                <Button variant="secondary" onClick={() => void fetchMembers()}>{t('admin.library_ui.retry')}</Button></div>
+              <ErrorState message={t(loadError)} action={<Button variant="secondary" onClick={() => void fetchMembers()}>{t('admin.library_ui.retry')}</Button>}/>
             ) : members.length === 0 ? (
-              <div className="py-12 text-center space-y-3 text-secondary-text"><p>{t('admin.tree_empty')}</p><p>{t('admin.tree_empty_hint')}</p>
-                <Button onClick={() => handleOpenModal()}>{t('admin.add_member')}</Button></div>
+              <EmptyState title={t('family.emptyTitle')} description={t('family.emptyDescription')} action={<Button onClick={() => handleOpenModal()}>{t('admin.add_member')}</Button>}/>
             ) : filteredMembers.length === 0 ? (
-              <div className="flex items-center justify-center h-48 text-secondary-text text-sm">
-                {t("admin.no_members", { defaultValue: "Không tìm thấy thành viên nào." })}
-              </div>
+              <EmptyState title={t('admin.no_members')}/>
             ) : viewMode === "grid" ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="family-gallery">
                 {filteredMembers.map((m, i) => (
                   <MemberCard
                     key={m.id}
@@ -354,7 +308,7 @@ export const FamilyTreeManager: React.FC<FamilyTreeManagerProps> = ({ showToast 
                 onDelete={setMemberToDelete}
               />
             ) : (
-              <Suspense fallback={<div role="status">{t("admin.library_ui.loading")}</div>}>
+              <Suspense fallback={<FamilyViewSkeleton view="mindmap"/>}>
               {FAMILY_TREE_RENDERER === "shadcn-family-tree" && ShadcnFamilyTreeView && !shadcnTreeFailed ? <FamilyTreeRendererErrorBoundary
                 onError={handleShadcnTreeError}
                 fallback={<FamilyTreeView

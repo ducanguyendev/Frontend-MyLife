@@ -1,7 +1,7 @@
 .my-life-hub-scroll {
-  --mylife-motion-fast: 180ms;
-  --mylife-motion-normal: 260ms;
-  --mylife-motion-slow: 420ms;
+  --mylife-motion-fast: var(--motion-fast);
+  --mylife-motion-normal: var(--motion-normal);
+  --mylife-motion-slow: var(--motion-slow);
   --mylife-card-lift: -3px;
   --mylife-image-scale: 1.025;
   --mylife-grain-opacity: 0.025;
@@ -107,10 +107,10 @@
 }
 
 .my-life-module-card--family { --module-accent: var(--accent-color); }
-.my-life-module-card--calendar { --module-accent: #d97706; }
-.my-life-module-card--library { --module-accent: #8b5cf6; }
-.my-life-module-card--map { --module-accent: #0891b2; }
-.my-life-module-card--timeline { --module-accent: #0f766e; }
+.my-life-module-card--calendar { --module-accent: var(--accent-anniversary); }
+.my-life-module-card--library { --module-accent: var(--accent-library); }
+.my-life-module-card--map { --module-accent: var(--accent-map); }
+.my-life-module-card--timeline { --module-accent: var(--accent-timeline); }
 
 .my-life-module-card:focus-visible {
   outline: 2px solid color-mix(in srgb, var(--module-accent) 72%, var(--primary-text));

@@ -1,0 +1,20 @@
+import { useLanguage } from '@/shared/hooks/useLanguage';
+import { useTheme, type ThemePreference } from '@/shared/context/ThemeContext';
+
+/** Shared compact utilities for public and authenticated navigation. */
+export function AppearanceControls() {
+  const { t, language, setLanguage } = useLanguage();
+  const { preference, setPreference } = useTheme();
+  return <>
+    <label className="appearance-control app-shell__utility"><span className="sr-only">{t('appShell.appearance')}</span>
+      <select aria-label={t('appShell.appearance')} title={t('appShell.appearance')} value={preference} onChange={event => setPreference(event.target.value as ThemePreference)}>
+        <option value="light">{t('appShell.light')}</option><option value="dark">{t('appShell.dark')}</option><option value="system">{t('appShell.system')}</option>
+      </select>
+    </label>
+    <label className="appearance-control app-shell__utility"><span className="sr-only">{t('appShell.language')}</span>
+      <select aria-label={t('appShell.language')} title={t('appShell.language')} value={language} onChange={event => setLanguage(event.target.value as 'vi' | 'en')}>
+        <option value="vi">VI · {t('appShell.vietnamese')}</option><option value="en">EN · {t('appShell.english')}</option>
+      </select>
+    </label>
+  </>;
+}

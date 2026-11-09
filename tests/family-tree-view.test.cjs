@@ -10,9 +10,8 @@ const styles = readFileSync(join(__dirname, '../src/features/admin/components/fa
 const cardSource = readFileSync(join(__dirname, '../src/features/admin/components/family-tree/family-view/FamilyPersonCard.tsx'), 'utf8');
 const viewSource = readFileSync(join(__dirname, '../src/features/admin/components/family-tree/family-view/FamilyTreeView.tsx'), 'utf8');
 const managerSource = readFileSync(join(__dirname, '../src/features/admin/components/FamilyTreeManager.tsx'), 'utf8');
-const { outputText } = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true } });
-const layoutModule = {};
-new vm.Script(outputText).runInNewContext({ exports: layoutModule });
+const { loadTreeModule } = require('./helpers/load-tree-module.cjs');
+const layoutModule = loadTreeModule(join(__dirname, '../src/features/admin/components/family-tree/family-view/familyTreeLayout.ts'));
 const { layoutFamilyView, buildFamilyUnits, FAMILY_CARD_WIDTH, FAMILY_CARD_HEIGHT } = layoutModule;
 const person = (id, values = {}) => ({ id, fullName: `Member ${id}`, generation: 1, createdAt: '', updatedAt: '', ...values });
 
@@ -47,13 +46,23 @@ test('single member produces one compact card without phantom relationships', ()
 
 test('default Family Tree opens on a full mindmap and orders views as tree, cards, then list', () => {
   assert.match(managerSource, /useState<"grid" \| "table" \| "mindmap">\("mindmap"\)/);
-  const treeIndex = managerSource.indexOf('aria-label={t("admin.view_mindmap")');
-  const cardsIndex = managerSource.indexOf('aria-label={t("admin.view_grid")');
-  const listIndex = managerSource.indexOf('aria-label={t("admin.view_table")');
+  const treeIndex = managerSource.indexOf("label: t('family.viewTree')");
+  const cardsIndex = managerSource.indexOf("label: t('family.viewCards')");
+  const listIndex = managerSource.indexOf("label: t('family.viewList')");
   assert.ok(treeIndex >= 0 && treeIndex < cardsIndex && cardsIndex < listIndex);
   assert.match(viewSource, /useState<number \| null>\(null\)/);
   assert.match(viewSource, /branchMemberId == null\s*\?\s*treeMembers/);
   assert.doesNotMatch(viewSource, /family-tree-view__generation|admin\.mindmap_generation/);
+});
+
+test('hover is card-local while clicks alone create persistent lineage selection', () => {
+  assert.match(viewSource, /const activeMemberId = focusedMemberId;/);
+  assert.doesNotMatch(viewSource, /hoveredMemberId|setHoveredMemberId/);
+  assert.doesNotMatch(cardSource, /onMouseEnter|onMouseLeave/);
+  assert.match(styles, /\.family-person-card:hover/);
+  assert.match(viewSource, /const focusMember = useCallback/);
+  assert.match(viewSource, /setFocusedMemberId\(id\)/);
+  assert.match(viewSource, /highlightMode === 'lineage'\) focusSelectedLineage/);
 });
 
 test('branch mode is entered only through the explicit branch menu action and can return to full tree', () => {
@@ -153,7 +162,7 @@ test('couple descendant trunks start at the couple midpoint and each child drop 
     const childCenter = children.reduce((sum, node) => sum + node.x + node.width / 2, 0) / children.length;
     const trunk = layout.links.find(link => link.id === `family-${parentIds.join(':')}`);
     assert.ok(trunk);
-    assert.match(trunk.path, new RegExp(`^M ${sourceX} `));
+    assert.match(trunk.segments.find(segment => segment.id.endsWith(':trunk')).path, new RegExp(`^M ${sourceX} `));
     assert.ok(Math.abs(sourceX - childCenter) < 8, `the sibling rail stays centered on its own couple (${sourceX} vs ${childCenter})`);
     assert.deepEqual(Array.from(layout.links.filter(link => link.kind === 'family-child' && childIds.includes(link.memberIds[0])), link => link.memberIds[0]).sort((a, b) => a - b), childIds);
   }
@@ -185,8 +194,8 @@ test('married child units stay adjacent below their parents across multiple gene
 
 test('compact cards show gender borders, avatar/detail, edit action, and retain the member menu', () => {
   assert.match(styles, /\.family-person-card\s*\{[^}]*width:\s*196px;[^}]*height:\s*94px/s);
-  assert.match(styles, /data-gender="male"\]\s*\{[^}]*#12b7df/s);
-  assert.match(styles, /data-gender="female"\]\s*\{[^}]*#ff6f91/s);
+  assert.match(styles, /data-gender="male"\]\s*\{[^}]*var\(--gender-male\)/s);
+  assert.match(styles, /data-gender="female"\]\s*\{[^}]*var\(--gender-female\)/s);
   assert.match(cardSource, /onClick=\{\(\) => \{ onFocus\(member\.id\); onView\(member\); \}\}/);
   assert.match(cardSource, /className="family-person-card__edit"/);
   assert.match(cardSource, /family-person-card__action-trigger/);

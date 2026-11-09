@@ -1,8 +1,11 @@
+import { normalizeDisplayText } from '@/shared/utils/normalizeDisplayText';
 import React from "react";
 import { createPortal } from "react-dom";
 import { Edit2, Eye, MoreVertical, Trash2 } from "lucide-react";
 import { useLanguage } from "@/shared/hooks/useLanguage";
-import { type FamilyMember, getGenerationColors, removeVietnameseTones } from "./types";
+import { type FamilyMember, removeVietnameseTones } from "./types";
+import { Button } from "@/shared/components/ui";
+import { TableShell } from "@/design-system/components/TableShell";
 import { MemberAvatarImage } from "./MemberAvatarImage";
 
 interface MemberTableProps {
@@ -46,7 +49,7 @@ export const MemberTable: React.FC<MemberTableProps> = ({ members, onView, onEdi
     };
   }, [openMenu]);
 
-  const displayName = (name: string) => language === "en" ? removeVietnameseTones(name) : name;
+  const displayName = (name: string) => normalizeDisplayText(language === "en" ? removeVietnameseTones(name) : name);
   const genderLabel = (gender?: string) => gender
     ? t(`admin.gender_${gender.toLowerCase()}`, { defaultValue: gender })
     : t("admin.gender_unknown");
@@ -74,25 +77,33 @@ export const MemberTable: React.FC<MemberTableProps> = ({ members, onView, onEdi
   };
 
   return (
-    <div className="w-full overflow-hidden rounded-2xl border border-custom-border bg-secondary-bg shadow-sm">
-      <div className="w-full overflow-x-auto">
-        <table className="w-full min-w-[760px] table-auto border-collapse text-left">
+    <>
+      <div className="family-member-mobile">{members.map(member => <article key={member.id}>
+        <button type="button" className="family-member-mobile__identity" onClick={() => onView(member)}><MemberAvatarImage member={member} alt="" className="family-relation-avatar"/><strong>{displayName(member.fullName)}</strong></button>
+        <dl>{[
+          [t('admin.col_generation'), member.generation], [t('admin.col_gender'), genderLabel(member.gender)],
+          [t('admin.col_role'), roleLabel(member.role)], [t('admin.col_dob'), member.dateOfBirth ? new Date(member.dateOfBirth).toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-GB') : missingValue],
+          [t('admin.col_phone'), member.phoneNumber], [t('admin.col_address'), member.address],
+        ].map(([label,value]) => <div key={label}><dt>{label}</dt><dd>{value || missingValue}</dd></div>)}</dl>
+        <div className="family-member-mobile__actions"><Button size="sm" variant="secondary" onClick={() => onView(member)}>{t('admin.view_detail')}</Button><Button size="sm" variant="ghost" onClick={() => onEdit(member)}>{t('admin.edit')}</Button><Button size="sm" variant="ghost" onClick={() => onDelete(member)}>{t('admin.delete')}</Button></div>
+      </article>)}</div>
+      <div className="family-member-table-wrap"><TableShell>
+        <table className="family-member-table w-full table-auto border-collapse text-left">
           <caption className="sr-only">{t("admin.members_table_caption")}</caption>
           <thead className="bg-primary-bg/60">
             <tr className="border-b border-custom-border text-[11px] font-semibold uppercase tracking-wide text-secondary-text">
               <th scope="col" className="px-4 py-3">{t("admin.col_member")}</th>
               <th scope="col" className="px-3 py-3">{t("admin.col_generation")}</th>
-              <th scope="col" className="hidden px-3 py-3 sm:table-cell">{t("admin.col_gender")}</th>
+              <th scope="col" className="px-3 py-3">{t("admin.col_gender")}</th>
               <th scope="col" className="px-3 py-3">{t("admin.col_role")}</th>
-              <th scope="col" className="hidden px-3 py-3 md:table-cell">{t("admin.col_dob")}</th>
-              <th scope="col" className="hidden px-3 py-3 lg:table-cell">{t("admin.col_phone")}</th>
-              <th scope="col" className="hidden px-3 py-3 xl:table-cell">{t("admin.col_address")}</th>
+              <th scope="col" className="px-3 py-3">{t("admin.col_dob")}</th>
+              <th scope="col" className="px-3 py-3">{t("admin.col_phone")}</th>
+              <th scope="col" className="px-3 py-3">{t("admin.col_address")}</th>
               <th scope="col" className="px-2 py-3"><span className="sr-only">{t("admin.col_actions")}</span></th>
             </tr>
           </thead>
           <tbody>
             {members.map(member => {
-              const colors = getGenerationColors(member.generation);
               const name = displayName(member.fullName);
               return (
                 <tr
@@ -122,19 +133,19 @@ export const MemberTable: React.FC<MemberTableProps> = ({ members, onView, onEdi
                     </div>
                   </td>
                   <td className="px-3 py-2.5">
-                    <span className={`inline-flex whitespace-nowrap rounded-md border px-2 py-1 text-[10px] font-bold ${colors.bg} ${colors.text} ${colors.border}`}>
+                    <span className={`family-generation inline-flex whitespace-nowrap rounded-md border px-2 py-1 text-[10px] font-bold`}>
                       {t("admin.generation")} {member.generation}
                     </span>
                   </td>
-                  <td className="hidden px-3 py-2.5 text-xs text-secondary-text sm:table-cell">{genderLabel(member.gender)}</td>
+                  <td className="px-3 py-2.5 text-xs text-secondary-text">{genderLabel(member.gender)}</td>
                   <td className="px-3 py-2.5"><span className="block truncate text-xs font-medium text-primary-text" title={roleLabel(member.role)}>{roleLabel(member.role)}</span></td>
                   <td className="hidden whitespace-nowrap px-3 py-2.5 text-xs text-secondary-text md:table-cell">
-                    {member.dateOfBirth ? new Date(member.dateOfBirth).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" }) : missingValue}
+                    {member.dateOfBirth ? new Date(member.dateOfBirth).toLocaleDateString(language === "vi" ? "vi-VN" : "en-GB", { day: "2-digit", month: "2-digit", year: "numeric" }) : missingValue}
                   </td>
-                  <td className="hidden px-3 py-2.5 text-xs text-secondary-text lg:table-cell">
+                  <td className="px-3 py-2.5 text-xs text-secondary-text">
                     {member.phoneNumber ? <a href={`tel:${member.phoneNumber}`} onClick={event => event.stopPropagation()} className="whitespace-nowrap hover:text-accent">{member.phoneNumber}</a> : missingValue}
                   </td>
-                  <td className="hidden px-3 py-2.5 text-xs text-secondary-text xl:table-cell">
+                  <td className="px-3 py-2.5 text-xs text-secondary-text">
                     <span className="block truncate" title={member.address || undefined} tabIndex={member.address ? 0 : undefined} aria-label={member.address || undefined}>{member.address || missingValue}</span>
                   </td>
                   <td className="px-2 py-2.5 text-center">
@@ -155,7 +166,6 @@ export const MemberTable: React.FC<MemberTableProps> = ({ members, onView, onEdi
             })}
           </tbody>
         </table>
-      </div>
       {openMenu && createPortal(
         <div ref={menuRef} role="menu" className="fixed z-[100] w-48 overflow-hidden rounded-xl border border-custom-border bg-secondary-bg py-1 shadow-xl" style={{ top: openMenu.top, left: openMenu.left }}>
           <button type="button" role="menuitem" onClick={() => runAction(onView)} className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-secondary-text hover:bg-primary-bg hover:text-primary-text">
@@ -171,6 +181,6 @@ export const MemberTable: React.FC<MemberTableProps> = ({ members, onView, onEdi
         </div>,
         document.body,
       )}
-    </div>
+    </TableShell></div></>
   );
 };

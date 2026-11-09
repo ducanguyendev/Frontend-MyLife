@@ -14,11 +14,8 @@ const compile = source => {
 const adapterSource = readFileSync(join(__dirname, '../src/features/admin/components/family-tree/shadcnFamilyTreeAdapter.ts'), 'utf8');
 const adapter = compile(adapterSource);
 const layoutSource = readFileSync(join(__dirname, '../src/features/admin/components/family-tree/family-view/familyTreeLayout.ts'), 'utf8');
-const layout = compile(layoutSource);
-const shadcnLayoutSource = readFileSync(join(__dirname, '../src/features/admin/components/family-tree/shadcnFamilyTreeLayout.ts'), 'utf8');
-const shadcnLayoutModule = {};
-new vm.Script(ts.transpileModule(shadcnLayoutSource, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText)
-  .runInNewContext({ exports: shadcnLayoutModule, require: () => layout });
+const { loadTreeModule } = require('./helpers/load-tree-module.cjs');
+const shadcnLayoutModule = loadTreeModule(join(__dirname, '../src/features/admin/components/family-tree/shadcnFamilyTreeLayout.ts'));
 const configSource = readFileSync(join(__dirname, '../src/features/admin/components/family-tree/familyTreeRendererConfig.ts'), 'utf8');
 const config = compile(`${configSource.slice(0, configSource.indexOf('const requestedRenderer'))}\nexports.resolve = resolveFamilyTreeRenderer;`);
 const person = (id, fullName = `Person ${id}`, values = {}) => ({ id, fullName, generation: 1, createdAt: '', updatedAt: '', ...values });
@@ -120,8 +117,9 @@ test('spouse pairs stay adjacent and married child stays paired with spouse on t
   assert.ok(result.links.some(link => link.kind === 'spouse' && link.memberIds.includes(3) && link.memberIds.includes(4)));
   const family = result.links.find(link => link.kind === 'family' && link.memberIds.includes(3) && link.memberIds.includes(4));
   assert.ok(family, 'child trunk originates from the couple union');
-  const householdCenter = (first.x + first.width / 2 + spouse.x + spouse.width / 2) / 2;
-  assert.ok(family.path.includes(`L ${householdCenter} ${first.y}`), 'parent connector drops at the child household midpoint');
+  const drop = result.links.find(link => link.kind === 'family-child' && link.targetMemberIds.includes(3));
+  assert.ok(drop.path.endsWith(`L ${first.x + first.width / 2} ${first.y}`), 'parent drop reaches the recorded child card');
+  assert.ok(!result.links.some(link => link.kind === 'family-child' && link.targetMemberIds.includes(4)), 'child spouse is not a child of these parents');
 });
 
 test('generation lanes remain finite and non-overlapping for family sizes from 13 to 200 people', () => {
@@ -230,7 +228,11 @@ test('single child connector uses a clean orthogonal route from the parent union
   const result = shadcnLayoutModule.layoutShadcnFamilyTree(members);
   const union = result.links.find(link => link.id.startsWith('family-1:2:'));
   assert.ok(union);
-  assert.match(union.path, /^M [-\d.]+ [-\d.]+ L [-\d.]+ [-\d.]+(?: L [-\d.]+ [-\d.]+ L [-\d.]+ [-\d.]+)?$/);
+  for (const segment of union.segments) {
+    assert.match(segment.path, /^M [-\d.]+ [-\d.]+ L [-\d.]+ [-\d.]+$/);
+    const [x1, y1, x2, y2] = segment.path.match(/-?\d+(?:\.\d+)?/g).map(Number);
+    assert.ok(x1 === x2 || y1 === y2, 'each atomic connector is orthogonal');
+  }
   assert.doesNotMatch(union.path, / C /);
 });
 

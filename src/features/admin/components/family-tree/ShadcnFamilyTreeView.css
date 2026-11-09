@@ -68,9 +68,9 @@
 .shadcn-family-tree__link { fill: none; stroke: var(--sft-line); stroke-width: 1.55px; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; transition: stroke 320ms ease, opacity 320ms ease, stroke-width 320ms ease; }
 .shadcn-family-tree__link.is-related { stroke: color-mix(in srgb, var(--sft-accent) 70%, #a9b5a8); stroke-width: 1.85px; opacity: 1; }
 .shadcn-family-tree__link.is-dimmed { opacity: .3; }
-.shadcn-family-tree__link--spouse { stroke: color-mix(in srgb, #ff6f91 48%, var(--sft-line)); }
-.shadcn-family-tree__link--spouse circle { fill: var(--secondary-bg, #fff); stroke: color-mix(in srgb, #ff6f91 42%, var(--sft-border)); stroke-width: 1px; }
-.shadcn-family-tree__link--spouse text { fill: #ed557c; stroke: none; font-size: 12px; font-weight: 800; }
+.shadcn-family-tree__link--spouse { stroke: color-mix(in srgb, var(--gender-female) 48%, var(--sft-line)); }
+.shadcn-family-tree__link--spouse circle { fill: var(--secondary-bg, #fff); stroke: color-mix(in srgb, var(--gender-female) 42%, var(--sft-border)); stroke-width: 1px; }
+.shadcn-family-tree__link--spouse text { fill: var(--gender-female); stroke: none; font-size: 12px; font-weight: 800; }
 .shadcn-family-tree__link--extended { stroke-dasharray: 4 7; }
 
 .shadcn-family-tree__person {
@@ -91,16 +91,16 @@
 }
 .shadcn-family-tree__person:hover { z-index: 6; transform: translateY(-3px); box-shadow: 0 8px 20px rgb(47 55 48 / 10%), 0 18px 36px rgb(47 55 48 / 12%); }
 .shadcn-family-tree__person.is-focused { border-color: color-mix(in srgb, var(--sft-accent) 64%, var(--sft-border)); box-shadow: 0 0 0 3px color-mix(in srgb, var(--sft-accent) 12%, transparent), 0 13px 30px rgb(47 55 48 / 10%); }
-.shadcn-family-tree__person[data-gender="male"] { border-color: color-mix(in srgb, #12b7df 72%, var(--sft-border)); }
-.shadcn-family-tree__person[data-gender="female"] { border-color: color-mix(in srgb, #ff6f91 70%, var(--sft-border)); }
-.shadcn-family-tree__person[data-gender="male"].is-focused { border-color: #12b7df; }
-.shadcn-family-tree__person[data-gender="female"].is-focused { border-color: #ff6f91; }
+.shadcn-family-tree__person[data-gender="male"] { border-color: color-mix(in srgb, var(--gender-male) 72%, var(--sft-border)); }
+.shadcn-family-tree__person[data-gender="female"] { border-color: color-mix(in srgb, var(--gender-female) 70%, var(--sft-border)); }
+.shadcn-family-tree__person[data-gender="male"].is-focused { border-color: var(--gender-male); }
+.shadcn-family-tree__person[data-gender="female"].is-focused { border-color: var(--gender-female); }
 .shadcn-family-tree__person.is-deceased { background: color-mix(in srgb, var(--secondary-bg, #fff) 95%, var(--secondary-text, #68716b)); }
 .shadcn-family-tree__person.is-dimmed { filter: saturate(.72); }
 .dark .shadcn-family-tree__person, [data-theme="dark"] .shadcn-family-tree__person { background: color-mix(in srgb, var(--secondary-bg, #111) 94%, #697c6c); box-shadow: 0 4px 12px rgb(0 0 0 / 25%), 0 15px 30px rgb(0 0 0 / 18%); }
 .shadcn-family-tree__portrait { display: grid; width: 54px; height: 54px; flex: none; place-items: center; padding: 2px; border: 1px solid color-mix(in srgb, var(--sft-accent) 32%, var(--sft-border)); border-radius: 50%; background: var(--secondary-bg, #fff); box-shadow: 0 2px 8px rgb(47 55 48 / 8%); cursor: pointer; }
-.shadcn-family-tree__person[data-gender="male"] .shadcn-family-tree__portrait { border-color: color-mix(in srgb, #12b7df 55%, var(--sft-border)); }
-.shadcn-family-tree__person[data-gender="female"] .shadcn-family-tree__portrait { border-color: color-mix(in srgb, #ff6f91 55%, var(--sft-border)); }
+.shadcn-family-tree__person[data-gender="male"] .shadcn-family-tree__portrait { border-color: color-mix(in srgb, var(--gender-male) 55%, var(--sft-border)); }
+.shadcn-family-tree__person[data-gender="female"] .shadcn-family-tree__portrait { border-color: color-mix(in srgb, var(--gender-female) 55%, var(--sft-border)); }
 .shadcn-family-tree__avatar { width: 100%; height: 100%; overflow: hidden; border-radius: 50%; object-fit: cover; }
 .shadcn-family-tree__copy { display: flex; width: 100%; min-width: 0; min-height: 0; flex: 1; flex-direction: column; justify-content: center; padding: 0 25px 0 0; }
 .shadcn-family-tree__name { display: -webkit-box; max-width: 100%; overflow: hidden; padding: 0; border: 0; background: transparent; color: var(--primary-text, #262b27); cursor: pointer; font-size: 12px; font-weight: 740; line-height: 1.2; text-align: left; overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
@@ -130,3 +130,11 @@
   .shadcn-family-tree__tool span { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { .shadcn-family-tree *, .shadcn-family-tree *::before, .shadcn-family-tree *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; } }
+
+.shadcn-family-tree { background:var(--surface-canvas, var(--primary-bg)); }
+.shadcn-family-tree__scene { z-index:1; }
+.shadcn-family-tree__link path { vector-effect:non-scaling-stroke; }
+.shadcn-family-tree__link.is-dimmed { opacity:.45; }
+.shadcn-family-tree__person.is-related { border-color:color-mix(in srgb, var(--sft-accent) 55%, var(--sft-border)); }
+.shadcn-family-tree__person[data-gender].is-focused { border-color:var(--sft-accent); box-shadow:0 0 0 2px color-mix(in srgb, var(--sft-accent) 18%, transparent), 0 8px 20px rgb(47 55 48 / 14%); }
+.shadcn-family-tree.is-exporting .family-tree-selection { display:none; }

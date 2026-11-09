@@ -1,0 +1,6 @@
+const fs=require('node:fs');
+const detail='src/features/admin/components/family-tree/MemberDetailModal.tsx';let s=fs.readFileSync(detail,'utf8').replace('import { getGenerationCardTheme } from "./generationCardThemes";\n','').replace('  const generationTheme = getGenerationCardTheme(member.generation);\n','').replace('className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${generationTheme.badgeClassName}`}','className="rounded-full border border-custom-border bg-primary-bg px-2 py-0.5 text-[10px] font-semibold text-secondary-text"');fs.writeFileSync(detail,s);
+const p='tests/family-w5.browser.cjs';s=fs.readFileSync(p,'utf8');
+s=s.replace('[[1366,768],[1440,900],[1920,1080],[820,1180],[390,844]]){','[[1366,768],[1440,900],[1920,1080],[820,1180],[390,844]].filter(([width])=>!process.env.MYLIFE_VISUAL_WIDTH || width===Number(process.env.MYLIFE_VISUAL_WIDTH))){');
+s=s.replace("fs.writeFileSync(path.join(artifacts,'visual-results.json'),JSON.stringify(report,null,2));", "const prior=fs.existsSync(path.join(artifacts,'visual-results.json'))?JSON.parse(fs.readFileSync(path.join(artifacts,'visual-results.json'),'utf8')):[];fs.writeFileSync(path.join(artifacts,'visual-results.json'),JSON.stringify([...prior.filter(r=>r.name!==name),{name,...m}],null,2));");
+fs.writeFileSync(p,s);

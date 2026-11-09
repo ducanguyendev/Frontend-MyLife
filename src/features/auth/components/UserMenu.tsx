@@ -1,24 +1,29 @@
+import { AppearanceLanguageModal } from '@/shared/components/preferences/PreferenceControls';
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/shared/hooks/useLanguage';
 import { useAuth } from '../context/AuthContext';
 import { authService } from '../services/authService';
-import { User, LogOut, ArrowLeftRight, ChevronDown, Shield, LayoutDashboard } from 'lucide-react';
+import { User, LogOut, ArrowLeftRight, ChevronDown, Shield, LayoutDashboard, Settings, Globe } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getDisplayNameInitials, getUserDisplayName } from '@/shared/utils/userDisplayName';
 
 interface UserMenuProps {
   onOpenProfile: () => void;
   onSwitchAccount: () => void | Promise<void>;
+  appearance?: 'default' | 'shell';
+  onOpenPreferences?: () => void;
 }
 
-export const UserMenu: React.FC<UserMenuProps> = ({ onOpenProfile, onSwitchAccount }) => {
+export const UserMenu: React.FC<UserMenuProps> = ({ onOpenProfile, onSwitchAccount, appearance = 'default', onOpenPreferences }) => {
   const { t } = useLanguage();
   const { user, isAdmin, logout } = useAuth();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  const [preferencesOpen, setPreferencesOpen] = useState(false);
   const [imgError, setImgError] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -29,7 +34,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ onOpenProfile, onSwitchAccou
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setIsOpen(false);
+      if (e.key === 'Escape') { setIsOpen(false); triggerRef.current?.focus(); }
     };
 
     if (isOpen) {
@@ -89,13 +94,17 @@ export const UserMenu: React.FC<UserMenuProps> = ({ onOpenProfile, onSwitchAccou
   };
 
   return (
+    <>
     <div className="relative" ref={menuRef}>
       {/* Trigger Button: User Avatar (Trên) */}
       <button
+        type="button"
+        ref={triggerRef}
         onClick={() => setIsOpen(!isOpen)}
-        className="flex h-10 items-center gap-2.5 pl-1 pr-3 rounded-full border border-custom-border hover:border-accent bg-secondary-bg/60 hover:bg-secondary-bg transition-colors cursor-pointer group   "
+        className={`flex h-10 items-center gap-2.5 pl-1 pr-3 rounded-full hover:bg-secondary-bg transition-colors cursor-pointer group ${appearance === 'shell' ? 'border border-transparent bg-transparent' : 'border border-custom-border hover:border-accent bg-secondary-bg/60'}`}
         aria-haspopup="true"
-        aria-label="User profile menu"
+        aria-label={t('appShell.profileMenu')}
+        onKeyDown={event => { if (event.key === 'ArrowDown') { event.preventDefault(); setIsOpen(true); requestAnimationFrame(() => menuRef.current?.querySelector<HTMLButtonElement>('[data-user-menu] button')?.focus()); } }}
         aria-expanded={isOpen}
       >
         <div className="relative shrink-0">
@@ -139,7 +148,9 @@ export const UserMenu: React.FC<UserMenuProps> = ({ onOpenProfile, onSwitchAccou
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ duration: 0.15, ease: 'easeOut' }}
-            className="absolute right-0 mt-3 w-64 bg-secondary-bg border border-custom-border rounded-2xl shadow-2xl p-2 z-50 text-primary-text font-sans backdrop-blur-lg"
+            data-user-menu
+            onKeyDown={event => { if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return; const buttons = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('button')); const index = buttons.indexOf(document.activeElement as HTMLButtonElement); const next = event.key === 'Home' ? 0 : event.key === 'End' ? buttons.length - 1 : (index + (event.key === 'ArrowDown' ? 1 : -1) + buttons.length) % buttons.length; event.preventDefault(); buttons[next]?.focus(); }}
+            className="absolute right-0 mt-3 w-64 max-w-[calc(100vw-24px)] bg-[var(--surface-elevated)] border border-custom-border rounded-2xl shadow-[var(--shadow-overlay)] p-2 z-50 text-primary-text font-sans"
           >
             {/* Header with info */}
             <div className="px-3 py-3 border-b border-custom-border/60">
@@ -208,6 +219,10 @@ export const UserMenu: React.FC<UserMenuProps> = ({ onOpenProfile, onSwitchAccou
                 <span>{t('common.switchAccount', { defaultValue: 'Chuyển đổi tài khoản' })}</span>
               </button>
 
+              <button type="button" onClick={() => { setIsOpen(false); if (onOpenPreferences) onOpenPreferences(); else setPreferencesOpen(true); }} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-primary-text hover:bg-primary-bg transition-colors"><Settings size={15}/>{t('appShell.preferences')}</button>
+
+              <button type="button" onClick={() => { setIsOpen(false); navigate('/'); }} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-primary-text hover:bg-primary-bg transition-colors"><Globe size={15} className="text-secondary-text"/>{t('family.publicLanding')}</button>
+
               <div className="pt-1 mt-1 border-t border-custom-border/50">
                 <button
                   onClick={handleLogoutClick}
@@ -222,5 +237,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ onOpenProfile, onSwitchAccou
         )}
       </AnimatePresence>
     </div>
+    <AppearanceLanguageModal isOpen={preferencesOpen} onClose={() => { setPreferencesOpen(false); requestAnimationFrame(() => triggerRef.current?.focus()); }}/>
+    </>
   );
 };

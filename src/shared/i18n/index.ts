@@ -1,6 +1,7 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
+import { defaultLanguage, normalizeSupportedLanguage, supportedLanguages, type LanguageCode } from './languages';
 
 // Import translation files
 import navVi from '../locales/vi/navigation.json';
@@ -25,6 +26,14 @@ import adminVi from '../locales/vi/admin.json';
 import adminEn from '../locales/en/admin.json';
 import myLifeVi from '../locales/vi/myLife.json';
 import myLifeEn from '../locales/en/myLife.json';
+import appShellVi from '../locales/vi/appShell.json';
+import appShellEn from '../locales/en/appShell.json';
+import landingVi from '../locales/vi/landing.json';
+import landingEn from '../locales/en/landing.json';
+import familyVi from '../locales/vi/family.json';
+import familyEn from '../locales/en/family.json';
+import memoriesVi from '../locales/vi/memories.json';
+import memoriesEn from '../locales/en/memories.json';
 
 const resources = {
   vi: {
@@ -40,6 +49,10 @@ const resources = {
       common: commonVi,
       admin: adminVi,
       myLife: myLifeVi,
+      appShell: appShellVi,
+      landing: landingVi,
+      family: familyVi,
+      memories: memoriesVi,
     }
   },
   en: {
@@ -55,16 +68,20 @@ const resources = {
       common: commonEn,
       admin: adminEn,
       myLife: myLifeEn,
+      appShell: appShellEn,
+      landing: landingEn,
+      family: familyEn,
+      memories: memoriesEn,
     }
   },
-};
+} satisfies Record<LanguageCode, { translation: Record<string, unknown> }>;
 
-const getInitialLanguage = (): 'vi' | 'en' => {
+const getInitialLanguage = (): LanguageCode => {
   const saved = localStorage.getItem('app_language') || localStorage.getItem('i18nextLng');
   if (saved) {
-    return saved.toLowerCase().startsWith('en') ? 'en' : 'vi';
+    return normalizeSupportedLanguage(saved);
   }
-  return 'vi';
+  return defaultLanguage;
 };
 
 const initialLang = getInitialLanguage();
@@ -74,8 +91,8 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
-    fallbackLng: 'vi',
-    supportedLngs: ['vi', 'en'],
+    fallbackLng: defaultLanguage,
+    supportedLngs: supportedLanguages.map(language => language.code),
     load: 'languageOnly',
     lng: initialLang,
     defaultNS: 'translation',

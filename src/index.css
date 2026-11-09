@@ -1,10 +1,18 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Press+Start+2P&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 @import "tailwindcss";
+@import "./design-system/tokens/tokens.css";
+@import "./design-system/foundations.css";
+@import "./design-system/forms.css";
+@import "./design-system/editorial-fonts.css";
+
+@font-face { font-family:Inter; src:url("/assets/fonts/InterVariable.woff2") format("woff2"); font-style:normal; font-weight:100 900; font-display:swap; }
+@font-face { font-family:Inter; src:url("/assets/fonts/InterVariable-Italic.woff2") format("woff2"); font-style:italic; font-weight:100 900; font-display:swap; }
+
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-sans: 'Inter', sans-serif;
-  --font-display: 'Inter', sans-serif;
+  --font-sans: 'Inter', 'Segoe UI', system-ui, -apple-system, 'Noto Sans', Arial, sans-serif;
+  --font-display: 'Inter', 'Segoe UI', system-ui, -apple-system, 'Noto Sans', Arial, sans-serif;
   
   --color-primary-bg: var(--primary-bg);
   --color-secondary-bg: var(--secondary-bg);
@@ -14,43 +22,18 @@
   
   --color-accent: var(--accent-color);
   --color-accent-hover: var(--accent-hover-color);
-  --color-success: #22c55e;
-  --color-error: #ef4444;
+  --color-success: var(--state-success);
+  --color-error: var(--state-danger);
 }
 
 @layer base {
-  /* Light mode is off-white background to match Cofounder */
-  :root {
+  /* Product palette and field aliases live in design-system/tokens/tokens.css. */
+  :root:not(.dark) {
     color-scheme: light;
-    --primary-bg: #F5F5F0; 
-    --secondary-bg: #FFFFFF; 
-    --primary-text: #18181b; /* Dark charcoal */
-    --secondary-text: #666666; 
-    --custom-border: #e6e6e2; 
-    --accent-color: #18181b; 
-    --accent-hover-color: #333333; 
-    --focus-border: #a1a1aa;
-    --focus-surface: rgba(113, 113, 122, 0.08);
     /* MyLife form field counterparts: Mobile-Mylife/lib/shared/theme/app_colors.dart */
-    --field-bg: #ffffff;
-    --field-border: #e6e6e2;
-    --field-text: #18181b;
-    --field-label: #666666;
-    --field-placeholder: rgba(102, 102, 102, 0.62);
-    --field-focus-border: #71717a;
-    --field-focus-ring: rgba(113, 113, 122, 0.14);
-    --field-error: #ef4444;
-    --field-disabled-bg: #efefec;
-    --calendar-selected-bg: #18181b;
-    --calendar-selected-text: #ffffff;
-    --calendar-selected-border: #18181b;
-    --calendar-selected-ring: rgba(24, 24, 27, 0.25);
     
     /* Semantic Colors */
-    --color-success: #10b981;
     --color-success-dark: #059669;
-    --color-warning: #eab308;
-    --color-error: #ef4444;
     --color-blue-dark: #0b1329;
     --color-blue-mid: #1e3a8a;
     --color-blue-light: #3b82f6;
@@ -59,37 +42,12 @@
     --hud-filter: grayscale(0.5) brightness(1.1) contrast(0.9);
   }
 
-  /* Dark mode is black/dark gray */
+  /* Retained portfolio illustration and HUD settings. */
   .dark {
     color-scheme: dark;
-    --primary-bg: #000000; /* Black background */
-    --secondary-bg: #111111; /* Very dark gray for cards */
-    --primary-text: #ffffff; /* Pure white */
-    --secondary-text: #a1a1aa; /* Zinc 400 for secondary text */
-    --custom-border: #27272a; /* Zinc 800 for borders */
-    --accent-color: #ffffff; /* White */
-    --accent-hover-color: #e5e5e5; 
-    --focus-border: #71717a;
-    --focus-surface: rgba(161, 161, 170, 0.12);
-    --field-bg: #111111;
-    --field-border: #3f3f46;
-    --field-text: #ffffff;
-    --field-label: #a1a1aa;
-    --field-placeholder: rgba(161, 161, 170, 0.62);
-    --field-focus-border: #a1a1aa;
-    --field-focus-ring: rgba(161, 161, 170, 0.16);
-    --field-error: #ef4444;
-    --field-disabled-bg: #18181b;
-    --calendar-selected-bg: #27272a;
-    --calendar-selected-text: #ffffff;
-    --calendar-selected-border: #71717a;
-    --calendar-selected-ring: rgba(161, 161, 170, 0.28);
     
     /* Semantic Colors */
-    --color-success: #10b981;
     --color-success-dark: #059669;
-    --color-warning: #eab308;
-    --color-error: #ef4444;
     --color-blue-dark: #000000;
     --color-blue-mid: #111111;
     --color-blue-light: #333333;
@@ -121,7 +79,7 @@
   body {
     background-color: var(--primary-bg);
     color: var(--primary-text);
-    transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+    transition: background-color var(--motion-normal) var(--motion-ease), color var(--motion-normal) var(--motion-ease), border-color var(--motion-normal) var(--motion-ease);
     overflow-x: hidden;
   }
   
@@ -133,6 +91,10 @@
     background-color: var(--secondary-bg);
     color: var(--primary-text);
   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
 
 @layer utilities {
@@ -234,15 +196,22 @@
 }
 
 
-/* Keyboard focus uses a subtle inner cue, never an outer accent-colored ring. */
-:where(button, [tabindex], input, select, textarea):not([data-ui-control]):focus-visible {
+/* Fallback for controls without a field shell or an option's own active treatment. */
+:where(button, [tabindex], input, select, textarea):not([data-ui-control], .ds-field-menu, .ds-field-option):focus-visible {
   outline: none;
   box-shadow: inset 0 0 0 1px var(--focus-border);
 }
 
-/* Controls that already have a border use that single border as the focus cue. */
-:where(button, [tabindex], input, select, textarea):not([data-ui-control])[class*="border"]:focus-visible {
+/* Bordered fallback controls retain their border cue. */
+:where(button, [tabindex], input, select, textarea):not([data-ui-control], .ds-field-menu, .ds-field-option)[class*="border"]:focus-visible {
   border-color: var(--focus-border);
+  box-shadow: none;
+}
+
+/* Standalone native fields keep an explicit keyboard cue; owned fields use their shell. */
+:where(input:not([type="checkbox"], [type="radio"], [type="file"]), select, textarea):not([data-ui-control]):focus-visible {
+  outline: 2px solid var(--focus-border);
+  outline-offset: 2px;
   box-shadow: none;
 }
 
@@ -254,8 +223,9 @@
   text-underline-offset: 3px;
 }
 
-[data-ui-control]:focus-visible {
-  outline: none;
+[data-ui-button]:focus-visible, .ds-segments__item:focus-visible, .ds-chip:focus-visible, .ds-toast button:focus-visible {
+  outline: 2px solid var(--brand-primary);
+  outline-offset: 3px;
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }

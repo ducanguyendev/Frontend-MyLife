@@ -24,7 +24,7 @@ export function LibraryPhotoEditModal({ photo, onClose, onSubmit }: {
     catch (failure) { setError(getFeatureErrorKey(failure, 'photo_save')); }
     finally { setIsSaving(false); }
   };
-  return <Modal isOpen onClose={() => { if (!isSaving) onClose(); }} title={t('admin.library_ui.edit_photo')} maxWidth="lg"
+  return <Modal className="memory-form memory-form--library" isOpen onClose={() => { if (!isSaving) onClose(); }} title={t('admin.library_ui.edit_photo')} maxWidth="lg"
     closeOnBackdropClick={!isSaving} closeOnEsc={!isSaving}>
     <form onSubmit={submit} noValidate className="space-y-4">
       <LibraryPhotoFormFields value={metadata} onChange={setMetadata} disabled={isSaving} />

@@ -85,6 +85,7 @@ test('AuthContext restores a versioned latest avatar after login and page reload
   };
   const jsx = (type, props) => ({ type, props });
   const { AuthProvider } = load('src/features/auth/context/AuthContext.tsx', {
+    '@/shared/utils/userDisplayName': load('src/shared/utils/userDisplayName.ts'),
     react: { ...hooks, default: hooks },
     'react/jsx-runtime': { jsx, jsxs: jsx },
     '../services/authService': { authService: {
@@ -131,6 +132,7 @@ function profileSetup() {
   };
   const jsx = (type, props) => ({ type, props });
   const { UserProfileModal } = load('src/features/profile/components/UserProfileModal.tsx', {
+    '@/shared/utils/userDisplayName': load('src/shared/utils/userDisplayName.ts'),
     react: { ...hooks, default: hooks },
     'react/jsx-runtime': { jsx, jsxs: jsx },
     'react-router-dom': { useNavigate: () => () => {} },
@@ -150,6 +152,7 @@ function profileSetup() {
     '@/shared/components/ui': { Input: 'input', PasswordInput: 'input' },
     'lucide-react': new Proxy({}, { get: () => 'icon' }),
     'framer-motion': { motion: new Proxy({}, { get: (_, name) => `motion.${name}` }), AnimatePresence: 'presence' },
+    './UserProfileModal.css': {},
   });
   function findInput(node) {
     if (!node || typeof node !== 'object') return null;
