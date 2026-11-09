@@ -19,11 +19,12 @@ test('SearchBar exposes controlled, accessible UI and FamilyTree reference styli
   assert.match(component, /disabled=\{disabled\}/);
 });
 
-test('FamilyTree, Anniversary and Admin Dashboard use the shared SearchBar', () => {
+test('FamilyTree, Anniversary and Admin users/login logs use the shared SearchBar', () => {
   for (const file of [
     'src/features/admin/components/FamilyTreeManager.tsx',
     'src/features/admin/components/family-tree/AnniversaryTab.tsx',
-    'src/features/admin/pages/AdminDashboard.tsx',
+    'src/features/admin/components/console/AdminUsers.tsx',
+    'src/features/admin/components/console/AdminLoginLogs.tsx',
   ]) {
     const component = source(file);
     assert.match(component, /import \{ SearchBar \} from ['"]@\/shared\/components\/SearchBar['"]/);
