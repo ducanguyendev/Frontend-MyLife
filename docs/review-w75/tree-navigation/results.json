@@ -1,0 +1,34 @@
+[
+  {
+    "renderer": "shadcn",
+    "theme": "light",
+    "pointerPan": "pass",
+    "focus": "pass",
+    "fitAll": "pass",
+    "fullscreen": "pass"
+  },
+  {
+    "renderer": "shadcn",
+    "theme": "dark",
+    "pointerPan": "pass",
+    "focus": "pass",
+    "fitAll": "pass",
+    "fullscreen": "pass"
+  },
+  {
+    "renderer": "stable",
+    "theme": "light",
+    "pointerPan": "pass",
+    "focus": "pass",
+    "fitAll": "pass",
+    "fullscreen": "pass"
+  },
+  {
+    "renderer": "stable",
+    "theme": "dark",
+    "pointerPan": "pass",
+    "focus": "pass",
+    "fitAll": "pass",
+    "fullscreen": "pass"
+  }
+]

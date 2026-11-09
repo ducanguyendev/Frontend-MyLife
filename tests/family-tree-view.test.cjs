@@ -192,11 +192,13 @@ test('married child units stay adjacent below their parents across multiple gene
   assert.ok(layout.nodes.every(item => Number.isFinite(item.x) && Number.isFinite(item.y)));
 });
 
-test('compact cards show gender borders, avatar/detail, edit action, and retain the member menu', () => {
+test('compact cards retain gender borders, selection targets, explicit detail and edit actions', () => {
   assert.match(styles, /\.family-person-card\s*\{[^}]*width:\s*196px;[^}]*height:\s*94px/s);
   assert.match(styles, /data-gender="male"\]\s*\{[^}]*var\(--gender-male\)/s);
   assert.match(styles, /data-gender="female"\]\s*\{[^}]*var\(--gender-female\)/s);
-  assert.match(cardSource, /onClick=\{\(\) => \{ onFocus\(member\.id\); onView\(member\); \}\}/);
+  assert.match(cardSource, /className="family-person-card__portrait"[^]*?onClick=\{event => \{ event\.stopPropagation\(\); onFocus\(member\.id\); \}\}/);
+  assert.match(cardSource, /<button role="menuitem" onClick=\{\(\) => \{ setMenuOpen\(false\); onView\(member\); \}\}><Eye/);
+  assert.doesNotMatch(cardSource, /onFocus\(member\.id\); on(?:View|Edit)\(member\)/);
   assert.match(cardSource, /className="family-person-card__edit"/);
   assert.match(cardSource, /family-person-card__action-trigger/);
   assert.match(cardSource, /MemberAvatarImage/);

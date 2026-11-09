@@ -74,19 +74,19 @@ export const FamilyPersonCard = memo(function FamilyPersonCard({
     onClick={event => { if (!(event.target as HTMLElement).closest('button, a')) onFocus(member.id); }}
     style={{ left: x, top: y, pointerEvents: isPresent ? undefined : "none" }}
   >
-    <button type="button" className="family-person-card__portrait" aria-label={`${t("admin.view_detail", { defaultValue: "View details" })}: ${name}`}
-      onClick={() => { onFocus(member.id); onView(member); }}>
+    <button type="button" className="family-person-card__portrait" aria-label={`${t('family.selectMember')}: ${name}`} aria-pressed={focused}
+      onClick={event => { event.stopPropagation(); onFocus(member.id); }}>
       <MemberAvatarImage member={member} alt={name} className="family-person-card__avatar" />
     </button>
     <div className="family-person-card__copy">
-      <button type="button" className="family-person-card__name" title={name} onClick={() => { onFocus(member.id); onView(member); }}>{name}</button>
+      <button type="button" className="family-person-card__name" title={name} aria-pressed={focused} onClick={event => { event.stopPropagation(); onFocus(member.id); }}>{name}</button>
       <span className="family-person-card__role">{role}</span>
       <span className="family-person-card__meta" title={metadata}>{metadata}</span><span className="family-person-card__years">{lifeRange}</span>
     </div>
-    <div className="family-person-card__actions">
+    <div className="family-person-card__actions" onClick={event => event.stopPropagation()}>
       <button type="button" className="family-person-card__action-trigger" aria-label={actionsLabel} aria-haspopup="menu" aria-expanded={menuOpen}
         onClick={() => setMenuOpen(value => !value)}><MoreHorizontal size={17} /></button>
-      {menuOpen && <div className="family-person-card__menu" role="menu" aria-label={actionsLabel} onKeyDown={event => { if (event.key === "Escape") { event.preventDefault(); setMenuOpen(false); cardRef.current?.querySelector<HTMLButtonElement>(".family-person-card__action-trigger")?.focus(); } }}>
+      {menuOpen && <div className="family-person-card__menu" role="menu" aria-label={actionsLabel} onKeyDown={event => { if (event.key === "Escape") { event.preventDefault(); event.stopPropagation(); setMenuOpen(false); cardRef.current?.querySelector<HTMLButtonElement>(".family-person-card__action-trigger")?.focus(); } }}>
         <button role="menuitem" onClick={() => { setMenuOpen(false); onViewBranch(member.id); }}><GitBranch size={14} />{focusBranchLabel}</button>
         <button role="menuitem" onClick={() => { setMenuOpen(false); onView(member); }}><Eye size={14} />{t("admin.view_detail", { defaultValue: "View details" })}</button>
         <button role="menuitem" onClick={() => { setMenuOpen(false); onEdit(member); }}><Pencil size={14} />{t("admin.edit", { defaultValue: "Edit" })}</button>
@@ -94,9 +94,9 @@ export const FamilyPersonCard = memo(function FamilyPersonCard({
       </div>}
     </div>
     <button type="button" className="family-person-card__edit" aria-label={`${t("admin.edit", { defaultValue: "Edit" })}: ${name}`}
-      title={t("admin.edit", { defaultValue: "Edit" })} onClick={() => { onFocus(member.id); onEdit(member); }}><Pencil size={13} /></button>
+      title={t("admin.edit", { defaultValue: "Edit" })} onClick={event => { event.stopPropagation(); onEdit(member); }}><Pencil size={13} /></button>
     {(hiddenCount > 0 || expanded) && <button type="button" className="family-person-card__expand" aria-expanded={expanded}
       aria-label={`${expanded ? collapseLabel : expandLabel}: ${name}`} title={expanded ? collapseLabel : expandLabel}
-      onClick={() => onExpand(member.id)}><span>{expanded ? "−" : `+${hiddenCount}`}</span></button>}
+      onClick={event => { event.stopPropagation(); onExpand(member.id); }}><span>{expanded ? "−" : `+${hiddenCount}`}</span></button>}
   </motion.article>;
 });

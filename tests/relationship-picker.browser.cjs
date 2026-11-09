@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const puppeteer = require('../scratch_puppeteer/node_modules/puppeteer');
 const base = process.env.MYLIFE_UI_URL || 'http://127.0.0.1:7002';
-const artifacts = path.resolve('docs/review-relationship-picker');
+const artifacts = path.resolve(process.env.MYLIFE_REVIEW_DIR ? path.join(process.env.MYLIFE_REVIEW_DIR,'relationship-picker') : 'docs/review-relationship-picker');
 const member = (id, fullName, generation = 1) => ({ id, fullName, generation, gender: 'Nam', lifeStatus: 'LIVING', createdAt: '', updatedAt: '' });
 const members = [member(1, 'Nguyễn Văn An'), member(2, 'Mai Thu', 2), member(3, 'Mai Thu', 5), member(4, 'Nguyễn Huỳnh Minh Đức', 3), ...Array.from({ length: 25 }, (_, i) => member(i + 5, `Thành viên ${String(i + 5).padStart(2, '0')}`, 4))];
 const input = '#relationship-member-search';

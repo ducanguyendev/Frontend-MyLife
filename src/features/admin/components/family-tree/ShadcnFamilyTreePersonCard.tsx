@@ -1,4 +1,4 @@
-import { memo, useState } from "react";
+import { memo, useRef, useState } from "react";
 import { Eye, GitBranch, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import { useLanguage } from "@/shared/hooks/useLanguage";
@@ -28,6 +28,7 @@ export const ShadcnFamilyTreePersonCard = memo(function ShadcnFamilyTreePersonCa
   const { t } = useLanguage();
   const reduceMotion = useReducedMotion();
   const [menuOpen, setMenuOpen] = useState(false);
+  const cardRef = useRef<HTMLElement>(null);
   const birth = member.dateOfBirth ? new Date(member.dateOfBirth) : null;
   const death = member.deathDate ? new Date(member.deathDate) : null;
   const birthYear = birth && Number.isFinite(birth.getTime()) ? birth.getFullYear() : null;
@@ -43,14 +44,20 @@ export const ShadcnFamilyTreePersonCard = memo(function ShadcnFamilyTreePersonCa
   const genderKey = genderKind === "female" ? "gender_nữ" : genderKind === "male" ? "gender_nam" : genderKind === "other" ? "gender_other" : undefined;
   const gender = genderKey ? t(`admin.${genderKey}`, { defaultValue: member.gender }) : undefined;
 
-  return <motion.article
+  return <motion.article ref={cardRef}
     className={`shadcn-family-tree__person${focused ? " is-focused" : ""}${highlighted ? " is-related" : ""}${dimmed ? " is-dimmed" : ""}${member.lifeStatus === "DECEASED" ? " is-deceased" : ""}`}
     data-member-id={member.id}
     data-gender={genderKind}
+    tabIndex={0} aria-label={`${t('family.selectMember')}: ${member.fullName}`} aria-current={focused || undefined}
     style={{ left: x, top: y }}
     initial={{ opacity: 0, y: 8 }} animate={{ opacity: dimmed ? .38 : 1, y: 0 }} exit={{ opacity: 0 }}
     transition={{ duration: reduceMotion ? .01 : .32, ease: "easeOut" }}
     onClick={() => onSelect(member.id)}
+    onKeyDown={event => {
+      if (event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) {
+        event.preventDefault(); onSelect(member.id);
+      }
+    }}
   >
     <button type="button" className="shadcn-family-tree__portrait" aria-label={`${t('family.selectMember')}: ${member.fullName}`} aria-pressed={focused} onClick={event => { event.stopPropagation(); onSelect(member.id); }}>
       <MemberAvatarImage member={member} alt={member.fullName} className="shadcn-family-tree__avatar" />
@@ -68,7 +75,7 @@ export const ShadcnFamilyTreePersonCard = memo(function ShadcnFamilyTreePersonCa
     <div className="shadcn-family-tree__actions">
       <button type="button" className="shadcn-family-tree__action" aria-label={`${t("admin.view_detail", { defaultValue: "Xem chi tiết" })}: ${member.fullName}`} onClick={event => { event.stopPropagation(); onView(member); }}><Eye size={15} /></button>
       <button type="button" className="shadcn-family-tree__action-menu" aria-label={actionsLabel} aria-haspopup="menu" aria-expanded={menuOpen} onClick={event => { event.stopPropagation(); setMenuOpen(value => !value); }}><MoreHorizontal size={16} /></button>
-      {menuOpen && <div className="shadcn-family-tree__menu" role="menu" aria-label={actionsLabel} onClick={event => event.stopPropagation()}>
+      {menuOpen && <div className="shadcn-family-tree__menu" role="menu" aria-label={actionsLabel} onClick={event => event.stopPropagation()} onKeyDown={event => { if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); setMenuOpen(false); cardRef.current?.querySelector<HTMLButtonElement>('.shadcn-family-tree__action-menu')?.focus(); } }}>
         <button role="menuitem" onClick={() => { setMenuOpen(false); onViewBranch(member.id); }}><GitBranch size={14} />{t("admin.mindmap_focus_branch", { defaultValue: "Xem nhánh này" })}</button>
         <button role="menuitem" onClick={() => { setMenuOpen(false); onView(member); }}><Eye size={14} />{t("admin.view_detail", { defaultValue: "Xem chi tiết" })}</button>
         <button role="menuitem" onClick={() => { setMenuOpen(false); onEdit(member); }}><Pencil size={14} />{t("admin.edit", { defaultValue: "Sửa" })}</button>

@@ -71,7 +71,8 @@ async function setupPage(browser, base, { width = 1440, height = 900, theme = 'l
     } else if (p.endsWith('/relationship')) {
       const from = Number(url.searchParams.get('fromMemberId')), to = Number(url.searchParams.get('toMemberId'));
       const node = id => ({ memberId: id, fullName: state.members.find(item => item.id === id).fullName });
-      if (from === 1 && to === 3 || from === 3 && to === 1) {
+      if (state.relationshipAnswer) body.data = state.relationshipAnswer(from, to);
+      else if (from === 1 && to === 3 || from === 3 && to === 1) {
         const forward = from === 1;
         body.data = { fromMemberId: 1, toMemberId: 3, relationshipCode: 'daughter', relationshipLabel: 'Con gái', reverseRelationshipCode: 'mother', reverseRelationshipLabel: 'Mẹ', distance: 1, path: [node(1), { ...node(3), edge: 'CHILD' }] };
         if (!state.relationshipReversed && !forward) body.data = { fromMemberId: 3, toMemberId: 1, relationshipCode: 'mother', relationshipLabel: 'Mẹ', reverseRelationshipCode: 'daughter', reverseRelationshipLabel: 'Con gái', distance: 1, path: [node(3), { ...node(1), edge: 'PARENT' }] };
@@ -81,7 +82,7 @@ async function setupPage(browser, base, { width = 1440, height = 900, theme = 'l
   });
   return { page, state, go: route => page.goto(base + route, { waitUntil: 'domcontentloaded' }) };
 }
-function outputDirectory(name) { const dir = path.resolve('docs/review-final', name); fs.mkdirSync(dir, { recursive: true }); return dir; }
+function outputDirectory(name) { const dir = path.resolve(process.env.MYLIFE_REVIEW_DIR || 'docs/review-final', name); fs.mkdirSync(dir, { recursive: true }); return dir; }
 async function switchTheme(page, theme) {
   await page.click('button[aria-label="Mở menu tài khoản"]');
   await page.waitForSelector('[data-user-menu]');
