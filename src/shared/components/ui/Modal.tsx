@@ -141,16 +141,16 @@ export const Modal: React.FC<ModalProps> = ({
             {/* Header */}
             {((showTitle && (title || description)) || !hideCloseButton) && (
               <div className={`shrink-0 flex items-center ${showTitle ? 'justify-between px-6 py-4 sm:py-5 border-b' : 'justify-end px-4 py-2'} border-custom-border bg-secondary-bg z-10`}>
-                {showTitle && <div className="pr-4">
+                {showTitle && <div className="min-w-0 pr-4">
                   {title && <h3 id={titleId} className="text-lg sm:text-xl font-bold text-primary-text leading-snug">{typeof title === 'string' ? normalizeDisplayText(title) : title}</h3>}
-                  {description && <p className="text-xs text-secondary-text mt-1">{description}</p>}
+                  {description && <p className="text-[length:var(--type-label)] leading-relaxed text-secondary-text mt-1">{description}</p>}
                 </div>}
 
                 {!hideCloseButton && (
                   <button
                     type="button"
                     onClick={onClose}
-                    className="p-2 rounded-xl text-secondary-text hover:text-primary-text hover:bg-custom-border/50 transition-colors cursor-pointer"
+                    className="flex size-11 shrink-0 items-center justify-center rounded-xl text-secondary-text hover:text-primary-text hover:bg-custom-border/50 transition-colors cursor-pointer"
                     aria-label={t('admin.close')}
                   >
                     <X size={20} />

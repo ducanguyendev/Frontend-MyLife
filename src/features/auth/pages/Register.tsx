@@ -1,3 +1,4 @@
+import '../components/AuthPresentation.css';
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useLanguage } from '@/shared/hooks/useLanguage';
@@ -252,7 +253,7 @@ export const Register: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-primary-bg flex items-center justify-center p-4 py-8 relative overflow-hidden">
+    <div className="auth-register min-h-screen bg-primary-bg flex items-center justify-center p-4 py-8 relative overflow-hidden">
       {/* Background decorative blobs */}
       <div className="absolute top-0 left-0 w-80 h-80 bg-accent/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-accent/5 rounded-full blur-3xl translate-x-1/2 translate-y-1/2 pointer-events-none" />
@@ -265,11 +266,11 @@ export const Register: React.FC = () => {
         className="relative w-full max-w-xl bg-secondary-bg border border-custom-border p-8 rounded-3xl shadow-2xl z-10 font-sans text-primary-text"
       >
         {/* Top bar with Language Switcher and Close button */}
-        <div className="absolute top-5 right-5 flex items-center gap-3">
+        <div className="auth-register__utilities absolute top-5 right-5 flex items-center gap-3">
           <LanguageSwitcher />
           <button
             onClick={() => navigate('/')}
-            className="text-secondary-text hover:text-primary-text p-1.5 rounded-full hover:bg-primary-bg transition-colors cursor-pointer"
+            className="auth-close text-secondary-text hover:text-primary-text rounded-full hover:bg-primary-bg transition-colors cursor-pointer"
             aria-label={t('common.registerPage.backHome', { defaultValue: 'Quay về trang chủ' })}
           >
             <X size={20} />
@@ -284,7 +285,7 @@ export const Register: React.FC = () => {
           <h2 className="text-2xl font-bold tracking-tight text-primary-text">
             {t('common.registerPage.title', { defaultValue: 'Đăng Ký' })}
           </h2>
-          <p className="text-xs text-secondary-text">
+          <p className="text-[length:var(--type-label)] text-secondary-text">
             {t('common.registerPage.subtitle', { defaultValue: 'Nhập thông tin tài khoản của bạn để đăng ký.' })}
           </p>
         </div>
@@ -302,7 +303,7 @@ export const Register: React.FC = () => {
                 transition={{ duration: 0.25, ease: 'easeOut' }}
                 className="overflow-hidden"
               >
-                <div className="flex items-center gap-2.5 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-xs mb-1">
+                <div className="flex items-center gap-2.5 p-3 rounded-xl bg-[var(--state-danger-soft)] border border-[var(--state-danger)] text-[var(--state-danger)] text-[length:var(--type-label)] mb-1">
                   <AlertCircle size={16} className="shrink-0" />
                   <span className="flex-1 leading-snug font-medium">{errorMessage}</span>
                 </div>
@@ -321,7 +322,7 @@ export const Register: React.FC = () => {
                 transition={{ duration: 0.25, ease: 'easeOut' }}
                 className="overflow-hidden"
               >
-                <div className="flex items-center gap-2.5 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 text-xs mb-1">
+                <div className="flex items-center gap-2.5 p-3 rounded-xl bg-[var(--state-success-soft)] border border-[var(--state-success)] text-[var(--state-success)] text-[length:var(--type-label)] mb-1">
                   <CheckCircle2 size={16} className="shrink-0" />
                   <span className="flex-1 leading-snug font-medium">{successMessage}</span>
                 </div>
@@ -398,7 +399,7 @@ export const Register: React.FC = () => {
                       setGender(opt.val as 'Nam' | 'Nữ' | 'Khác');
                       if (fieldErrors.gender) setFieldErrors((prev) => ({ ...prev, gender: undefined }));
                     }}
-                    className={`h-[42px] text-xs font-medium rounded-xl transition-all flex items-center justify-center gap-1 cursor-pointer ${
+                    className={`h-[42px] text-[length:var(--type-label)] font-medium rounded-xl transition-all flex items-center justify-center gap-1 cursor-pointer ${
                       gender === opt.val
                         ? 'bg-accent text-primary-bg font-semibold shadow-sm'
                         : 'text-secondary-text hover:text-primary-text hover:bg-secondary-bg'
@@ -410,7 +411,7 @@ export const Register: React.FC = () => {
                 ))}
               </div>
               {fieldErrors.gender && (
-                <div className="flex items-center gap-1 mt-1.5 ml-1 text-xs text-error">
+                <div className="flex items-center gap-1 mt-1.5 ml-1 text-[length:var(--type-label)] text-error">
                   <AlertCircle size={13} />
                   <span>{fieldErrors.gender}</span>
                 </div>
@@ -475,17 +476,17 @@ export const Register: React.FC = () => {
                     ))}
                   </div>
                   {passwordStrength.label && (
-                    <p className="text-xs text-secondary-text">
+                    <p className="text-[length:var(--type-label)] text-secondary-text">
                       {t('common.registerPage.passwordStrength', { defaultValue: 'Độ mạnh mật khẩu:' })}{' '}
                       <span
                         className={
                           passwordStrength.score <= 1
-                            ? 'text-red-400'
+                            ? 'text-[var(--state-danger)]'
                             : passwordStrength.score <= 2
-                            ? 'text-yellow-400'
+                            ? 'text-[var(--state-warning)]'
                             : passwordStrength.score <= 3
-                            ? 'text-blue-400'
-                            : 'text-emerald-400'
+                            ? 'text-[var(--state-info)]'
+                            : 'text-[var(--state-success)]'
                         }
                       >
                         {passwordStrength.label}
@@ -525,8 +526,8 @@ export const Register: React.FC = () => {
               {/* Match indicator */}
               {confirmPassword.length > 0 && (
                 <p
-                  className={`text-xs mt-1.5 ml-1 ${
-                    confirmPassword === password ? 'text-emerald-400' : 'text-red-400'
+                  className={`text-[length:var(--type-label)] mt-1.5 ml-1 ${
+                    confirmPassword === password ? 'text-[var(--state-success)]' : 'text-[var(--state-danger)]'
                   }`}
                 >
                   {confirmPassword === password
@@ -549,7 +550,7 @@ export const Register: React.FC = () => {
           </button>
 
           {/* Link sang Login */}
-          <p className="text-center text-xs text-secondary-text pt-1">
+          <p className="text-center text-[length:var(--type-label)] text-secondary-text pt-1">
             {t('common.registerPage.alreadyHaveAccount', { defaultValue: 'Đã có tài khoản?' })}{' '}
             <Link
               to="/"

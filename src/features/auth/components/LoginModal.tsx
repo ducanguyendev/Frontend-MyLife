@@ -3,11 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { AlertCircle, Lock, Mail, ShieldCheck, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { getApiErrorMessage, isRateLimitError } from '@/shared/api/apiClient';
-import { Input, PasswordInput } from '@/shared/components/ui';
+import { Input, PasswordInput, Modal } from '@/shared/components/ui';
 import { useLanguage } from '@/shared/hooks/useLanguage';
-import { useBodyScrollLock } from '@/shared/hooks/useBodyScrollLock';
 import { useAuth } from '../context/AuthContext';
 import { authService } from '../services/authService';
+import './AuthPresentation.css';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -64,7 +64,6 @@ function waitForGoogleAuthorizationCode(popup: Window, expectedState: string): P
 }
 
 export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
-  useBodyScrollLock(isOpen);
   const { t } = useLanguage();
   const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
@@ -208,34 +207,12 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
   };
 
   return (
-    <AnimatePresence>
-      <div
-        className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden p-4"
-        onClick={(event) => {
-          if (event.target === event.currentTarget) onClose();
-        }}
-      >
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={onClose}
-          className="absolute inset-0 cursor-pointer bg-slate-950/70 backdrop-blur-sm"
-        />
-        <motion.div
-          layout
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          transition={{ type: 'spring', duration: 0.3 }}
-          onClick={(event) => event.stopPropagation()}
-          className="relative z-10 max-h-[90vh] w-full max-w-md overflow-y-auto overscroll-contain touch-pan-y rounded-3xl border border-custom-border bg-secondary-bg p-8 font-sans text-primary-text shadow-2xl"
-          style={{ WebkitOverflowScrolling: 'touch' }}
-        >
+    <Modal isOpen={isOpen} onClose={onClose} showTitle={false} hideCloseButton ariaLabel={t('common.login')} maxWidth="md" className="auth-login">
+        <div className="relative font-sans text-primary-text">
           <button
             onClick={onClose}
-            className="absolute right-5 top-5 cursor-pointer rounded-full p-1.5 text-secondary-text transition-colors hover:bg-primary-bg hover:text-primary-text"
-            aria-label="Close"
+            className="auth-close absolute right-0 top-0 cursor-pointer rounded-full text-secondary-text transition-colors hover:bg-primary-bg hover:text-primary-text"
+            aria-label={t('admin.close')}
           >
             <X size={20} />
           </button>
@@ -247,7 +224,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
             <h2 className="text-2xl font-bold tracking-tight text-primary-text">
               {t('common.login', { defaultValue: 'Sign in' })}
             </h2>
-            <p className="text-xs text-secondary-text">
+            <p className="text-[length:var(--type-label)] text-secondary-text">
               {t('common.loginDesc', { defaultValue: 'Enter your account details to continue.' })}
             </p>
           </div>
@@ -261,7 +238,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
                   exit={{ opacity: 0, height: 0, scale: 0.96 }}
                   className="overflow-hidden"
                 >
-                  <div className="mb-1 flex items-center gap-2.5 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-500">
+                  <div className="mb-1 flex items-center gap-2.5 rounded-xl border border-[var(--state-danger)] bg-[var(--state-danger-soft)] p-3 text-[length:var(--type-label)] text-[var(--state-danger)]">
                     <AlertCircle size={16} className="shrink-0" />
                     <span className="flex-1 leading-snug">{errorMessage}</span>
                   </div>
@@ -305,7 +282,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
                 onChange={(event) => setRememberMe(event.target.checked)}
                 className="cursor-pointer rounded border-custom-border text-accent accent-accent "
               />
-              <span className="text-xs text-secondary-text">
+              <span className="text-[length:var(--type-label)] text-secondary-text">
                 {t('common.rememberMe', { defaultValue: 'Remember my email' })}
               </span>
             </label>
@@ -320,7 +297,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
 
             <div className="relative flex items-center py-2">
               <div className="flex-grow border-t border-custom-border/60" />
-              <span className="mx-4 flex-shrink text-xs font-medium tracking-wide text-secondary-text/80">
+              <span className="mx-4 flex-shrink text-[length:var(--type-label)] font-medium tracking-wide text-secondary-text">
                 {t('common.orLoginWith', { defaultValue: 'or sign in with' })}
               </span>
               <div className="flex-grow border-t border-custom-border/60" />
@@ -343,14 +320,14 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
                     <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
                     <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
                   </svg>
-                  <span className="text-xs font-semibold tracking-wide transition-colors group-hover:text-accent">
+                  <span className="text-[length:var(--type-label)] font-semibold tracking-wide transition-colors group-hover:text-accent">
                     {t('common.loginWithGoogle', { defaultValue: 'Sign in with Google' })}
                   </span>
                 </>
               )}
             </button>
 
-            <p className="pt-1 text-center text-xs text-secondary-text">
+            <p className="pt-1 text-center text-[length:var(--type-label)] text-secondary-text">
               {t('common.noAccount', { defaultValue: 'Do not have an account?' })}{' '}
               <a
                 href="/Register"
@@ -365,8 +342,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
               </a>
             </p>
           </form>
-        </motion.div>
-      </div>
-    </AnimatePresence>
+        </div>
+    </Modal>
   );
 };

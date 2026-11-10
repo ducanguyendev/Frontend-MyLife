@@ -31,13 +31,13 @@ export function FormFieldShell({
   const normalizedLabel = normalizeRequiredLabel(label, required);
 
   return <div className={`flex w-full flex-col ${containerClassName}`}>
-    {normalizedLabel && <label htmlFor={fieldId} className={`mb-1.5 px-1 text-xs font-semibold text-[var(--field-label)] ${labelClassName}`}>
+    {normalizedLabel && <label htmlFor={fieldId} className={`mb-1.5 px-1 text-[length:var(--type-label)] leading-5 font-semibold text-[var(--field-label)] ${labelClassName}`}>
       {normalizedLabel}{required && <span aria-hidden="true" className="ml-1 text-[var(--field-error)]">*</span>}
     </label>}
     {children}
-    {error ? <p id={feedbackId} className="mt-1.5 flex items-start gap-1.5 px-1 text-xs font-medium text-[var(--field-error)]" role="alert">
+    {error ? <p id={feedbackId} className="mt-1.5 flex items-start gap-1.5 px-1 text-[length:var(--type-label)] leading-5 font-medium text-[var(--field-error)]" role="alert">
       <AlertCircle size={14} className="mt-0.5 shrink-0" /><span>{error}</span>
-    </p> : helperText ? <p id={feedbackId} className="mt-1.5 px-1 text-xs text-secondary-text">{helperText}</p> : null}
+    </p> : helperText ? <p id={feedbackId} className="mt-1.5 px-1 text-[length:var(--type-label)] leading-5 text-secondary-text">{helperText}</p> : null}
   </div>;
 }
 

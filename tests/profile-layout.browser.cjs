@@ -5,7 +5,7 @@ const path = require('node:path');
 const os = require('node:os');
 const puppeteer = require('../scratch_puppeteer/node_modules/puppeteer');
 const base = process.env.MYLIFE_UI_URL || 'http://127.0.0.1:7004';
-const output = path.resolve('docs/review-w80');
+const output = path.resolve(process.env.MYLIFE_REVIEW_DIR || 'docs/review-w80');
 const account = {
   id: 42, email: 'a.long.account.address.for.layout.review@example.test',
   fullName: 'Nguyễn Huỳnh Minh Đức', displayName: 'Nguyễn Minh Đức', role: 'USER', roles: ['USER'],

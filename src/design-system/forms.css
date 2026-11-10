@@ -16,7 +16,7 @@
 .ds-field[data-floating] > [data-ui-control] { padding-top:20px; padding-bottom:6px; }
 .ds-field[data-floating]:not([data-floated]):not(:focus-within) > [data-ui-control]::placeholder { color:transparent; }
 .ds-field__label { position:absolute; left:16px; right:16px; top:50%; transform:translateY(-50%); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; pointer-events:none; user-select:none; color:var(--field-placeholder); font:500 14px/20px var(--font-sans); letter-spacing:normal; transition:top var(--field-motion),transform var(--field-motion),font-size var(--field-motion),color var(--field-motion); }
-.ds-field[data-floated] > .ds-field__label,.ds-field[data-floating]:focus-within > .ds-field__label { top:7px; transform:none; color:var(--field-label); font-size:11px; font-weight:600; line-height:16px; }
+.ds-field[data-floated] > .ds-field__label,.ds-field[data-floating]:focus-within > .ds-field__label { top:6px; transform:none; color:var(--field-label); font-size:var(--type-caption); font-weight:600; line-height:16px; }
 .ds-field[data-error] > .ds-field__label { color:var(--field-error); }
 .ds-field__required { margin-left:4px; color:var(--field-error); }
 .ds-field__leading,.ds-field__trailing { position:absolute; display:inline-flex; align-items:center; color:var(--text-secondary); }

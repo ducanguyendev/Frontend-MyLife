@@ -1,0 +1,99 @@
+[
+  {
+    "case": "vi-light-1440",
+    "check": "family search focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.321569 0.423529 0.34902 / 0.2) 0px 0px 0px 2px",
+    "width": 420,
+    "height": 42
+  },
+  {
+    "case": "vi-light-1440",
+    "check": "map search focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.321569 0.423529 0.34902 / 0.2) 0px 0px 0px 2px",
+    "width": 332.078125,
+    "height": 43.78125
+  },
+  {
+    "case": "vi-light-1440",
+    "check": "anniversary search focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.321569 0.423529 0.34902 / 0.2) 0px 0px 0px 2px",
+    "width": 681.75,
+    "height": 42
+  },
+  {
+    "case": "vi-light-1440",
+    "check": ".memory-form--timeline dialog bounds/focus trap",
+    "x": 208,
+    "y": 45,
+    "right": 1232,
+    "bottom": 855,
+    "overflow": false
+  },
+  {
+    "case": "vi-light-1440",
+    "check": "timeline form focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.321569 0.423529 0.34902 / 0.2) 0px 0px 0px 2px",
+    "width": 433,
+    "height": 58
+  },
+  {
+    "case": "vi-light-1440",
+    "check": "library filter focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.321569 0.423529 0.34902 / 0.2) 0px 0px 0px 2px",
+    "width": 220,
+    "height": 42
+  },
+  {
+    "case": "vi-light-1440",
+    "check": ".memory-lightbox dialog bounds/focus trap",
+    "x": 24,
+    "y": 45,
+    "right": 1416,
+    "bottom": 855,
+    "overflow": false
+  },
+  {
+    "case": "vi-light-1440",
+    "check": "register validation focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.321569 0.423529 0.34902 / 0.2) 0px 0px 0px 2px",
+    "width": 510,
+    "height": 58
+  },
+  {
+    "case": "vi-light-1440",
+    "check": ".auth-login dialog bounds/focus trap",
+    "x": 496,
+    "y": 135.453125,
+    "right": 944,
+    "bottom": 764.546875,
+    "overflow": false
+  },
+  {
+    "case": "vi-light-1440",
+    "check": "login validation focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.321569 0.423529 0.34902 / 0.2) 0px 0px 0px 2px",
+    "width": 382,
+    "height": 58
+  }
+]
