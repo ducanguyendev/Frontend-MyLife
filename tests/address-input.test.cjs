@@ -44,10 +44,16 @@ test('address form state and save payload do not depend on browser geocoding', (
   assert.doesNotMatch(input, /fetch\(|nominatim|google\.maps/i);
 });
 
-test('family map still uses Leaflet and OpenStreetMap tiles', () => {
+test('family map uses Leaflet with the adopted VietMap provider and cleans up its layer', () => {
   const map = readFileSync(join(__dirname, '../src/features/admin/components/family-tree/FamilyMapTab.tsx'), 'utf8');
   assert.match(map, /react-leaflet/);
-  assert.match(map, /tile\.openstreetmap\.org/);
+  assert.match(map, /<VietMapBaseLayer\s*\/>/);
+  const provider = readFileSync(join(__dirname, '../src/features/admin/components/family-tree/VietMapBaseLayer.tsx'), 'utf8');
+  assert.match(provider, /maps\.vietmap\.vn\/maps\/styles/);
+  assert.match(provider, /VITE_VIETMAP_TILE_KEY/);
+  assert.match(provider, /glMap\.off\?\.\('error', onError\)/);
+  assert.match(provider, /map\.removeLayer\(layer\)/);
+  assert.doesNotMatch(map + provider, /tile\.openstreetmap\.org/);
 });
 
 test('Google Maps Places loader and ambient types are removed while Google OAuth remains', () => {

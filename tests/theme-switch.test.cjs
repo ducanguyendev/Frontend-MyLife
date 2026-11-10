@@ -29,38 +29,29 @@ test('ThemeSwitch dimensions match 64x40 with a 32px thumb and calculated 24px t
   assert.doesNotMatch(switchCss, /display:\s*none/);
 });
 
-test('shared header controls, FamilyTree controls, and centered Home navigation use 40px sizing', () => {
-  const header = read('src/shared/layouts/Header.tsx');
-  const languageSwitcher = read('src/shared/components/LanguageSwitcher.tsx');
-  const userMenu = read('src/features/auth/components/UserMenu.tsx');
-  const familyTree = read('src/features/family-tree/pages/FamilyTreePage.tsx');
-  const admin = read('src/features/admin/pages/AdminDashboard.tsx');
-
-  assert.match(languageSwitcher, /h-10 w-10 items-center justify-center/);
-  assert.doesNotMatch(languageSwitcher, /import \{[^}]*ChevronDown/);
-  assert.match(languageSwitcher, /aria-label=\{languageLabel\}/);
-  const desktopTrigger = languageSwitcher.split('return (\n    <div className="relative inline-block text-left"')[1].split('</button>')[0];
-  assert.match(desktopTrigger, /currentLang\.flagIcon/);
-  assert.doesNotMatch(desktopTrigger, /<span|ChevronDown|lang\.code/);
-  assert.match(languageSwitcher, /lang\.label/);
-  assert.match(languageSwitcher, /language === lang\.code && <Check/);
-  assert.match(userMenu, /h-10 items-center/);
-  assert.match(header, /justify-center gap-1 p-1 h-10/);
-  assert.match(header, /px-4 h-10/);
-  assert.match(familyTree, /<MyLifeWorkspaceLayout backTo="\/mylife"/);
-  assert.match(admin, /w-10 h-10/);
+test('current public controls and shell icon buttons use shared accessible sizing', () => {
+  const language = read('src/shared/components/LanguageSwitcher.tsx');
+  const publicControls = read('src/shared/components/AppearanceControls.tsx');
+  const foundations = read('src/design-system/foundations.css');
+  assert.match(language, /isLoading \|\| isAuthenticated/);
+  assert.match(language, /<LanguageButton\s*\/>/);
+  assert.match(publicControls, /<ThemeModeButton\s*\/>/);
+  assert.match(publicControls, /<LanguageButton\s*\/>/);
+  assert.match(foundations, /ds-icon-button--md[^}]*width: 44px; height: 44px/);
+  assert.match(foundations, /@media\(pointer:coarse\)[\s\S]*min-height:44px/);
+  assert.match(read('src/features/family-tree/pages/FamilyTreePage.tsx'), /<MyLifeWorkspaceLayout/);
 });
 
-test('Header, Admin, FamilyTree and mobile drawer share ThemeSwitch', () => {
-  const header = read('src/shared/layouts/Header.tsx');
-  const admin = read('src/features/admin/pages/AdminDashboard.tsx');
-  const familyTree = read('src/features/family-tree/pages/FamilyTreePage.tsx');
-  const workspaceHeader = read('src/shared/layouts/UserWorkspaceHeader.tsx');
-
-  assert.equal((header.match(/<ThemeSwitch\s*\/>/g) || []).length, 2);
-  assert.match(admin, /<ThemeSwitch\s*\/>/);
-  assert.match(workspaceHeader, /<ThemeSwitch\s*\/>/);
-  assert.doesNotMatch(`${header}\n${admin}\n${familyTree}\n${workspaceHeader}`, /toggleTheme|<Sun\b|<Moon\b|Toggle Theme/i);
+test('authenticated preferences and public controls share the same ThemeContext', () => {
+  const preferences = read('src/shared/components/preferences/PreferenceControls.tsx');
+  const menu = read('src/features/auth/components/UserMenu.tsx');
+  const shell = read('src/shared/layouts/app-shell/AppShell.tsx');
+  assert.match(menu, /<AppearanceLanguageModal isOpen=\{preferencesOpen\}/);
+  assert.match(preferences, /const \{ preference, setPreference \} = useTheme\(\)/);
+  assert.match(preferences, /onChange=\{setPreference\}/);
+  assert.match(preferences, /<LanguageOptionList\s*\/>/);
+  assert.match(shell, /<UserMenu appearance="shell"/);
+  assert.doesNotMatch(shell, /localStorage|toggleTheme|<Sun\b|<Moon\b/);
 });
 
 test('theme persistence and document dark class remain owned by ThemeContext', () => {

@@ -1,9 +1,9 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const puppeteer = require('../scratch_puppeteer/node_modules/puppeteer');
+const puppeteer = require('puppeteer');
 const { createReviewPage, ready } = require('./helpers/global-polish-browser.cjs');
-const output = path.resolve('docs/review-w9/interactions');
+const output = path.resolve(process.env.MYLIFE_REVIEW_DIR || 'docs/review-w9/interactions');
 const deferred = () => { let resolve; const promise = new Promise(done => { resolve = done; }); return { promise, resolve }; };
 const translations = language => ({ admin: require(`../src/shared/locales/${language}/admin.json`) });
 async function main() {

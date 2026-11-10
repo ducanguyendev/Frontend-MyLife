@@ -14,8 +14,10 @@ test('SearchBar exposes controlled, accessible UI and FamilyTree reference styli
   assert.match(component, /onChange=\{event => onChange\(event\.target\.value\)\}/);
   assert.match(component, /aria-label=\{ariaLabel \?\? placeholder\}/);
   assert.match(component, /size=\{16\}/);
-  assert.match(component, /rounded-xl border border-custom-border bg-secondary-bg py-2 pl-9 pr-4 text-sm text-primary-text/);
-  assert.match(component, /focus-visible:ring-2 focus-visible:ring-accent\/30/);
+  assert.match(component, /<SearchInput[\s\S]*ref=\{inputRef\}/);
+  const controls = source('src/design-system/components/Controls.tsx');
+  assert.match(controls, /<Input[\s\S]*type="search" density="compact" leftIcon=\{<Search/);
+  assert.match(component, /onChange\(''\); inputRef\.current\?\.focus\(\)/);
   assert.match(component, /disabled=\{disabled\}/);
 });
 

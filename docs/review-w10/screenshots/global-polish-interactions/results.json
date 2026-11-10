@@ -1,0 +1,728 @@
+[
+  {
+    "case": "vi-light-1440",
+    "check": "family search focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.321569 0.423529 0.34902 / 0.2) 0px 0px 0px 2px",
+    "width": 420,
+    "height": 42
+  },
+  {
+    "case": "vi-light-1440",
+    "check": "map search focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.321569 0.423529 0.34902 / 0.2) 0px 0px 0px 2px",
+    "width": 332.078125,
+    "height": 43.78125
+  },
+  {
+    "case": "vi-light-1440",
+    "check": "anniversary search focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.321569 0.423529 0.34902 / 0.2) 0px 0px 0px 2px",
+    "width": 681.75,
+    "height": 42
+  },
+  {
+    "case": "vi-light-1440",
+    "check": ".memory-form--timeline dialog bounds/focus trap",
+    "x": 208,
+    "y": 45,
+    "right": 1232,
+    "bottom": 855,
+    "overflow": false
+  },
+  {
+    "case": "vi-light-1440",
+    "check": "timeline form focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.321569 0.423529 0.34902 / 0.2) 0px 0px 0px 2px",
+    "width": 433,
+    "height": 58
+  },
+  {
+    "case": "vi-light-1440",
+    "check": "library filter focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.321569 0.423529 0.34902 / 0.2) 0px 0px 0px 2px",
+    "width": 220,
+    "height": 42
+  },
+  {
+    "case": "vi-light-1440",
+    "check": ".memory-lightbox dialog bounds/focus trap",
+    "x": 24,
+    "y": 45,
+    "right": 1416,
+    "bottom": 855,
+    "overflow": false
+  },
+  {
+    "case": "vi-light-1440",
+    "check": "register validation focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.321569 0.423529 0.34902 / 0.2) 0px 0px 0px 2px",
+    "width": 510,
+    "height": 58
+  },
+  {
+    "case": "vi-light-1440",
+    "check": ".auth-login dialog bounds/focus trap",
+    "x": 496,
+    "y": 135.453125,
+    "right": 944,
+    "bottom": 764.546875,
+    "overflow": false
+  },
+  {
+    "case": "vi-light-1440",
+    "check": "login validation focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.321569 0.423529 0.34902 / 0.2) 0px 0px 0px 2px",
+    "width": 382,
+    "height": 58
+  },
+  {
+    "case": "vi-light-1440",
+    "check": "login actual error/link contrast",
+    "pairs": [
+      {
+        "selector": ".auth-login form [role=alert]",
+        "ratio": 5.463821108467727
+      },
+      {
+        "selector": ".auth-login form > p a",
+        "ratio": 5.704190271057838
+      }
+    ]
+  },
+  {
+    "case": "vi-light-1440",
+    "check": "disabled/native focus/reduced motion",
+    "status": "pass"
+  },
+  {
+    "case": "vi-dark-1440",
+    "check": "family search focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.631373 0.709804 0.623529 / 0.2) 0px 0px 0px 2px",
+    "width": 420,
+    "height": 42
+  },
+  {
+    "case": "vi-dark-1440",
+    "check": "map search focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.631373 0.709804 0.623529 / 0.2) 0px 0px 0px 2px",
+    "width": 332.078125,
+    "height": 43.78125
+  },
+  {
+    "case": "vi-dark-1440",
+    "check": "anniversary search focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.631373 0.709804 0.623529 / 0.2) 0px 0px 0px 2px",
+    "width": 681.75,
+    "height": 42
+  },
+  {
+    "case": "vi-dark-1440",
+    "check": ".memory-form--timeline dialog bounds/focus trap",
+    "x": 208,
+    "y": 45,
+    "right": 1232,
+    "bottom": 855,
+    "overflow": false
+  },
+  {
+    "case": "vi-dark-1440",
+    "check": "timeline form focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.631373 0.709804 0.623529 / 0.2) 0px 0px 0px 2px",
+    "width": 433,
+    "height": 58
+  },
+  {
+    "case": "vi-dark-1440",
+    "check": "library filter focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.631373 0.709804 0.623529 / 0.2) 0px 0px 0px 2px",
+    "width": 220,
+    "height": 42
+  },
+  {
+    "case": "vi-dark-1440",
+    "check": ".memory-lightbox dialog bounds/focus trap",
+    "x": 24,
+    "y": 45,
+    "right": 1416,
+    "bottom": 855,
+    "overflow": false
+  },
+  {
+    "case": "vi-dark-1440",
+    "check": "register validation focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.631373 0.709804 0.623529 / 0.2) 0px 0px 0px 2px",
+    "width": 510,
+    "height": 58
+  },
+  {
+    "case": "vi-dark-1440",
+    "check": ".auth-login dialog bounds/focus trap",
+    "x": 496,
+    "y": 135.453125,
+    "right": 944,
+    "bottom": 764.546875,
+    "overflow": false
+  },
+  {
+    "case": "vi-dark-1440",
+    "check": "login validation focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.631373 0.709804 0.623529 / 0.2) 0px 0px 0px 2px",
+    "width": 382,
+    "height": 58
+  },
+  {
+    "case": "vi-dark-1440",
+    "check": "login actual error/link contrast",
+    "pairs": [
+      {
+        "selector": ".auth-login form [role=alert]",
+        "ratio": 5.1994495728154595
+      },
+      {
+        "selector": ".auth-login form > p a",
+        "ratio": 5.674637515417681
+      }
+    ]
+  },
+  {
+    "case": "vi-dark-1440",
+    "check": "disabled/native focus/reduced motion",
+    "status": "pass"
+  },
+  {
+    "case": "en-light-820",
+    "check": "family search focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.321569 0.423529 0.34902 / 0.2) 0px 0px 0px 2px",
+    "width": 435.796875,
+    "height": 42
+  },
+  {
+    "case": "en-light-820",
+    "check": "map search focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.321569 0.423529 0.34902 / 0.2) 0px 0px 0px 2px",
+    "width": 238,
+    "height": 43.78125
+  },
+  {
+    "case": "en-light-820",
+    "check": "anniversary search focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.321569 0.423529 0.34902 / 0.2) 0px 0px 0px 2px",
+    "width": 700,
+    "height": 42
+  },
+  {
+    "case": "en-light-820",
+    "check": ".memory-form--timeline dialog bounds/focus trap",
+    "x": 20,
+    "y": 165,
+    "right": 800,
+    "bottom": 1015,
+    "overflow": false
+  },
+  {
+    "case": "en-light-820",
+    "check": "timeline form focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.321569 0.423529 0.34902 / 0.2) 0px 0px 0px 2px",
+    "width": 311,
+    "height": 58
+  },
+  {
+    "case": "en-light-820",
+    "check": "library filter focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.321569 0.423529 0.34902 / 0.2) 0px 0px 0px 2px",
+    "width": 220,
+    "height": 42
+  },
+  {
+    "case": "en-light-820",
+    "check": ".memory-lightbox dialog bounds/focus trap",
+    "x": 24,
+    "y": 100,
+    "right": 796,
+    "bottom": 1080,
+    "overflow": false
+  },
+  {
+    "case": "en-light-820",
+    "check": "register validation focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.321569 0.423529 0.34902 / 0.2) 0px 0px 0px 2px",
+    "width": 510,
+    "height": 58
+  },
+  {
+    "case": "en-light-820",
+    "check": ".auth-login dialog bounds/focus trap",
+    "x": 186,
+    "y": 275.453125,
+    "right": 634,
+    "bottom": 904.546875,
+    "overflow": false
+  },
+  {
+    "case": "en-light-820",
+    "check": "login validation focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.321569 0.423529 0.34902 / 0.2) 0px 0px 0px 2px",
+    "width": 382,
+    "height": 58
+  },
+  {
+    "case": "en-light-820",
+    "check": "login actual error/link contrast",
+    "pairs": [
+      {
+        "selector": ".auth-login form [role=alert]",
+        "ratio": 5.463821108467727
+      },
+      {
+        "selector": ".auth-login form > p a",
+        "ratio": 5.704190271057838
+      }
+    ]
+  },
+  {
+    "case": "en-light-820",
+    "check": "disabled/native focus/reduced motion",
+    "status": "pass"
+  },
+  {
+    "case": "en-dark-820",
+    "check": "family search focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.631373 0.709804 0.623529 / 0.2) 0px 0px 0px 2px",
+    "width": 435.796875,
+    "height": 42
+  },
+  {
+    "case": "en-dark-820",
+    "check": "map search focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.631373 0.709804 0.623529 / 0.2) 0px 0px 0px 2px",
+    "width": 238,
+    "height": 43.78125
+  },
+  {
+    "case": "en-dark-820",
+    "check": "anniversary search focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.631373 0.709804 0.623529 / 0.2) 0px 0px 0px 2px",
+    "width": 700,
+    "height": 42
+  },
+  {
+    "case": "en-dark-820",
+    "check": ".memory-form--timeline dialog bounds/focus trap",
+    "x": 20,
+    "y": 165,
+    "right": 800,
+    "bottom": 1015,
+    "overflow": false
+  },
+  {
+    "case": "en-dark-820",
+    "check": "timeline form focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.631373 0.709804 0.623529 / 0.2) 0px 0px 0px 2px",
+    "width": 311,
+    "height": 58
+  },
+  {
+    "case": "en-dark-820",
+    "check": "library filter focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.631373 0.709804 0.623529 / 0.2) 0px 0px 0px 2px",
+    "width": 220,
+    "height": 42
+  },
+  {
+    "case": "en-dark-820",
+    "check": ".memory-lightbox dialog bounds/focus trap",
+    "x": 24,
+    "y": 100,
+    "right": 796,
+    "bottom": 1080,
+    "overflow": false
+  },
+  {
+    "case": "en-dark-820",
+    "check": "register validation focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.631373 0.709804 0.623529 / 0.2) 0px 0px 0px 2px",
+    "width": 510,
+    "height": 58
+  },
+  {
+    "case": "en-dark-820",
+    "check": ".auth-login dialog bounds/focus trap",
+    "x": 186,
+    "y": 275.453125,
+    "right": 634,
+    "bottom": 904.546875,
+    "overflow": false
+  },
+  {
+    "case": "en-dark-820",
+    "check": "login validation focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.631373 0.709804 0.623529 / 0.2) 0px 0px 0px 2px",
+    "width": 382,
+    "height": 58
+  },
+  {
+    "case": "en-dark-820",
+    "check": "login actual error/link contrast",
+    "pairs": [
+      {
+        "selector": ".auth-login form [role=alert]",
+        "ratio": 5.1994495728154595
+      },
+      {
+        "selector": ".auth-login form > p a",
+        "ratio": 5.674637515417681
+      }
+    ]
+  },
+  {
+    "case": "en-dark-820",
+    "check": "disabled/native focus/reduced motion",
+    "status": "pass"
+  },
+  {
+    "case": "vi-light-390",
+    "check": "family search focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.321569 0.423529 0.34902 / 0.2) 0px 0px 0px 2px",
+    "width": 366,
+    "height": 42
+  },
+  {
+    "case": "vi-light-390",
+    "check": "map search focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.321569 0.423529 0.34902 / 0.2) 0px 0px 0px 2px",
+    "width": 332,
+    "height": 43.78125
+  },
+  {
+    "case": "vi-light-390",
+    "check": "anniversary search focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.321569 0.423529 0.34902 / 0.2) 0px 0px 0px 2px",
+    "width": 366,
+    "height": 42
+  },
+  {
+    "case": "vi-light-390",
+    "check": ".memory-form--timeline dialog bounds/focus trap",
+    "x": 12,
+    "y": 42.203125,
+    "right": 378,
+    "bottom": 801.796875,
+    "overflow": false
+  },
+  {
+    "case": "vi-light-390",
+    "check": "timeline form focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.321569 0.423529 0.34902 / 0.2) 0px 0px 0px 2px",
+    "width": 290,
+    "height": 58
+  },
+  {
+    "case": "vi-light-390",
+    "check": "library filter focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.321569 0.423529 0.34902 / 0.2) 0px 0px 0px 2px",
+    "width": 160,
+    "height": 42
+  },
+  {
+    "case": "vi-light-390",
+    "check": ".memory-lightbox dialog bounds/focus trap",
+    "x": 12,
+    "y": 12,
+    "right": 378,
+    "bottom": 832,
+    "overflow": false
+  },
+  {
+    "case": "vi-light-390",
+    "check": "register validation focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.321569 0.423529 0.34902 / 0.2) 0px 0px 0px 2px",
+    "width": 308,
+    "height": 58
+  },
+  {
+    "case": "vi-light-390",
+    "check": ".auth-login dialog bounds/focus trap",
+    "x": 12,
+    "y": 115.453125,
+    "right": 378,
+    "bottom": 728.546875,
+    "overflow": false
+  },
+  {
+    "case": "vi-light-390",
+    "check": "login validation focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.321569 0.423529 0.34902 / 0.2) 0px 0px 0px 2px",
+    "width": 316,
+    "height": 58
+  },
+  {
+    "case": "vi-light-390",
+    "check": "login actual error/link contrast",
+    "pairs": [
+      {
+        "selector": ".auth-login form [role=alert]",
+        "ratio": 5.463821108467727
+      },
+      {
+        "selector": ".auth-login form > p a",
+        "ratio": 5.704190271057838
+      }
+    ]
+  },
+  {
+    "case": "vi-light-390",
+    "check": "disabled/native focus/reduced motion",
+    "status": "pass"
+  },
+  {
+    "case": "vi-dark-390",
+    "check": "family search focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.631373 0.709804 0.623529 / 0.2) 0px 0px 0px 2px",
+    "width": 366,
+    "height": 42
+  },
+  {
+    "case": "vi-dark-390",
+    "check": "map search focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.631373 0.709804 0.623529 / 0.2) 0px 0px 0px 2px",
+    "width": 332,
+    "height": 43.78125
+  },
+  {
+    "case": "vi-dark-390",
+    "check": "anniversary search focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.631373 0.709804 0.623529 / 0.2) 0px 0px 0px 2px",
+    "width": 366,
+    "height": 42
+  },
+  {
+    "case": "vi-dark-390",
+    "check": ".memory-form--timeline dialog bounds/focus trap",
+    "x": 12,
+    "y": 42.203125,
+    "right": 378,
+    "bottom": 801.796875,
+    "overflow": false
+  },
+  {
+    "case": "vi-dark-390",
+    "check": "timeline form focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.631373 0.709804 0.623529 / 0.2) 0px 0px 0px 2px",
+    "width": 290,
+    "height": 58
+  },
+  {
+    "case": "vi-dark-390",
+    "check": "library filter focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.631373 0.709804 0.623529 / 0.2) 0px 0px 0px 2px",
+    "width": 160,
+    "height": 42
+  },
+  {
+    "case": "vi-dark-390",
+    "check": ".memory-lightbox dialog bounds/focus trap",
+    "x": 12,
+    "y": 12,
+    "right": 378,
+    "bottom": 832,
+    "overflow": false
+  },
+  {
+    "case": "vi-dark-390",
+    "check": "register validation focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.631373 0.709804 0.623529 / 0.2) 0px 0px 0px 2px",
+    "width": 308,
+    "height": 58
+  },
+  {
+    "case": "vi-dark-390",
+    "check": ".auth-login dialog bounds/focus trap",
+    "x": 12,
+    "y": 115.453125,
+    "right": 378,
+    "bottom": 728.546875,
+    "overflow": false
+  },
+  {
+    "case": "vi-dark-390",
+    "check": "login validation focus owner",
+    "outline": "none",
+    "border": "0px",
+    "shadow": "none",
+    "shellShadow": "color(srgb 0.631373 0.709804 0.623529 / 0.2) 0px 0px 0px 2px",
+    "width": 316,
+    "height": 58
+  },
+  {
+    "case": "vi-dark-390",
+    "check": "login actual error/link contrast",
+    "pairs": [
+      {
+        "selector": ".auth-login form [role=alert]",
+        "ratio": 5.1994495728154595
+      },
+      {
+        "selector": ".auth-login form > p a",
+        "ratio": 5.674637515417681
+      }
+    ]
+  },
+  {
+    "case": "vi-dark-390",
+    "check": "disabled/native focus/reduced motion",
+    "status": "pass"
+  },
+  {
+    "case": "light-390",
+    "check": "timeline loading",
+    "status": "pass"
+  },
+  {
+    "case": "light-390",
+    "check": "timeline empty",
+    "status": "pass"
+  },
+  {
+    "case": "light-390",
+    "check": "timeline error",
+    "status": "pass"
+  },
+  {
+    "case": "dark-390",
+    "check": "timeline loading",
+    "status": "pass"
+  },
+  {
+    "case": "dark-390",
+    "check": "timeline empty",
+    "status": "pass"
+  },
+  {
+    "case": "dark-390",
+    "check": "timeline error",
+    "status": "pass"
+  }
+]

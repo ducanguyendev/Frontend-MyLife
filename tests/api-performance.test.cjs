@@ -38,10 +38,10 @@ test('Anniversary Add/Edit share one abortable member request and subsequent ope
   assert.match(anniversaries, /if \(!request\)/);
   assert.match(anniversaries, /if \(members !== null\)/);
   assert.match(anniversaries, /membersController\.current\?\.abort\(\)/);
-  assert.match(anniversaries, /onClick=\{\(\) => void openEditor\(item\)\}/);
+  assert.match(anniversaries, /onClick:\(\) => void openEditor\(item\)/);
   assert.match(anniversaries, /onClick=\{\(\) => void openEditor\(null\)\}/);
   assert.match(anniversaries, /if \(loaded !== null && !membersController\.current\?\.signal\.aborted\)/);
   assert.match(anniversaries, /editing !== undefined && members !== null/);
-  assert.match(anniversaries, /onClick=\{\(\) => void confirmDelete\(\)\}/);
+  assert.match(anniversaries, /onConfirm=\{\(\) => void confirmDelete\(\)\}/);
   assert.doesNotMatch(anniversaries, /const (search|moveMonth|selectDay|clearDateFilter)[\s\S]{0,220}fetchFamilyMembers/);
 });

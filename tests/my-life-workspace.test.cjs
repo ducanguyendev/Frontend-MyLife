@@ -16,13 +16,15 @@ const modules = read('src/features/my-life/config/myLifeModules.ts');
 const header = read('src/shared/layouts/UserWorkspaceHeader.tsx');
 const userMenu = read('src/features/auth/components/UserMenu.tsx');
 
-test('shared workspace layout owns the viewport and routes optional module navigation to header and dock', () => {
-  assert.match(layout, /h-dvh min-h-0 flex-col overflow-hidden/);
-  assert.match(layout, /<UserWorkspaceHeader backTo=\{backTo\} showModuleNavigation=\{showDock\} \/>/);
-  assert.match(layout, /flex-1 flex-col/);
-  assert.match(layout, /overflow-y-auto overscroll-contain/);
-  assert.match(layout, /contentScroll === 'auto'/);
-  assert.match(layout, /showDock && <MyLifeDock \/>/);
+test('workspace delegates scrolling and content to the adopted AppShell', () => {
+  assert.match(layout, /<AppShell breadcrumbName=\{breadcrumbName\} contentScroll=\{contentScroll\} contentClassName=\{contentClassName\}>\{children\}/);
+  assert.doesNotMatch(layout, /<UserWorkspaceHeader|<MyLifeDock/);
+  const shell = read('src/shared/layouts/app-shell/AppShell.tsx');
+  const css = read('src/shared/layouts/app-shell/AppShell.css');
+  assert.match(shell, /id="app-content" tabIndex=\{-1\}/);
+  assert.match(shell, /contentScroll === 'hidden'/);
+  assert.match(css, /\.app-shell__content[^}]*overflow-y: auto/);
+  assert.match(css, /\.app-shell__content--hidden[^}]*overflow: hidden/);
 });
 
 test('Hub and all four module pages share the shell with the dock only on module pages', () => {
@@ -72,17 +74,17 @@ test('shared module nav exposes active, localized, keyboard, tooltip, focus, and
   assert.match(moduleNavCss, /transform 290ms ease/);
 });
 
-test('desktop header navigation and mobile dock are mutually exclusive at the xl breakpoint', () => {
-  assert.match(header, /showModuleNavigation\?: boolean/);
-  assert.match(header, /showModuleNavigation && <MyLifeModuleNav variant="header" \/>/);
-  assert.match(moduleNavCss, /@media \(min-width: 80rem\)[\s\S]*?mylife-module-nav--header\s*\{\s*display: flex/);
-  assert.match(dockCss, /@media \(min-width: 80rem\)[\s\S]*?mylife-dock-row\s*\{\s*display: none/);
-  assert.match(header, /xl:grid-cols-\[minmax\(0,1fr\)_auto_minmax\(0,1fr\)\]/);
-  assert.match(header, /xl:col-start-3/);
-  assert.match(userMenu, /max-w-\[180px\] truncate hidden lg:inline/);
-  assert.match(layout, /showDock && <MyLifeDock \/>/);
-  assert.match(read('src/features/my-life/pages/MyLifeHubPage.tsx'), /<MyLifeWorkspaceLayout backTo="\/Home"/);
-  assert.doesNotMatch(read('src/features/my-life/pages/MyLifeHubPage.tsx'), /showDock/);
+test('AppShell switches sidebar to drawer at the mobile breakpoint', () => {
+  const shell = read('src/shared/layouts/app-shell/AppShell.tsx');
+  const css = read('src/shared/layouts/app-shell/AppShell.css');
+  assert.match(shell, /<aside className="app-shell__sidebar">/);
+  assert.match(shell, /placement="drawer"/);
+  assert.match(shell, /onClick=\{\(\) => setDrawerOpen\(true\)\}/);
+  assert.match(css, /@media \(max-width: 767px\)[\s\S]*?\.app-shell__sidebar[^}]*display: none/);
+  assert.match(css, /\.app-shell__menu-toggle[^}]*display: inline-flex !important/);
+  assert.match(shell, /isUser &&/);
+  assert.match(shell, /isAdmin &&/);
+  assert.match(shell, /<UserMenu appearance="shell"/);
 });
 
 test('back navigation remains separate and UserMenu has no module links', () => {
@@ -92,29 +94,22 @@ test('back navigation remains separate and UserMenu has no module links', () => 
   assert.doesNotMatch(userMenu, /familytree|anniversaries|library|map/i);
 });
 
-test('module content has internal scroll sizing and existing API contracts remain present', () => {
+test('modules preserve shell scrolling and real API contracts', () => {
   const manager = read('src/features/admin/components/FamilyTreeManager.tsx');
   const anniversary = read('src/features/admin/components/family-tree/AnniversaryTab.tsx');
   const library = read('src/features/admin/components/family-tree/LibraryTab.tsx');
-  const map = read('src/features/admin/components/family-tree/FamilyMapTab.tsx');
-  const memberHook = read('src/features/admin/components/family-tree/useFamilyMembers.ts');
-
-  assert.match(manager, /min-h-0 flex-1 overflow-y-auto/);
-  assert.match(anniversary, /flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain/);
-  assert.match(anniversary, /overflow-y-auto overscroll-contain p-3[\s\S]*?xl:overflow-hidden/);
-  assert.match(anniversary, /flex-1 overflow-y-auto overscroll-contain p-3 custom-scrollbar/);
-  assert.match(library, /library-workspace flex min-h-0 flex-1 flex-col overflow-hidden/);
-  assert.match(library, /library-gallery[\s\S]*?min-h-0 flex-1 overflow-y-auto/);
-  assert.doesNotMatch(library, /flex min-h-0 flex-1 flex-col overflow-y-auto/);
-  assert.match(anniversariesPage, /contentScroll="hidden"/);
-  assert.match(anniversariesPage, /h-full min-h-0 flex-1 flex-col/);
-  assert.match(libraryPage, /contentScroll="hidden"/);
-  assert.doesNotMatch(libraryPage, /myLife\.modules\.library\.(title|description)/);
+  assert.match(manager, /family-manager__viewport min-h-0 flex-1[\s\S]*viewMode === "mindmap" \? "overflow-hidden" : "overflow-y-auto"/);
+  assert.match(anniversary, /memory-page memory-page--calendar/);
+  assert.match(library, /library-workspace memory-page memory-page--library/);
+  assert.match(anniversariesPage, /contentScroll="auto"/);
+  assert.match(libraryPage, /contentScroll="auto"/);
   assert.match(libraryPage, /<LibraryTab showToast=\{showToast\} \/>/);
-  assert.match(read('src/features/admin/services/familyMapService.ts'), /\/api\/family-tree\/map/);
-  assert.match(memberHook, /\/api\/family-tree/);
-  assert.match(read('src/features/admin/services/anniversaryService.ts'), /\/api\/family-tree\/anniversaries/);
-  assert.match(read('src/features/admin/services/libraryService.ts'), /\/api\/library/);
+  for (const [file, route] of [
+    ['familyMapService.ts', '/api/family-tree/map'],
+    ['anniversaryService.ts', '/api/family-tree/anniversaries'],
+    ['libraryService.ts', '/api/library'],
+  ]) assert.ok(read('src/features/admin/services/' + file).includes(route));
+  assert.match(read('src/features/admin/components/family-tree/useFamilyMembers.ts'), /\/api\/family-tree/);
 });
 
 test('workspace routes stay canonical and no source outside the frontend repo is referenced for edits', () => {

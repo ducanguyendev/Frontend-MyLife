@@ -97,7 +97,10 @@ test('modal and custom overlays share scroll locks; Select and action picker por
   const select = fs.readFileSync(path.join(root, 'src/shared/components/ui/Select.tsx'), 'utf8');
   const picker = fs.readFileSync(path.join(root, 'src/features/admin/components/family-tree/FamilyMemberPicker.tsx'), 'utf8');
   assert.ok(modal.includes('useBodyScrollLock(isOpen)'));
-  assert.ok(photo.includes('useBodyScrollLock(!!photo)'));
+  assert.match(photo, /LibraryLightbox as PhotoLightboxModal/);
+  const lightbox = fs.readFileSync(path.join(root, 'src/features/my-life/components/memories/LibraryLightbox.tsx'), 'utf8');
+  assert.match(lightbox, /if \(!photo\) return null/);
+  assert.match(lightbox, /<Modal isOpen onClose=\{onClose\}/);
   assert.ok(project.includes('useBodyScrollLock(isOpen)'));
   assert.ok(select.includes('SelectPrimitive.Portal'));
   assert.ok(select.includes('position="popper"'));

@@ -38,7 +38,11 @@
     "test:family-tree": "node --test tests/family-tree-adapter.test.cjs tests/family-tree-view.test.cjs",
     "test:memoir-tree": "node --test tests/memoir-tree-adapter.test.cjs",
     "test:shadcn-family-tree": "node --test tests/shadcn-family-tree-adapter.test.cjs tests/shadcn-family-tree-layout.test.cjs tests/shadcn-family-tree-branch.test.cjs",
-    "test:address-input": "node --test tests/address-input.test.cjs"
+    "test:address-input": "node --test tests/address-input.test.cjs",
+    "test:regression": "node scripts/run-regression.cjs",
+    "test:browser:smoke": "node scripts/run-browser-qa.cjs --smoke",
+    "test:browser:qa": "node scripts/run-browser-qa.cjs",
+    "test:integration": "node scripts/run-isolated-integration.cjs"
   },
   "dependencies": {
     "@memoir/tree": "^0.8.0",
@@ -73,6 +77,7 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.3",
     "globals": "^17.7.0",
+    "puppeteer": "25.11.0",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.62.0",
     "vite": "^8.1.1"

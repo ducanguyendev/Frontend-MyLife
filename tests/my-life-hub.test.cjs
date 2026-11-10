@@ -52,7 +52,7 @@ test('hub renders five configured real modules with semantic route links', () =>
   assert.match(card, /<Link[\s\S]*to=\{module\.route\}/);
   assert.match(globalStyles, /:where\(button, \[tabindex\], input, select, textarea\)[\s\S]*?:focus-visible/);
   assert.match(globalStyles, /box-shadow: inset 0 0 0 1px var\(--focus-border\)/);
-  assert.match(hubCss, /--mylife-motion-normal:\s*260ms/);
+  assert.match(hubCss, /--mylife-motion-normal:\s*var\(--motion-normal\)/);
   assert.match(hubCss, /:focus-visible/);
   assert.doesNotMatch(modules, /Finance|Tasks|Goals/);
 });
@@ -144,10 +144,11 @@ test('UserMenu contains account actions but no personal module links', () => {
   assert.doesNotMatch(userMenu, /FamilyTree|family_tree|Network|isUser/);
 });
 
-test('all workspace pages share a single ArrowLeft-only header with explicit parents', () => {
+test('all workspace pages share the adopted AppShell and canonical route parents', () => {
   assert.match(workspaceHeader, /ArrowLeft/);
   assert.doesNotMatch(workspaceHeader, /\bHome\b|<Home/);
-  assert.match(workspaceLayout, /<UserWorkspaceHeader backTo=\{backTo\} showModuleNavigation=\{showDock\} \/>/);
+  assert.match(workspaceLayout, /<AppShell breadcrumbName=\{breadcrumbName\} contentScroll=\{contentScroll\}/);
+  assert.doesNotMatch(workspaceLayout, /<UserWorkspaceHeader|<MyLifeDock/);
   assert.match(hub, /<MyLifeWorkspaceLayout backTo="\/Home"/);
   assert.match(familyTreePage, /<MyLifeWorkspaceLayout backTo="\/mylife"/);
   for (const file of ['AnniversariesPage.tsx', 'LibraryPage.tsx']) {
@@ -189,9 +190,9 @@ test('module and page translations exist in Vietnamese and English; shared contr
       assert.ok(messages.modules[module].open);
     }
   }
-  assert.match(workspaceHeader, /<ThemeSwitch \/>/);
-  assert.match(workspaceHeader, /<LanguageSwitcher \/>/);
+  assert.match(userMenu, /<AppearanceLanguageModal\b/);
+  assert.match(read('src/shared/components/preferences/PreferenceControls.tsx'), /<LanguageOptionList\s*\/>/);
   assert.match(workspaceHeader, /<UserMenu/);
   assert.match(read('src/shared/components/ThemeSwitch.css'), /width: 64px;[\s\S]*?height: 40px;/);
-  assert.match(read('src/shared/components/LanguageSwitcher.tsx'), /h-10 w-10 items-center justify-center/);
+  assert.match(read('src/shared/components/LanguageSwitcher.tsx'), /<LanguageButton\s*\/>/);
 });

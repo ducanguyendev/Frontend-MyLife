@@ -32,7 +32,7 @@ test('desktop form order matches the two-column reading order and validation sti
   assert.match(form, /admin\.member_avatar_errors\.invalid_file/);
 });
 
-test('form sibling chips contain an avatar and name with the original remove permissions', () => {
+test('form sibling chips show avatar/name and allow removing explicit relations only', () => {
   const start = form.indexOf('{siblings.map(({ member: sibling, kind }) => (');
   const end = form.indexOf('</span>\n                        ))}', start);
   assert.ok(start >= 0 && end > start);
@@ -41,7 +41,8 @@ test('form sibling chips contain an avatar and name with the original remove per
   assert.doesNotMatch(chip, /admin\.generation_label|sibling\.generation/);
   assert.match(chip, /MemberAvatarImage/);
   assert.doesNotMatch(chip, /getSiblingDisplayLabelKey|getSiblingSeniority|sibling_(?:biological|cousin)_/);
-  assert.match(chip, /kind === "cousin" &&/);
+  assert.match(chip, /kind !== "biological" &&/);
+  assert.match(chip, /handleRemoveSibling\(sibling\.id\)/);
   assert.match(details, /getSiblingDisplayLabelKey/);
   assert.match(details, /getSiblingKind/);
 });

@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const puppeteer = require('../scratch_puppeteer/node_modules/puppeteer');
+const puppeteer = require('puppeteer');
 const { adminPage, tab, directory, deferred } = require('./helpers/admin-browser.cjs');
 
 async function main() {

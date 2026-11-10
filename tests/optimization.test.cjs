@@ -3,10 +3,11 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs'); const { join } = require('node:path'); const vm = require('node:vm'); const ts = require('typescript');
 const read = file => fs.readFileSync(join(__dirname, '..', file), 'utf8');
 function load(file, mocks = {}, globals = {}) {
+  mocks = { ...require('./helpers/current-ui-mocks.cjs'), ...mocks };
   const { outputText } = ts.transpileModule(read(file), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true } });
   const exports = {}; new vm.Script(outputText, { filename: file }).runInNewContext({ exports, require: name => { assert.ok(name in mocks, name); return mocks[name]; }, AbortController, ...globals }); return exports;
 }
-const types = load('src/features/admin/components/family-tree/types.ts');
+const types = load('src/features/admin/components/family-tree/types.ts', { './generationCardThemes': load('src/features/admin/components/family-tree/generationCardThemes.ts') });
 const search = load('src/features/admin/components/family-tree/memberSearch.ts', { './types': types });
 const messages = load('src/features/admin/services/featureMessages.ts');
 const fixture = { id: 1, fullName: 'Nguyễn Văn An', role: 'Trưởng tộc', phoneNumber: '0901234567', address: 'Hồ Chí Minh', generation: 3 };
@@ -22,12 +23,12 @@ test('actual member filter supports four fields, Vietnamese accents, case, trim 
 });
 function harness() {
   let cursor = 0; const state = []; const effects = []; const cleanups = [];
-  const hooks = { useState(initial) { const at = cursor++; if (!(at in state)) state[at] = typeof initial === 'function' ? initial() : initial; return [state[at], next => { state[at] = typeof next === 'function' ? next(state[at]) : next; }]; },
+  const hooks = { useRef: value => ({ current: value }), useId: () => 'test-field', useState(initial) { const at = cursor++; if (!(at in state)) state[at] = typeof initial === 'function' ? initial() : initial; return [state[at], next => { state[at] = typeof next === 'function' ? next(state[at]) : next; }]; },
     useEffect: effect => effects.push(effect), useCallback: fn => fn, useMemo: fn => fn(), lazy: () => 'Mindmap', Suspense: 'Suspense' };
   const jsx = (type, props) => ({ type, props });
   return { hooks, jsx, render(Component, props) { cursor = 0; return Component(props); }, mount() { effects.splice(0).forEach(effect => cleanups.push(effect())); }, unmount() { cleanups.forEach(fn => fn?.()); } };
 }
-function nodes(tree) { if (!tree || typeof tree !== 'object') return []; if (Array.isArray(tree)) return tree.flatMap(nodes); return [tree, ...nodes(tree.props?.children)]; }
+function nodes(tree) { if (!tree || typeof tree !== 'object') return []; if (Array.isArray(tree)) return tree.flatMap(nodes); return [tree, ...nodes(tree.props?.children), ...nodes(tree.props?.actions), ...nodes(tree.props?.action)]; }
 const find = (tree, predicate) => { const node = nodes(tree).find(predicate); assert.ok(node); return node.props; };
 const flush = () => new Promise(resolve => setImmediate(resolve));
 function familySetup(request) {
@@ -39,7 +40,8 @@ function familySetup(request) {
   });
   const { FamilyTreeManager } = load('src/features/admin/components/FamilyTreeManager.tsx', {
     react: { ...h.hooks, default: h.hooks }, 'react/jsx-runtime': { jsx: h.jsx, jsxs: h.jsx }, 'lucide-react': new Proxy({}, { get: (_, key) => key }),
-    '@/shared/hooks/useLanguage': { useLanguage: () => ({ t: key => key }) }, '@/shared/components/ui': { Button: 'Button' },
+    '@/shared/hooks/useLanguage': { useLanguage: () => ({ t: key => key }) }, '@/shared/components/ui': { Button: 'Button', Select: 'Select', SelectItem: 'SelectItem', PageHeader: 'PageHeader', SegmentedControl: 'SegmentedControl', ErrorState: 'ErrorState', EmptyState: 'EmptyState' },
+    'react-router-dom': { useLocation: () => ({ state: null }), useNavigate: () => () => {} },
     '@/shared/components/SearchBar': { SearchBar: 'SearchBar' },
     '@/shared/api/apiClient': { apiClient }, '../services/featureMessages': messages,
     './family-tree/memberSearch': search, './family-tree': Object.fromEntries(names.map(name => [name,name])),
@@ -52,11 +54,11 @@ function familySetup(request) {
 }
 test('API error differs from empty and Retry refetches without reloading the browser', async () => {
   let calls = 0; const s = familySetup(async () => { calls++; return new Response(JSON.stringify(calls === 1 ? { code: 'FAMILY_VALIDATION_FAILED' } : { data: [] }), { status: calls === 1 ? 503 : 200 }); });
-  await flush(); const error = find(s.render(), n => n.props?.role === 'alert');
-  assert.ok(nodes({ props: error }).some(n => n.props?.children === 'admin.member_errors.validation'));
-  assert.ok(!nodes(s.render()).some(n => n.props?.children === 'admin.tree_empty'));
+  await flush(); const error = find(s.render(), n => n.type === 'ErrorState');
+  assert.equal(error.message, 'admin.member_errors.validation');
+  assert.ok(!nodes(s.render()).some(n => n.props?.title === 'admin.tree_empty'));
   find(s.render(), n => n.type === 'Button' && n.props.children === 'admin.library_ui.retry').onClick(); await flush();
-  assert.equal(calls, 2); assert.ok(nodes(s.render()).some(n => n.props?.children === 'admin.tree_empty'));
+  assert.equal(calls, 2); assert.ok(nodes(s.render()).some(n => n.type === 'EmptyState' && n.props.title === 'family.emptyTitle'));
   assert.ok(nodes(s.render()).some(n => n.type === 'Button' && n.props.children === 'admin.add_member')); assert.deepEqual(s.toast, []);
 });
 test('initial FamilyTree fetch carries AbortSignal and cancellation ignores a late response', async () => {
@@ -67,12 +69,14 @@ test('initial FamilyTree fetch carries AbortSignal and cancellation ignores a la
 });
 test('member view controls retain grid/table/mindmap and family module tabs are removed', async () => {
   const s = familySetup(async () => new Response(JSON.stringify({ data: [fixture] }))); await flush();
+  assert.equal(find(s.render(), n => n.type === 'SegmentedControl').value, 'mindmap');
+  find(s.render(), n => n.type === 'SegmentedControl').onChange('grid');
   const initial = s.render();
   assert.ok(nodes(initial).some(node => node.type === 'MemberCard'));
   assert.ok(!nodes(initial).some(node => node.props?.role === 'tablist' || node.props?.role === 'tab'));
-  find(initial, n => n.type === 'button' && n.props?.['aria-label'] === 'admin.view_table').onClick();
+  find(initial, n => n.type === 'SegmentedControl').onChange('table');
   assert.ok(nodes(s.render()).some(node => node.type === 'MemberTable'));
-  find(s.render(), n => n.type === 'button' && n.props?.['aria-label'] === 'admin.view_mindmap').onClick();
+  find(s.render(), n => n.type === 'SegmentedControl').onChange('mindmap');
   assert.ok(nodes(s.render()).some(node => node.type === 'Mindmap'));
 });test('gallery thumbnails use the authenticated MyLife image endpoint and original opens Drive view', () => {
   const h = harness(); const images = load('src/features/admin/components/family-tree/LibraryImage.tsx', {

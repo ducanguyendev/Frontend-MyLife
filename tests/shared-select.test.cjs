@@ -73,5 +73,9 @@ test('standard forms use shared selects; compact appearance utilities and the de
   });
   const source = collect('src');
   const nativeTags = source.filter(file => /<(?:select|option)\b/.test(file.content)).map(file => file.path);
-  assert.deepEqual(nativeTags.map(file => file.replaceAll('\\','/')).sort(), ['src/design-system/pages/DesignSystemPage.tsx','src/shared/components/AppearanceControls.tsx']);
+  assert.deepEqual(nativeTags.map(file => file.replaceAll('\\','/')).sort(), ['src/design-system/pages/DesignSystemPage.tsx']);
+  const preferences = read('src/shared/components/preferences/PreferenceControls.tsx');
+  assert.match(preferences, /@radix-ui\/react-select/);
+  assert.match(preferences, /<Select\.Trigger/);
+  assert.match(preferences, /<Select\.Item/);
 });

@@ -1,5 +1,5 @@
 import { FormSectionHeader } from '@/shared/components/ui/FormSectionHeader';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { AlignLeft, CalendarClock, FileText } from 'lucide-react';
 import { Button, DateInput, formatBackendToDob, formatDobToBackend, Input, Modal, Select, SelectItem, Textarea } from '@/shared/components/ui';
 import { useLanguage } from '@/shared/hooks/useLanguage';
@@ -29,7 +29,7 @@ export const TimelineEventModal: React.FC<TimelineEventModalProps> = ({ isOpen, 
   const title = t(editing ? 'admin.family_v2.edit_event' : 'admin.family_v2.add_event');
   const memberName = useMemo(() => members.find(member => member.id === form.memberId)?.fullName, [form.memberId, members]);
   const relatedName = useMemo(() => members.find(member => member.id === form.relatedMemberId)?.fullName, [form.relatedMemberId, members]);
-  const update = (patch: Partial<FamilyTimelineWrite>) => onChange({ ...form, ...patch });
+  const update = useCallback((patch: Partial<FamilyTimelineWrite>) => onChange({ ...form, ...patch }), [form, onChange]);
   const type = form.eventType as EventType;
   const legacyEventType = editing && !EVENT_TYPES.includes(form.eventType as CreatableTimelineEventType) ? form.eventType : null;
   const eventTypeHelp = legacyEventType
@@ -41,7 +41,7 @@ export const TimelineEventModal: React.FC<TimelineEventModalProps> = ({ isOpen, 
       const suggested = buildTimelineEventSuggestedTitle(type, memberName, relatedName);
       if (suggested && suggested !== form.title) update({ title: suggested });
     }
-  }, [type, memberName, relatedName, titleTouched]);
+  }, [type, memberName, relatedName, titleTouched, form.title, update]);
 
   const personSelect = (field: 'memberId' | 'relatedMemberId', label: string, optional = false) => (
     <Select label={label} floatingLabel appearance="simple" value={form[field] === null ? 'none' : String(form[field])} disabled={saving} aria-label={label}

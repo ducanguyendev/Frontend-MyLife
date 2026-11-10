@@ -1,9 +1,9 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const puppeteer = require('../scratch_puppeteer/node_modules/puppeteer');
+const puppeteer = require('puppeteer');
 const { createReviewPage, ready } = require('./helpers/global-polish-browser.cjs');
-const output = path.resolve('docs/review-w9/touch');
+const output = path.resolve(process.env.MYLIFE_REVIEW_DIR || 'docs/review-w9/touch');
 
 async function main() {
   fs.mkdirSync(output, { recursive: true });
@@ -26,6 +26,12 @@ async function main() {
       assert.ok(targets.length > 0);
       assert.ok(targets.some(target => target.icon));
       assert.ok(targets.every(target => target.height >= 44 && (!target.icon || target.width >= 44)), 'Shared buttons meet touch sizing');
+      await page.tap('.app-shell__menu-toggle');
+      await ready(page, '.ds-drawer');
+      assert.equal(await page.$eval('.ds-drawer', el => el.contains(document.activeElement)), true);
+      await page.tap('.ds-drawer a[href="/timeline"]');
+      await ready(page, '.timeline-event');
+      await page.waitForFunction(() => !document.querySelector('.ds-drawer'));
       state.anonymous = true;
       await go('/');
       await ready(page, '.mylife-landing');
@@ -41,7 +47,7 @@ async function main() {
       await page.waitForFunction(() => !document.querySelector('.auth-login'));
       assert.deepEqual(state.errors, []);
       assert.ok(state.writes.every(write => ['/api/refresh-token', '/api/logout'].includes(write.route)));
-      results.push({ theme, width: 390, coarsePointer: true, targets, loginTapValidationAndClose: true });
+      results.push({ theme, width: 390, coarsePointer: true, targets, mobileDrawerNavigation: true, loginTapValidationAndClose: true });
       console.log('PASS: touch controls and login', theme);
       await page.close();
     }

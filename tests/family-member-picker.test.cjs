@@ -34,11 +34,11 @@ test('children add/remove and siblings use action pickers while keeping collecti
   assert.match(form, /childIds: \[\.\.\.current, childId\]/);
   assert.match(form, /childIds: current\.filter\(\(id\) => id !== childId\)/);
   assert.match(form, /horizontalRelations: \[\.\.\.current, \{ memberId: siblingId, relationType: "sibling" \}\]/);
-  assert.match(form, /current\.filter\(\(r\) => !\(r\.memberId === siblingId && r\.relationType\?\.trim\(\)\.toLowerCase\(\) === "sibling"\)\)/);
+  assert.match(form, /current\.filter\(\(r\) => !\(r\.memberId === siblingId && \['sibling', 'cousin'\]\.includes\(r\.relationType\?\.trim\(\)\.toLowerCase\(\)\)\)\)/);
   assert.match(form, /siblings\.length\} \{t\("admin\.siblings_count"/);
   assert.match(form, /!selectedSiblingIds\.has\(m\.id\)/);
   assert.match(form, /getSiblingKind\(editingMember as FamilyMember, member\)/);
-  assert.match(form, /kind === "cousin" &&/);
+  assert.match(form, /kind !== "biological" &&/);
   assert.doesNotMatch(form, /select_children_placeholder|select_cousin_sibling|siblings_biological_group|siblings_cousin_group/);
   assert.match(details, /getSiblingKind\(member, m\)/);
 });

@@ -50,6 +50,9 @@ function loadTable() {
         removeVietnameseTones: value => value,
       };
       if (name === './MemberAvatarImage') return { MemberAvatarImage: 'MemberAvatarImage' };
+      if (name === '@/shared/utils/normalizeDisplayText') return { normalizeDisplayText: value => value };
+      if (name === '@/shared/components/ui') return { Button: 'Button' };
+      if (name === '@/design-system/components/TableShell') return { TableShell: 'TableShell' };
       throw new Error(`Unexpected import ${name}`);
     },
     document: { body: {} },

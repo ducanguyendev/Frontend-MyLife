@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
-const puppeteer=require('../scratch_puppeteer/node_modules/puppeteer');
+const puppeteer=require('puppeteer');
 const{adminPage,tab,choose,replace,directory}=require('./helpers/admin-browser.cjs');
 const vi=require('../src/shared/locales/vi/admin.json').console,en=require('../src/shared/locales/en/admin.json').console;
 async function main(){

@@ -1,11 +1,11 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const puppeteer = require('../scratch_puppeteer/node_modules/puppeteer');
+const puppeteer = require('puppeteer');
 const { createReviewPage, ready } = require('./helpers/global-polish-browser.cjs');
 const before = process.argv.includes('--before');
 const authOnly = process.argv.includes('--auth-only');
-const artifacts = path.resolve('docs/review-w9', before ? 'before' : authOnly ? 'after-auth' : 'after');
+const artifacts = path.resolve(process.env.MYLIFE_REVIEW_DIR || 'docs/review-w9', before ? 'before' : authOnly ? 'after-auth' : 'after');
 const typography = ['.app-nav__link', '.app-nav__sub-link', '.ds-page-header__description', '.admin-kpi__label', '.admin-recent-copy time', '.admin-log-summary dt', '.admin-cell-label', '.timeline-event__date', '.memory-album__copy > small', '.family-map-location__body > strong', '.family-gallery-card__role', '.user-profile__metadata-row'];
 async function inspect(page) {
   return page.evaluate(selectors => {

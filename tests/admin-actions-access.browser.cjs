@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
-const puppeteer=require('../scratch_puppeteer/node_modules/puppeteer');
+const puppeteer=require('puppeteer');
 const{adminPage,tab,choose,directory,deferred}=require('./helpers/admin-browser.cjs');
 const labels=require('../src/shared/locales/vi/admin.json').console;
 const row=id=>`[data-admin-user="${id}"]`;

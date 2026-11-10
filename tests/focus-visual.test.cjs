@@ -6,13 +6,15 @@ const path = require('node:path');
 const srcDir = path.join(__dirname, '..', 'src');
 const read = (relativePath) => fs.readFileSync(path.join(srcDir, relativePath), 'utf8');
 
-test('global focus tokens stay neutral across light and dark themes', () => {
+test('global focus delegates semantic colors to W9 theme tokens', () => {
   const css = read('index.css');
-  assert.match(css, /--focus-border:\s*#a1a1aa/);
-  assert.match(css, /--focus-border:\s*#71717a/);
+  const tokens = read('design-system/tokens/tokens.css');
+  assert.match(tokens, /--focus-border:\s*var\(--brand-primary\)/);
+  assert.match(tokens, /--field-focus-border:\s*var\(--brand-primary\)/);
+  assert.match(tokens, /\.dark[\s\S]*--brand-primary:/);
   assert.match(css, /box-shadow:\s*inset 0 0 0 1px var\(--focus-border\)/);
   assert.doesNotMatch(css, /outline:\s*2px solid var\(--color-accent/);
-  assert.doesNotMatch(css, /outline-offset:\s*3px/);
+  assert.match(css, /:focus-visible/);
 });
 
 test('shared fields and FamilyRelationSelect avoid hard focus rings', () => {
@@ -23,16 +25,20 @@ test('shared fields and FamilyRelationSelect avoid hard focus rings', () => {
   ].map(read).join('\n');
   assert.doesNotMatch(source, /focus(?:-visible)?:ring-/);
   assert.doesNotMatch(source, /focus-visible:outline-(?:\d+|offset-)/);
-  assert.match(source, /focus(?:-visible)?:border-\[var\(--focus-border\)\]/);
+  const forms = read('design-system/forms.css');
+  assert.match(forms, /\[data-field-shell\]:not\(\[data-disabled\]\):focus-within/);
+  assert.match(forms, /box-shadow:0 0 0 2px var\(--field-focus-ring\)/);
+  assert.match(forms, /\[data-ui-control\][^{]*\{[^}]*outline:none/);
 });
 
 test('shared field shells use the focus token while preserving error borders', () => {
   for (const file of ['shared/components/ui/Input.tsx', 'shared/components/ui/Textarea.tsx']) {
     const source = read(file);
-    assert.match(source, /border-\[var\(--focus-border\)\]/);
-    assert.match(source, /border-error/);
+    assert.match(source, /<FloatingField[\s\S]*error=\{error\}/);
+    assert.match(source, /aria-invalid=/);
     assert.doesNotMatch(source, /ring-[12] ring-(?:accent|error)/);
   }
+  assert.match(read('design-system/forms.css'), /\.ds-field\[data-error\]\s*\{[^}]*border-color:var\(--field-error\)/);
 });
 
 test('theme switch and module navigation replace external outlines with subtle focus cues', () => {
