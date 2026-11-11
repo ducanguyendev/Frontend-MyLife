@@ -1,0 +1,815 @@
+{
+  "report": [
+    {
+      "theme": "light",
+      "width": 1366,
+      "height": 768,
+      "states": true,
+      "keyboard": true,
+      "portalBounds": true,
+      "relationIds": true,
+      "overflow": false,
+      "geometry": {
+        "overflow": false,
+        "fields": [
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Họ và tên*"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Họ và tên đã nhập"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Tìm thành viên"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Mật khẩu"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Thế hệ"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Ngày sinh"
+          },
+          {
+            "height": 114,
+            "density": "default",
+            "label": "Tiểu sử"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Họ và tên lỗi*"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Không khả dụng"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Chỉ đọc"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Cha"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Chọn con cái"
+          },
+          {
+            "height": 42,
+            "density": "compact"
+          }
+        ],
+        "font": "Inter, \"Segoe UI\", system-ui, -apple-system, \"Noto Sans\", Arial, sans-serif"
+      }
+    },
+    {
+      "theme": "light",
+      "width": 1440,
+      "height": 900,
+      "states": true,
+      "keyboard": true,
+      "portalBounds": true,
+      "relationIds": true,
+      "overflow": false,
+      "geometry": {
+        "overflow": false,
+        "fields": [
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Họ và tên*"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Họ và tên đã nhập"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Tìm thành viên"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Mật khẩu"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Thế hệ"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Ngày sinh"
+          },
+          {
+            "height": 114,
+            "density": "default",
+            "label": "Tiểu sử"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Họ và tên lỗi*"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Không khả dụng"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Chỉ đọc"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Cha"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Chọn con cái"
+          },
+          {
+            "height": 42,
+            "density": "compact"
+          }
+        ],
+        "font": "Inter, \"Segoe UI\", system-ui, -apple-system, \"Noto Sans\", Arial, sans-serif"
+      }
+    },
+    {
+      "theme": "light",
+      "width": 1920,
+      "height": 1080,
+      "states": true,
+      "keyboard": true,
+      "portalBounds": true,
+      "relationIds": true,
+      "overflow": false,
+      "geometry": {
+        "overflow": false,
+        "fields": [
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Họ và tên*"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Họ và tên đã nhập"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Tìm thành viên"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Mật khẩu"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Thế hệ"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Ngày sinh"
+          },
+          {
+            "height": 114,
+            "density": "default",
+            "label": "Tiểu sử"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Họ và tên lỗi*"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Không khả dụng"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Chỉ đọc"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Cha"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Chọn con cái"
+          },
+          {
+            "height": 42,
+            "density": "compact"
+          }
+        ],
+        "font": "Inter, \"Segoe UI\", system-ui, -apple-system, \"Noto Sans\", Arial, sans-serif"
+      }
+    },
+    {
+      "theme": "light",
+      "width": 820,
+      "height": 1180,
+      "states": true,
+      "keyboard": true,
+      "portalBounds": true,
+      "relationIds": true,
+      "overflow": false,
+      "geometry": {
+        "overflow": false,
+        "fields": [
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Họ và tên*"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Họ và tên đã nhập"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Tìm thành viên"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Mật khẩu"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Thế hệ"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Ngày sinh"
+          },
+          {
+            "height": 114,
+            "density": "default",
+            "label": "Tiểu sử"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Họ và tên lỗi*"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Không khả dụng"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Chỉ đọc"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Cha"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Chọn con cái"
+          },
+          {
+            "height": 42,
+            "density": "compact"
+          }
+        ],
+        "font": "Inter, \"Segoe UI\", system-ui, -apple-system, \"Noto Sans\", Arial, sans-serif"
+      }
+    },
+    {
+      "theme": "light",
+      "width": 390,
+      "height": 844,
+      "states": true,
+      "keyboard": true,
+      "portalBounds": true,
+      "relationIds": true,
+      "overflow": false,
+      "geometry": {
+        "overflow": false,
+        "fields": [
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Họ và tên*"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Họ và tên đã nhập"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Tìm thành viên"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Mật khẩu"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Thế hệ"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Ngày sinh"
+          },
+          {
+            "height": 114,
+            "density": "default",
+            "label": "Tiểu sử"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Họ và tên lỗi*"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Không khả dụng"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Chỉ đọc"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Cha"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Chọn con cái"
+          },
+          {
+            "height": 42,
+            "density": "compact"
+          }
+        ],
+        "font": "Inter, \"Segoe UI\", system-ui, -apple-system, \"Noto Sans\", Arial, sans-serif"
+      }
+    },
+    {
+      "theme": "dark",
+      "width": 1366,
+      "height": 768,
+      "states": true,
+      "keyboard": true,
+      "portalBounds": true,
+      "relationIds": true,
+      "overflow": false,
+      "geometry": {
+        "overflow": false,
+        "fields": [
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Họ và tên*"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Họ và tên đã nhập"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Tìm thành viên"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Mật khẩu"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Thế hệ"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Ngày sinh"
+          },
+          {
+            "height": 114,
+            "density": "default",
+            "label": "Tiểu sử"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Họ và tên lỗi*"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Không khả dụng"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Chỉ đọc"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Cha"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Chọn con cái"
+          },
+          {
+            "height": 42,
+            "density": "compact"
+          }
+        ],
+        "font": "Inter, \"Segoe UI\", system-ui, -apple-system, \"Noto Sans\", Arial, sans-serif"
+      }
+    },
+    {
+      "theme": "dark",
+      "width": 1440,
+      "height": 900,
+      "states": true,
+      "keyboard": true,
+      "portalBounds": true,
+      "relationIds": true,
+      "overflow": false,
+      "geometry": {
+        "overflow": false,
+        "fields": [
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Họ và tên*"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Họ và tên đã nhập"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Tìm thành viên"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Mật khẩu"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Thế hệ"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Ngày sinh"
+          },
+          {
+            "height": 114,
+            "density": "default",
+            "label": "Tiểu sử"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Họ và tên lỗi*"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Không khả dụng"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Chỉ đọc"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Cha"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Chọn con cái"
+          },
+          {
+            "height": 42,
+            "density": "compact"
+          }
+        ],
+        "font": "Inter, \"Segoe UI\", system-ui, -apple-system, \"Noto Sans\", Arial, sans-serif"
+      }
+    },
+    {
+      "theme": "dark",
+      "width": 1920,
+      "height": 1080,
+      "states": true,
+      "keyboard": true,
+      "portalBounds": true,
+      "relationIds": true,
+      "overflow": false,
+      "geometry": {
+        "overflow": false,
+        "fields": [
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Họ và tên*"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Họ và tên đã nhập"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Tìm thành viên"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Mật khẩu"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Thế hệ"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Ngày sinh"
+          },
+          {
+            "height": 114,
+            "density": "default",
+            "label": "Tiểu sử"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Họ và tên lỗi*"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Không khả dụng"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Chỉ đọc"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Cha"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Chọn con cái"
+          },
+          {
+            "height": 42,
+            "density": "compact"
+          }
+        ],
+        "font": "Inter, \"Segoe UI\", system-ui, -apple-system, \"Noto Sans\", Arial, sans-serif"
+      }
+    },
+    {
+      "theme": "dark",
+      "width": 820,
+      "height": 1180,
+      "states": true,
+      "keyboard": true,
+      "portalBounds": true,
+      "relationIds": true,
+      "overflow": false,
+      "geometry": {
+        "overflow": false,
+        "fields": [
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Họ và tên*"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Họ và tên đã nhập"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Tìm thành viên"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Mật khẩu"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Thế hệ"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Ngày sinh"
+          },
+          {
+            "height": 114,
+            "density": "default",
+            "label": "Tiểu sử"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Họ và tên lỗi*"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Không khả dụng"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Chỉ đọc"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Cha"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Chọn con cái"
+          },
+          {
+            "height": 42,
+            "density": "compact"
+          }
+        ],
+        "font": "Inter, \"Segoe UI\", system-ui, -apple-system, \"Noto Sans\", Arial, sans-serif"
+      }
+    },
+    {
+      "theme": "dark",
+      "width": 390,
+      "height": 844,
+      "states": true,
+      "keyboard": true,
+      "portalBounds": true,
+      "relationIds": true,
+      "overflow": false,
+      "geometry": {
+        "overflow": false,
+        "fields": [
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Họ và tên*"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Họ và tên đã nhập"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Tìm thành viên"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Mật khẩu"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Thế hệ"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Ngày sinh"
+          },
+          {
+            "height": 114,
+            "density": "default",
+            "label": "Tiểu sử"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Họ và tên lỗi*"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Không khả dụng"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Chỉ đọc"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Cha"
+          },
+          {
+            "height": 58,
+            "density": "default",
+            "label": "Chọn con cái"
+          },
+          {
+            "height": 42,
+            "density": "compact"
+          }
+        ],
+        "font": "Inter, \"Segoe UI\", system-ui, -apple-system, \"Noto Sans\", Arial, sans-serif"
+      }
+    }
+  ],
+  "fonts": {
+    "fonts": [
+      {
+        "familyName": "Inter Variable",
+        "postScriptName": "InterVariable-Text",
+        "isCustomFont": true,
+        "glyphCount": 63
+      }
+    ]
+  },
+  "errors": []
+}

@@ -1,0 +1,139 @@
+import { normalizeDisplayText } from '@/shared/utils/normalizeDisplayText';
+import React, { useEffect, useState } from "react";
+import { ArrowLeft, Plus, Pencil, Trash2, Upload } from "lucide-react";
+import { useLanguage } from "@/shared/hooks/useLanguage";
+import { Button, Select, SelectItem, PageHeader, ErrorState, EmptyState, ConfirmDialog, InlineError } from "@/shared/components/ui";
+import { featureSuccessKeys, getFeatureErrorKey } from '../../services/featureMessages';
+import { libraryService, type LibraryAlbum, type LibraryPhotoMetadata } from '../../services/libraryService';
+import { type LibraryPhoto } from "./types";
+import { PhotoLightboxModal } from "./PhotoLightboxModal";
+import { LibraryAlbumModal } from './LibraryAlbumModal';
+import { LibraryUploadModal } from './LibraryUploadModal';
+import { LibraryPhotoEditModal } from './LibraryPhotoEditModal';
+import { AlbumCard, PhotoCard } from '@/features/my-life/components/memories/LibraryGallery';
+import { MemoryActions } from '@/features/my-life/components/memories/MemoryActions';
+import { MemorySkeleton } from '@/features/my-life/components/memories/MemorySkeleton';
+import '@/features/my-life/components/memories/Memories.css';
+import './LibraryTab.css';
+
+interface LibraryTabProps {
+  showToast: (text: string, ok: boolean) => void;
+}
+
+export const LibraryTab: React.FC<LibraryTabProps> = ({ showToast }) => {
+  const { t } = useLanguage();
+  const [previewPhoto, setPreviewPhoto] = useState<LibraryPhoto | null>(null);
+  const [albums, setAlbums] = useState<LibraryAlbum[]>([]);
+  const [libraryPhotos, setLibraryPhotos] = useState<LibraryPhoto[]>([]);
+  const [selectedAlbum, setSelectedAlbum] = useState<number | 'all'>('all');
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [albumDialog, setAlbumDialog] = useState<'create' | LibraryAlbum | null>(null);
+  const [uploadOpen, setUploadOpen] = useState(false);
+  const [editingPhoto, setEditingPhoto] = useState<LibraryPhoto | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ kind: 'album' | 'photo'; id: number; name: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    setIsLoading(true); setError(null);
+    const load = async () => {
+      try {
+        const overview = await libraryService.getOverview(controller.signal);
+        if (controller.signal.aborted) return;
+        setAlbums(overview.albums);
+        setSelectedAlbum(current => current === 'all' || overview.albums.some(album => album.id === current) ? current : 'all');
+        const photos: LibraryPhoto[] = overview.albums.flatMap(album => album.photos.map(photo => ({
+          id: photo.id, albumId: album.id, title: photo.title?.trim() || photo.fileName,
+          driveFileId: photo.driveFileId, year: photo.displayDate ?? '', url: photo.url,
+          desc: photo.description ?? photo.caption ?? '', author: photo.author ?? '',
+        })));
+        setLibraryPhotos(photos);
+        setPreviewPhoto(previous => previous ? photos.find(photo => photo.id === previous.id) ?? null : null);
+      } catch (failure) {
+        if (!controller.signal.aborted) { setError(getFeatureErrorKey(failure, 'album_load')); setPreviewPhoto(null); }
+      } finally { if (!controller.signal.aborted) setIsLoading(false); }
+    };
+    void load();
+    return () => controller.abort();
+  }, [refreshKey]);
+
+  const activeAlbum = albums.find(album => album.id === selectedAlbum);
+  const refresh = () => setRefreshKey(value => value + 1);
+  const requestDelete = (target: NonNullable<typeof deleteTarget>) => {
+    setPreviewPhoto(null); setDeleteError(null); setDeleteTarget(target);
+  };
+  const confirmDelete = async () => {
+    if (!deleteTarget || isDeleting) return;
+    setIsDeleting(true); setDeleteError(null);
+    try {
+      if (deleteTarget.kind === 'photo') await libraryService.deletePhoto(deleteTarget.id);
+      else { await libraryService.deleteAlbum(deleteTarget.id); setSelectedAlbum('all'); }
+      setDeleteTarget(null); refresh(); showToast(t(deleteTarget.kind === 'photo' ? featureSuccessKeys.photoDelete : featureSuccessKeys.albumDelete), true);
+    } catch (failure) { setDeleteError(getFeatureErrorKey(failure, deleteTarget.kind === 'photo' ? 'photo_delete' : 'album_delete')); }
+    finally { setIsDeleting(false); }
+  };
+  const savePhoto = async (metadata: LibraryPhotoMetadata) => {
+    if (!editingPhoto) return;
+    await libraryService.updatePhoto(editingPhoto.id, metadata);
+    setEditingPhoto(null); refresh(); showToast(t(featureSuccessKeys.photoUpdate), true);
+  };
+
+  const filteredPhotos = libraryPhotos.filter(photo => selectedAlbum === 'all' || photo.albumId === selectedAlbum);
+
+  return (
+    <div className="library-workspace memory-page memory-page--library">
+      <PageHeader eyebrow={t('appShell.memories')} title={t('appShell.library')} description={t('memories.libraryDescription')} actions={albums.length > 0 ? <>
+        <Button variant={activeAlbum ? 'secondary' : 'primary'} leftIcon={<Plus size={16}/>} onClick={() => setAlbumDialog('create')}>{t('admin.library_ui.create_album')}</Button>
+        <Button variant={activeAlbum ? 'primary' : 'secondary'} leftIcon={<Upload size={16}/>} disabled={isLoading} onClick={() => setUploadOpen(true)}>{t('memories.uploadPhotos')}</Button>
+      </> : undefined}/>
+      {isLoading ? <MemorySkeleton module="library"/> : error ? <ErrorState message={t(error)} action={<Button variant="secondary" onClick={refresh}>{t('admin.library_ui.retry')}</Button>}/> : <>
+        {activeAlbum ? <section className="library-album-heading">
+          <Button variant="ghost" size="sm" leftIcon={<ArrowLeft size={15}/>} onClick={() => setSelectedAlbum('all')}>{t('admin.library_ui.all_albums')}</Button>
+          <div className="library-album-heading__title"><div><p>{t('memories.selectedAlbum')}</p><h2>{normalizeDisplayText(activeAlbum.name)}</h2>{activeAlbum.description && <p>{activeAlbum.description}</p>}</div>
+            <MemoryActions label={t('memories.albumActions')} actions={[
+              { label:t('admin.library_ui.edit_album'), icon:<Pencil size={14}/>, onClick:() => setAlbumDialog(activeAlbum) },
+              { label:t('admin.library_ui.delete_album'), icon:<Trash2 size={14}/>, danger:true, onClick:() => requestDelete({kind:'album',id:activeAlbum.id,name:activeAlbum.name}) },
+            ]}/>
+          </div>
+        </section> : albums.length > 0 && <section className="library-albums" aria-labelledby="library-albums-title"><div className="memory-section-title"><h2 id="library-albums-title">{t('memories.albums')}</h2><span>{albums.length}</span></div>
+          <div className="library-album-grid">{albums.map(album => <AlbumCard key={album.id} album={album} photos={libraryPhotos} onSelect={() => setSelectedAlbum(album.id)} onEdit={() => setAlbumDialog(album)} onDelete={() => requestDelete({kind:'album',id:album.id,name:album.name})}/>)}</div>
+        </section>}
+        {albums.length > 0 && <div className="memory-section-title library-photo-heading"><h2>{t('memories.photographs')}<span>{filteredPhotos.length}</span></h2>
+          <Select aria-label={t('admin.library_ui.album_filter')} containerClassName="library-album-filter" appearance="simple" variant="compact" value={String(selectedAlbum)} onValueChange={value => setSelectedAlbum(value === 'all' ? 'all' : Number(value))}>
+            <SelectItem value="all">{t('admin.library_ui.all_albums')}</SelectItem>{albums.map(album => <SelectItem key={album.id} value={String(album.id)}>{album.name}</SelectItem>)}
+          </Select>
+        </div>}
+        <section className="library-gallery" aria-label={t('memories.photographs')}>
+          {filteredPhotos.length === 0 ? <EmptyState title={t(albums.length === 0 ? 'admin.library_ui.no_albums' : activeAlbum?.photoCount === 0 || libraryPhotos.length === 0 ? 'admin.library_ui.no_album_photos' : 'admin.library_ui.no_matches')} description={t(albums.length === 0 ? 'memories.emptyLibraryDescription' : 'memories.emptyAlbumDescription')} action={albums.length === 0 ? <Button leftIcon={<Plus size={16}/>} onClick={() => setAlbumDialog('create')}>{t('admin.library_ui.create_album')}</Button> : undefined}/> : <div className="library-photo-grid">
+            {filteredPhotos.map(photo => <PhotoCard key={photo.id} photo={photo} onView={() => setPreviewPhoto(photo)} onEdit={() => setEditingPhoto(photo)} onDelete={() => requestDelete({kind:'photo',id:photo.id,name:photo.title})}/>)}
+          </div>}
+        </section>
+      </>}
+      {/* Lightbox Modal */}
+      {previewPhoto && <PhotoLightboxModal photos={filteredPhotos} onNavigate={setPreviewPhoto}
+        photo={previewPhoto}
+        onClose={() => setPreviewPhoto(null)}
+        onEdit={photo => { setPreviewPhoto(null); setEditingPhoto(photo); }}
+        onDelete={photo => requestDelete({ kind: 'photo', id: photo.id, name: photo.title })}
+      />}
+      {albumDialog && <LibraryAlbumModal album={albumDialog === 'create' ? undefined : albumDialog}
+        onClose={() => setAlbumDialog(null)} onSubmit={async metadata => {
+          const album = albumDialog === 'create' ? await libraryService.createAlbum(metadata) : await libraryService.updateAlbum(albumDialog.id, metadata);
+          setAlbumDialog(null); setSelectedAlbum(album.id); refresh(); showToast(t(albumDialog === 'create' ? featureSuccessKeys.albumCreate : featureSuccessKeys.albumUpdate), true);
+        }} />}
+      {uploadOpen && <LibraryUploadModal albums={albums} initialAlbumId={selectedAlbum === 'all' ? undefined : selectedAlbum}
+        onClose={() => setUploadOpen(false)} onSubmit={async (albumId, files, metadata) => {
+          await libraryService.uploadPhotos(albumId, files, metadata);
+          setUploadOpen(false); setSelectedAlbum(albumId); refresh(); showToast(t(featureSuccessKeys.photoUpload), true);
+        }} />}
+      {editingPhoto && <LibraryPhotoEditModal photo={editingPhoto} onClose={() => setEditingPhoto(null)} onSubmit={savePhoto} />}
+      <ConfirmDialog isOpen={deleteTarget !== null} title={t('admin.library_ui.confirm_delete')} busy={isDeleting} cancelLabel={t('admin.library_ui.cancel')} confirmLabel={t('admin.library_ui.delete')} onClose={() => setDeleteTarget(null)} onConfirm={() => void confirmDelete()}>
+        <p className="text-sm text-secondary-text break-words">{t(deleteTarget?.kind === 'album' ? 'admin.library_ui.delete_album_hint' : 'admin.library_ui.delete_photo_hint')} <strong>{deleteTarget?.name}</strong></p>
+        {deleteError && <InlineError>{t(deleteError)}</InlineError>}
+      </ConfirmDialog>
+    </div>
+  );
+};

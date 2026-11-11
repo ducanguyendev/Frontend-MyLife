@@ -1,0 +1,21 @@
+{
+  "roots": "Cùng một gốc rễ",
+  "breadcrumb": "Đường dẫn",
+  "members": "Thành viên",
+  "publicLanding": "Trang giới thiệu MyLife",
+  "clearSearch": "Xóa tìm kiếm",
+  "viewTree": "Cây",
+  "viewCards": "Thẻ",
+  "viewList": "Danh sách",
+  "emptyTitle": "Gia đình của bạn bắt đầu từ một người.",
+  "emptyDescription": "Thêm thành viên đầu tiên để bắt đầu xây dựng câu chuyện gia đình.",
+  "loading": "Đang tải gia đình",
+  "contact": "Liên hệ",
+  "openMap": "Mở bản đồ",
+  "openLibrary": "Mở thư viện",
+  "openTimeline": "Xem dòng thời gian",
+  "exploreHint": "Khám phá những kết nối giữa hai thành viên trong gia đình.",
+  "archive": "Hồ sơ gia đình",
+  "exitFullscreen": "Thoát toàn màn hình",
+  "memberCountLabel": "thành viên"
+}

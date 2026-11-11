@@ -1,0 +1,46 @@
+[
+  {
+    "name": "role/status/delete success, failure, busy confirmation and duplicate guards",
+    "status": "pass"
+  },
+  {
+    "name": "stats failure is isolated; section retry restores data",
+    "status": "pass"
+  },
+  {
+    "name": "users failure is isolated; section retry restores data",
+    "status": "pass"
+  },
+  {
+    "name": "logs failure is isolated; section retry restores data",
+    "status": "pass"
+  },
+  {
+    "name": "independent loading and empty responses",
+    "status": "pass"
+  },
+  {
+    "name": "late pre-mutation refresh cannot overwrite a confirmed row",
+    "status": "pass"
+  },
+  {
+    "name": "normal user and localStorage role spoof cannot enter either Admin route",
+    "status": "pass"
+  },
+  {
+    "name": "anonymous session is redirected without fetching Admin records",
+    "status": "pass"
+  },
+  {
+    "name": "403 hides previously loaded login records while other sections remain usable",
+    "status": "pass"
+  },
+  {
+    "name": "401 plus expired refresh revokes Admin UI through existing AuthContext",
+    "status": "pass"
+  },
+  {
+    "name": "401 with a valid refresh retries through apiClient and retains Admin access",
+    "status": "pass"
+  }
+]

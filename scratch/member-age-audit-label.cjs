@@ -1,0 +1,1 @@
+﻿const fs=require('fs');let f='scratch/member-age-audit.cjs',s=fs.readFileSync(f,'utf8');s=s.replace("({file,unchanged:","({file,...(file.endsWith('FamilyExperience.css')?{check:'only mobile button selector corrected; typography retained'}:{}),unchanged:");fs.writeFileSync(f,s);

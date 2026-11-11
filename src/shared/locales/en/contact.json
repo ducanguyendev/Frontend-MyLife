@@ -1,0 +1,38 @@
+{
+  "title": "Contact Me",
+  "subtitle": "Reach Out",
+  "desc": "Have a project in mind, want to collaborate, or just want to say hi? Feel free to reach out through any of these channels!",
+  "form": {
+    "title": "Send Message",
+    "name": "Name",
+    "email": "Email",
+    "subject": "Subject",
+    "message": "Message",
+    "placeholderName": "Your name",
+    "placeholderEmail": "Your email address",
+    "placeholderSubject": "Subject of inquiry",
+    "placeholderMessage": "Write your message here...",
+    "btnSend": "Send Message",
+    "sending": "Sending...",
+    "success": "Your message has been sent successfully!",
+    "error": "Something went wrong. Please try again."
+  },
+  "errors": {
+    "name": "Name is required",
+    "email": "Email is required",
+    "emailInvalid": "Invalid email address",
+    "subject": "Subject is required",
+    "message": "Message is required"
+  },
+  "details": {
+    "title": "Contact Details",
+    "email": "Email",
+    "emailVal": "contact@mananparmar.com",
+    "phone": "Phone",
+    "phoneVal": "+84 (90) 123-4567",
+    "location": "Location",
+    "locationVal": "Ho Chi Minh City, Vietnam",
+    "follow": "Follow Me"
+  },
+  "thanks": "Thanks For Patience!"
+}

@@ -1,0 +1,138 @@
+{
+  "title": "Selected Projects",
+  "subtitle": "Work",
+  "liveDemo": "View System Screens",
+  "github": "GitHub",
+  "hottoys": {
+    "tags": ["ASP.NET CORE", "ORACLE DB", "FULLSTACK WEB"],
+    "title": "Hot Toys Store E-commerce",
+    "problemStatementTag": "UX PROBLEM STATEMENT",
+    "problemStatement": "Niche collectors require immediate stock transparency and clean catalog filters. This solution maps a relational database structure directly into intuitive inventory controls.",
+    "description": "A full-stack MVC application integrating interactive Razor Pages frontend workflows with a secure database for inventory control.",
+    "features": [
+      "Interactive catalog with multi-criteria filtering",
+      "Role-based access control (RBAC) for customers and administrators",
+      "Administrative dashboard with chart visualizations for revenue tracking and sales reports"
+    ],
+    "modal": {
+      "title": "Hot Toys Store — System Interface",
+      "techStack": "ASP.NET CORE CORE MVC & ORACLE DB E-COMMERCE",
+      "footer": "DESIGNED IN FIGMA • SYSTEM ARCHITECTURE ASP.NET CORE MVC & ORACLE DB",
+      "tabs": {
+        "home": "Home & Banner",
+        "catalog": "Catalog & Products",
+        "stats": "Statistics & Management"
+      },
+      "screens": {
+        "home": {
+          "tag": "HOMEPAGE & HERO BANNER",
+          "title": "Welcome to ToyStore",
+          "desc": "The homepage features a dark, elegant minimalist design, focusing heavily on highlighting premium action figures.",
+          "desc2": "The hero banner displays high-contrast visuals with smooth transitions, integrating an intuitive smart search bar at the center to optimize the customer search flow."
+        },
+        "featured": {
+          "tag": "FEATURED PRODUCTS",
+          "title": "Distribution by Collection",
+          "desc": "A section showcasing curated collections like Anime Figures (e.g., 2B), DC Figures (e.g., Superman), and trending releases (e.g., Black Myth Wukong).",
+          "desc2": "Clean Card UI design with smooth borders, displaying item counts and sub-categories clearly to help users locate interests."
+        },
+        "catalog": {
+          "tag": "CATALOG & PRODUCT DETAILS",
+          "title": "Diverse & Convenient Shopping",
+          "desc": "Product categorization by universe or brand, such as DC, Marvel, or Anime.",
+          "desc2": "Each product lists detailed specs: high-definition closeups from Hot Toys or InArt, inventory status, local price (VND), and quick action buttons for \"Add to Cart\" or \"View Details\"."
+        },
+        "stats": {
+          "tag": "REPORTS & ADMIN DASHBOARD",
+          "title": "Detailed Analytics Dashboard",
+          "desc": "The system integrates a dedicated smart admin dashboard for managers to monitor and manage store revenues.",
+          "desc2": "Includes interactive data charts: line and bar graphs tracking revenue and order volume, pie charts analyzing best-selling products, overall gross income statistics, and user account tables."
+        }
+      }
+    }
+  },
+  "homme": {
+    "tags": ["ASP.NET CORE MVC", "MS SQL SERVER", "SIGNALR", "RESTFUL API"],
+    "title": "HOMME Store",
+    "problemStatementTag": "BACKEND ARCHITECTURE STATEMENT",
+    "problemStatement": "Developing a robust e-commerce core combining real-world shipping logistics automation and real-time customer engagement via AI Chatbot and SignalR sockets.",
+    "description": "An e-commerce system optimized for men's fashion, featuring backend logistics automation, smart AI consultation chatbot, and real-time support hub.",
+    "features": [
+      "Integrated AI Chatbot (Gemini/OpenAI API) and real-time Live Chat with SignalR for instant human escalation",
+      "Fully automated shipping operations via Giao Hang Nhanh (GHN) API integration for dynamic shipping fee calculations and label generation",
+      "Ensured system security with 3-tier authorization (Admin, Employee, Customer) and secured login sessions using HttpOnly Cookies & Sessions"
+    ],
+    "modal": {
+      "title": "HOMME Store — System Interface",
+      "techStack": "ASP.NET CORE MVC & MS SQL SERVER PLATFORM",
+      "footer": "SYSTEM DEVELOPMENT • CORE BACKEND ASP.NET CORE MVC & MS SQL SERVER",
+      "tabs": {
+        "catalog": "Catalog & Shipping",
+        "vouchers": "Marketing & Vouchers",
+        "chat": "AI Chat & Support"
+      },
+      "screens": {
+        "catalog": {
+          "tag": "CATALOG & DYNAMIC FILTERS",
+          "title": "Product Catalog Page & Dynamic Filters",
+          "desc": "Dynamic left sidebar filter for quick sorting by price range (VND), categories (Shirts, T-shirts, Trousers, Jackets), size (S, M, L...), and color.",
+          "desc2": "The system automatically synchronizes with the Giao Hang Nhanh (GHN) API during checkout to calculate accurate shipping fees based on the user's geographical region."
+        },
+        "vouchers": {
+          "tag": "ADMIN VOUCHER MANAGEMENT",
+          "title": "Voucher & Promotion Management Dashboard",
+          "desc": "Deep admin dashboard panel supporting new voucher creation with configuration: Promo Code, Discount Type (Fixed/Percentage), Issue Limit, and Expiration Date.",
+          "desc2": "The voucher list table displays active statuses and provides instant deactivation actions to control marketing budgets."
+        },
+        "chat": {
+          "tag": "AI CHATBOT & SIGNALR LIVE SUPPORT",
+          "title": "Multi-channel Customer Support Hub",
+          "desc": "Multi-threaded communication gateway integrating AI Chatbot to automatically answer customer FAQs using Gemini/OpenAI API.",
+          "desc2": "SignalR Socket connection allows shoppers to transition to live chat session with admin representatives upon complex inquiries."
+        }
+      }
+    }
+  },
+  "treasure": {
+    "tags": ["JAVA SE", "TCP SOCKETS", "MULTITHREADING", "GAME ENGINE"],
+    "title": "Treasure Hunter",
+    "problemStatementTag": "GAME MECHANICS STATEMENT",
+    "problemStatement": "Programming a real-time multiplayer side-scrolling platformer via socket connections, optimizing the core game loop for lag-free performance.",
+    "description": "A 2D multiplayer platformer game written in pure Java SE, featuring a custom multithreaded server to synchronize positions and animations.",
+    "features": [
+      "Industry-standard game loop optimized for ultra-high performance: 200 UPS physics logic updates and 120 FPS render draw calls",
+      "Custom Multithreaded Server utilizing TCP Sockets to synchronize player movements, combat actions, and status stats in real time",
+      "Applied object-oriented design patterns (OOP & State Pattern) to modularize source code, facilitating level expansion and audio triggers"
+    ],
+    "modal": {
+      "title": "Treasure Hunter — Game Interface",
+      "techStack": "JAVA SE & TCP SOCKET MULTIPLAYER ENGINE",
+      "footer": "GAME DEVELOPMENT • CORE GAME ENGINE JAVA SE & MULTITHREADING",
+      "tabs": {
+        "lobby": "Lobby & Setup",
+        "gameplay": "Core Gameplay",
+        "victory": "Victory & Completion"
+      },
+      "screens": {
+        "lobby": {
+          "tag": "START MENU & CHARACTER CREATION",
+          "title": "Start Menu & Nickname Registration",
+          "desc": "The main launch screen features a wooden Pixel Art frame with options: Play, Options, Credits, Quit overlaying a purple sky and full moon.",
+          "desc2": "The creation dialog requests players to choose a nickname (e.g., \"DUKA\") to register their socket connection and display their username tags in the shared lobby."
+        },
+        "gameplay": {
+          "tag": "2D PLATFORMER MECHANICS",
+          "title": "Synchronized Combat & Level Exploration",
+          "desc": "Players control a pirate character to dodge ground spikes, collect golden chests, and engage in melee combat against crab monsters.",
+          "desc2": "Displays health bars (HP) and stamina gauges at the top left of the window screen. The TCP server synchronizes coordinate movements instantly."
+        },
+        "victory": {
+          "tag": "LEVEL COMPLETED & PROGRESSION",
+          "title": "Level Completion Panel",
+          "desc": "Upon defeating enemies and surviving the level, the system triggers the 'LEVEL COMPLETED' wooden board with fast action navigation buttons.",
+          "desc2": "Allows players to quickly return to the main hub (Home button) or load the next map template (Continue button)."
+        }
+      }
+    }
+  }
+}

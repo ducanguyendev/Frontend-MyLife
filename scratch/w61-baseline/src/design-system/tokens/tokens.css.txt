@@ -1,0 +1,114 @@
+/* MyLife Web design system: semantic foundations shared across features. */
+:root {
+  --bg-app: #f6f4ee;
+  --bg-subtle: #efeee7;
+  --surface-primary: #fffefa;
+  --surface-secondary: #f9f8f3;
+  --surface-elevated: #ffffff;
+  --surface-card: #fffefa;
+  --surface-page: #f9f8f3; --surface-canvas: #efeee7;
+  --gender-male: #668b91; --gender-female: #ad7d88;
+  --action-primary: #526c59; --on-action-primary: #fffefa; --on-danger: #fffefa;
+  --text-primary: #29332d;
+  --text-secondary: #626e65;
+  --text-muted: #818a82;
+  --text-inverse: #fffefa;
+  --border-subtle: #eeece4;
+  --border-default: #dfded4;
+  --border-strong: #c8c9bd;
+  --brand-primary: #66816e;
+  --brand-primary-hover: #566f5d;
+  --brand-primary-pressed: #435b4a;
+  --brand-primary-soft: #e7eee7;
+  --state-danger: #b94f48;
+  --state-danger-soft: #f7e9e6;
+  --state-warning: #a97524;
+  --state-warning-soft: #f5eddc;
+  --state-success: #477657;
+  --state-success-soft: #e8f0e8;
+  --state-info: #4e7b80;
+  --state-info-soft: #e7eff0;
+  --accent-family: #66816e;
+  --accent-family-soft: #e7eee7;
+  --accent-timeline: #4e8580;
+  --accent-timeline-soft: #e4efed;
+  --accent-anniversary: #a97524;
+  --accent-anniversary-soft: #f5eddc;
+  --accent-library: #796783;
+  --accent-library-soft: #eee9f0;
+  --accent-map: #4d8492;
+  --accent-map-soft: #e6eff1;
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+  --space-5: 20px; --space-6: 24px; --space-8: 32px; --space-10: 40px;
+  --space-12: 48px; --space-16: 64px; --space-20: 80px; --space-24: 96px;
+  --radius-xs: 8px; --radius-sm: 12px; --radius-md: 16px; --radius-lg: 20px;
+  --radius-xl: 24px; --radius-2xl: 30px; --radius-pill: 999px;
+  --shadow-none: none;
+  --shadow-xs: 0 1px 2px rgb(49 53 45 / 4%);
+  --shadow-sm: 0 3px 12px rgb(49 53 45 / 5%);
+  --shadow-md: 0 10px 28px rgb(49 53 45 / 8%);
+  --shadow-overlay: 0 24px 64px rgb(30 35 30 / 20%);
+  --motion-fast: 170ms; --motion-normal: 260ms; --motion-slow: 360ms;
+  --motion-ease: cubic-bezier(.2,.7,.2,1);
+  --z-base: 0; --z-sticky: 20; --z-dropdown: 40; --z-overlay: 50; --z-toast: 100;
+  --breakpoint-mobile: 640px; --breakpoint-tablet: 768px; --breakpoint-laptop: 1024px;
+  --breakpoint-desktop: 1280px; --breakpoint-wide: 1536px;
+}
+
+.dark {
+  --bg-app: #202823;
+  --bg-subtle: #252e28;
+  --surface-primary: #2c3730;
+  --surface-secondary: #344139;
+  --surface-elevated: #414f45;
+  --surface-card: #3a483e;
+  --surface-page: #27322b; --surface-canvas: #303e34;
+  --gender-male: #94b7b8; --gender-female: #cda2ac;
+  --action-primary: #a1b59f; --on-action-primary: #202823; --on-danger: #2b2421;
+  --text-primary: #f2f0e8;
+  --text-secondary: #c0c7bc;
+  --text-muted: #9ba69c;
+  --text-inverse: #202823;
+  --border-subtle: #343e37;
+  --border-default: #414c43;
+  --border-strong: #59655b;
+  --brand-primary: #a1b59f;
+  --brand-primary-hover: #b3c3af;
+  --brand-primary-pressed: #c4d0bd;
+  --brand-primary-soft: #35453a;
+  --state-danger: #e29487; --state-danger-soft: #49332f;
+  --state-warning: #d6b06b; --state-warning-soft: #473d2c;
+  --state-success: #9cc2a1; --state-success-soft: #304337;
+  --state-info: #91b8bc; --state-info-soft: #2f4244;
+  --accent-family: #a1b59f; --accent-family-soft: #35453a;
+  --accent-timeline: #83b9b0; --accent-timeline-soft: #304543;
+  --accent-anniversary: #d6b06b; --accent-anniversary-soft: #473d2c;
+  --accent-library: #c0a9c8; --accent-library-soft: #44394a;
+  --accent-map: #8ebbc4; --accent-map-soft: #304247;
+  --shadow-xs: 0 1px 2px rgb(0 0 0 / 12%);
+  --shadow-sm: 0 3px 12px rgb(0 0 0 / 15%);
+  --shadow-md: 0 10px 28px rgb(0 0 0 / 20%);
+  --shadow-overlay: 0 24px 64px rgb(0 0 0 / 42%);
+}
+
+
+/* Compatibility aliases keep feature code on the semantic palette. */
+:root, .dark {
+  --primary-bg: var(--bg-app); --secondary-bg: var(--surface-primary);
+  --primary-text: var(--text-primary); --secondary-text: var(--text-secondary);
+  --custom-border: var(--border-default); --accent-color: var(--brand-primary);
+  --accent-hover-color: var(--brand-primary-hover); --focus-border: var(--brand-primary);
+  --focus-surface: var(--brand-primary-soft); --field-bg: var(--surface-primary);
+  --field-border: var(--border-default); --field-text: var(--text-primary);
+  --field-label: var(--text-secondary); --field-placeholder: var(--text-muted);
+  --field-focus-border: var(--brand-primary);
+  --field-focus-ring: color-mix(in srgb, var(--brand-primary) 20%, transparent);
+  --field-error: var(--state-danger); --field-disabled-bg: var(--bg-subtle);
+  --calendar-selected-bg: var(--action-primary); --calendar-selected-text: var(--on-action-primary);
+  --calendar-selected-border: var(--brand-primary); --calendar-selected-ring: var(--field-focus-ring);
+  --color-success: var(--state-success); --color-warning: var(--state-warning); --color-error: var(--state-danger);
+  --type-display: clamp(2.25rem, 3vw, 3rem); --type-page-title: clamp(1.5rem, 2vw, 2rem);
+  --type-section-title: 1.125rem; --type-card-title: 1rem; --type-body-large: 1rem;
+  --type-body: .9375rem; --type-body-small: .875rem; --type-label: .8125rem;
+  --type-caption: .75rem; --type-overline: .625rem; --type-button: .875rem;
+}

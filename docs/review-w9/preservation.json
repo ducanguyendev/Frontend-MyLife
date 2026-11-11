@@ -1,0 +1,81 @@
+{
+  "head": "595ba563613cebe1f74ee1a9929f7a0cc246e6a1",
+  "authHandlers": [
+    {
+      "file": "src/features/auth/components/LoginModal.tsx",
+      "name": "waitForGoogleAuthorizationCode",
+      "unchanged": true
+    },
+    {
+      "file": "src/features/auth/components/LoginModal.tsx",
+      "name": "finish",
+      "unchanged": true
+    },
+    {
+      "file": "src/features/auth/components/LoginModal.tsx",
+      "name": "localizeError",
+      "unchanged": true
+    },
+    {
+      "file": "src/features/auth/components/LoginModal.tsx",
+      "name": "handleSubmit",
+      "unchanged": true
+    },
+    {
+      "file": "src/features/auth/components/LoginModal.tsx",
+      "name": "handleGoogleLogin",
+      "unchanged": true
+    },
+    {
+      "file": "src/features/auth/pages/Register.tsx",
+      "name": "handleFullNameKeyDown",
+      "unchanged": true
+    },
+    {
+      "file": "src/features/auth/pages/Register.tsx",
+      "name": "handleFullNameChange",
+      "unchanged": true
+    },
+    {
+      "file": "src/features/auth/pages/Register.tsx",
+      "name": "handleFullNamePaste",
+      "unchanged": true
+    },
+    {
+      "file": "src/features/auth/pages/Register.tsx",
+      "name": "handlePhoneKeyDown",
+      "unchanged": true
+    },
+    {
+      "file": "src/features/auth/pages/Register.tsx",
+      "name": "handlePhoneChange",
+      "unchanged": true
+    },
+    {
+      "file": "src/features/auth/pages/Register.tsx",
+      "name": "handlePhonePaste",
+      "unchanged": true
+    },
+    {
+      "file": "src/features/auth/pages/Register.tsx",
+      "name": "handleSubmit",
+      "unchanged": true
+    }
+  ],
+  "protectedPathsUnchanged": [
+    "src/App.tsx",
+    "src/features/auth/context",
+    "src/features/auth/services",
+    "src/shared/api",
+    "src/features/admin/services",
+    "src/features/admin/hooks",
+    "src/features/my-life/pages",
+    "src/features/admin/components/family-tree/family-view",
+    "src/features/admin/components/family-tree/MemoirFamilyTreeView.tsx",
+    "src/features/admin/components/family-tree/FamilyMapTab.tsx",
+    "src/features/profile/components/UserProfileModal.tsx",
+    "src/design-system/editorial-fonts.css",
+    "package.json",
+    "package-lock.json"
+  ]
+}

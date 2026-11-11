@@ -1,0 +1,29 @@
+[
+  {
+    "suite": "family-role",
+    "status": 0,
+    "summary": [
+      "# tests 5",
+      "# pass 5",
+      "# fail 0"
+    ]
+  },
+  {
+    "suite": "register-api-errors",
+    "status": 0,
+    "summary": [
+      "# tests 2",
+      "# pass 2",
+      "# fail 0"
+    ]
+  },
+  {
+    "suite": "account-identity",
+    "status": 0,
+    "summary": [
+      "# tests 6",
+      "# pass 6",
+      "# fail 0"
+    ]
+  }
+]

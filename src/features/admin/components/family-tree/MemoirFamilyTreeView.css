@@ -1,0 +1,122 @@
+.memoir-tree-poc {
+  --memoir-line: color-mix(in srgb, var(--secondary-text, #657568) 42%, #d9d3c7);
+  --memoir-accent: var(--accent-color, #6e8c78);
+  display: flex;
+  width: 100%;
+  height: clamp(600px, 84vh, 980px);
+  min-height: 560px;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--custom-border, #d9ddd7) 72%, #efe6d8);
+  border-radius: 24px;
+  background: radial-gradient(ellipse at 50% -8%, color-mix(in srgb, var(--memoir-accent) 7%, transparent), transparent 58%), var(--primary-bg, #faf9f6);
+  color: var(--primary-text, #29332d);
+  box-shadow: 0 14px 36px rgb(47 43 35 / 5%);
+}
+
+.memoir-tree-poc__toolbar {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  min-height: 54px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 8px 12px;
+  border-bottom: 1px solid color-mix(in srgb, var(--custom-border, #d9ddd7) 72%, transparent);
+  background: color-mix(in srgb, var(--secondary-bg, #fff) 90%, transparent);
+  backdrop-filter: blur(14px);
+}
+.memoir-tree-poc__toolbar > button {
+  display: inline-flex;
+  min-width: 34px;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 9px;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  background: transparent;
+  color: var(--secondary-text, #64716a);
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 650;
+  transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease;
+}
+.memoir-tree-poc__toolbar > button:hover { border-color: color-mix(in srgb, var(--memoir-accent) 22%, transparent); background: color-mix(in srgb, var(--memoir-accent) 9%, transparent); color: var(--memoir-accent); }
+.memoir-tree-poc__toolbar > button:focus-visible { outline: 2px solid var(--memoir-accent); outline-offset: 2px; }
+.memoir-tree-poc__generation-pills { display: inline-flex; flex-wrap: wrap; gap: 5px; margin-left: 8px; }
+.memoir-tree-poc__generation-pills span { padding: 4px 8px; border: 1px solid color-mix(in srgb, var(--custom-border, #d9ddd7) 78%, transparent); border-radius: 999px; background: color-mix(in srgb, var(--secondary-bg, #fff) 84%, transparent); color: var(--secondary-text, #64716a); font-size: 9px; font-weight: 760; letter-spacing: .08em; }
+.memoir-tree-poc__canvas { position: relative; min-height: 0; flex: 1; overflow: hidden; }
+.memoir-tree-poc__zoom-layer { width: 100%; height: 100%; transform-origin: center center; transition: transform 180ms ease; }
+.memoir-tree-poc [data-tree-surface] {
+  --tree-surface-bg: color-mix(in srgb, var(--primary-bg, #faf9f6) 95%, white);
+  --tree-surface-fg: var(--primary-text, #29332d);
+  --tree-surface-border: transparent;
+  --tree-canvas-bg: transparent;
+  --tree-card-bg: var(--secondary-bg, #fff);
+  --tree-card-fg: var(--primary-text, #29332d);
+  --tree-card-border: color-mix(in srgb, var(--custom-border, #d9ddd7) 75%, #efe6d8);
+  --tree-card-shadow: 0 4px 14px rgb(47 43 35 / 8%);
+  --tree-edge: var(--memoir-line);
+  --tree-edge-width: 1.4;
+  --tree-accent: var(--memoir-accent);
+  --tree-muted-fg: var(--secondary-text, #64716a);
+  --tree-surface-radius: 0;
+  --tree-card-radius: 22px;
+  --tree-outline-width: 1px;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--memoir-accent) 30%, transparent) transparent;
+}
+.dark .memoir-tree-poc [data-tree-surface], [data-theme="dark"] .memoir-tree-poc [data-tree-surface] {
+  --tree-edge: color-mix(in srgb, var(--secondary-text, #a8b4aa) 50%, #626c63);
+  --tree-card-shadow: 0 5px 18px rgb(0 0 0 / 24%);
+}
+.memoir-tree-poc [data-tree-canvas] { background: transparent; }
+.memoir-tree-poc [data-family-edge] { stroke-linecap: round; stroke-linejoin: round; }
+.memoir-family-card {
+  position: relative;
+  display: flex;
+  width: 232px;
+  height: 178px;
+  box-sizing: border-box;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 14px 12px;
+  overflow: visible;
+  border: 1px solid var(--tree-card-border);
+  border-radius: 22px;
+  background: var(--tree-card-bg);
+  box-shadow: var(--tree-card-shadow);
+  color: var(--tree-card-fg);
+  font-family: inherit;
+  text-align: center;
+  transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+}
+.memoir-family-card:hover { z-index: 5; transform: translateY(-2px); box-shadow: 0 9px 24px rgb(47 43 35 / 13%); }
+.memoir-family-card.is-focused { border-color: color-mix(in srgb, var(--memoir-accent) 58%, var(--tree-card-border)); box-shadow: 0 0 0 4px color-mix(in srgb, var(--memoir-accent) 11%, transparent), 0 9px 24px rgb(47 43 35 / 12%); }
+.memoir-family-card.is-deceased { background: color-mix(in srgb, var(--tree-card-bg) 95%, var(--secondary-text, #64716a)); }
+.memoir-family-card__avatar { width: 72px; height: 72px; flex: none; margin-bottom: 5px; overflow: hidden; border: 2px solid color-mix(in srgb, var(--memoir-accent) 28%, var(--tree-card-border)); border-radius: 50%; object-fit: cover; }
+.memoir-family-card__name { display: -webkit-box; max-width: 100%; overflow: hidden; color: var(--primary-text, #29332d); font-size: 14px; font-weight: 720; line-height: 1.2; overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.memoir-family-card__role { max-width: 100%; margin-top: 3px; overflow: hidden; color: var(--secondary-text, #64716a); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.memoir-family-card__meta { margin-top: auto; padding-top: 7px; color: var(--secondary-text, #64716a); font-size: 9px; font-weight: 620; }
+.memoir-family-card__actions { position: absolute; z-index: 7; top: 6px; right: 6px; }
+.memoir-family-card__actions > button { display: grid; width: 28px; height: 28px; place-items: center; border: 1px solid var(--tree-card-border); border-radius: 50%; background: var(--tree-card-bg); color: var(--secondary-text, #64716a); cursor: pointer; }
+.memoir-family-card__menu { position: absolute; top: 31px; right: 0; display: grid; width: 176px; padding: 5px; border: 1px solid var(--tree-card-border); border-radius: 13px; background: var(--secondary-bg, #fff); box-shadow: 0 14px 34px rgb(15 23 42 / 18%); text-align: left; }
+.memoir-family-card__menu button { display: flex; min-height: 34px; align-items: center; gap: 8px; padding: 0 8px; border: 0; border-radius: 8px; background: transparent; color: var(--secondary-text, #64716a); cursor: pointer; font-size: 10px; text-align: left; }
+.memoir-family-card__menu button:hover { background: color-mix(in srgb, var(--memoir-accent) 9%, transparent); color: var(--primary-text, #29332d); }
+.memoir-family-card__expand { position: absolute; right: 50%; bottom: -13px; min-width: 34px; min-height: 27px; transform: translateX(50%); border: 1px solid color-mix(in srgb, var(--memoir-accent) 26%, var(--tree-card-border)); border-radius: 999px; background: var(--tree-card-bg); box-shadow: 0 3px 10px rgb(53 49 40 / 9%); color: var(--memoir-accent); cursor: pointer; font-size: 10px; font-weight: 730; }
+.memoir-family-card button:focus-visible { outline: 2px solid var(--memoir-accent); outline-offset: 2px; }
+.memoir-tree-poc__note { margin: 0; padding: 7px 12px; color: var(--secondary-text, #64716a); font-size: 10px; text-align: center; }
+.memoir-tree-poc__empty { display: grid; min-height: 360px; place-items: center; color: var(--secondary-text); }
+@media (pointer: coarse) { .memoir-family-card__actions { opacity: 1; } }
+@media (max-width: 720px) {
+  .memoir-tree-poc { height: max(600px, 82vh); min-height: 580px; border-radius: 18px; }
+  .memoir-tree-poc__toolbar { justify-content: flex-start; gap: 2px; padding: 6px; }
+  .memoir-tree-poc__toolbar > button { min-width: 32px; min-height: 32px; padding: 0 6px; font-size: 10px; }
+  .memoir-tree-poc__generation-pills { margin-left: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .memoir-tree-poc *, .memoir-tree-poc *::before, .memoir-tree-poc *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; } }

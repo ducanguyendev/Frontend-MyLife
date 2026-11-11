@@ -1,0 +1,273 @@
+{
+  "browser": "Edg/156.0.4314.58",
+  "results": [
+    {
+      "id": "original",
+      "form": "NFC",
+      "fonts": [
+        {
+          "familyName": "Times New Roman",
+          "postScriptName": "TimesNewRomanPSMT",
+          "isCustomFont": false,
+          "glyphCount": 8
+        },
+        {
+          "familyName": "Georgia",
+          "postScriptName": "Georgia",
+          "isCustomFont": false,
+          "glyphCount": 78
+        }
+      ],
+      "css": {
+        "fontFamily": "Georgia, serif",
+        "letterSpacing": "normal",
+        "fontKerning": "auto",
+        "fontFeatureSettings": "normal",
+        "fontVariant": "normal",
+        "lineHeight": "40px",
+        "weight": "400",
+        "transform": "none"
+      }
+    },
+    {
+      "id": "original",
+      "form": "NFD",
+      "fonts": [
+        {
+          "familyName": "Times New Roman",
+          "postScriptName": "TimesNewRomanPSMT",
+          "isCustomFont": false,
+          "glyphCount": 8
+        },
+        {
+          "familyName": "Georgia",
+          "postScriptName": "Georgia",
+          "isCustomFont": false,
+          "glyphCount": 78
+        }
+      ],
+      "css": {
+        "fontFamily": "Georgia, serif",
+        "letterSpacing": "normal",
+        "fontKerning": "auto",
+        "fontFeatureSettings": "normal",
+        "fontVariant": "normal",
+        "lineHeight": "40px",
+        "weight": "400",
+        "transform": "none"
+      }
+    },
+    {
+      "id": "shaping",
+      "form": "NFC",
+      "fonts": [
+        {
+          "familyName": "Times New Roman",
+          "postScriptName": "TimesNewRomanPSMT",
+          "isCustomFont": false,
+          "glyphCount": 8
+        },
+        {
+          "familyName": "Georgia",
+          "postScriptName": "Georgia",
+          "isCustomFont": false,
+          "glyphCount": 78
+        }
+      ],
+      "css": {
+        "fontFamily": "Georgia, serif",
+        "letterSpacing": "normal",
+        "fontKerning": "normal",
+        "fontFeatureSettings": "\"ccmp\", \"kern\", \"mark\", \"mkmk\"",
+        "fontVariant": "normal",
+        "lineHeight": "40px",
+        "weight": "400",
+        "transform": "none"
+      }
+    },
+    {
+      "id": "shaping",
+      "form": "NFD",
+      "fonts": [
+        {
+          "familyName": "Times New Roman",
+          "postScriptName": "TimesNewRomanPSMT",
+          "isCustomFont": false,
+          "glyphCount": 8
+        },
+        {
+          "familyName": "Georgia",
+          "postScriptName": "Georgia",
+          "isCustomFont": false,
+          "glyphCount": 78
+        }
+      ],
+      "css": {
+        "fontFamily": "Georgia, serif",
+        "letterSpacing": "normal",
+        "fontKerning": "normal",
+        "fontFeatureSettings": "\"ccmp\", \"kern\", \"mark\", \"mkmk\"",
+        "fontVariant": "normal",
+        "lineHeight": "40px",
+        "weight": "400",
+        "transform": "none"
+      }
+    },
+    {
+      "id": "serif-fallback",
+      "form": "NFC",
+      "fonts": [
+        {
+          "familyName": "Noto Serif",
+          "postScriptName": "NotoSerif",
+          "isCustomFont": true,
+          "glyphCount": 8
+        },
+        {
+          "familyName": "Georgia",
+          "postScriptName": "Georgia",
+          "isCustomFont": false,
+          "glyphCount": 78
+        }
+      ],
+      "css": {
+        "fontFamily": "Georgia, \"Noto Serif\", serif",
+        "letterSpacing": "normal",
+        "fontKerning": "auto",
+        "fontFeatureSettings": "normal",
+        "fontVariant": "normal",
+        "lineHeight": "40px",
+        "weight": "400",
+        "transform": "none"
+      }
+    },
+    {
+      "id": "serif-fallback",
+      "form": "NFD",
+      "fonts": [
+        {
+          "familyName": "Noto Serif",
+          "postScriptName": "NotoSerif",
+          "isCustomFont": true,
+          "glyphCount": 8
+        },
+        {
+          "familyName": "Georgia",
+          "postScriptName": "Georgia",
+          "isCustomFont": false,
+          "glyphCount": 78
+        }
+      ],
+      "css": {
+        "fontFamily": "Georgia, \"Noto Serif\", serif",
+        "letterSpacing": "normal",
+        "fontKerning": "auto",
+        "fontFeatureSettings": "normal",
+        "fontVariant": "normal",
+        "lineHeight": "40px",
+        "weight": "400",
+        "transform": "none"
+      }
+    },
+    {
+      "id": "serif-fallback-kern",
+      "form": "NFC",
+      "fonts": [
+        {
+          "familyName": "Noto Serif",
+          "postScriptName": "NotoSerif",
+          "isCustomFont": true,
+          "glyphCount": 8
+        },
+        {
+          "familyName": "Georgia",
+          "postScriptName": "Georgia",
+          "isCustomFont": false,
+          "glyphCount": 78
+        }
+      ],
+      "css": {
+        "fontFamily": "Georgia, \"Noto Serif\", serif",
+        "letterSpacing": "normal",
+        "fontKerning": "normal",
+        "fontFeatureSettings": "normal",
+        "fontVariant": "normal",
+        "lineHeight": "40px",
+        "weight": "400",
+        "transform": "none"
+      }
+    },
+    {
+      "id": "serif-fallback-kern",
+      "form": "NFD",
+      "fonts": [
+        {
+          "familyName": "Noto Serif",
+          "postScriptName": "NotoSerif",
+          "isCustomFont": true,
+          "glyphCount": 8
+        },
+        {
+          "familyName": "Georgia",
+          "postScriptName": "Georgia",
+          "isCustomFont": false,
+          "glyphCount": 78
+        }
+      ],
+      "css": {
+        "fontFamily": "Georgia, \"Noto Serif\", serif",
+        "letterSpacing": "normal",
+        "fontKerning": "normal",
+        "fontFeatureSettings": "normal",
+        "fontVariant": "normal",
+        "lineHeight": "40px",
+        "weight": "400",
+        "transform": "none"
+      }
+    },
+    {
+      "id": "noto-only",
+      "form": "NFC",
+      "fonts": [
+        {
+          "familyName": "Noto Serif",
+          "postScriptName": "NotoSerif",
+          "isCustomFont": true,
+          "glyphCount": 82
+        }
+      ],
+      "css": {
+        "fontFamily": "\"Noto Serif\", serif",
+        "letterSpacing": "normal",
+        "fontKerning": "auto",
+        "fontFeatureSettings": "normal",
+        "fontVariant": "normal",
+        "lineHeight": "40px",
+        "weight": "400",
+        "transform": "none"
+      }
+    },
+    {
+      "id": "noto-only",
+      "form": "NFD",
+      "fonts": [
+        {
+          "familyName": "Noto Serif",
+          "postScriptName": "NotoSerif",
+          "isCustomFont": true,
+          "glyphCount": 82
+        }
+      ],
+      "css": {
+        "fontFamily": "\"Noto Serif\", serif",
+        "letterSpacing": "normal",
+        "fontKerning": "auto",
+        "fontFeatureSettings": "normal",
+        "fontVariant": "normal",
+        "lineHeight": "40px",
+        "weight": "400",
+        "transform": "none"
+      }
+    }
+  ]
+}

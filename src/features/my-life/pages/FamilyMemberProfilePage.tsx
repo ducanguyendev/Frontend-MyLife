@@ -1,0 +1,109 @@
+import { MemberAgeStatus } from '@/shared/components/MemberAgeStatus';
+import { normalizeDisplayText } from '@/shared/utils/normalizeDisplayText';
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { BookOpen, CalendarDays, Edit3, MapPin, Phone, ExternalLink, UsersRound } from 'lucide-react';
+import { MapContainer } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import { Button, PageHeader, Badge, ErrorState } from '@/shared/components/ui';
+import { FamilyViewSkeleton } from '@/features/admin/components/family-tree/FamilyViewSkeleton';
+import { MemberAvatarImage } from '@/features/admin/components/family-tree/MemberAvatarImage';
+import { getSiblingKind } from '@/features/admin/components/family-tree/siblingRelations';
+import { MyLifeWorkspaceLayout } from '@/shared/layouts/MyLifeWorkspaceLayout';
+import { useLanguage } from '@/shared/hooks/useLanguage';
+import { fetchMemberProfile, type FamilyMemberProfile } from '@/features/admin/services/familyV2Service';
+import type { FamilyMember } from '@/features/admin/components/family-tree/types';
+import '@/features/admin/components/family-tree/FamilyExperience.css';
+import { RelationshipExplorer } from '@/features/admin/components/family-tree/RelationshipExplorer';
+import { FamilyLocationMap } from '@/features/admin/components/family-tree/FamilyLocationMap';
+
+export const FamilyMemberProfilePage: React.FC = () => {
+  const { id } = useParams();
+  const memberId = Number(id);
+  const navigate = useNavigate();
+  const { t, language } = useLanguage();
+  const [profile, setProfile] = useState<FamilyMemberProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [retry, setRetry] = useState(0);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    setLoading(true); setError(false);
+    fetchMemberProfile(memberId, controller.signal).then(setProfile).catch(() => { if (!controller.signal.aborted) setError(true); })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
+  }, [memberId, retry]);
+
+  const member = profile?.member;
+  const relatives = profile?.relatives ?? [];
+  const parents = relatives.filter(item => item.id === member?.fatherId || item.id === member?.motherId);
+  const spouse = relatives.filter(item => item.id === member?.spouseId);
+  const children = relatives.filter(item => item.fatherId === memberId || item.motherId === memberId || member?.childIds?.includes(item.id));
+  const siblings = relatives.filter(item => item.id !== memberId && getSiblingKind(member!, item) === 'biological');
+  const cousins = relatives.filter(item => item.id !== memberId && getSiblingKind(member!, item) === 'cousin');
+  const unknownRelations = relatives.filter(item => item.id !== memberId && getSiblingKind(member!, item) === 'unknown');
+  const dateLocale = language === 'vi' ? 'vi-VN' : 'en-GB';
+  const birth = member?.dateOfBirth ? new Date(`${member.dateOfBirth.slice(0, 10)}T00:00:00Z`) : null;
+  const death = member?.lifeStatus === 'DECEASED' && member.deathDate ? new Date(`${member.deathDate.slice(0, 10)}T00:00:00Z`) : null;
+  const hasCoordinates = Number.isFinite(member?.latitude) && Number.isFinite(member?.longitude)
+    && Number(member?.latitude) >= -90 && Number(member?.latitude) <= 90 && Number(member?.longitude) >= -180 && Number(member?.longitude) <= 180;
+
+  const relationGroup = (label: string, list: FamilyMember[]) => <div key={label} className="grid gap-3 border-b border-custom-border/60 py-4 last:border-0 sm:grid-cols-[8rem_minmax(0,1fr)]">
+    <h3 className="m-0 pt-2 text-xs font-semibold text-secondary-text">{label}</h3>
+    <ul className="m-0 flex flex-wrap gap-2 p-0">{list.length ? list.map(item => <li key={item.id} className="list-none"><Link className="family-profile__relation" to={`/mylife/family/member/${item.id}`}><MemberAvatarImage member={item} alt="" className="family-relation-avatar"/><span>{normalizeDisplayText(item.fullName)}</span></Link></li>) : <li className="list-none pt-2 text-sm text-secondary-text">{t('admin.family_v2.not_updated')}</li>}</ul>
+  </div>;
+
+  return <MyLifeWorkspaceLayout backTo="/familytree" breadcrumbName={normalizeDisplayText(member?.fullName)} showDock contentScroll="auto">
+    <div className="family-profile">
+      {loading ? <FamilyViewSkeleton view="profile"/>
+        : error || !profile || !member ? <ErrorState message={t('admin.family_v2.profile_error')} action={<Button variant="secondary" onClick={() => setRetry(value => value + 1)}>{t('admin.library_ui.retry')}</Button>}/> : <>
+          <header className="family-profile__hero">
+            <MemberAvatarImage member={member} alt={member.fullName} className="family-profile__hero-avatar" />
+            <div className="min-w-0 flex-1">
+              <PageHeader eyebrow={t('family.archive')} title={normalizeDisplayText(member.fullName)} description={<>{birth?.toLocaleDateString(dateLocale, { timeZone: 'UTC' }) ?? t('admin.family_v2.not_updated')} – {death?.toLocaleDateString(dateLocale, { timeZone: 'UTC' }) ?? t(member.lifeStatus === 'DECEASED' ? 'admin.family_v2.not_updated' : 'admin.family_v2.present')}</>}/>
+              <div className="mt-4 flex flex-wrap gap-2 text-xs text-secondary-text">
+                <Badge variant="outline">{t('admin.generation')} {member.generation}</Badge>
+                {member.gender && <Badge variant="outline">{t(`admin.gender_${member.gender.toLowerCase()}`, { defaultValue: member.gender })}</Badge>}
+                {member.role && <Badge variant="outline">{t(`admin.role_${member.role.toLowerCase()}`, { defaultValue: member.role })}</Badge>}
+              </div>
+              <div className="mt-3 text-sm"><MemberAgeStatus member={member} layout="stacked"/></div>
+              {member.address && <p className="mb-0 mt-3 flex items-start gap-2 text-sm text-secondary-text"><MapPin size={15} className="mt-0.5 shrink-0"/>{member.address}</p>}
+            </div>
+            <Button variant="primary" onClick={() => navigate('/familytree', { state: { editMemberId: member.id } })} leftIcon={<Edit3 size={16}/>}>{t('admin.family_v2.edit_member')}</Button>
+          </header>
+          <div className="family-profile__layout"><div className="family-profile__main">
+            <section className="family-profile__section"><h2><UsersRound/>{t('admin.family_v2.family_relations')}</h2><div>
+              {relationGroup(t('admin.field_father'), parents.filter(item => item.id === member.fatherId))}
+              {relationGroup(t('admin.field_mother'), parents.filter(item => item.id === member.motherId))}
+              {relationGroup(t('admin.field_spouse'), spouse)}
+              {relationGroup(t('admin.field_children'), children)}
+              {relationGroup(t('admin.family_v2.biological_siblings'), siblings)}
+              {relationGroup(t('admin.family_v2.cousins'), cousins)}
+              {unknownRelations.length > 0 && relationGroup(t('admin.family_v2.unknown_relations'), unknownRelations)}
+            </div></section>
+            <RelationshipExplorer key={member.id} members={[member, ...relatives]} initialMemberId={member.id}/>
+            <section className="family-profile__section"><h2><CalendarDays/>{normalizeDisplayText(t('admin.family_v2.member_timeline', { name: member.fullName }))}</h2>
+              {profile.timeline.length ? <ol className="m-0 space-y-5 border-l-2 border-accent/30 pl-5">{profile.timeline.map(event => <li key={`${event.sourceType}-${event.id}`} className="relative list-none"><span className="absolute -left-[1.63rem] top-1.5 h-2.5 w-2.5 rounded-full bg-accent"/><p className="m-0 text-xs font-semibold text-secondary-text">{event.eventDate ? new Date(`${event.eventDate.slice(0, 10)}T00:00:00Z`).toLocaleDateString(dateLocale, { timeZone:'UTC' }) : `${event.isApproximate ? t('admin.family_v2.approximate_date') : ''} ${event.eventYear ?? ''}`}</p><h3 className="m-0 text-sm font-semibold text-primary-text">{event.title}</h3>{event.description && <p className="m-0 text-sm text-secondary-text">{event.description}</p>}</li>)}</ol> : <p className="m-0 text-sm text-secondary-text">{t('admin.family_v2.empty_timeline')}</p>}
+              <Link to="/timeline" className="mt-5 inline-block text-sm font-semibold text-accent hover:underline">{t('family.openTimeline')} →</Link>
+            </section>
+            {member.biography && <section className="family-profile__section"><h2>{t('admin.biography')}</h2><p className="family-profile__biography">{member.biography}</p></section>}
+          </div><aside className="family-profile__aside">
+            <section className="family-profile__section"><h2>{t('family.contact')}</h2><div className="family-profile__contact">
+              {member.phoneNumber && <a href={`tel:${member.phoneNumber}`}><Phone size={15}/>{member.phoneNumber}</a>}
+              {member.facebookUrl && <a href={member.facebookUrl} target="_blank" rel="noopener noreferrer"><ExternalLink size={15}/>Facebook</a>}
+              {!member.phoneNumber && !member.facebookUrl && <p className="m-0">{t('admin.family_v2.not_updated')}</p>}
+            </div></section>
+            <section className="family-profile__section"><h2><CalendarDays/>{t('admin.family_v2.anniversaries')}</h2>
+              {profile.anniversaries.length ? <ul className="m-0 space-y-3 p-0">{profile.anniversaries.map(item => <li key={item.id} className="family-profile__anniversary list-none rounded-xl border border-custom-border p-3"><strong className="text-sm text-primary-text">{normalizeDisplayText(item.title)}</strong>{item.originalSolarDate && <p className="mb-0 mt-1 text-xs text-secondary-text">{new Date(`${item.originalSolarDate.slice(0,10)}T00:00:00Z`).toLocaleDateString(dateLocale, {timeZone:'UTC'})}</p>}{item.place && <p className="m-0 text-xs text-secondary-text">{item.place}</p>}</li>)}</ul> : <p className="m-0 text-sm text-secondary-text">{t('admin.family_v2.no_anniversaries')}</p>}
+            </section>
+            <section className="family-profile__section"><h2><MapPin/>{t('admin.family_v2.location')}</h2><p className="text-sm text-secondary-text">{member.address || t('admin.family_v2.not_updated')}</p>
+              {hasCoordinates && <div className="family-profile__map"><MapContainer center={[member.latitude!,member.longitude!]} zoom={13} scrollWheelZoom={false} zoomControl={false} className="family-profile__map-leaflet"><FamilyLocationMap latitude={member.latitude!} longitude={member.longitude!}/></MapContainer></div>}
+              <Link to="/map" className="mt-4 inline-block text-sm font-semibold text-accent hover:underline">{t('family.openMap')} →</Link>
+            </section>
+            <section className="family-profile__section"><h2><BookOpen/>{t('admin.family_v2.library')}</h2><p className="text-sm text-secondary-text">{profile.libraryMemberLinkAvailable ? t('admin.family_v2.library_related') : t('admin.family_v2.library_not_linked')}</p><Link to="/library" className="text-sm font-semibold text-accent hover:underline">{t('family.openLibrary')} →</Link></section>
+          </aside></div>
+        </>}
+    </div>
+  </MyLifeWorkspaceLayout>;
+};

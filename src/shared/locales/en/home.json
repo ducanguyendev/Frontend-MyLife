@@ -1,0 +1,14 @@
+{
+  "greet": "Hi I am",
+  "name": "NGUYEN DUC",
+  "title": "Backend & Game Developer",
+  "desc": "Specializing in high-performance backend architectures, scalable API systems, and immersive gameplay programming using C# and Go alongside Unity and Unreal Engine.",
+  "btnProjects": "View Projects",
+  "btnContact": "Contact Me",
+  "statsExp": "Experience",
+  "statsExpVal": "1 Year",
+  "statsProj": "Project done",
+  "statsProjVal": "30+",
+  "statsClients": "Happy Clients",
+  "statsClientsVal": "20+"
+}

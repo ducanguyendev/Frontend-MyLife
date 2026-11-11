@@ -1,0 +1,227 @@
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const vm = require('node:vm');
+const ts = require('typescript');
+
+const root = path.resolve(__dirname, '..');
+const read = file => fs.readFileSync(path.join(root, file), 'utf8');
+const loadTypeScriptModule = file => {
+  const source = read(file);
+  const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } }).outputText;
+  const module = { exports: {} };
+  vm.runInNewContext(`(function(exports, require, module) { ${compiled}\n})`, { Intl, Date })(module.exports, require, module);
+  return module.exports;
+};
+
+test('relationship UI uses the authenticated server relationship graph and displays its path', () => {
+  const service = read('src/features/admin/services/familyV2Service.ts');
+  const explorer = read('src/features/admin/components/family-tree/RelationshipExplorer.tsx');
+  const routes = read('src/App.tsx');
+  assert.match(service, /\/api\/family-tree\/relationship\?fromMemberId=/);
+  assert.match(explorer, /fetchRelationship\(referenceId, requestedTarget, controller\.signal\)/);
+  assert.match(explorer, /fetchFamilyMembers\(controller\.signal\)/);
+  assert.match(explorer, /normalizeSearch\(`\$\{item\.fullName\} \$\{item\.address \?\? ''\}`\)/);
+  assert.match(explorer, /item\.id !== referenceId/);
+  assert.match(explorer, /<FloatingField[\s\S]*label=\{t\('admin\.family_v2\.choose_person'\)\}/);
+  assert.match(explorer, /aria-activedescendant/);
+  assert.match(explorer, /displayPath\.map/);
+  assert.match(explorer, /navigate\(`\/mylife\/family\/member\/\$\{node\.memberId\}`\)/);
+  assert.match(routes, /path="\/mylife\/family\/member\/:id"/);
+});
+
+test('family timeline UI exposes source data, safe event CRUD and useful filters', () => {
+  const service = read('src/features/admin/services/familyV2Service.ts');
+  const page = read('src/features/my-life/pages/FamilyTimelinePage.tsx');
+  const card = read('src/features/my-life/components/timeline/TimelineEventCard.tsx');
+  const groups = read('src/features/my-life/components/timeline/timelineUtils.ts');
+  const routes = read('src/App.tsx');
+  assert.match(service, /\/api\/family-tree\/timeline/);
+  assert.match(service, /saveFamilyTimelineEvent/);
+  assert.match(service, /deleteFamilyTimelineEvent/);
+  assert.match(page, /fetchFamilyTimeline/);
+  assert.match(page, /event\.isDerived/);
+  assert.match(page, /isDerivedOnlyEventType\(event\.eventType\)/);
+  assert.match(page, /matchesTimelineFilter/);
+  assert.match(card, /event\.latitude !== null && event\.longitude !== null/);
+  assert.match(page, /groupTimelineEventsByYear\(filtered\)/);
+  assert.match(page, /actions=\{defaultEventType &&/);
+  assert.match(page, /birth_death_auto_hint/);
+  assert.match(page, /other_events_readonly_hint/);
+  assert.match(page, /matchesTimelineFilter\(event\.eventType, filter\)/);
+  assert.match(page, /eventType: event\.eventType/);
+  assert.match(groups, /event\.eventDate[\s\S]*event\.eventYear/);
+  assert.match(routes, /path="\/timeline"/);
+});
+
+test('timeline groups legacy and derived event types and chooses safe create defaults', () => {
+  const { FILTER_TYPES, KNOWN_FILTER_EVENT_TYPES, getDefaultEventTypeForFilter, isDerivedOnlyEventType, matchesTimelineFilter } = loadTypeScriptModule('src/features/my-life/components/timeline/types.ts');
+  assert.deepEqual(Array.from(FILTER_TYPES.BIRTH), ['BIRTH', 'DEATH']);
+  assert.deepEqual(Array.from(FILTER_TYPES.MARRIAGE), ['MARRIAGE']);
+  assert.deepEqual(Array.from(FILTER_TYPES.FAMILY), ['CUSTOM', 'CHILD_BIRTH']);
+  assert.deepEqual(Array.from(FILTER_TYPES.LOCATION), ['ADDRESS_CHANGE']);
+  assert.deepEqual(Array.from(FILTER_TYPES.MEMORY), ['MEMORY', 'ANNIVERSARY']);
+  assert.ok(KNOWN_FILTER_EVENT_TYPES.includes('CHILD_BIRTH'));
+  assert.equal(matchesTimelineFilter('CHILD_BIRTH', 'FAMILY'), true);
+  assert.equal(matchesTimelineFilter('ANNIVERSARY', 'MEMORY'), true);
+  assert.equal(matchesTimelineFilter('FUTURE_EVENT_TYPE', 'OTHER'), true);
+  assert.equal(matchesTimelineFilter('CUSTOM', 'OTHER'), false);
+  assert.equal(matchesTimelineFilter('FUTURE_EVENT_TYPE', 'ALL'), true);
+  assert.equal(isDerivedOnlyEventType('BIRTH'), true);
+  assert.equal(isDerivedOnlyEventType('DEATH'), true);
+  assert.equal(isDerivedOnlyEventType('CHILD_BIRTH'), false);
+  for (const [filter, eventType] of [
+    ['ALL', 'CUSTOM'], ['MARRIAGE', 'MARRIAGE'], ['FAMILY', 'CUSTOM'],
+    ['LOCATION', 'ADDRESS_CHANGE'], ['MEMORY', 'MEMORY'],
+  ]) assert.equal(getDefaultEventTypeForFilter(filter), eventType);
+  assert.equal(getDefaultEventTypeForFilter('BIRTH'), null);
+  assert.equal(getDefaultEventTypeForFilter('OTHER'), null);
+});
+
+test('family timeline uses a page-header action and shared modal for create and edit', () => {
+  const page = read('src/features/my-life/pages/FamilyTimelinePage.tsx');
+  const modal = read('src/features/my-life/components/TimelineEventModal.tsx');
+  const input = read('src/shared/components/ui/Input.tsx');
+  const textarea = read('src/shared/components/ui/Textarea.tsx');
+  const memberForm = read('src/features/admin/components/family-tree/MemberFormModal.tsx');
+  const card = read('src/features/my-life/components/timeline/TimelineEventCard.tsx');
+  assert.match(page, /PageHeader/); assert.match(page, /defaultEventType &&/);
+  assert.match(page, /onClick=\{openCreateModal\}/);
+  assert.match(page, /onEdit=\{beginEdit\}/);
+  assert.match(page, /TimelineYearSection/);
+  assert.match(page, /<TimelineEventModal isOpen form=\{form\}/);
+  assert.doesNotMatch(page, /\{form && <form/);
+  assert.match(modal, /<Modal[\s\S]*?ariaLabel=\{title\}/);
+  assert.match(modal, /editing \? 'admin\.family_v2\.edit_event' : 'admin\.family_v2\.add_event'/);
+  assert.match(modal, /<Select[\s\S]*?<SelectItem/);
+  assert.match(modal, /<Textarea/);
+  assert.match(modal, /floatingLabel appearance="simple"/);
+  assert.match(modal, /<DateInput[\s\S]*?formatBackendToDob[\s\S]*?formatDobToBackend/);
+  assert.match(modal, /floatingLabel/);
+  assert.match(input, /floatingLabelAlways/);
+  assert.match(textarea, /floatingLabelAlways/);
+  assert.match(memberForm, /<DateInput/);
+  assert.equal(JSON.parse(read('src/shared/locales/vi/admin.json')).family_v2.event_year, 'Năm');
+  assert.equal(JSON.parse(read('src/shared/locales/en/admin.json')).family_v2.event_year, 'Year');
+  assert.match(card, /event\.isDerived \|\| isDerivedOnlyEventType/);
+});
+
+test('timeline modal renders type-specific semantic forms with shared controls and marriage validation', () => {
+  const modal = read('src/features/my-life/components/TimelineEventModal.tsx');
+  const vi = JSON.parse(read('src/shared/locales/vi/admin.json')).family_v2;
+  const en = JSON.parse(read('src/shared/locales/en/admin.json')).family_v2;
+  for (const token of ['default: return <>', 'case \'MEMORY\'', 'case \'ADDRESS_CHANGE\'', 'case \'MARRIAGE\'']) assert.ok(modal.includes(token), `missing ${token} form`);
+  for (const token of ['memory_title', 'memory_content', 'moved_member', 'new_address', 'marriage_person_one', 'marriage_person_two']) assert.ok(modal.includes(token), `missing ${token} semantic field`);
+  assert.match(modal, /\['CUSTOM', 'MEMORY', 'ADDRESS_CHANGE', 'MARRIAGE'\]/);
+  assert.doesNotMatch(modal, /case 'CHILD_BIRTH'/);
+  assert.match(modal, /legacyEventType && <p/);
+  assert.match(modal, /legacy_event_type/);
+  assert.match(modal, /form\.memberId === form\.relatedMemberId/);
+  assert.match(modal, /same_marriage_member_error/);
+  assert.match(modal, /<Input/);
+  assert.match(modal, /<Select/);
+  assert.doesNotMatch(modal, /<Select[^>]*label=\{t\('admin\.family_v2\.event_type'\)\}/);
+  assert.match(modal, /role="group" aria-label=\{t\('admin\.family_v2\.event_type'\)\}/);
+  assert.match(modal, /EVENT_TYPES\.map\(eventType => <button[\s\S]*aria-pressed=\{type === eventType\}/);
+  assert.match(modal, /eventTypeHelp/);
+  assert.match(modal, /event_type_\$\{type\.toLowerCase\(\)\}_help/);
+  assert.match(modal, /if \(eventType === form\.eventType\) return/);
+  assert.match(modal, /maxWidth="full"/);
+  assert.match(modal, /memory-form--timeline/);
+  assert.match(modal, /event_section_primary/);
+  assert.match(modal, /event_section_time_location[\s\S]*?\{approximateField\}/);
+  assert.match(modal, /event_section_content/);
+  assert.match(modal, /primaryFields\(\)[\s\S]*?dateFields\(dateLabel\)[\s\S]*?notesField\(contentLabel, contentPlaceholder\)/);
+  assert.match(modal, /description=\{t\('admin\.family_v2\.timeline_event_modal_description'\)\}/);
+  assert.match(read('src/features/my-life/components/timeline/TimelineFilterBar.tsx'), /<Chip/);
+  assert.match(read('src/features/my-life/components/timeline/timelinePillStyles.ts'), /getTimelinePillClass\(active: boolean\)/);
+  assert.match(modal, /<Modal/);
+  assert.match(modal, /<Textarea/);
+  assert.match(modal, /buildTimelineEventSuggestedTitle/);
+  assert.match(read('src/features/my-life/pages/FamilyTimelinePage.tsx'), /saveFamilyTimelineEvent\(\{ \.\.\.form,[\s\S]*?\}, editingId\)/);
+  assert.equal(vi.marriage_person_one, 'Ng\u01b0\u1eddi th\u1ee9 nh\u1ea5t');
+  assert.equal(vi.new_address, '\u0110\u1ecba ch\u1ec9 m\u1edbi');
+  assert.equal(vi.memory_content, 'N\u1ed9i dung k\u00fd \u1ee9c');
+  assert.equal(vi.timeline_event_modal_description, 'Ghi lại một dấu mốc, ký ức hoặc thay đổi quan trọng của gia đình.');
+  assert.equal(en.timeline_event_modal_description, 'Record an important family milestone, memory, or change.');
+  assert.equal(vi.approximate_date_short, 'Ngày chỉ mang tính ước lượng');
+  assert.equal(en.approximate_date_short, 'Date is approximate');
+  for (const key of ['marriage_person_one', 'new_address', 'memory_content', 'same_marriage_member_error']) assert.equal(typeof en[key], 'string');
+});
+
+test('timeline event badges map every known type and unknown types to translated labels', () => {
+  const card = read('src/features/my-life/components/timeline/TimelineEventCard.tsx');
+  const mapping = read('src/features/my-life/components/timeline/eventTypeTranslation.ts');
+  const vi = JSON.parse(read('src/shared/locales/vi/admin.json')).family_v2;
+  const en = JSON.parse(read('src/shared/locales/en/admin.json')).family_v2;
+  assert.match(card, /translate\(getTimelineEventTypeTranslationKey\(event\.eventType\)\)/);
+  assert.doesNotMatch(card, /type_\$\{event\.eventType\.toLowerCase\(\)\}/);
+  for (const type of ['BIRTH', 'DEATH', 'MARRIAGE', 'CHILD_BIRTH', 'ADDRESS_CHANGE', 'ANNIVERSARY', 'MEMORY', 'CUSTOM']) {
+    assert.match(mapping, new RegExp(`${type}: 'admin\\.family_v2\\.type_`));
+  }
+  assert.match(mapping, /\?\? 'admin\.family_v2\.type_event'/);
+  assert.deepEqual(['birth', 'death', 'marriage', 'child_birth', 'address_change', 'anniversary', 'memory', 'custom'].map(key => vi[`type_${key}`]),
+    ['Chào đời', 'Mất', 'Kết hôn', 'Con chào đời', 'Chuyển nơi ở', 'Kỷ niệm', 'Ký ức', 'Sự kiện gia đình']);
+  assert.deepEqual(['birth', 'death', 'marriage', 'child_birth', 'address_change', 'anniversary', 'memory', 'custom'].map(key => en[`type_${key}`]),
+    ['Birth', 'Death', 'Marriage', 'Child birth', 'Address change', 'Anniversary', 'Memory', 'Family event']);
+  assert.equal(vi.type_event, 'Sự kiện');
+  assert.equal(en.type_event, 'Event');
+  assert.equal(vi.birth_death_auto_hint, 'Sinh và mất được tự động cập nhật từ hồ sơ thành viên.');
+  assert.equal(en.birth_death_auto_hint, 'Birth and death events are automatically updated from member profiles.');
+});
+
+test('timeline presentation localizes derived titles only and formats date-only values safely', () => {
+  const { getTimelineEventDisplayTitle, formatTimelineDate } = loadTypeScriptModule('src/features/my-life/components/timeline/timelinePresentation.ts');
+  const locale = JSON.parse(read('src/shared/locales/vi/admin.json')).family_v2;
+  const en = JSON.parse(read('src/shared/locales/en/admin.json')).family_v2;
+  const translateFor = dictionary => (key, options = {}) => String(dictionary[key.replace('admin.family_v2.', '')] ?? key).replace(/\{\{(\w+)\}\}/g, (_match, name) => options[name] ?? '');
+  const base = { id: 1, memberId: 1, memberName: 'Nguyễn Bửu', eventType: 'BIRTH', title: 'Birth of Nguyễn Bửu', description: null, eventDate: '1935-12-01', eventYear: 1935, isApproximate: false, location: null, latitude: null, longitude: null, relatedMemberId: null, sourceType: 'MEMBER', sourceId: 1, isDerived: true };
+  assert.equal(getTimelineEventDisplayTitle(base, translateFor(locale)), 'Nguyễn Bửu chào đời');
+  assert.equal(getTimelineEventDisplayTitle(base, translateFor(en)), 'Birth of Nguyễn Bửu');
+  assert.equal(getTimelineEventDisplayTitle({ ...base, eventType: 'DEATH', title: 'Death of Nguyễn Bửu' }, translateFor(locale)), 'Nguyễn Bửu qua đời');
+  assert.equal(getTimelineEventDisplayTitle({ ...base, eventType: 'DEATH', title: 'Death of Nguyễn Bửu' }, translateFor(en)), 'Death of Nguyễn Bửu');
+  assert.equal(getTimelineEventDisplayTitle({ ...base, isDerived: false, title: 'Cả nhà đi Đà Lạt' }, translateFor(locale)), 'Cả nhà đi Đà Lạt');
+  assert.equal(getTimelineEventDisplayTitle({ ...base, memberName: null }, translateFor(locale)), 'Một thành viên chào đời');
+  assert.equal(formatTimelineDate('1935-12-01', 'vi'), '01/12/1935');
+  assert.equal(formatTimelineDate('1970-03-12', 'vi'), '12/03/1970');
+  assert.equal(formatTimelineDate('1974-01-09', 'vi'), '09/01/1974');
+  assert.equal(translateFor(locale)('admin.family_v2.approximate_year', { year: 1975 }), 'Khoảng năm 1975');
+  assert.equal(translateFor(en)('admin.family_v2.approximate_year', { year: 1975 }), 'Around 1975');
+});
+
+test('member profile connects family, anniversaries, timeline, avatar and map without guessing library matches', () => {
+  const service = read('src/features/admin/services/familyV2Service.ts');
+  const page = read('src/features/my-life/pages/FamilyMemberProfilePage.tsx');
+  const modal = read('src/features/admin/components/family-tree/MemberDetailModal.tsx');
+  assert.match(service, /\/profile/);
+  assert.match(page, /MemberAvatarImage/);
+  assert.match(page, /RelationshipExplorer/);
+  assert.match(page, /profile\.anniversaries/);
+  assert.match(page, /profile\.timeline/);
+  assert.match(page, /MapContainer/);
+  assert.match(page, /libraryMemberLinkAvailable/);
+  assert.match(page, /library_not_linked/);
+  assert.match(modal, /onOpenProfile/);
+});
+
+test('English and Vietnamese locales include V2 page, relationship and event keys', () => {
+  const viAdmin = JSON.parse(read('src/shared/locales/vi/admin.json'));
+  const vi = viAdmin.family_v2;
+  const en = JSON.parse(read('src/shared/locales/en/admin.json')).family_v2;
+  const required = ['relationship', 'view_relationship', 'relationship_error', 'family_relations', 'member_timeline', 'timeline', 'add_event', 'edit_event', 'delete_event', 'approximate_date', 'location', 'view_on_map', 'library_not_linked'];
+  for (const locale of [vi, en]) for (const key of required) assert.equal(typeof locale[key], 'string', `missing ${key}`);
+
+  assert.equal(vi.timeline, 'Dòng thời gian gia đình');
+  assert.equal(vi.add_event, 'Thêm sự kiện');
+  assert.equal(vi.relationship, 'Tra cứu quan hệ');
+  assert.equal(vi.edit_member, 'Chỉnh sửa thành viên');
+  assert.equal(vi.location, 'Địa điểm');
+
+  const viMyLife = JSON.parse(read('src/shared/locales/vi/myLife.json'));
+  assert.deepEqual(viMyLife.modules.timeline, {
+    title: 'Dòng thời gian gia đình',
+    description: 'Lưu giữ các dấu mốc và ký ức của gia đình qua nhiều thế hệ.',
+    open: 'Mở dòng thời gian',
+  });
+});

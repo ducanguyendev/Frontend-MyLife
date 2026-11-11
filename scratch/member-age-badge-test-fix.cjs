@@ -1,0 +1,1 @@
+﻿const fs=require('fs');const f='tests/member-age.browser.cjs';let s=fs.readFileSync(f,'utf8').replace("card.badge.startsWith(locale==='vi'?'Đời':'Generation')", "card.badge.startsWith(admin.generation)");fs.writeFileSync(f,s);

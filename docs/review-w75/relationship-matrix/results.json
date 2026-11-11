@@ -1,0 +1,92 @@
+[
+  {
+    "width": 1440,
+    "theme": "light",
+    "queries": 12,
+    "categories": [
+      "parent-child",
+      "grandparent-grandchild",
+      "sibling",
+      "cousin",
+      "spouse",
+      "unknown"
+    ],
+    "apiOrder": "canonical in both request directions",
+    "errors": []
+  },
+  {
+    "width": 1440,
+    "theme": "dark",
+    "queries": 12,
+    "categories": [
+      "parent-child",
+      "grandparent-grandchild",
+      "sibling",
+      "cousin",
+      "spouse",
+      "unknown"
+    ],
+    "apiOrder": "canonical in both request directions",
+    "errors": []
+  },
+  {
+    "width": 1920,
+    "theme": "light",
+    "queries": 12,
+    "categories": [
+      "parent-child",
+      "grandparent-grandchild",
+      "sibling",
+      "cousin",
+      "spouse",
+      "unknown"
+    ],
+    "apiOrder": "canonical in both request directions",
+    "errors": []
+  },
+  {
+    "width": 1920,
+    "theme": "dark",
+    "queries": 12,
+    "categories": [
+      "parent-child",
+      "grandparent-grandchild",
+      "sibling",
+      "cousin",
+      "spouse",
+      "unknown"
+    ],
+    "apiOrder": "canonical in both request directions",
+    "errors": []
+  },
+  {
+    "width": 390,
+    "theme": "light",
+    "queries": 12,
+    "categories": [
+      "parent-child",
+      "grandparent-grandchild",
+      "sibling",
+      "cousin",
+      "spouse",
+      "unknown"
+    ],
+    "apiOrder": "canonical in both request directions",
+    "errors": []
+  },
+  {
+    "width": 390,
+    "theme": "dark",
+    "queries": 12,
+    "categories": [
+      "parent-child",
+      "grandparent-grandchild",
+      "sibling",
+      "cousin",
+      "spouse",
+      "unknown"
+    ],
+    "apiOrder": "canonical in both request directions",
+    "errors": []
+  }
+]

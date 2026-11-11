@@ -1,0 +1,15 @@
+[
+  ".family-gallery-card h2",
+  ".family-quick-detail header h2",
+  ".family-profile__section h2",
+  ".memory-section-title h2",
+  ".timeline-year-section > h2",
+  ".timeline-event h3",
+  ".memory-calendar [aria-haspopup=dialog]",
+  ".memory-upcoming__header h2",
+  ".anniversary-event__summary h3",
+  ".anniversary-date-tile strong",
+  ".memory-album__copy > strong",
+  ".library-album-heading__title h2",
+  ".library-lightbox__metadata h2"
+]

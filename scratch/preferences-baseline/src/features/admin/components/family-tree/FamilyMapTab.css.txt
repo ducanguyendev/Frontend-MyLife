@@ -1,0 +1,50 @@
+.family-distribution-map .leaflet-popup-content-wrapper,
+.family-distribution-map .leaflet-popup-tip {
+  background: var(--secondary-bg);
+  color: var(--primary-text);
+}
+
+.family-distribution-map {
+  min-height: min(360px, 58dvh);
+  background: var(--primary-bg);
+}
+
+.family-distribution-map .leaflet-popup-content {
+  margin: 12px 14px;
+  max-width: min(15rem, calc(100vw - 6rem));
+  overflow-wrap: anywhere;
+}
+
+.family-distribution-map .leaflet-popup-content .text-gray-600 {
+  color: var(--secondary-text);
+}
+
+.family-map-popup-content {
+  max-width: min(15rem, calc(100vw - 6rem));
+  color: var(--primary-text);
+  overflow-wrap: anywhere;
+}
+
+.family-map-surface .leaflet-control-attribution {
+  max-width: min(70%, 22rem);
+}
+
+.family-map-distribution-panel {
+  width: calc(100% + 1.5rem) !important;
+  max-width: none !important;
+  height: min(74dvh, 36rem);
+  max-height: none !important;
+  align-self: flex-end;
+  margin: 0 -0.75rem -0.75rem;
+  border-radius: 1.5rem 1.5rem 0 0;
+}
+
+@media (min-width: 640px) {
+  .family-map-distribution-panel {
+    width: 27rem !important;
+    height: 100dvh;
+    align-self: stretch;
+    margin: -1.25rem -1.25rem -1.25rem auto;
+    border-radius: 1.5rem 0 0 1.5rem;
+  }
+}

@@ -1,0 +1,46 @@
+import { normalizeDisplayText } from '@/shared/utils/normalizeDisplayText';
+import type { HTMLAttributes, ReactNode } from 'react';
+import { AlertCircle, CheckCircle2, Info, LoaderCircle } from 'lucide-react';
+
+export function PageContainer({ children, className = '', ...props }: HTMLAttributes<HTMLDivElement>) {
+  return <div className={`mx-auto w-full max-w-[1280px] px-4 py-8 sm:px-6 lg:px-10 lg:py-12 ${className}`} {...props}>{children}</div>;
+}
+
+export function PageHeader({ eyebrow, title, description, actions, badge }: { eyebrow?: string; title: ReactNode; description?: ReactNode; actions?: ReactNode; badge?: ReactNode }) {
+  return <header className="ds-page-header">
+    <div className="min-w-0 max-w-3xl">{eyebrow && <p className="ds-page-header__eyebrow">{eyebrow}</p>}<div className="flex flex-wrap items-center gap-3"><h1>{typeof title === 'string' ? normalizeDisplayText(title) : title}</h1>{badge}</div>{description && <p className="ds-page-header__description">{description}</p>}</div>{actions && <div className="ds-page-header__actions">{actions}</div>}
+  </header>;
+}
+
+export function StatCard({ label, value, icon, className = '' }: { label: ReactNode; value: ReactNode; icon?: ReactNode; className?: string }) {
+  return <Surface className={`flex min-w-0 flex-col gap-4 p-5 ${className}`}><div className="flex items-center justify-between gap-3"><p className="text-xs text-secondary-text">{label}</p>{icon && <span className="text-accent">{icon}</span>}</div><p className="text-3xl font-semibold tracking-tight text-primary-text">{value}</p></Surface>;
+}
+
+export function SectionHeader({ title, description, action }: { title: ReactNode; description?: ReactNode; action?: ReactNode }) {
+  return <div className="mb-4 flex items-end justify-between gap-4"><div><h2 className="text-lg font-semibold tracking-tight text-[var(--text-primary)]">{typeof title === 'string' ? normalizeDisplayText(title) : title}</h2>{description && <p className="mt-1 text-sm text-[var(--text-secondary)]">{description}</p>}</div>{action}</div>;
+}
+
+export function Surface({ children, className = '', ...props }: HTMLAttributes<HTMLDivElement>) {
+  return <div className={`rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--surface-primary)] shadow-[var(--shadow-xs)] ${className}`} {...props}>{children}</div>;
+}
+
+export function Avatar({ name, src, size = 'md' }: { name: string; src?: string; size?: 'sm' | 'md' | 'lg' }) {
+  const sizes = { sm: 'size-8 text-xs', md: 'size-11 text-sm', lg: 'size-14 text-lg' };
+  return <span className={`inline-grid shrink-0 place-items-center overflow-hidden rounded-full bg-[var(--brand-primary-soft)] font-semibold text-[var(--brand-primary)] ${sizes[size]}`} aria-label={name}>
+    {src ? <img className="size-full object-cover" src={src} alt="" /> : name.trim().split(/\s+/).slice(0, 2).map(part => part[0]).join('').toLocaleUpperCase()}
+  </span>;
+}
+
+export function StatusPill({ children, tone = 'neutral' }: { children: ReactNode; tone?: 'neutral' | 'success' | 'warning' | 'danger' | 'info' }) {
+  const tones = { neutral: 'bg-[var(--bg-subtle)] text-[var(--text-secondary)]', success: 'bg-[var(--state-success-soft)] text-[var(--state-success)]', warning: 'bg-[var(--state-warning-soft)] text-[var(--state-warning)]', danger: 'bg-[var(--state-danger-soft)] text-[var(--state-danger)]', info: 'bg-[var(--state-info-soft)] text-[var(--state-info)]' };
+  return <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${tones[tone]}`}>{children}</span>;
+}
+
+export function EmptyState({ title, description, action }: { title: ReactNode; description?: ReactNode; action?: ReactNode }) {
+  return <div className="grid min-h-48 place-items-center rounded-[var(--radius-lg)] border border-dashed border-[var(--border-strong)] bg-[var(--surface-secondary)] p-8 text-center"><div><span className="mx-auto mb-3 grid size-10 place-items-center rounded-full bg-[var(--brand-primary-soft)] text-[var(--brand-primary)]"><Info size={18} /></span><h3 className="font-semibold text-[var(--text-primary)]">{typeof title === 'string' ? normalizeDisplayText(title) : title}</h3>{description && <p className="mx-auto mt-1 max-w-md text-sm leading-6 text-[var(--text-secondary)]">{description}</p>}{action && <div className="mt-4">{action}</div>}</div></div>;
+}
+
+export function FeedbackSample({ kind = 'error', children }: { kind?: 'error' | 'success' | 'loading'; children: ReactNode }) {
+  const config = { error: { Icon: AlertCircle, tone: 'var(--state-danger)' }, success: { Icon: CheckCircle2, tone: 'var(--state-success)' }, loading: { Icon: LoaderCircle, tone: 'var(--brand-primary)' } }[kind];
+  return <div className="flex items-center gap-2 text-sm" style={{ color: config.tone }} role={kind === 'error' ? 'alert' : undefined}><config.Icon className={kind === 'loading' ? 'animate-spin' : ''} size={17} />{children}</div>;
+}

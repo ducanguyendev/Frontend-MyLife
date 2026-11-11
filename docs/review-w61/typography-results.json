@@ -1,0 +1,518 @@
+{
+  "landing": [
+    {
+      "theme": "light",
+      "width": 1366,
+      "height": 768,
+      "fonts": [
+        {
+          "familyName": "Noto Serif",
+          "postScriptName": "NotoSerif-Medium",
+          "isCustomFont": true,
+          "glyphCount": 18
+        },
+        {
+          "familyName": "Noto Serif",
+          "postScriptName": "NotoSerif-SemiBold",
+          "isCustomFont": true,
+          "glyphCount": 19
+        }
+      ],
+      "overflow": false
+    },
+    {
+      "theme": "light",
+      "width": 1440,
+      "height": 900,
+      "fonts": [
+        {
+          "familyName": "Noto Serif",
+          "postScriptName": "NotoSerif-Medium",
+          "isCustomFont": true,
+          "glyphCount": 18
+        },
+        {
+          "familyName": "Noto Serif",
+          "postScriptName": "NotoSerif-SemiBold",
+          "isCustomFont": true,
+          "glyphCount": 19
+        }
+      ],
+      "overflow": false
+    },
+    {
+      "theme": "light",
+      "width": 1920,
+      "height": 1080,
+      "fonts": [
+        {
+          "familyName": "Noto Serif",
+          "postScriptName": "NotoSerif-Medium",
+          "isCustomFont": true,
+          "glyphCount": 17
+        },
+        {
+          "familyName": "Noto Serif",
+          "postScriptName": "NotoSerif-SemiBold",
+          "isCustomFont": true,
+          "glyphCount": 19
+        }
+      ],
+      "overflow": false
+    },
+    {
+      "theme": "light",
+      "width": 820,
+      "height": 1180,
+      "fonts": [
+        {
+          "familyName": "Noto Serif",
+          "postScriptName": "NotoSerif-Medium",
+          "isCustomFont": true,
+          "glyphCount": 18
+        },
+        {
+          "familyName": "Noto Serif",
+          "postScriptName": "NotoSerif-SemiBold",
+          "isCustomFont": true,
+          "glyphCount": 20
+        }
+      ],
+      "overflow": false
+    },
+    {
+      "theme": "light",
+      "width": 390,
+      "height": 844,
+      "fonts": [
+        {
+          "familyName": "Noto Serif",
+          "postScriptName": "NotoSerif-Medium",
+          "isCustomFont": true,
+          "glyphCount": 17
+        },
+        {
+          "familyName": "Noto Serif",
+          "postScriptName": "NotoSerif-SemiBold",
+          "isCustomFont": true,
+          "glyphCount": 19
+        }
+      ],
+      "overflow": false
+    },
+    {
+      "theme": "dark",
+      "width": 1366,
+      "height": 768,
+      "fonts": [
+        {
+          "familyName": "Noto Serif",
+          "postScriptName": "NotoSerif-Medium",
+          "isCustomFont": true,
+          "glyphCount": 18
+        },
+        {
+          "familyName": "Noto Serif",
+          "postScriptName": "NotoSerif-SemiBold",
+          "isCustomFont": true,
+          "glyphCount": 19
+        }
+      ],
+      "overflow": false
+    },
+    {
+      "theme": "dark",
+      "width": 1440,
+      "height": 900,
+      "fonts": [
+        {
+          "familyName": "Noto Serif",
+          "postScriptName": "NotoSerif-Medium",
+          "isCustomFont": true,
+          "glyphCount": 18
+        },
+        {
+          "familyName": "Noto Serif",
+          "postScriptName": "NotoSerif-SemiBold",
+          "isCustomFont": true,
+          "glyphCount": 19
+        }
+      ],
+      "overflow": false
+    },
+    {
+      "theme": "dark",
+      "width": 1920,
+      "height": 1080,
+      "fonts": [
+        {
+          "familyName": "Noto Serif",
+          "postScriptName": "NotoSerif-Medium",
+          "isCustomFont": true,
+          "glyphCount": 17
+        },
+        {
+          "familyName": "Noto Serif",
+          "postScriptName": "NotoSerif-SemiBold",
+          "isCustomFont": true,
+          "glyphCount": 19
+        }
+      ],
+      "overflow": false
+    },
+    {
+      "theme": "dark",
+      "width": 820,
+      "height": 1180,
+      "fonts": [
+        {
+          "familyName": "Noto Serif",
+          "postScriptName": "NotoSerif-Medium",
+          "isCustomFont": true,
+          "glyphCount": 18
+        },
+        {
+          "familyName": "Noto Serif",
+          "postScriptName": "NotoSerif-SemiBold",
+          "isCustomFont": true,
+          "glyphCount": 20
+        }
+      ],
+      "overflow": false
+    },
+    {
+      "theme": "dark",
+      "width": 390,
+      "height": 844,
+      "fonts": [
+        {
+          "familyName": "Noto Serif",
+          "postScriptName": "NotoSerif-Medium",
+          "isCustomFont": true,
+          "glyphCount": 17
+        },
+        {
+          "familyName": "Noto Serif",
+          "postScriptName": "NotoSerif-SemiBold",
+          "isCustomFont": true,
+          "glyphCount": 19
+        }
+      ],
+      "overflow": false
+    }
+  ],
+  "samples": [
+    {
+      "fontIndex": 0,
+      "formIndex": 0,
+      "weightIndex": 0,
+      "fonts": [
+        {
+          "familyName": "Inter Variable",
+          "postScriptName": "InterVariable-Text",
+          "isCustomFont": true,
+          "glyphCount": 80
+        }
+      ]
+    },
+    {
+      "fontIndex": 0,
+      "formIndex": 0,
+      "weightIndex": 1,
+      "fonts": [
+        {
+          "familyName": "Inter Variable",
+          "postScriptName": "InterVariable-Text-Medium",
+          "isCustomFont": true,
+          "glyphCount": 80
+        }
+      ]
+    },
+    {
+      "fontIndex": 0,
+      "formIndex": 0,
+      "weightIndex": 2,
+      "fonts": [
+        {
+          "familyName": "Inter Variable",
+          "postScriptName": "InterVariable-Text-SemiBold",
+          "isCustomFont": true,
+          "glyphCount": 80
+        }
+      ]
+    },
+    {
+      "fontIndex": 0,
+      "formIndex": 0,
+      "weightIndex": 3,
+      "fonts": [
+        {
+          "familyName": "Inter Variable",
+          "postScriptName": "InterVariable-Text-Bold",
+          "isCustomFont": true,
+          "glyphCount": 79
+        }
+      ]
+    },
+    {
+      "fontIndex": 0,
+      "formIndex": 0,
+      "weightIndex": 4,
+      "fonts": [
+        {
+          "familyName": "Inter Variable",
+          "postScriptName": "InterVariable-Text-Bold",
+          "isCustomFont": true,
+          "glyphCount": 79
+        }
+      ]
+    },
+    {
+      "fontIndex": 0,
+      "formIndex": 0,
+      "weightIndex": 5,
+      "fonts": [
+        {
+          "familyName": "Inter Variable",
+          "postScriptName": "InterVariable-Text-Black",
+          "isCustomFont": true,
+          "glyphCount": 79
+        }
+      ]
+    },
+    {
+      "fontIndex": 0,
+      "formIndex": 1,
+      "weightIndex": 0,
+      "fonts": [
+        {
+          "familyName": "Inter Variable",
+          "postScriptName": "InterVariable-Text",
+          "isCustomFont": true,
+          "glyphCount": 80
+        }
+      ]
+    },
+    {
+      "fontIndex": 0,
+      "formIndex": 1,
+      "weightIndex": 1,
+      "fonts": [
+        {
+          "familyName": "Inter Variable",
+          "postScriptName": "InterVariable-Text-Medium",
+          "isCustomFont": true,
+          "glyphCount": 80
+        }
+      ]
+    },
+    {
+      "fontIndex": 0,
+      "formIndex": 1,
+      "weightIndex": 2,
+      "fonts": [
+        {
+          "familyName": "Inter Variable",
+          "postScriptName": "InterVariable-Text-SemiBold",
+          "isCustomFont": true,
+          "glyphCount": 80
+        }
+      ]
+    },
+    {
+      "fontIndex": 0,
+      "formIndex": 1,
+      "weightIndex": 3,
+      "fonts": [
+        {
+          "familyName": "Inter Variable",
+          "postScriptName": "InterVariable-Text-Bold",
+          "isCustomFont": true,
+          "glyphCount": 79
+        }
+      ]
+    },
+    {
+      "fontIndex": 0,
+      "formIndex": 1,
+      "weightIndex": 4,
+      "fonts": [
+        {
+          "familyName": "Inter Variable",
+          "postScriptName": "InterVariable-Text-Bold",
+          "isCustomFont": true,
+          "glyphCount": 79
+        }
+      ]
+    },
+    {
+      "fontIndex": 0,
+      "formIndex": 1,
+      "weightIndex": 5,
+      "fonts": [
+        {
+          "familyName": "Inter Variable",
+          "postScriptName": "InterVariable-Text-Black",
+          "isCustomFont": true,
+          "glyphCount": 79
+        }
+      ]
+    },
+    {
+      "fontIndex": 1,
+      "formIndex": 0,
+      "weightIndex": 0,
+      "fonts": [
+        {
+          "familyName": "Noto Serif",
+          "postScriptName": "NotoSerif",
+          "isCustomFont": true,
+          "glyphCount": 79
+        }
+      ]
+    },
+    {
+      "fontIndex": 1,
+      "formIndex": 0,
+      "weightIndex": 1,
+      "fonts": [
+        {
+          "familyName": "Noto Serif",
+          "postScriptName": "NotoSerif-Medium",
+          "isCustomFont": true,
+          "glyphCount": 79
+        }
+      ]
+    },
+    {
+      "fontIndex": 1,
+      "formIndex": 0,
+      "weightIndex": 2,
+      "fonts": [
+        {
+          "familyName": "Noto Serif",
+          "postScriptName": "NotoSerif-SemiBold",
+          "isCustomFont": true,
+          "glyphCount": 79
+        }
+      ]
+    },
+    {
+      "fontIndex": 1,
+      "formIndex": 0,
+      "weightIndex": 3,
+      "fonts": [
+        {
+          "familyName": "Noto Serif",
+          "postScriptName": "NotoSerif-Bold",
+          "isCustomFont": true,
+          "glyphCount": 79
+        }
+      ]
+    },
+    {
+      "fontIndex": 1,
+      "formIndex": 0,
+      "weightIndex": 4,
+      "fonts": [
+        {
+          "familyName": "Noto Serif",
+          "postScriptName": "NotoSerif-Bold",
+          "isCustomFont": true,
+          "glyphCount": 79
+        }
+      ]
+    },
+    {
+      "fontIndex": 1,
+      "formIndex": 0,
+      "weightIndex": 5,
+      "fonts": [
+        {
+          "familyName": "Noto Serif",
+          "postScriptName": "NotoSerif-Black",
+          "isCustomFont": true,
+          "glyphCount": 79
+        }
+      ]
+    },
+    {
+      "fontIndex": 1,
+      "formIndex": 1,
+      "weightIndex": 0,
+      "fonts": [
+        {
+          "familyName": "Noto Serif",
+          "postScriptName": "NotoSerif",
+          "isCustomFont": true,
+          "glyphCount": 79
+        }
+      ]
+    },
+    {
+      "fontIndex": 1,
+      "formIndex": 1,
+      "weightIndex": 1,
+      "fonts": [
+        {
+          "familyName": "Noto Serif",
+          "postScriptName": "NotoSerif-Medium",
+          "isCustomFont": true,
+          "glyphCount": 79
+        }
+      ]
+    },
+    {
+      "fontIndex": 1,
+      "formIndex": 1,
+      "weightIndex": 2,
+      "fonts": [
+        {
+          "familyName": "Noto Serif",
+          "postScriptName": "NotoSerif-SemiBold",
+          "isCustomFont": true,
+          "glyphCount": 79
+        }
+      ]
+    },
+    {
+      "fontIndex": 1,
+      "formIndex": 1,
+      "weightIndex": 3,
+      "fonts": [
+        {
+          "familyName": "Noto Serif",
+          "postScriptName": "NotoSerif-Bold",
+          "isCustomFont": true,
+          "glyphCount": 79
+        }
+      ]
+    },
+    {
+      "fontIndex": 1,
+      "formIndex": 1,
+      "weightIndex": 4,
+      "fonts": [
+        {
+          "familyName": "Noto Serif",
+          "postScriptName": "NotoSerif-Bold",
+          "isCustomFont": true,
+          "glyphCount": 79
+        }
+      ]
+    },
+    {
+      "fontIndex": 1,
+      "formIndex": 1,
+      "weightIndex": 5,
+      "fonts": [
+        {
+          "familyName": "Noto Serif",
+          "postScriptName": "NotoSerif-Black",
+          "isCustomFont": true,
+          "glyphCount": 79
+        }
+      ]
+    }
+  ]
+}

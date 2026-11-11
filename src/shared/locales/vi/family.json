@@ -1,0 +1,36 @@
+{
+  "roots": "Cùng một gốc rễ",
+  "breadcrumb": "Đường dẫn",
+  "members": "Thành viên",
+  "publicLanding": "Trang giới thiệu MyLife",
+  "clearSearch": "Xóa tìm kiếm",
+  "viewTree": "Cây",
+  "viewCards": "Thẻ",
+  "viewList": "Danh sách",
+  "emptyTitle": "Gia đình của bạn bắt đầu từ một người.",
+  "emptyDescription": "Thêm thành viên đầu tiên để bắt đầu xây dựng câu chuyện gia đình.",
+  "loading": "Đang tải gia đình",
+  "contact": "Liên hệ",
+  "openMap": "Mở bản đồ",
+  "openLibrary": "Mở thư viện",
+  "openTimeline": "Xem dòng thời gian",
+  "exploreHint": "Khám phá những kết nối giữa hai thành viên trong gia đình.",
+  "archive": "Hồ sơ gia đình",
+  "exitFullscreen": "Thoát toàn màn hình",
+  "memberCountLabel": "thành viên",
+  "age": {
+    "current": "{{age}} tuổi",
+    "unknown": "Chưa rõ tuổi",
+    "atDeath": "Mất lúc {{age}} tuổi",
+    "wouldBe": "nếu còn sống: {{age}} tuổi",
+    "wouldBeDetail": "Nếu còn sống đến nay: {{age}} tuổi",
+    "deceased": "Đã mất"
+  },
+  "selectMember": "Chọn thành viên",
+  "recordedSiblingCount": "Anh/chị/em theo hồ sơ: {{count}}",
+  "siblingKind": {
+    "same-recorded-parents": "Cùng hai cha mẹ được ghi nhận",
+    "different-recorded-parents": "Chung một cha/mẹ, cha/mẹ còn lại khác nhau theo hồ sơ",
+    "shared-parent-unknown": "Chung cha/mẹ được ghi nhận; chưa rõ cha/mẹ còn lại"
+  }
+}

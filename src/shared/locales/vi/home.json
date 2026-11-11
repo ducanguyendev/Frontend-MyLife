@@ -1,0 +1,14 @@
+{
+  "greet": "Xin chào, tôi là",
+  "name": "Nguyễn Huỳnh Minh Đức",
+  "title": "Lập trình viên Backend & Game",
+  "desc": "Chuyên thiết kế kiến trúc hệ thống backend hiệu năng cao, xây dựng API mở rộng và lập trình gameplay tương tác mượt mà sử dụng các ngôn ngữ C#, Go kết hợp cùng Unity, Unreal Engine.",
+  "btnProjects": "Xem Dự Án",
+  "btnContact": "Liên Hệ Tôi",
+  "statsExp": "Năm Kinh Nghiệm",
+  "statsExpVal": "1 Năm",
+  "statsProj": "Dự Án Hoàn Thành",
+  "statsProjVal": "30+",
+  "statsClients": "Khách Hàng Hài Lòng",
+  "statsClientsVal": "20+"
+}

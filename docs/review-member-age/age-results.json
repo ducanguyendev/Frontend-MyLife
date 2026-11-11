@@ -1,0 +1,1877 @@
+{
+  "fixedLocalDate": "2026-11-03",
+  "results": [
+    {
+      "locale": "vi",
+      "theme": "light",
+      "width": 1366,
+      "height": 768,
+      "cards": [
+        {
+          "id": 1,
+          "text": "Mất lúc 75 tuổi · nếu còn sống: 90 tuổi",
+          "lines": 2,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 1",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 2,
+          "text": "25 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 1",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 3,
+          "text": "26 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 4,
+          "text": "Chưa rõ tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 5,
+          "text": "Đã mất · nếu còn sống: 90 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 3",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 6,
+          "text": "Đã mất",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 7,
+          "text": "Chưa rõ tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 7",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 8,
+          "text": "Đã mất · nếu còn sống: 90 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 7",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        }
+      ],
+      "quickDetail": true,
+      "profile": true,
+      "listAndTreeUnchanged": true
+    },
+    {
+      "locale": "vi",
+      "theme": "light",
+      "width": 1440,
+      "height": 900,
+      "cards": [
+        {
+          "id": 1,
+          "text": "Mất lúc 75 tuổi · nếu còn sống: 90 tuổi",
+          "lines": 2,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 1",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 2,
+          "text": "25 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 1",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 3,
+          "text": "26 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 4,
+          "text": "Chưa rõ tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 5,
+          "text": "Đã mất · nếu còn sống: 90 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 3",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 6,
+          "text": "Đã mất",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 7,
+          "text": "Chưa rõ tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 7",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 8,
+          "text": "Đã mất · nếu còn sống: 90 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 7",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        }
+      ],
+      "quickDetail": true,
+      "profile": true,
+      "listAndTreeUnchanged": true
+    },
+    {
+      "locale": "vi",
+      "theme": "light",
+      "width": 1920,
+      "height": 1080,
+      "cards": [
+        {
+          "id": 1,
+          "text": "Mất lúc 75 tuổi · nếu còn sống: 90 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 1",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 2,
+          "text": "25 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 1",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 3,
+          "text": "26 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 4,
+          "text": "Chưa rõ tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 5,
+          "text": "Đã mất · nếu còn sống: 90 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 3",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 6,
+          "text": "Đã mất",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 7,
+          "text": "Chưa rõ tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 7",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 8,
+          "text": "Đã mất · nếu còn sống: 90 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 7",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        }
+      ],
+      "quickDetail": true,
+      "profile": true,
+      "listAndTreeUnchanged": true
+    },
+    {
+      "locale": "vi",
+      "theme": "light",
+      "width": 820,
+      "height": 1180,
+      "cards": [
+        {
+          "id": 1,
+          "text": "Mất lúc 75 tuổi · nếu còn sống: 90 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 1",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 2,
+          "text": "25 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 1",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 3,
+          "text": "26 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 4,
+          "text": "Chưa rõ tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 5,
+          "text": "Đã mất · nếu còn sống: 90 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 3",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 6,
+          "text": "Đã mất",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 7,
+          "text": "Chưa rõ tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 7",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 8,
+          "text": "Đã mất · nếu còn sống: 90 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 7",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        }
+      ],
+      "quickDetail": true,
+      "profile": true,
+      "listAndTreeUnchanged": true
+    },
+    {
+      "locale": "vi",
+      "theme": "light",
+      "width": 390,
+      "height": 844,
+      "cards": [
+        {
+          "id": 1,
+          "text": "Mất lúc 75 tuổi · nếu còn sống: 90 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 1",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 2,
+          "text": "25 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 1",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 3,
+          "text": "26 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 4,
+          "text": "Chưa rõ tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 5,
+          "text": "Đã mất · nếu còn sống: 90 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 3",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 6,
+          "text": "Đã mất",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 7,
+          "text": "Chưa rõ tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 7",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 8,
+          "text": "Đã mất · nếu còn sống: 90 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 7",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        }
+      ],
+      "quickDetail": true,
+      "profile": true,
+      "listAndTreeUnchanged": true
+    },
+    {
+      "locale": "vi",
+      "theme": "dark",
+      "width": 1366,
+      "height": 768,
+      "cards": [
+        {
+          "id": 1,
+          "text": "Mất lúc 75 tuổi · nếu còn sống: 90 tuổi",
+          "lines": 2,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 1",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 2,
+          "text": "25 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 1",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 3,
+          "text": "26 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 4,
+          "text": "Chưa rõ tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 5,
+          "text": "Đã mất · nếu còn sống: 90 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 3",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 6,
+          "text": "Đã mất",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 7,
+          "text": "Chưa rõ tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 7",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 8,
+          "text": "Đã mất · nếu còn sống: 90 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 7",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        }
+      ],
+      "quickDetail": true,
+      "profile": true,
+      "listAndTreeUnchanged": true
+    },
+    {
+      "locale": "vi",
+      "theme": "dark",
+      "width": 1440,
+      "height": 900,
+      "cards": [
+        {
+          "id": 1,
+          "text": "Mất lúc 75 tuổi · nếu còn sống: 90 tuổi",
+          "lines": 2,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 1",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 2,
+          "text": "25 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 1",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 3,
+          "text": "26 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 4,
+          "text": "Chưa rõ tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 5,
+          "text": "Đã mất · nếu còn sống: 90 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 3",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 6,
+          "text": "Đã mất",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 7,
+          "text": "Chưa rõ tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 7",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 8,
+          "text": "Đã mất · nếu còn sống: 90 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 7",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        }
+      ],
+      "quickDetail": true,
+      "profile": true,
+      "listAndTreeUnchanged": true
+    },
+    {
+      "locale": "vi",
+      "theme": "dark",
+      "width": 1920,
+      "height": 1080,
+      "cards": [
+        {
+          "id": 1,
+          "text": "Mất lúc 75 tuổi · nếu còn sống: 90 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 1",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 2,
+          "text": "25 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 1",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 3,
+          "text": "26 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 4,
+          "text": "Chưa rõ tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 5,
+          "text": "Đã mất · nếu còn sống: 90 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 3",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 6,
+          "text": "Đã mất",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 7,
+          "text": "Chưa rõ tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 7",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 8,
+          "text": "Đã mất · nếu còn sống: 90 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 7",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        }
+      ],
+      "quickDetail": true,
+      "profile": true,
+      "listAndTreeUnchanged": true
+    },
+    {
+      "locale": "vi",
+      "theme": "dark",
+      "width": 820,
+      "height": 1180,
+      "cards": [
+        {
+          "id": 1,
+          "text": "Mất lúc 75 tuổi · nếu còn sống: 90 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 1",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 2,
+          "text": "25 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 1",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 3,
+          "text": "26 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 4,
+          "text": "Chưa rõ tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 5,
+          "text": "Đã mất · nếu còn sống: 90 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 3",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 6,
+          "text": "Đã mất",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 7,
+          "text": "Chưa rõ tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 7",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 8,
+          "text": "Đã mất · nếu còn sống: 90 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 7",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        }
+      ],
+      "quickDetail": true,
+      "profile": true,
+      "listAndTreeUnchanged": true
+    },
+    {
+      "locale": "vi",
+      "theme": "dark",
+      "width": 390,
+      "height": 844,
+      "cards": [
+        {
+          "id": 1,
+          "text": "Mất lúc 75 tuổi · nếu còn sống: 90 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 1",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 2,
+          "text": "25 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 1",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 3,
+          "text": "26 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 4,
+          "text": "Chưa rõ tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 5,
+          "text": "Đã mất · nếu còn sống: 90 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 3",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 6,
+          "text": "Đã mất",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 7,
+          "text": "Chưa rõ tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 7",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 8,
+          "text": "Đã mất · nếu còn sống: 90 tuổi",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Đời 7",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        }
+      ],
+      "quickDetail": true,
+      "profile": true,
+      "listAndTreeUnchanged": true
+    },
+    {
+      "locale": "en",
+      "theme": "light",
+      "width": 1366,
+      "height": 768,
+      "cards": [
+        {
+          "id": 1,
+          "text": "Passed away at 75 · if living today: 90",
+          "lines": 2,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 1",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 2,
+          "text": "25 years old",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 1",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 3,
+          "text": "26 years old",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 4,
+          "text": "Age unknown",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 5,
+          "text": "Deceased · if living today: 90",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 3",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 6,
+          "text": "Deceased",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 7,
+          "text": "Age unknown",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 7",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 8,
+          "text": "Deceased · if living today: 90",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 7",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        }
+      ],
+      "quickDetail": true,
+      "profile": true,
+      "listAndTreeUnchanged": true
+    },
+    {
+      "locale": "en",
+      "theme": "light",
+      "width": 1440,
+      "height": 900,
+      "cards": [
+        {
+          "id": 1,
+          "text": "Passed away at 75 · if living today: 90",
+          "lines": 2,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 1",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 2,
+          "text": "25 years old",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 1",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 3,
+          "text": "26 years old",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 4,
+          "text": "Age unknown",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 5,
+          "text": "Deceased · if living today: 90",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 3",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 6,
+          "text": "Deceased",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 7,
+          "text": "Age unknown",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 7",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 8,
+          "text": "Deceased · if living today: 90",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 7",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        }
+      ],
+      "quickDetail": true,
+      "profile": true,
+      "listAndTreeUnchanged": true
+    },
+    {
+      "locale": "en",
+      "theme": "light",
+      "width": 1920,
+      "height": 1080,
+      "cards": [
+        {
+          "id": 1,
+          "text": "Passed away at 75 · if living today: 90",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 1",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 2,
+          "text": "25 years old",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 1",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 3,
+          "text": "26 years old",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 4,
+          "text": "Age unknown",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 5,
+          "text": "Deceased · if living today: 90",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 3",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 6,
+          "text": "Deceased",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 7,
+          "text": "Age unknown",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 7",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 8,
+          "text": "Deceased · if living today: 90",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 7",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        }
+      ],
+      "quickDetail": true,
+      "profile": true,
+      "listAndTreeUnchanged": true
+    },
+    {
+      "locale": "en",
+      "theme": "light",
+      "width": 820,
+      "height": 1180,
+      "cards": [
+        {
+          "id": 1,
+          "text": "Passed away at 75 · if living today: 90",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 1",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 2,
+          "text": "25 years old",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 1",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 3,
+          "text": "26 years old",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 4,
+          "text": "Age unknown",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 5,
+          "text": "Deceased · if living today: 90",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 3",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 6,
+          "text": "Deceased",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 7,
+          "text": "Age unknown",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 7",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 8,
+          "text": "Deceased · if living today: 90",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 7",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        }
+      ],
+      "quickDetail": true,
+      "profile": true,
+      "listAndTreeUnchanged": true
+    },
+    {
+      "locale": "en",
+      "theme": "light",
+      "width": 390,
+      "height": 844,
+      "cards": [
+        {
+          "id": 1,
+          "text": "Passed away at 75 · if living today: 90",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 1",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 2,
+          "text": "25 years old",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 1",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 3,
+          "text": "26 years old",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 4,
+          "text": "Age unknown",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 5,
+          "text": "Deceased · if living today: 90",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 3",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 6,
+          "text": "Deceased",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 7,
+          "text": "Age unknown",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 7",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 8,
+          "text": "Deceased · if living today: 90",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 7",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        }
+      ],
+      "quickDetail": true,
+      "profile": true,
+      "listAndTreeUnchanged": true
+    },
+    {
+      "locale": "en",
+      "theme": "dark",
+      "width": 1366,
+      "height": 768,
+      "cards": [
+        {
+          "id": 1,
+          "text": "Passed away at 75 · if living today: 90",
+          "lines": 2,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 1",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 2,
+          "text": "25 years old",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 1",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 3,
+          "text": "26 years old",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 4,
+          "text": "Age unknown",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 5,
+          "text": "Deceased · if living today: 90",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 3",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 6,
+          "text": "Deceased",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 7,
+          "text": "Age unknown",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 7",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 8,
+          "text": "Deceased · if living today: 90",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 7",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        }
+      ],
+      "quickDetail": true,
+      "profile": true,
+      "listAndTreeUnchanged": true
+    },
+    {
+      "locale": "en",
+      "theme": "dark",
+      "width": 1440,
+      "height": 900,
+      "cards": [
+        {
+          "id": 1,
+          "text": "Passed away at 75 · if living today: 90",
+          "lines": 2,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 1",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 2,
+          "text": "25 years old",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 1",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 3,
+          "text": "26 years old",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 4,
+          "text": "Age unknown",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 5,
+          "text": "Deceased · if living today: 90",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 3",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 6,
+          "text": "Deceased",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 7,
+          "text": "Age unknown",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 7",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 8,
+          "text": "Deceased · if living today: 90",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 7",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        }
+      ],
+      "quickDetail": true,
+      "profile": true,
+      "listAndTreeUnchanged": true
+    },
+    {
+      "locale": "en",
+      "theme": "dark",
+      "width": 1920,
+      "height": 1080,
+      "cards": [
+        {
+          "id": 1,
+          "text": "Passed away at 75 · if living today: 90",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 1",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 2,
+          "text": "25 years old",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 1",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 3,
+          "text": "26 years old",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 4,
+          "text": "Age unknown",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 5,
+          "text": "Deceased · if living today: 90",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 3",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 6,
+          "text": "Deceased",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 7,
+          "text": "Age unknown",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 7",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 8,
+          "text": "Deceased · if living today: 90",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 7",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        }
+      ],
+      "quickDetail": true,
+      "profile": true,
+      "listAndTreeUnchanged": true
+    },
+    {
+      "locale": "en",
+      "theme": "dark",
+      "width": 820,
+      "height": 1180,
+      "cards": [
+        {
+          "id": 1,
+          "text": "Passed away at 75 · if living today: 90",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 1",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 2,
+          "text": "25 years old",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 1",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 3,
+          "text": "26 years old",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 4,
+          "text": "Age unknown",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 5,
+          "text": "Deceased · if living today: 90",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 3",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 6,
+          "text": "Deceased",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 7,
+          "text": "Age unknown",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 7",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 8,
+          "text": "Deceased · if living today: 90",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 7",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        }
+      ],
+      "quickDetail": true,
+      "profile": true,
+      "listAndTreeUnchanged": true
+    },
+    {
+      "locale": "en",
+      "theme": "dark",
+      "width": 390,
+      "height": 844,
+      "cards": [
+        {
+          "id": 1,
+          "text": "Passed away at 75 · if living today: 90",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 1",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 2,
+          "text": "25 years old",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 1",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 3,
+          "text": "26 years old",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 4,
+          "text": "Age unknown",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 5,
+          "text": "Deceased · if living today: 90",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 3",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 6,
+          "text": "Deceased",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 2",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 7,
+          "text": "Age unknown",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 7",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        },
+        {
+          "id": 8,
+          "text": "Deceased · if living today: 90",
+          "lines": 1,
+          "overflow": false,
+          "actionInside": true,
+          "badge": "Gen 7",
+          "family": "Georgia, \"Times New Roman\", serif",
+          "iconHidden": "true"
+        }
+      ],
+      "quickDetail": true,
+      "profile": true,
+      "listAndTreeUnchanged": true
+    }
+  ],
+  "writes": [
+    {
+      "method": "PUT",
+      "path": "/api/family-tree/2",
+      "payload": {
+        "id": 2,
+        "fullName": "Trần Thị Mai",
+        "generation": 1,
+        "role": "Thành viên",
+        "gender": "Nữ",
+        "lifeStatus": "DECEASED",
+        "dateOfBirth": "2000-11-04",
+        "childIds": [
+          3,
+          4
+        ],
+        "horizontalRelations": [],
+        "createdAt": "2026-11-03T00:00:00Z",
+        "updatedAt": "2026-11-03T00:00:00Z",
+        "spouseId": 1,
+        "deathDate": "2026-11-03",
+        "fatherId": null,
+        "motherId": null
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/api/family-tree/2",
+      "payload": {
+        "id": 2,
+        "fullName": "Trần Thị Mai",
+        "generation": 1,
+        "role": "Thành viên",
+        "gender": "Nữ",
+        "lifeStatus": "LIVING",
+        "dateOfBirth": "2000-11-04",
+        "childIds": [
+          3,
+          4
+        ],
+        "horizontalRelations": [],
+        "createdAt": "2026-11-03T00:00:00Z",
+        "updatedAt": "2026-11-03T00:00:00Z",
+        "spouseId": 1,
+        "deathDate": null,
+        "fatherId": null,
+        "motherId": null
+      }
+    }
+  ],
+  "errors": [],
+  "birthdayRerender": true
+}

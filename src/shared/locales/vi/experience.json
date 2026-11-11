@@ -1,0 +1,36 @@
+{
+  "title": "Kinh Nghiệm Làm Việc",
+  "subtitle": "Hành Trình",
+  "items": {
+    "exp1": {
+      "role": "Lập Trình Viên Backend & Game Cấp Cao",
+      "company": "Apex Interactive Studio",
+      "duration": "2018 - Hiện tại",
+      "responsibilities": [
+        "Thiết kế kiến trúc máy chủ game chịu tải cao xử lý hơn 50.000 người chơi đồng thời (CCU).",
+        "Kết nối client Unity với các hệ thống Node.js API cho tính năng tìm trận đấu (matchmaking) và bảng xếp hạng.",
+        "Tối ưu truy vấn SQL và cấu trúc cơ sở dữ liệu lớn, giảm 45% độ trễ API gateway."
+      ]
+    },
+    "exp2": {
+      "role": "Lập Trình Viên Game",
+      "company": "Pixel Perfect Games",
+      "duration": "2015 - 2018",
+      "responsibilities": [
+        "Lập trình các cơ chế gameplay cốt lõi, hành vi trí tuệ nhân tạo (AI) và vật lý sử dụng C# trong Unity.",
+        "Hợp tác cùng thiết kế viên để thử nghiệm và phân phối thành công 4 dự án game di động.",
+        "Thiết lập các đường ống CI/CD tự động xây dựng và đóng gói bản build lên Google Play & App Store."
+      ]
+    },
+    "exp3": {
+      "role": "Lập Trình Viên Phần Mềm",
+      "company": "TechFlow Solutions",
+      "duration": "2013 - 2015",
+      "responsibilities": [
+        "Phát triển hệ thống RESTful APIs và các kiến trúc microservices sử dụng Python/Django và Node.js.",
+        "Viết các bài kiểm thử tự động (Unit Test, Integration Test) giúp nâng độ bao phủ mã nguồn (code coverage) lên 92%.",
+        "Quản lý vòng đời các Docker container và triển khai các cụm máy chủ trên đám mây AWS."
+      ]
+    }
+  }
+}

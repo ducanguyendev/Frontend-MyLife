@@ -1,0 +1,53 @@
+import { normalizeDisplayText } from '@/shared/utils/normalizeDisplayText';
+import React, { useEffect, useRef } from 'react';
+import { Edit2, Eye, MapPin, MoreHorizontal, Trash2 } from 'lucide-react';
+import { useLanguage } from '@/shared/hooks/useLanguage';
+import { Badge, Button, IconButton } from '@/shared/components/ui';
+import { type FamilyMember, removeVietnameseTones } from './types';
+import { MemberAvatarImage } from './MemberAvatarImage';
+
+interface MemberCardProps {
+  member: FamilyMember;
+  index: number;
+  isDropdownOpen: boolean;
+  onToggleDropdown: (e: React.MouseEvent) => void;
+  onCloseDropdown: () => void;
+  onView: (member: FamilyMember) => void;
+  onEdit: (member: FamilyMember) => void;
+  onDelete: (member: FamilyMember) => void;
+}
+
+export const MemberCard: React.FC<MemberCardProps> = ({ member, isDropdownOpen, onToggleDropdown, onCloseDropdown, onView, onEdit, onDelete }) => {
+  const { t, language } = useLanguage();
+  const menu = useRef<HTMLDivElement>(null);
+  const trigger = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!isDropdownOpen) return;
+    const outside = (e: PointerEvent) => { if (!menu.current?.contains(e.target as Node)) onCloseDropdown(); };
+    const escape = (e: KeyboardEvent) => { if (e.key === 'Escape') { onCloseDropdown(); trigger.current?.focus(); } };
+    document.addEventListener('pointerdown', outside); document.addEventListener('keydown', escape);
+    return () => { document.removeEventListener('pointerdown', outside); document.removeEventListener('keydown', escape); };
+  }, [isDropdownOpen, onCloseDropdown]);
+  const name = normalizeDisplayText(language === 'en' ? removeVietnameseTones(member.fullName) : member.fullName);
+  const gender = t(`admin.gender_${member.gender?.toLowerCase() || 'unknown'}`, { defaultValue: member.gender || t('admin.gender_unknown') });
+  const role = t(`admin.role_${member.role?.toLowerCase() || 'member'}`, { defaultValue: member.role || t('admin.role_member') });
+  const deceased = member.lifeStatus === 'DECEASED';
+  const birth = member.dateOfBirth?.slice(0, 4);
+  const death = member.deathDate?.slice(0, 4);
+  return <article data-member-id={member.id} className={`family-gallery-card ${deceased ? 'is-deceased' : ''}`}>
+    <div className="family-gallery-card__top"><Badge variant="outline">{t('admin.generation')} {member.generation}</Badge>
+      <div ref={menu} className="family-gallery-card__more">
+        <button ref={trigger} type="button" className="family-gallery-card__trigger" onClick={onToggleDropdown} aria-label={t('admin.member_actions_for', { name })} aria-haspopup="menu" aria-expanded={isDropdownOpen}><MoreHorizontal size={18}/></button>
+        {isDropdownOpen && <div role="menu" className="family-gallery-card__menu"><button role="menuitem" type="button" onClick={() => { onCloseDropdown(); onDelete(member); }}><Trash2 size={15}/>{t('admin.delete')}</button></div>}
+      </div>
+    </div>
+    <button className="family-gallery-card__identity" type="button" onClick={() => onView(member)} aria-label={`${t('admin.view_detail')}: ${name}`}>
+      <MemberAvatarImage member={member} alt="" className="family-gallery-card__avatar"/>
+      <h2>{name}</h2><span className="family-gallery-card__role">{role}</span>
+    </button>
+    <div className="family-gallery-card__facts"><span>{gender}</span><span aria-hidden="true">·</span><span>{birth || '—'}{deceased ? ` – ${death || '—'}` : ''}</span></div>
+    <p className="family-gallery-card__status">{deceased ? '† ' : ''}{t(deceased ? 'admin.member_life_status.deceased' : 'admin.member_life_status.living')}</p>
+    <p className="family-gallery-card__address" title={member.address || undefined}><MapPin size={13}/><span>{member.address || t('admin.profile_no_information')}</span></p>
+    <div className="family-gallery-card__actions"><Button variant="secondary" size="sm" leftIcon={<Eye size={14}/>} onClick={() => onView(member)}>{t('admin.view_detail')}</Button><IconButton size="sm" variant="ghost" label={t('admin.edit')} onClick={() => onEdit(member)}><Edit2 size={15}/></IconButton></div>
+  </article>;
+};
