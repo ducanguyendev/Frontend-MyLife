@@ -26,7 +26,7 @@ export const Register: React.FC = () => {
   // Form State
   const [fullName, setFullName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [gender, setGender] = useState<'Nam' | 'Nữ' | 'Khác'>('Nam');
+  const [gender, setGender] = useState<'Nam' | 'Nữ' | 'Khác' | ''>('');
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -433,6 +433,7 @@ export const Register: React.FC = () => {
               if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: undefined }));
             }}
             error={fieldErrors.email}
+            helperText={t('common.registerPage.emailGmailHint', { defaultValue: 'Chỉ nhận địa chỉ Gmail (@gmail.com).' })}
           />
 
           {/* Row 4: Mật khẩu & Xác nhận mật khẩu */}

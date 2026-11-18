@@ -171,6 +171,7 @@
     "genderNam": "Male",
     "genderNu": "Female",
     "genderKhac": "Other",
+    "emailGmailHint": "Only Gmail addresses (@gmail.com) are accepted.",
     "confirmPassword": "Confirm Password",
     "passwordStrength": "Password strength:",
     "passwordMatch": "✓ Passwords match",

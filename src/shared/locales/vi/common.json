@@ -171,6 +171,7 @@
     "genderNam": "Nam",
     "genderNu": "Nữ",
     "genderKhac": "Khác",
+    "emailGmailHint": "Chỉ nhận địa chỉ Gmail (@gmail.com).",
     "confirmPassword": "Nhập lại mật khẩu",
     "passwordStrength": "Độ mạnh mật khẩu:",
     "passwordMatch": "✓ Mật khẩu khớp",
