@@ -138,6 +138,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = useCallback(async (): Promise<void> => {
     await authService.logout();
     setUser(null);
+    // Tell the app shell this was an intentional logout, so the transient
+    // protected-route render with the cleared session does not reopen login.
+    window.dispatchEvent(new CustomEvent('auth:loggedOut'));
   }, []);
 
   const switchAccount = useCallback(async (): Promise<void> => {
