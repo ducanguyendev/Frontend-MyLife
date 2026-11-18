@@ -4,6 +4,7 @@ import { useAuth } from '@/features/auth/context/AuthContext';
 import { MyLifeWorkspaceLayout } from '@/shared/layouts/MyLifeWorkspaceLayout';
 import { IllustrationSlot } from '@/shared/components/illustration/IllustrationSlot';
 import { MyLifeModuleCard } from '../components/MyLifeModuleCard';
+import { HubSummary } from '../components/HubSummary';
 import { myLifeModules } from '../config/myLifeModules';
 import { illustrationSlots } from '../config/illustrationSlots';
 import { myLifeVisualConfig } from '../components/visual/myLifeVisualConfig';
@@ -41,6 +42,8 @@ export const MyLifeHubPage: React.FC = () => {
           </div>
           <IllustrationSlot definition={illustrationSlots.familyHero} />
         </section>
+
+        <HubSummary />
 
         <section aria-labelledby="my-life-modules-heading" className="flex flex-1 flex-col">
           <div className="mb-4 flex items-center gap-3">

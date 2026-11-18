@@ -34,5 +34,27 @@
       "description": "Lưu giữ các dấu mốc và ký ức của gia đình qua nhiều thế hệ.",
       "open": "Mở dòng thời gian"
     }
+  },
+  "summary": {
+    "title": "Tổng quan gia đình",
+    "loading": "Đang tải…",
+    "error": "Không tải được dữ liệu.",
+    "retry": "Thử lại",
+    "family": {
+      "members_other": "{{count}} thành viên",
+      "generations_other": "{{count}} thế hệ",
+      "empty": "Chưa có thành viên nào. Thêm thành viên đầu tiên để bắt đầu cây gia đình."
+    },
+    "anniversary": {
+      "today": "Hôm nay",
+      "daysLeft_other": "Còn {{count}} ngày",
+      "empty": "Chưa có ngày giỗ hay kỷ niệm nào."
+    },
+    "library": {
+      "albums_other": "{{count}} album",
+      "photos_other": "{{count}} ảnh",
+      "latest": "Mới nhất: {{name}}",
+      "empty": "Chưa có album nào. Tạo album đầu tiên để lưu giữ hình ảnh."
+    }
   }
 }
