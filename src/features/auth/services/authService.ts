@@ -161,6 +161,23 @@ export const authService = {
     return response;
   },
 
+  /** Always returns a generic success, even for unknown emails (anti-enumeration). */
+  async requestPasswordReset(email: string): Promise<{ success: boolean; message: string }> {
+    return apiClient.post<{ success: boolean; message: string }>(
+      '/api/auth/forgot-password',
+      { email },
+      { skipAuthRefresh: true },
+    );
+  },
+
+  async resetPassword(token: string, newPassword: string, confirmPassword: string): Promise<{ success: boolean; message: string }> {
+    return apiClient.post<{ success: boolean; message: string }>(
+      '/api/auth/reset-password',
+      { token, newPassword, confirmPassword },
+      { skipAuthRefresh: true },
+    );
+  },
+
   /** /api/me is the server-side source of truth after a page reload. */
   async getUserInfo(): Promise<UserInfoResponse> {
     const user = await apiClient.get<UserInfoResponse>('/api/me');

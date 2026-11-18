@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AlertCircle, Lock, Mail, ShieldCheck, X } from 'lucide-react';
+import { AlertCircle, Lock, Mail, MailCheck, ShieldCheck, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { getApiErrorMessage, isRateLimitError } from '@/shared/api/apiClient';
 import { Input, PasswordInput, Modal } from '@/shared/components/ui';
@@ -73,6 +73,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isForgotLoading, setIsForgotLoading] = useState(false);
+  const [view, setView] = useState<'login' | 'forgot' | 'forgotSent'>('login');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
 
@@ -88,6 +90,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
       setPassword('');
       setRememberMe(remembered.rememberMe);
       setFieldErrors({});
+      setView('login');
     }, 0);
 
     return () => window.clearTimeout(timer);
@@ -147,6 +150,33 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
       setErrorMessage(isRateLimitError(error) ? t('common.rate_limited') : localizeError(getApiErrorMessage(error)));
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleForgotSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setErrorMessage(null);
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!normalizedEmail) {
+      setFieldErrors({ email: t('common.errors.emailRequired', { defaultValue: 'Please enter your email address.' }) });
+      return;
+    }
+    if (!emailRegex.test(normalizedEmail)) {
+      setFieldErrors({ email: t('common.errors.invalidEmailFormat', { defaultValue: 'Please enter a valid email address.' }) });
+      return;
+    }
+
+    setFieldErrors({});
+    setIsForgotLoading(true);
+    try {
+      await authService.requestPasswordReset(normalizedEmail);
+      setView('forgotSent');
+    } catch (error) {
+      setErrorMessage(isRateLimitError(error) ? t('common.rate_limited') : localizeError(getApiErrorMessage(error)));
+    } finally {
+      setIsForgotLoading(false);
     }
   };
 
@@ -213,16 +243,23 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
 
           <div className="mb-6 space-y-2 text-center">
             <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-accent/15 text-accent">
-              <ShieldCheck size={28} />
+              {view === 'login' ? <ShieldCheck size={28} /> : <MailCheck size={28} />}
             </div>
             <h2 className="text-2xl font-bold tracking-tight text-primary-text">
-              {t('common.login', { defaultValue: 'Sign in' })}
+              {view === 'login'
+                ? t('common.login', { defaultValue: 'Sign in' })
+                : t('common.forgotPassword.title', { defaultValue: 'Forgot password' })}
             </h2>
             <p className="text-[length:var(--type-label)] text-secondary-text">
-              {t('common.loginDesc', { defaultValue: 'Enter your account details to continue.' })}
+              {view === 'login'
+                ? t('common.loginDesc', { defaultValue: 'Enter your account details to continue.' })
+                : view === 'forgot'
+                  ? t('common.forgotPassword.desc', { defaultValue: 'Enter your registered email. If an account exists, we will send you a password reset link.' })
+                  : t('common.forgotPassword.sentDesc', { defaultValue: 'If this email address has a MyLife account, you will receive a password reset link within a few minutes.' })}
             </p>
           </div>
 
+          {view === 'login' && (
           <form onSubmit={handleSubmit} noValidate className="space-y-4">
             <AnimatePresence>
               {errorMessage && (
@@ -269,17 +306,26 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
               error={fieldErrors.password}
             />
 
-            <label className="flex cursor-pointer items-center gap-2 pt-1">
-              <input
-                type="checkbox"
-                checked={rememberMe}
-                onChange={(event) => setRememberMe(event.target.checked)}
-                className="cursor-pointer rounded border-custom-border text-accent accent-accent "
-              />
-              <span className="text-[length:var(--type-label)] text-secondary-text">
-                {t('common.rememberMe', { defaultValue: 'Remember my email' })}
-              </span>
-            </label>
+            <div className="flex items-center justify-between pt-1">
+              <label className="flex cursor-pointer items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(event) => setRememberMe(event.target.checked)}
+                  className="cursor-pointer rounded border-custom-border text-accent accent-accent "
+                />
+                <span className="text-[length:var(--type-label)] text-secondary-text">
+                  {t('common.rememberMe', { defaultValue: 'Remember my email' })}
+                </span>
+              </label>
+              <button
+                type="button"
+                onClick={() => { setErrorMessage(null); setFieldErrors({}); setView('forgot'); }}
+                className="cursor-pointer text-[length:var(--type-label)] font-semibold text-accent hover:underline"
+              >
+                {t('common.forgotPassword.link', { defaultValue: 'Forgot password?' })}
+              </button>
+            </div>
 
             <button
               type="submit"
@@ -336,6 +382,78 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
               </a>
             </p>
           </form>
+          )}
+
+          {view === 'forgot' && (
+          <form onSubmit={handleForgotSubmit} noValidate className="space-y-4">
+            <AnimatePresence>
+              {errorMessage && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0, scale: 0.96 }}
+                  animate={{ opacity: 1, height: 'auto', scale: 1 }}
+                  exit={{ opacity: 0, height: 0, scale: 0.96 }}
+                  className="overflow-hidden"
+                >
+                  <div className="mb-1 flex items-center gap-2.5 rounded-xl border border-[var(--state-danger)] bg-[var(--state-danger-soft)] p-3 text-[length:var(--type-label)] text-[var(--state-danger)]">
+                    <AlertCircle size={16} className="shrink-0" />
+                    <span className="flex-1 leading-snug">{errorMessage}</span>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <Input
+              label={t('common.email', { defaultValue: 'Email' })}
+              leftIcon={<Mail size={18} />}
+              type="email"
+              name="email"
+              autoComplete="username"
+              maxLength={254}
+              value={email}
+              onChange={(event) => {
+                setEmail(event.target.value);
+                if (fieldErrors.email) setFieldErrors((previous) => ({ ...previous, email: undefined }));
+              }}
+              error={fieldErrors.email}
+            />
+
+            <button
+              type="submit"
+              disabled={isForgotLoading}
+              className="mt-2 w-full cursor-pointer rounded-xl bg-accent px-4 py-3.5 text-sm font-semibold text-primary-bg shadow-lg transition-all hover:opacity-90 disabled:opacity-50"
+            >
+              {isForgotLoading ? t('common.loading', { defaultValue: 'Working...' }) : t('common.forgotPassword.sendLink', { defaultValue: 'Send reset link' })}
+            </button>
+
+            <p className="pt-1 text-center text-[length:var(--type-label)] text-secondary-text">
+              <button
+                type="button"
+                onClick={() => { setErrorMessage(null); setFieldErrors({}); setView('login'); }}
+                className="cursor-pointer font-semibold text-accent hover:underline"
+              >
+                {t('common.forgotPassword.backToLogin', { defaultValue: 'Back to sign in' })}
+              </button>
+            </p>
+          </form>
+          )}
+
+          {view === 'forgotSent' && (
+          <div className="space-y-4 text-center">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--state-success-soft)] text-[var(--state-success)]">
+              <MailCheck size={28} />
+            </div>
+            <h3 className="text-lg font-bold text-primary-text">
+              {t('common.forgotPassword.sentTitle', { defaultValue: 'Check your email' })}
+            </h3>
+            <button
+              type="button"
+              onClick={() => setView('login')}
+              className="w-full cursor-pointer rounded-xl bg-accent px-4 py-3.5 text-sm font-semibold text-primary-bg shadow-lg transition-all hover:opacity-90"
+            >
+              {t('common.forgotPassword.backToLogin', { defaultValue: 'Back to sign in' })}
+            </button>
+          </div>
+          )}
         </div>
     </Modal>
   );

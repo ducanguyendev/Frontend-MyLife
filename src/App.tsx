@@ -4,6 +4,7 @@ import { useAuth } from '@/features/auth/context/AuthContext';
 import { LoadingScreen } from '@/shared/components/LoadingScreen';
 const MyLifeLandingPage = lazy(() => import('@/features/landing/pages/MyLifeLandingPage').then(module => ({ default: module.MyLifeLandingPage })));
 const Register = lazy(() => import('@/features/auth/pages/Register').then(module => ({ default: module.Register })));
+const ResetPassword = lazy(() => import('@/features/auth/pages/ResetPassword').then(module => ({ default: module.ResetPassword })));
 const AdminDashboard = lazy(() => import('@/features/admin/pages/AdminDashboard').then(module => ({ default: module.AdminDashboard })));
 const FamilyTreePage = lazy(() => import('@/features/family-tree/pages/FamilyTreePage').then(module => ({ default: module.FamilyTreePage })));
 const MyLifeHubPage = lazy(() => import('@/features/my-life/pages/MyLifeHubPage').then(module => ({ default: module.MyLifeHubPage })));
@@ -133,6 +134,7 @@ function App() {
             <Route path="/Home" element={<MyLifeLandingPage />} />
             <Route path="/Register" element={<Register />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route caseSensitive path="/mylife" element={<ProtectedRoute requiredRole="USER"><MyLifeHubPage /></ProtectedRoute>} />
             <Route caseSensitive path="/familytree" element={<ProtectedRoute requiredRole="USER"><FamilyTreePage /></ProtectedRoute>} />
             <Route caseSensitive path="/anniversaries" element={<ProtectedRoute requiredRole="USER"><AnniversariesPage /></ProtectedRoute>} />
