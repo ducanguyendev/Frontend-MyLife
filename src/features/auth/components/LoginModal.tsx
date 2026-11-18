@@ -77,12 +77,6 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
 
   useEffect(() => {
-    if (!errorMessage) return undefined;
-    const timer = window.setTimeout(() => setErrorMessage(null), 3_000);
-    return () => window.clearTimeout(timer);
-  }, [errorMessage]);
-
-  useEffect(() => {
     const timer = window.setTimeout(() => {
       if (!isOpen) {
         setErrorMessage(null);
