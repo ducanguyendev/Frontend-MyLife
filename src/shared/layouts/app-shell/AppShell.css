@@ -1,0 +1,53 @@
+.app-shell { display: flex; height: 100dvh; overflow: hidden; background: var(--bg-app); color: var(--text-primary); font-family: var(--font-sans); }
+.app-shell__sidebar { display: flex; width: 232px; flex: 0 0 232px; flex-direction: column; border-right: 1px solid var(--border-subtle); background: var(--surface-primary); padding: var(--space-8) var(--space-4) var(--space-6); }
+.app-shell__brand { display: flex; align-items: center; gap: var(--space-3); margin: 0 var(--space-3) var(--space-10); font-size:23px; font-weight: 650; letter-spacing: -.04em; }
+.app-shell__brand-mark { display: grid; width: 42px; height: 42px; place-items: center; border-radius: var(--radius-md); background: var(--brand-primary-soft); color: var(--brand-primary); }
+.app-shell__brand small { display: block; margin-top: 2px; font-size:var(--type-caption); font-weight: 450; letter-spacing: .02em; color: var(--text-secondary); }
+.app-nav { display: grid; gap: var(--space-5); }
+.app-nav__group { display: grid; gap: var(--space-1); }
+.app-nav__caption { padding: 0 var(--space-4) var(--space-2); font-size:var(--type-caption); font-weight: 650; letter-spacing: .14em; text-transform: uppercase; color: var(--text-muted); }
+.app-nav__link { display: flex; min-height: 44px; align-items: center; gap: var(--space-3); width: 100%; border: 0; border-radius: var(--radius-sm); background: transparent; padding: var(--space-3) var(--space-4); color: var(--text-secondary); text-align: left; font-size:var(--type-body-small); font-weight: 550; cursor: pointer; transition: background var(--motion-fast) var(--motion-ease), color var(--motion-fast) var(--motion-ease); }
+.app-nav__link:hover { background: var(--bg-subtle); color: var(--text-primary); }
+.app-nav__link.is-active { background: var(--brand-primary-soft); color: var(--brand-primary); font-weight: 650; }
+.app-nav__subnav { display:grid; gap:3px; margin:4px 0 0 23px; padding-left:14px; border-left:1px solid var(--border-default); }
+.app-nav__sub-link { display:flex; align-items:center; gap:10px; min-height:44px; padding:10px 7px; border-radius:8px; color:var(--text-secondary); font-size:var(--type-label); }
+.app-nav__sub-link:hover { background:var(--bg-subtle); }
+.app-nav__sub-link[aria-current=page] { color:var(--text-primary); font-weight:650; text-decoration:underline; text-underline-offset:4px; }
+.app-shell__breadcrumb a { white-space:nowrap; }
+.app-shell__breadcrumb a:hover { color:var(--brand-primary); }
+@media(min-width:768px) and (max-width:1199px) { .app-nav__subnav { margin:4px 0 0; padding:0; border:0; } .app-nav__sub-link { justify-content:center; padding:9px; } .app-nav__sub-link span { display:none; } }
+@media(max-width:767px) { .app-shell__breadcrumb a:not(:first-child), .app-shell__breadcrumb strong { display:none; } }
+.app-shell__sidebar-note { display: flex; align-items: center; gap: var(--space-3); margin: auto var(--space-3) 0; padding-top: var(--space-8); color: var(--text-muted); font-size:var(--type-label); line-height: 1.7; }
+.app-shell__sidebar-note svg { flex: 0 0 auto; }
+.app-shell__workspace { display: flex; min-width: 0; flex: 1; flex-direction: column; }
+.app-shell__header { position: relative; z-index: var(--z-dropdown); display: flex; min-height: 76px; flex: 0 0 auto; align-items: center; justify-content: space-between; gap: var(--space-4); border-bottom: 1px solid var(--border-subtle); background: var(--surface-primary); padding: var(--space-3) var(--space-8); }
+.app-shell__breadcrumb { display: flex; min-width: 0; align-items: center; gap: var(--space-3); color: var(--text-muted); font-size:var(--type-label); }
+.app-shell__breadcrumb strong { overflow: hidden; color: var(--text-secondary); font-weight: 550; text-overflow: ellipsis; white-space: nowrap; }
+.app-shell__utilities { display: flex; flex: 0 0 auto; align-items: center; gap: var(--space-3); }
+.app-shell__menu-toggle { display: none !important; }
+.app-shell__content { min-height: 0; min-width: 0; flex: 1; overscroll-behavior: contain; outline: none; }
+.app-shell__content--auto { overflow-y: auto; }
+.app-shell__content--hidden { display: flex; overflow: hidden; }
+.app-shell__page { width: 100%; max-width: 1480px; margin: 0 auto; padding: var(--space-6) var(--space-8) var(--space-8); }
+.app-shell__page--canvas { display: flex; min-height: 0; min-width: 0; flex: 1; flex-direction: column; }
+.app-shell__skip { position: fixed; z-index: 110; top: -80px; left: 16px; border-radius: var(--radius-xs); background: var(--brand-primary); padding: var(--space-3) var(--space-4); color: var(--text-inverse); }
+.app-shell__skip:focus { top: 12px; }
+.app-shell :where(button, a, select, input, textarea):not([data-ui-control], .ds-field-option):focus-visible { outline: 2px solid var(--brand-primary); outline-offset: 3px; }
+.app-shell .glass-pill { background: var(--surface-primary); box-shadow: var(--shadow-xs); backdrop-filter: none; }
+@media (min-width: 768px) and (max-width: 1199px) {
+  .app-shell__sidebar { width: 80px; flex-basis: 80px; padding: var(--space-6) var(--space-3); }
+  .app-shell__brand { justify-content: center; margin: 0 0 var(--space-8); }
+  .app-shell__brand > span:last-child, .app-nav__link span, .app-shell__sidebar-note, .app-nav__caption { display: none; }
+  .app-nav__link { justify-content: center; padding: var(--space-3); }
+  .app-nav__group + .app-nav__group { border-top: 1px solid var(--border-subtle); padding-top: var(--space-4); }
+  /* The drawer always shows readable labels. */
+  .ds-drawer .app-nav__link { justify-content: flex-start; }.ds-drawer .app-nav__link span, .ds-drawer .app-nav__caption { display: block; }
+}
+@media (max-width: 1023px) { .app-shell__page { padding: var(--space-5); }.app-shell__header { padding: var(--space-3) var(--space-5); } }
+@media (max-width: 767px) {
+  .app-shell__sidebar { display: none; }.app-shell__menu-toggle { display: inline-flex !important; }
+  .app-shell__header { min-height: 64px; gap: var(--space-2); padding: var(--space-2) var(--space-3); }
+  .app-shell__breadcrumb > span, .app-shell__breadcrumb > svg { display: none; }.app-shell__breadcrumb { font-size:var(--type-label); }
+  .app-shell__utilities { gap: 0; }.app-shell__utility select { max-width: 76px; padding: 0 var(--space-1); font-size:var(--type-label); }
+  .app-shell__page { padding: var(--space-4) var(--space-3); }
+}

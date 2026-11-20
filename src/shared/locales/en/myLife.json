@@ -1,0 +1,65 @@
+{
+  "title": "My Space",
+  "subtitle": "A quiet place to keep your family close and the moments that matter.",
+  "greeting": "Hello, {{name}}",
+  "hubEyebrow": "YOUR PERSONAL SPACE",
+  "hubSectionTitle": "Explore your space",
+  "dock": {
+    "label": "MyLife module navigation"
+  },
+  "modules": {
+    "title": "Your tools",
+    "familyTree": {
+      "title": "Family Tree",
+      "description": "Preserve and connect the generations of your family.",
+      "open": "Open Family Tree"
+    },
+    "anniversaries": {
+      "title": "Anniversaries",
+      "description": "Remember important family dates and milestones.",
+      "open": "View anniversaries"
+    },
+    "library": {
+      "title": "Family Library",
+      "description": "Keep family photos and meaningful records together.",
+      "open": "Open library"
+    },
+    "map": {
+      "title": "Family Map",
+      "description": "Explore where family branches live around the world.",
+      "open": "Open map"
+    },
+    "timeline": {
+      "title": "Family Timeline",
+      "description": "Keep the milestones and memories of your family together.",
+      "open": "Open timeline"
+    }
+  },
+  "summary": {
+    "title": "Family at a glance",
+    "loading": "Loading…",
+    "error": "Couldn't load this data.",
+    "retry": "Retry",
+    "family": {
+      "members_one": "{{count}} member",
+      "members_other": "{{count}} members",
+      "generations_one": "{{count}} generation",
+      "generations_other": "{{count}} generations",
+      "empty": "No members yet. Add the first member to start your family tree."
+    },
+    "anniversary": {
+      "today": "Today",
+      "daysLeft_one": "In {{count}} day",
+      "daysLeft_other": "In {{count}} days",
+      "empty": "No anniversaries or family events yet."
+    },
+    "library": {
+      "albums_one": "{{count}} album",
+      "albums_other": "{{count}} albums",
+      "photos_one": "{{count}} photo",
+      "photos_other": "{{count}} photos",
+      "latest": "Latest: {{name}}",
+      "empty": "No albums yet. Create your first album to keep family photos."
+    }
+  }
+}

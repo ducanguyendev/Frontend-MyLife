@@ -1,0 +1,28 @@
+[
+  {
+    "state": "loading",
+    "tabs": 3,
+    "overflow": false,
+    "writes": 0,
+    "status": "pass"
+  },
+  {
+    "state": "error",
+    "tabs": 3,
+    "overflow": false,
+    "writes": 0,
+    "status": "pass"
+  },
+  {
+    "state": "empty",
+    "tabs": 3,
+    "overflow": false,
+    "writes": 0,
+    "status": "pass"
+  },
+  {
+    "state": "mobile-card",
+    "tableSemantics": "pass",
+    "status": "pass"
+  }
+]

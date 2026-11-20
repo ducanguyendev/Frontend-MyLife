@@ -1,0 +1,8 @@
+{
+  "database": "mylife_w10_validation",
+  "port": 55448,
+  "cluster": ".tmp/w10-postgres",
+  "verifiedCurrentDatabase": true,
+  "databaseDropped": true,
+  "postgresStopped": true
+}

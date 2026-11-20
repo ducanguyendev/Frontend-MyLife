@@ -1,0 +1,31 @@
+.hub-summary-card--family { --hub-accent: var(--accent-family); }
+.hub-summary-card--anniversary { --hub-accent: var(--accent-anniversary); }
+.hub-summary-card--library { --hub-accent: var(--accent-library); }
+
+.hub-summary-card {
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--primary-text) 4%, transparent);
+  transition: transform var(--motion-fast, 160ms) ease, box-shadow var(--motion-fast, 160ms) ease;
+}
+
+.hub-summary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--primary-text) 8%, transparent);
+}
+
+.hub-summary-card__skeleton {
+  background: color-mix(in srgb, var(--primary-text) 8%, transparent);
+  animation: hub-summary-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes hub-summary-pulse {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hub-summary-card,
+  .hub-summary-card__skeleton {
+    animation: none;
+    transition: none;
+  }
+}

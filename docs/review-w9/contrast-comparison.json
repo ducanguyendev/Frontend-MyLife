@@ -1,0 +1,282 @@
+[
+  {
+    "theme": "light",
+    "pairs": [
+      {
+        "foreground": "--text-secondary",
+        "background": "--surface-primary",
+        "minimum": 4.5,
+        "ratio": 5.285,
+        "before": 5.285,
+        "after": 5.285,
+        "pass": true
+      },
+      {
+        "foreground": "--text-muted",
+        "background": "--surface-secondary",
+        "minimum": 4.5,
+        "ratio": 5.015,
+        "before": 3.352,
+        "after": 5.015,
+        "pass": true
+      },
+      {
+        "foreground": "--text-muted",
+        "background": "--bg-subtle",
+        "minimum": 4.5,
+        "ratio": 4.585,
+        "before": 3.065,
+        "after": 4.585,
+        "pass": true
+      },
+      {
+        "foreground": "--brand-primary",
+        "background": "--brand-primary-soft",
+        "minimum": 4.5,
+        "ratio": 4.874,
+        "before": 3.607,
+        "after": 4.874,
+        "pass": true
+      },
+      {
+        "foreground": "--state-success",
+        "background": "--state-success-soft",
+        "minimum": 4.5,
+        "ratio": 4.519,
+        "before": 4.519,
+        "after": 4.519,
+        "pass": true
+      },
+      {
+        "foreground": "--state-danger",
+        "background": "--state-danger-soft",
+        "minimum": 4.5,
+        "ratio": 4.661,
+        "before": 4.153,
+        "after": 4.661,
+        "pass": true
+      },
+      {
+        "foreground": "--state-warning",
+        "background": "--state-warning-soft",
+        "minimum": 4.5,
+        "ratio": 4.665,
+        "before": 3.43,
+        "after": 4.665,
+        "pass": true
+      },
+      {
+        "foreground": "--state-info",
+        "background": "--state-info-soft",
+        "minimum": 4.5,
+        "ratio": 4.573,
+        "before": 4.028,
+        "after": 4.573,
+        "pass": true
+      },
+      {
+        "foreground": "--accent-timeline",
+        "background": "--accent-timeline-soft",
+        "minimum": 4.5,
+        "ratio": 4.771,
+        "before": 3.58,
+        "after": 4.771,
+        "pass": true
+      },
+      {
+        "foreground": "--accent-anniversary",
+        "background": "--accent-anniversary-soft",
+        "minimum": 4.5,
+        "ratio": 4.665,
+        "before": 3.43,
+        "after": 4.665,
+        "pass": true
+      },
+      {
+        "foreground": "--accent-library",
+        "background": "--accent-library-soft",
+        "minimum": 4.5,
+        "ratio": 4.889,
+        "before": 4.3,
+        "after": 4.889,
+        "pass": true
+      },
+      {
+        "foreground": "--accent-map",
+        "background": "--accent-map-soft",
+        "minimum": 4.5,
+        "ratio": 4.636,
+        "before": 3.574,
+        "after": 4.636,
+        "pass": true
+      },
+      {
+        "foreground": "--field-border",
+        "background": "--field-bg",
+        "minimum": 3,
+        "ratio": 3.222,
+        "before": 1.339,
+        "after": 3.222,
+        "pass": true
+      },
+      {
+        "foreground": "--field-focus-border",
+        "background": "--field-bg",
+        "minimum": 3,
+        "ratio": 5.704,
+        "before": 4.221,
+        "after": 5.704,
+        "pass": true
+      },
+      {
+        "foreground": "--field-placeholder",
+        "background": "--field-bg",
+        "minimum": 4.5,
+        "ratio": 5.285,
+        "before": 3.532,
+        "after": 5.285,
+        "pass": true
+      }
+    ]
+  },
+  {
+    "theme": "dark",
+    "pairs": [
+      {
+        "foreground": "--text-secondary",
+        "background": "--surface-primary",
+        "minimum": 4.5,
+        "ratio": 7.155,
+        "before": 7.155,
+        "after": 7.155,
+        "pass": true
+      },
+      {
+        "foreground": "--text-muted",
+        "background": "--surface-secondary",
+        "minimum": 4.5,
+        "ratio": 5.639,
+        "before": 4.246,
+        "after": 5.639,
+        "pass": true
+      },
+      {
+        "foreground": "--text-muted",
+        "background": "--bg-subtle",
+        "minimum": 4.5,
+        "ratio": 7.373,
+        "before": 5.552,
+        "after": 7.373,
+        "pass": true
+      },
+      {
+        "foreground": "--brand-primary",
+        "background": "--brand-primary-soft",
+        "minimum": 4.5,
+        "ratio": 4.664,
+        "before": 4.664,
+        "after": 4.664,
+        "pass": true
+      },
+      {
+        "foreground": "--state-success",
+        "background": "--state-success-soft",
+        "minimum": 4.5,
+        "ratio": 5.366,
+        "before": 5.366,
+        "after": 5.366,
+        "pass": true
+      },
+      {
+        "foreground": "--state-danger",
+        "background": "--state-danger-soft",
+        "minimum": 4.5,
+        "ratio": 4.906,
+        "before": 4.906,
+        "after": 4.906,
+        "pass": true
+      },
+      {
+        "foreground": "--state-warning",
+        "background": "--state-warning-soft",
+        "minimum": 4.5,
+        "ratio": 5.214,
+        "before": 5.214,
+        "after": 5.214,
+        "pass": true
+      },
+      {
+        "foreground": "--state-info",
+        "background": "--state-info-soft",
+        "minimum": 4.5,
+        "ratio": 4.934,
+        "before": 4.934,
+        "after": 4.934,
+        "pass": true
+      },
+      {
+        "foreground": "--accent-timeline",
+        "background": "--accent-timeline-soft",
+        "minimum": 4.5,
+        "ratio": 4.632,
+        "before": 4.632,
+        "after": 4.632,
+        "pass": true
+      },
+      {
+        "foreground": "--accent-anniversary",
+        "background": "--accent-anniversary-soft",
+        "minimum": 4.5,
+        "ratio": 5.214,
+        "before": 5.214,
+        "after": 5.214,
+        "pass": true
+      },
+      {
+        "foreground": "--accent-library",
+        "background": "--accent-library-soft",
+        "minimum": 4.5,
+        "ratio": 5.052,
+        "before": 5.052,
+        "after": 5.052,
+        "pass": true
+      },
+      {
+        "foreground": "--accent-map",
+        "background": "--accent-map-soft",
+        "minimum": 4.5,
+        "ratio": 5.038,
+        "before": 5.038,
+        "after": 5.038,
+        "pass": true
+      },
+      {
+        "foreground": "--field-border",
+        "background": "--field-bg",
+        "minimum": 3,
+        "ratio": 3.788,
+        "before": 1.379,
+        "after": 3.788,
+        "pass": true
+      },
+      {
+        "foreground": "--field-focus-border",
+        "background": "--field-bg",
+        "minimum": 3,
+        "ratio": 5.675,
+        "before": 5.675,
+        "after": 5.675,
+        "pass": true
+      },
+      {
+        "foreground": "--field-placeholder",
+        "background": "--field-bg",
+        "minimum": 4.5,
+        "ratio": 6.52,
+        "before": 4.91,
+        "after": 6.52,
+        "pass": true
+      }
+    ]
+  }
+]

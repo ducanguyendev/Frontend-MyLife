@@ -1,0 +1,148 @@
+[
+  {
+    "theme": "light",
+    "width": 390,
+    "coarsePointer": true,
+    "targets": [
+      {
+        "icon": false,
+        "width": 113.75,
+        "height": 44
+      },
+      {
+        "icon": false,
+        "width": 128.75,
+        "height": 44
+      },
+      {
+        "icon": false,
+        "width": 107.421875,
+        "height": 44
+      },
+      {
+        "icon": false,
+        "width": 86.90625,
+        "height": 44
+      },
+      {
+        "icon": false,
+        "width": 82.484375,
+        "height": 44
+      },
+      {
+        "icon": false,
+        "width": 72.21875,
+        "height": 44
+      },
+      {
+        "icon": false,
+        "width": 77.421875,
+        "height": 44
+      },
+      {
+        "icon": false,
+        "width": 104.125,
+        "height": 44
+      },
+      {
+        "icon": false,
+        "width": 40,
+        "height": 44
+      },
+      {
+        "icon": false,
+        "width": 144.8125,
+        "height": 44
+      },
+      {
+        "icon": false,
+        "width": 138.53125,
+        "height": 44
+      },
+      {
+        "icon": false,
+        "width": 167.984375,
+        "height": 44
+      },
+      {
+        "icon": true,
+        "width": 44,
+        "height": 44
+      }
+    ],
+    "loginTapValidationAndClose": true
+  },
+  {
+    "theme": "dark",
+    "width": 390,
+    "coarsePointer": true,
+    "targets": [
+      {
+        "icon": false,
+        "width": 114.34375,
+        "height": 44
+      },
+      {
+        "icon": false,
+        "width": 128.75,
+        "height": 44
+      },
+      {
+        "icon": false,
+        "width": 107.421875,
+        "height": 44
+      },
+      {
+        "icon": false,
+        "width": 86.90625,
+        "height": 44
+      },
+      {
+        "icon": false,
+        "width": 82.484375,
+        "height": 44
+      },
+      {
+        "icon": false,
+        "width": 72.21875,
+        "height": 44
+      },
+      {
+        "icon": false,
+        "width": 77.421875,
+        "height": 44
+      },
+      {
+        "icon": false,
+        "width": 104.125,
+        "height": 44
+      },
+      {
+        "icon": false,
+        "width": 40,
+        "height": 44
+      },
+      {
+        "icon": false,
+        "width": 144.8125,
+        "height": 44
+      },
+      {
+        "icon": false,
+        "width": 138.53125,
+        "height": 44
+      },
+      {
+        "icon": false,
+        "width": 167.984375,
+        "height": 44
+      },
+      {
+        "icon": true,
+        "width": 44,
+        "height": 44
+      }
+    ],
+    "loginTapValidationAndClose": true
+  }
+]

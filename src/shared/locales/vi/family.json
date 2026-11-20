@@ -1,0 +1,53 @@
+{
+  "roots": "Cùng một gốc rễ",
+  "breadcrumb": "Đường dẫn",
+  "members": "Thành viên",
+  "publicLanding": "Trang giới thiệu MyLife",
+  "clearSearch": "Xóa tìm kiếm",
+  "viewTree": "Cây",
+  "viewCards": "Thẻ",
+  "viewList": "Danh sách",
+  "emptyTitle": "Gia đình của bạn bắt đầu từ một người.",
+  "emptyDescription": "Thêm thành viên đầu tiên để bắt đầu xây dựng câu chuyện gia đình.",
+  "loading": "Đang tải gia đình",
+  "contact": "Liên hệ",
+  "openMap": "Mở bản đồ",
+  "openLibrary": "Mở thư viện",
+  "openTimeline": "Xem dòng thời gian",
+  "exploreHint": "Khám phá những kết nối giữa hai thành viên trong gia đình.",
+  "archive": "Hồ sơ gia đình",
+  "exitFullscreen": "Thoát toàn màn hình",
+  "memberCountLabel": "thành viên",
+  "age": {
+    "current": "{{age}} tuổi",
+    "unknown": "Chưa rõ tuổi",
+    "atDeath": "Mất lúc {{age}} tuổi",
+    "wouldBe": "nếu còn sống: {{age}} tuổi",
+    "wouldBeDetail": "Nếu còn sống đến nay: {{age}} tuổi",
+    "deceased": "Đã mất"
+  },
+  "selectMember": "Chọn thành viên",
+  "avatar": {
+    "saving": "Đang lưu ảnh đại diện…",
+    "saved": "Đã cập nhật ảnh đại diện thành viên.",
+    "removed": "Đã xóa ảnh đại diện thành viên.",
+    "failed": "Chưa lưu được ảnh đại diện. Vui lòng thử lại.",
+    "removeTitle": "Xóa ảnh đại diện này?",
+    "removeDescription": "Thành viên sẽ sử dụng ảnh đại diện mặc định."
+  },
+  "relations": {
+    "parents": "Cha mẹ",
+    "recorded": "Quan hệ ngang được ghi nhận",
+    "recordedSibling": "Anh chị em (ghi nhận)",
+    "recordedHint": "Quan hệ ghi nhận không tự khẳng định cùng huyết thống. Các loại khác từ máy chủ được giữ nguyên.",
+    "sharedParent": "Cùng cha hoặc mẹ đã biết",
+    "sharedParentHint": "Suy ra từ liên kết cha/mẹ. Để thay đổi, sửa liên kết cha/mẹ của người liên quan.",
+    "missingMember": "Chưa có thông tin thành viên #{{id}}"
+  },
+  "recordedSiblingCount": "Anh/chị/em theo hồ sơ: {{count}}",
+  "siblingKind": {
+    "same-recorded-parents": "Cùng hai cha mẹ được ghi nhận",
+    "different-recorded-parents": "Chung một cha/mẹ, cha/mẹ còn lại khác nhau theo hồ sơ",
+    "shared-parent-unknown": "Chung cha/mẹ được ghi nhận; chưa rõ cha/mẹ còn lại"
+  }
+}

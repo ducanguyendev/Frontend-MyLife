@@ -1,0 +1,1 @@
+﻿const fs=require('fs');let s=fs.readFileSync('scratch/w61-editorial-composite.cjs','utf8');s=s.replaceAll('NotoSerif-Variable.ttf','Gelasio-Variable.ttf').replaceAll('Noto Serif','Gelasio').replaceAll('composite-diagnostics','gelasio-diagnostics');fs.writeFileSync('scratch/w61-editorial-gelasio.cjs',s);

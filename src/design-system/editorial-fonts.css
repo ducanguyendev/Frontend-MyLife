@@ -1,0 +1,73 @@
+/*
+ * Preserve the approved Georgia family and its native regular/bold/italic faces.
+ * Windows Georgia lacks 88 letters in U+1EA0–1EF9; its supported Ỳ/ỳ stay native.
+ * Ordinary font fallback decomposes some of them, leaving detached tone marks.
+ * A composite face routes ONLY those complete letters to Gelasio, whose metrics
+ * match Georgia. Supported glyphs continue to come from the installed Georgia.
+ * Display strings must be NFC (normalizeDisplayText); input/storage stay untouched.
+ * Gelasio is also the serif substitute on devices where Georgia is unavailable.
+ */
+@font-face {
+  font-family:Georgia;
+  src:local("Georgia"),url("/assets/fonts/Gelasio-Variable.ttf") format("truetype");
+  font-style:normal;
+  font-weight:400;
+  font-display:swap;
+  unicode-range:U+0000-1E9F,U+1EF2-1EF3,U+1EFA-10FFFF;
+}
+@font-face {
+  font-family:Georgia;
+  src:url("/assets/fonts/Gelasio-Variable.ttf") format("truetype");
+  font-style:normal;
+  font-weight:400;
+  font-display:swap;
+  unicode-range:U+1EA0-1EF1,U+1EF4-1EF9;
+}
+@font-face {
+  font-family:Georgia;
+  src:local("Georgia Bold"),url("/assets/fonts/Gelasio-Variable.ttf") format("truetype");
+  font-style:normal;
+  font-weight:700;
+  font-display:swap;
+  unicode-range:U+0000-1E9F,U+1EF2-1EF3,U+1EFA-10FFFF;
+}
+@font-face {
+  font-family:Georgia;
+  src:url("/assets/fonts/Gelasio-Variable.ttf") format("truetype");
+  font-style:normal;
+  font-weight:700;
+  font-display:swap;
+  unicode-range:U+1EA0-1EF1,U+1EF4-1EF9;
+}
+@font-face {
+  font-family:Georgia;
+  src:local("Georgia Italic"),url("/assets/fonts/Gelasio-Italic-Variable.ttf") format("truetype");
+  font-style:italic;
+  font-weight:400;
+  font-display:swap;
+  unicode-range:U+0000-1E9F,U+1EF2-1EF3,U+1EFA-10FFFF;
+}
+@font-face {
+  font-family:Georgia;
+  src:url("/assets/fonts/Gelasio-Italic-Variable.ttf") format("truetype");
+  font-style:italic;
+  font-weight:400;
+  font-display:swap;
+  unicode-range:U+1EA0-1EF1,U+1EF4-1EF9;
+}
+@font-face {
+  font-family:Georgia;
+  src:local("Georgia Bold Italic"),url("/assets/fonts/Gelasio-Italic-Variable.ttf") format("truetype");
+  font-style:italic;
+  font-weight:700;
+  font-display:swap;
+  unicode-range:U+0000-1E9F,U+1EF2-1EF3,U+1EFA-10FFFF;
+}
+@font-face {
+  font-family:Georgia;
+  src:url("/assets/fonts/Gelasio-Italic-Variable.ttf") format("truetype");
+  font-style:italic;
+  font-weight:700;
+  font-display:swap;
+  unicode-range:U+1EA0-1EF1,U+1EF4-1EF9;
+}

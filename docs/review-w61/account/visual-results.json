@@ -1,0 +1,182 @@
+[
+  {
+    "name": "light-1366-profile-edit",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "light-1366-security-errors",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "light-1440-profile-edit",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "light-1440-security-errors",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "light-1920-profile-edit",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "light-1920-security-errors",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "light-820-profile-edit",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "light-820-security-errors",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "light-390-profile-edit",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "light-390-security-errors",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "dark-1366-profile-edit",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "dark-1366-security-errors",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "dark-1440-profile-edit",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "dark-1440-security-errors",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "dark-1920-profile-edit",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "dark-1920-security-errors",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "dark-820-profile-edit",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "dark-820-security-errors",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "dark-390-profile-edit",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  },
+  {
+    "name": "dark-390-security-errors",
+    "offenders": [],
+    "overflow": false,
+    "mainOverflow": false,
+    "active": 1,
+    "dialogOverflow": false,
+    "breadcrumb": false
+  }
+]

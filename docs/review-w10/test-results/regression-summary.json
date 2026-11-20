@@ -1,0 +1,277 @@
+{
+  "before": {
+    "tests": 339,
+    "pass": 310,
+    "fail": 29,
+    "skipped": 0
+  },
+  "after": {
+    "tests": 360,
+    "pass": 360,
+    "fail": 0,
+    "skipped": 0
+  },
+  "baselineFailures": [
+    {
+      "id": 1,
+      "test": "family map still uses Leaflet and OpenStreetMap tiles",
+      "classification": "Outdated test expectation",
+      "evidence": "W7/W9 use VietMapBaseLayer, not OSM tiles.",
+      "action": "Assert adopted Leaflet/VietMap integration, configured key and layer cleanup.",
+      "before": "FAIL",
+      "after": "PASS"
+    },
+    {
+      "id": 2,
+      "test": "Anniversary Add/Edit share one abortable member request and subsequent opens reuse cache",
+      "classification": "Outdated test expectation",
+      "evidence": "Edit is a MemoryActions callback; delete uses ConfirmDialog.onConfirm.",
+      "action": "Retain cache/abort checks and follow actual action callbacks.",
+      "before": "FAIL",
+      "after": "PASS"
+    },
+    {
+      "id": 3,
+      "test": "children add/remove and siblings use action pickers while keeping collection state in the form",
+      "classification": "Outdated test expectation",
+      "evidence": "Explicit horizontal relations include sibling and cousin; biological siblings remain inferred.",
+      "action": "Assert removal of both explicit types, preserving inferred siblings.",
+      "before": "FAIL",
+      "after": "PASS"
+    },
+    {
+      "id": 4,
+      "test": "ADMIN: actual guard blocks before mounting and MyLife navigation is USER-only",
+      "classification": "Test fixture/mock problem",
+      "evidence": "UserMenu/Header import new preference components omitted from VM mocks.",
+      "action": "Add explicit presentation mocks; preserve role guard and navigation assertions.",
+      "before": "FAIL",
+      "after": "PASS"
+    },
+    {
+      "id": 5,
+      "test": "USER: actual guard blocks before mounting and MyLife navigation is USER-only",
+      "classification": "Test fixture/mock problem",
+      "evidence": "Same missing preference mocks in the USER case.",
+      "action": "Same fixture repair; exercise both exclusive business roles.",
+      "before": "FAIL",
+      "after": "PASS"
+    },
+    {
+      "id": 6,
+      "test": "tests\\\\feature-i18n.test.cjs",
+      "classification": "Test fixture/mock problem",
+      "evidence": "types.ts imports generationCardThemes; file aborted before test registration.",
+      "action": "Load real generation themes/normalizer; add explicit leaf mocks and follow current grid/actions callbacks; run all locale/CRUD/validation tests.",
+      "before": "FAIL",
+      "after": "PASS"
+    },
+    {
+      "id": 7,
+      "test": "global focus tokens stay neutral across light and dark themes",
+      "classification": "Outdated test expectation",
+      "evidence": "Neutral hex focus colors were replaced by accepted W9 semantic tokens.",
+      "action": "Verify theme token delegation and focus-visible styling.",
+      "before": "FAIL",
+      "after": "PASS"
+    },
+    {
+      "id": 8,
+      "test": "shared fields and FamilyRelationSelect avoid hard focus rings",
+      "classification": "Outdated test expectation",
+      "evidence": "Focus belongs to data-field-shell instead of native control utility classes.",
+      "action": "Verify shell owns focus and native control has no second outline.",
+      "before": "FAIL",
+      "after": "PASS"
+    },
+    {
+      "id": 9,
+      "test": "shared field shells use the focus token while preserving error borders",
+      "classification": "Outdated test expectation",
+      "evidence": "FloatingField now owns error and focus borders.",
+      "action": "Verify error forwarding, aria-invalid and error border CSS.",
+      "before": "FAIL",
+      "after": "PASS"
+    },
+    {
+      "id": 10,
+      "test": "form sibling chips contain an avatar and name with the original remove permissions",
+      "classification": "Outdated test expectation",
+      "evidence": "Explicit sibling and unknown relations are removable; biological inferred relations are not.",
+      "action": "Assert avatar/name and non-biological removal callback.",
+      "before": "FAIL",
+      "after": "PASS"
+    },
+    {
+      "id": 11,
+      "test": "MemberTable renders semantic columns, family data, and shared avatar",
+      "classification": "Test fixture/mock problem",
+      "evidence": "MemberTable imports normalizeDisplayText, Button and TableShell.",
+      "action": "Add explicit leaf boundaries and keep semantic columns/data/avatar checks.",
+      "before": "FAIL",
+      "after": "PASS"
+    },
+    {
+      "id": 12,
+      "test": "MemberTable uses em dash for missing values and calls the existing detail handler",
+      "classification": "Test fixture/mock problem",
+      "evidence": "Same imports prevented the missing-value/detail callback test from executing.",
+      "action": "Preserve missing-value counts and actual onView callback assertion.",
+      "before": "FAIL",
+      "after": "PASS"
+    },
+    {
+      "id": 13,
+      "test": "hub renders five configured real modules with semantic route links",
+      "classification": "Outdated test expectation",
+      "evidence": "Hub motion duration now delegates to shared tokens.",
+      "action": "Assert --motion-normal delegation while retaining canonical semantic links.",
+      "before": "FAIL",
+      "after": "PASS"
+    },
+    {
+      "id": 14,
+      "test": "all workspace pages share a single ArrowLeft-only header with explicit parents",
+      "classification": "Outdated test expectation",
+      "evidence": "W4+ adopted AppShell instead of mounting UserWorkspaceHeader.",
+      "action": "Verify AppShell delegation and canonical parent routes.",
+      "before": "FAIL",
+      "after": "PASS"
+    },
+    {
+      "id": 15,
+      "test": "module and page translations exist in Vietnamese and English; shared controls remain reused",
+      "classification": "Outdated test expectation",
+      "evidence": "Preferences moved into AppearanceLanguageModal and shared controls.",
+      "action": "Check modal/shared preference path and existing VI/EN module strings.",
+      "before": "FAIL",
+      "after": "PASS"
+    },
+    {
+      "id": 16,
+      "test": "shared workspace layout owns the viewport and routes optional module navigation to header and dock",
+      "classification": "Outdated test expectation",
+      "evidence": "Viewport/scroll ownership moved to AppShell CSS.",
+      "action": "Verify AppShell contentScroll forwarding, focusable main and scrolling CSS.",
+      "before": "FAIL",
+      "after": "PASS"
+    },
+    {
+      "id": 17,
+      "test": "desktop header navigation and mobile dock are mutually exclusive at the xl breakpoint",
+      "classification": "Outdated test expectation",
+      "evidence": "Sidebar/drawer responsive navigation replaced desktop-nav/mobile-dock mounting.",
+      "action": "Assert current 767px breakpoint, drawer trigger and role-aware navigation.",
+      "before": "FAIL",
+      "after": "PASS"
+    },
+    {
+      "id": 18,
+      "test": "module content has internal scroll sizing and existing API contracts remain present",
+      "classification": "Outdated test expectation",
+      "evidence": "Calendar/library use normal shell scrolling; tree canvas chooses hidden/auto.",
+      "action": "Verify current scroll owners and retain real module endpoint checks.",
+      "before": "FAIL",
+      "after": "PASS"
+    },
+    {
+      "id": 19,
+      "test": "tests\\\\optimization.test.cjs",
+      "classification": "Test fixture/mock problem",
+      "evidence": "generationCardThemes import aborted optimization file before tests registered.",
+      "action": "Load themes; add router/leaf mocks, follow default tree/segments and current ErrorState/EmptyState; retain abort/image/manifest checks.",
+      "before": "FAIL",
+      "after": "PASS"
+    },
+    {
+      "id": 20,
+      "test": "modal and custom overlays share scroll locks; Select and action picker portal and reposition",
+      "classification": "Outdated test expectation",
+      "evidence": "PhotoLightboxModal is an alias of LibraryLightbox using shared Modal.",
+      "action": "Follow alias to shared Modal and preserve lock/portal/position checks.",
+      "before": "FAIL",
+      "after": "PASS"
+    },
+    {
+      "id": 21,
+      "test": "SearchBar exposes controlled, accessible UI and FamilyTree reference styling",
+      "classification": "Outdated test expectation",
+      "evidence": "SearchBar delegates its field frame to SearchInput.",
+      "action": "Verify search Input delegation, controlled props and clear/focus callback.",
+      "before": "FAIL",
+      "after": "PASS"
+    },
+    {
+      "id": 22,
+      "test": "shared Select uses an interactive full-field native select with label and ref",
+      "classification": "Outdated test expectation",
+      "evidence": "Shared Select is Radix, not a transparent native select.",
+      "action": "Behavior-test ref/id/label/required/disabled/name forwarding.",
+      "before": "FAIL",
+      "after": "PASS"
+    },
+    {
+      "id": 23,
+      "test": "native Select keeps controlled and uncontrolled values, defaultValue and onChange",
+      "classification": "Outdated test expectation",
+      "evidence": "Radix exposes onValueChange rather than native onChange.",
+      "action": "Behavior-test controlled/uncontrolled state and callback values.",
+      "before": "FAIL",
+      "after": "PASS"
+    },
+    {
+      "id": 24,
+      "test": "native Select renders options prop, option children, empty option and placeholder",
+      "classification": "Outdated test expectation",
+      "evidence": "Radix renders SelectItem/options and primitive placeholder.",
+      "action": "Behavior-test custom children, disabled options, null value and placeholder.",
+      "before": "FAIL",
+      "after": "PASS"
+    },
+    {
+      "id": 25,
+      "test": "native Select retains rounded focus and error presentation with pointer-transparent visuals",
+      "classification": "Outdated test expectation",
+      "evidence": "FloatingField owns Select focus/error visuals.",
+      "action": "Behavior-test focus, aria-invalid/describedby, error and value state.",
+      "before": "FAIL",
+      "after": "PASS"
+    },
+    {
+      "id": 26,
+      "test": "FamilyTree gender and relationship fields remain wired to shared native Select options",
+      "classification": "Outdated test expectation",
+      "evidence": "Member gender uses SelectItem; relations use separate pickers.",
+      "action": "Verify adopted gender options and distinct relationship picker contracts.",
+      "before": "FAIL",
+      "after": "PASS"
+    },
+    {
+      "id": 27,
+      "test": "standard forms use shared selects; compact appearance utilities and the design-system demo remain native",
+      "classification": "Outdated test expectation",
+      "evidence": "AppearanceControls now delegates to shared Radix preferences.",
+      "action": "Keep native-select allowlist limited to dev preview; verify preference primitives.",
+      "before": "FAIL",
+      "after": "PASS"
+    },
+    {
+      "id": 28,
+      "test": "shared header controls, FamilyTree controls, and centered Home navigation use 40px sizing",
+      "classification": "Outdated test expectation",
+      "evidence": "W9 enlarged shared icon targets and replaced legacy direct controls.",
+      "action": "Verify current shared sizing and public control composition.",
+      "before": "FAIL",
+      "after": "PASS"
+    },
+    {
+      "id": 29,
+      "test": "Header, Admin, FamilyTree and mobile drawer share ThemeSwitch",
+      "classification": "Outdated test expectation",
+      "evidence": "Authenticated preferences live in UserMenu, not duplicate ThemeSwitch mounts.",
+      "action": "Verify shared ThemeContext/preferences and shell integration.",
+      "before": "FAIL",
+      "after": "PASS"
+    }
+  ]
+}

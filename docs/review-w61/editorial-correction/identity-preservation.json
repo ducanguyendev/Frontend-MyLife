@@ -1,0 +1,14 @@
+[
+  {
+    "file": "src/features/admin/components/family-tree/FamilyExperience.css",
+    "approvedStylesRestored": true
+  },
+  {
+    "file": "src/features/my-life/components/memories/Memories.css",
+    "approvedStylesRestored": true
+  },
+  {
+    "file": "src/features/landing/pages/MyLifeLandingPage.css",
+    "approvedStylesRestored": true
+  }
+]

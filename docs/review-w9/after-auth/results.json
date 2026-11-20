@@ -1,0 +1,290 @@
+[
+  {
+    "case": "vi-light-1920",
+    "view": "register",
+    "bodyOverflow": false,
+    "mainOverflow": false,
+    "dialogOutside": false,
+    "clippedHeading": false,
+    "typography": {}
+  },
+  {
+    "case": "vi-light-1920",
+    "view": "login",
+    "bodyOverflow": false,
+    "mainOverflow": false,
+    "dialogOutside": false,
+    "clippedHeading": false,
+    "typography": {}
+  },
+  {
+    "case": "en-light-1920",
+    "view": "register",
+    "bodyOverflow": false,
+    "mainOverflow": false,
+    "dialogOutside": false,
+    "clippedHeading": false,
+    "typography": {}
+  },
+  {
+    "case": "en-light-1920",
+    "view": "login",
+    "bodyOverflow": false,
+    "mainOverflow": false,
+    "dialogOutside": false,
+    "clippedHeading": false,
+    "typography": {}
+  },
+  {
+    "case": "vi-dark-1920",
+    "view": "register",
+    "bodyOverflow": false,
+    "mainOverflow": false,
+    "dialogOutside": false,
+    "clippedHeading": false,
+    "typography": {}
+  },
+  {
+    "case": "vi-dark-1920",
+    "view": "login",
+    "bodyOverflow": false,
+    "mainOverflow": false,
+    "dialogOutside": false,
+    "clippedHeading": false,
+    "typography": {}
+  },
+  {
+    "case": "en-dark-1920",
+    "view": "register",
+    "bodyOverflow": false,
+    "mainOverflow": false,
+    "dialogOutside": false,
+    "clippedHeading": false,
+    "typography": {}
+  },
+  {
+    "case": "en-dark-1920",
+    "view": "login",
+    "bodyOverflow": false,
+    "mainOverflow": false,
+    "dialogOutside": false,
+    "clippedHeading": false,
+    "typography": {}
+  },
+  {
+    "case": "vi-light-1440",
+    "view": "register",
+    "bodyOverflow": false,
+    "mainOverflow": false,
+    "dialogOutside": false,
+    "clippedHeading": false,
+    "typography": {}
+  },
+  {
+    "case": "vi-light-1440",
+    "view": "login",
+    "bodyOverflow": false,
+    "mainOverflow": false,
+    "dialogOutside": false,
+    "clippedHeading": false,
+    "typography": {}
+  },
+  {
+    "case": "en-light-1440",
+    "view": "register",
+    "bodyOverflow": false,
+    "mainOverflow": false,
+    "dialogOutside": false,
+    "clippedHeading": false,
+    "typography": {}
+  },
+  {
+    "case": "en-light-1440",
+    "view": "login",
+    "bodyOverflow": false,
+    "mainOverflow": false,
+    "dialogOutside": false,
+    "clippedHeading": false,
+    "typography": {}
+  },
+  {
+    "case": "vi-dark-1440",
+    "view": "register",
+    "bodyOverflow": false,
+    "mainOverflow": false,
+    "dialogOutside": false,
+    "clippedHeading": false,
+    "typography": {}
+  },
+  {
+    "case": "vi-dark-1440",
+    "view": "login",
+    "bodyOverflow": false,
+    "mainOverflow": false,
+    "dialogOutside": false,
+    "clippedHeading": false,
+    "typography": {}
+  },
+  {
+    "case": "en-dark-1440",
+    "view": "register",
+    "bodyOverflow": false,
+    "mainOverflow": false,
+    "dialogOutside": false,
+    "clippedHeading": false,
+    "typography": {}
+  },
+  {
+    "case": "en-dark-1440",
+    "view": "login",
+    "bodyOverflow": false,
+    "mainOverflow": false,
+    "dialogOutside": false,
+    "clippedHeading": false,
+    "typography": {}
+  },
+  {
+    "case": "vi-light-820",
+    "view": "register",
+    "bodyOverflow": false,
+    "mainOverflow": false,
+    "dialogOutside": false,
+    "clippedHeading": false,
+    "typography": {}
+  },
+  {
+    "case": "vi-light-820",
+    "view": "login",
+    "bodyOverflow": false,
+    "mainOverflow": false,
+    "dialogOutside": false,
+    "clippedHeading": false,
+    "typography": {}
+  },
+  {
+    "case": "en-light-820",
+    "view": "register",
+    "bodyOverflow": false,
+    "mainOverflow": false,
+    "dialogOutside": false,
+    "clippedHeading": false,
+    "typography": {}
+  },
+  {
+    "case": "en-light-820",
+    "view": "login",
+    "bodyOverflow": false,
+    "mainOverflow": false,
+    "dialogOutside": false,
+    "clippedHeading": false,
+    "typography": {}
+  },
+  {
+    "case": "vi-dark-820",
+    "view": "register",
+    "bodyOverflow": false,
+    "mainOverflow": false,
+    "dialogOutside": false,
+    "clippedHeading": false,
+    "typography": {}
+  },
+  {
+    "case": "vi-dark-820",
+    "view": "login",
+    "bodyOverflow": false,
+    "mainOverflow": false,
+    "dialogOutside": false,
+    "clippedHeading": false,
+    "typography": {}
+  },
+  {
+    "case": "en-dark-820",
+    "view": "register",
+    "bodyOverflow": false,
+    "mainOverflow": false,
+    "dialogOutside": false,
+    "clippedHeading": false,
+    "typography": {}
+  },
+  {
+    "case": "en-dark-820",
+    "view": "login",
+    "bodyOverflow": false,
+    "mainOverflow": false,
+    "dialogOutside": false,
+    "clippedHeading": false,
+    "typography": {}
+  },
+  {
+    "case": "vi-light-390",
+    "view": "register",
+    "bodyOverflow": false,
+    "mainOverflow": false,
+    "dialogOutside": false,
+    "clippedHeading": false,
+    "typography": {}
+  },
+  {
+    "case": "vi-light-390",
+    "view": "login",
+    "bodyOverflow": false,
+    "mainOverflow": false,
+    "dialogOutside": false,
+    "clippedHeading": false,
+    "typography": {}
+  },
+  {
+    "case": "en-light-390",
+    "view": "register",
+    "bodyOverflow": false,
+    "mainOverflow": false,
+    "dialogOutside": false,
+    "clippedHeading": false,
+    "typography": {}
+  },
+  {
+    "case": "en-light-390",
+    "view": "login",
+    "bodyOverflow": false,
+    "mainOverflow": false,
+    "dialogOutside": false,
+    "clippedHeading": false,
+    "typography": {}
+  },
+  {
+    "case": "vi-dark-390",
+    "view": "register",
+    "bodyOverflow": false,
+    "mainOverflow": false,
+    "dialogOutside": false,
+    "clippedHeading": false,
+    "typography": {}
+  },
+  {
+    "case": "vi-dark-390",
+    "view": "login",
+    "bodyOverflow": false,
+    "mainOverflow": false,
+    "dialogOutside": false,
+    "clippedHeading": false,
+    "typography": {}
+  },
+  {
+    "case": "en-dark-390",
+    "view": "register",
+    "bodyOverflow": false,
+    "mainOverflow": false,
+    "dialogOutside": false,
+    "clippedHeading": false,
+    "typography": {}
+  },
+  {
+    "case": "en-dark-390",
+    "view": "login",
+    "bodyOverflow": false,
+    "mainOverflow": false,
+    "dialogOutside": false,
+    "clippedHeading": false,
+    "typography": {}
+  }
+]

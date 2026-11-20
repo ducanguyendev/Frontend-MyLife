@@ -1,0 +1,21 @@
+{
+  "roots": "From the same roots",
+  "breadcrumb": "Breadcrumb",
+  "members": "Members",
+  "publicLanding": "About MyLife",
+  "clearSearch": "Clear search",
+  "viewTree": "Tree",
+  "viewCards": "Cards",
+  "viewList": "List",
+  "emptyTitle": "Your family starts with one person.",
+  "emptyDescription": "Add your first member to begin building your family story.",
+  "loading": "Loading your family",
+  "contact": "Contact",
+  "openMap": "Open map",
+  "openLibrary": "Open library",
+  "openTimeline": "View timeline",
+  "exploreHint": "Discover the connections between two people in your family.",
+  "archive": "Family portrait",
+  "exitFullscreen": "Exit fullscreen",
+  "memberCountLabel": "members"
+}

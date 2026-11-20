@@ -1,0 +1,53 @@
+{
+  "largest": [
+    {
+      "key": "_FamilyLocationMap-glAbdthM.js",
+      "file": "assets/FamilyLocationMap-glAbdthM.js",
+      "bytes": 1152135,
+      "gzip": 308894
+    },
+    {
+      "key": "index.html",
+      "file": "assets/index-HCbMjUOo.js",
+      "bytes": 385415,
+      "gzip": 121732
+    },
+    {
+      "key": "_ui-DMihG4xe.js",
+      "file": "assets/ui-DMihG4xe.js",
+      "bytes": 234444,
+      "gzip": 75674
+    },
+    {
+      "key": "src/features/admin/components/family-tree/FamilyMindmap.tsx",
+      "file": "assets/FamilyMindmap-W2LPu6w_.js",
+      "bytes": 154512,
+      "gzip": 48549
+    },
+    {
+      "key": "_proxy-DK5fpv7r.js",
+      "file": "assets/proxy-DK5fpv7r.js",
+      "bytes": 124974,
+      "gzip": 40421
+    },
+    {
+      "key": "src/features/admin/components/family-tree/FamilyChartView.tsx",
+      "file": "assets/FamilyChartView-DoGCm8rC.js",
+      "bytes": 117968,
+      "gzip": 33694
+    },
+    {
+      "key": "src/features/family-tree/pages/FamilyTreePage.tsx",
+      "file": "assets/FamilyTreePage-CH3j5gcu.js",
+      "bytes": 55330,
+      "gzip": 14710
+    },
+    {
+      "key": "src/features/admin/components/family-tree/MemoirFamilyTreeView.tsx",
+      "file": "assets/MemoirFamilyTreeView-CsLYxrR3.js",
+      "bytes": 52788,
+      "gzip": 17002
+    }
+  ],
+  "largeMapInEntry": false
+}

@@ -1,0 +1,280 @@
+TAP version 13
+# Subtest: 100 consecutive uploads always overwrite X with the latest bytes and MIME, including selecting the same image again
+ok 1 - 100 consecutive uploads always overwrite X with the latest bytes and MIME, including selecting the same image again
+  ---
+  duration_ms: 51.3228
+  type: 'test'
+  ...
+# Subtest: overwrite failure after B keeps B and retry C/D/E succeeds using the same ID
+ok 2 - overwrite failure after B keeps B and retry C/D/E succeeds using the same ID
+  ---
+  duration_ms: 2.9239
+  type: 'test'
+  ...
+# Subtest: A-D: create once, overwrite actual bytes and change JPEG to WebP with the same ID
+ok 3 - A-D: create once, overwrite actual bytes and change JPEG to WebP with the same ID
+  ---
+  duration_ms: 2.1138
+  type: 'test'
+  ...
+# Subtest: E: update error logs failure, preserves old bytes and never creates a replacement
+ok 4 - E: update error logs failure, preserves old bytes and never creates a replacement
+  ---
+  duration_ms: 2.0126
+  type: 'test'
+  ...
+# Subtest: a successful API no-op cannot hide unchanged Drive bytes behind a fresh URL
+ok 5 - a successful API no-op cannot hide unchanged Drive bytes behind a fresh URL
+  ---
+  duration_ms: 2.0276
+  type: 'test'
+  ...
+# Subtest: F: legacy duplicates keep one ID, update its bytes, then trash the rest
+ok 6 - F: legacy duplicates keep one ID, update its bytes, then trash the rest
+  ---
+  duration_ms: 2.2495
+  type: 'test'
+  ...
+# Subtest: explicit ID wins even when an older duplicate is listed first or MIME/name changed
+ok 7 - explicit ID wins even when an older duplicate is listed first or MIME/name changed
+  ---
+  duration_ms: 2.5127
+  type: 'test'
+  ...
+# Subtest: invalid explicit ID (missing) fails without legacy fallback or file creation
+ok 8 - invalid explicit ID (missing) fails without legacy fallback or file creation
+  ---
+  duration_ms: 2.557
+  type: 'test'
+  ...
+# Subtest: invalid explicit ID (outside) fails without legacy fallback or file creation
+ok 9 - invalid explicit ID (outside) fails without legacy fallback or file creation
+  ---
+  duration_ms: 2.6513
+  type: 'test'
+  ...
+# Subtest: invalid explicit ID (trashed) fails without legacy fallback or file creation
+ok 10 - invalid explicit ID (trashed) fails without legacy fallback or file creation
+  ---
+  duration_ms: 2.5259
+  type: 'test'
+  ...
+# Subtest: delete targets the tracked ID and cleans legacy duplicates only in the avatar folder
+ok 11 - delete targets the tracked ID and cleans legacy duplicates only in the avatar folder
+  ---
+  duration_ms: 2.6428
+  type: 'test'
+  ...
+# Subtest: delete with unavailable tracked ID fails instead of claiming success
+ok 12 - delete with unavailable tracked ID fails instead of claiming success
+  ---
+  duration_ms: 2.5765
+  type: 'test'
+  ...
+# Subtest: album creation is idempotent and Int64 identity stays exact
+ok 13 - album creation is idempotent and Int64 identity stays exact
+  ---
+  duration_ms: 9.2099
+  type: 'test'
+  ...
+# Subtest: multiple images go into the album with exact bytes, MIME, MD5 and file size
+ok 14 - multiple images go into the album with exact bytes, MIME, MD5 and file size
+  ---
+  duration_ms: 5.3418
+  type: 'test'
+  ...
+# Subtest: library_read_photo returns exact Drive bytes and verified metadata for JPEG, PNG, WebP and GIF
+ok 15 - library_read_photo returns exact Drive bytes and verified metadata for JPEG, PNG, WebP and GIF
+  ---
+  duration_ms: 5.9524
+  type: 'test'
+  ...
+# Subtest: library_read_photo rejects invalid folder/file identities and files outside the requested album
+ok 16 - library_read_photo rejects invalid folder/file identities and files outside the requested album
+  ---
+  duration_ms: 3.4659
+  type: 'test'
+  ...
+# Subtest: Apps Script GET contract advertises the photo read action version
+ok 17 - Apps Script GET contract advertises the photo read action version
+  ---
+  duration_ms: 1.6521
+  type: 'test'
+  ...
+# Subtest: jpg alias normalizes to jpeg; GIF signature is supported
+ok 18 - jpg alias normalizes to jpeg; GIF signature is supported
+  ---
+  duration_ms: 1.9811
+  type: 'test'
+  ...
+# Subtest: Library cannot use avatar root, avatar folders, outside folders or the Library root itself
+ok 19 - Library cannot use avatar root, avatar folders, outside folders or the Library root itself
+  ---
+  duration_ms: 2.6208
+  type: 'test'
+  ...
+# Subtest: missing Library configuration does not touch existing avatar configuration
+ok 20 - missing Library configuration does not touch existing avatar configuration
+  ---
+  duration_ms: 1.8182
+  type: 'test'
+  ...
+# Subtest: unverified media/sharing failure trashes the new file and preserves cleanup identity
+ok 21 - unverified media/sharing failure trashes the new file and preserves cleanup identity
+  ---
+  duration_ms: 4.1011
+  type: 'test'
+  ...
+# Subtest: cleanup failure is reported with a file ID, never a fake success
+ok 22 - cleanup failure is reported with a file ID, never a fake success
+  ---
+  duration_ms: 2.8797
+  type: 'test'
+  ...
+# Subtest: delete is constrained to the correct album and is idempotent for already-trashed items
+ok 23 - delete is constrained to the correct album and is idempotent for already-trashed items
+  ---
+  duration_ms: 3.4984
+  type: 'test'
+  ...
+# Subtest: unsafe name, MIME mismatch, invalid signature, empty and oversized images cannot create files
+ok 24 - unsafe name, MIME mismatch, invalid signature, empty and oversized images cannot create files
+  ---
+  duration_ms: 561.4765
+  type: 'test'
+  ...
+# Subtest: first member upload creates one stable file, verifies bytes and enables public image sharing
+ok 25 - first member upload creates one stable file, verifies bytes and enables public image sharing
+  ---
+  duration_ms: 11.2732
+  type: 'test'
+  ...
+# Subtest: A through E and 100 replacements retain X, latest bytes/MIME and exactly one live member file
+ok 26 - A through E and 100 replacements retain X, latest bytes/MIME and exactly one live member file
+  ---
+  duration_ms: 16.035
+  type: 'test'
+  ...
+# Subtest: legacy lookup overwrites by stable member ID and cleans only its duplicates in the member root
+ok 27 - legacy lookup overwrites by stable member ID and cleans only its duplicates in the member root
+  ---
+  duration_ms: 2.2524
+  type: 'test'
+  ...
+# Subtest: explicit X wins over an earlier legacy match, even after X was renamed
+ok 28 - explicit X wins over an earlier legacy match, even after X was renamed
+  ---
+  duration_ms: 2.1732
+  type: 'test'
+  ...
+# Subtest: unavailable/outside explicit X (missing) fails without creating or falling back
+ok 29 - unavailable/outside explicit X (missing) fails without creating or falling back
+  ---
+  duration_ms: 2.271
+  type: 'test'
+  ...
+# Subtest: unavailable/outside explicit X (accounts) fails without creating or falling back
+ok 30 - unavailable/outside explicit X (accounts) fails without creating or falling back
+  ---
+  duration_ms: 2.7298
+  type: 'test'
+  ...
+# Subtest: unavailable/outside explicit X (library) fails without creating or falling back
+ok 31 - unavailable/outside explicit X (library) fails without creating or falling back
+  ---
+  duration_ms: 2.0026
+  type: 'test'
+  ...
+# Subtest: unavailable/outside explicit X (outside) fails without creating or falling back
+ok 32 - unavailable/outside explicit X (outside) fails without creating or falling back
+  ---
+  duration_ms: 2.4425
+  type: 'test'
+  ...
+# Subtest: unavailable/outside explicit X (trashed) fails without creating or falling back
+ok 33 - unavailable/outside explicit X (trashed) fails without creating or falling back
+  ---
+  duration_ms: 2.5522
+  type: 'test'
+  ...
+# Subtest: missing/conflicting/trashed member root cannot mutate Account Avatar or Library
+ok 34 - missing/conflicting/trashed member root cannot mutate Account Avatar or Library
+  ---
+  duration_ms: 11.9141
+  type: 'test'
+  ...
+# Subtest: member ID is the identity, rejects invalid/rounded numbers, and preserves exact decimal strings
+ok 35 - member ID is the identity, rejects invalid/rounded numbers, and preserves exact decimal strings
+  ---
+  duration_ms: 3.4317
+  type: 'test'
+  ...
+# Subtest: member avatar validates signatures/size/MIME, normalizes JPG and accepts GIF
+ok 36 - member avatar validates signatures/size/MIME, normalizes JPG and accepts GIF
+  ---
+  duration_ms: 561.874
+  type: 'test'
+  ...
+# Subtest: member success requires read-back id; first-file failure is compensated
+ok 37 - member success requires read-back id; first-file failure is compensated
+  ---
+  duration_ms: 2.4509
+  type: 'test'
+  ...
+# Subtest: member success requires read-back md5Checksum; first-file failure is compensated
+ok 38 - member success requires read-back md5Checksum; first-file failure is compensated
+  ---
+  duration_ms: 1.9858
+  type: 'test'
+  ...
+# Subtest: member success requires read-back mimeType; first-file failure is compensated
+ok 39 - member success requires read-back mimeType; first-file failure is compensated
+  ---
+  duration_ms: 2.3978
+  type: 'test'
+  ...
+# Subtest: member success requires read-back fileSize; first-file failure is compensated
+ok 40 - member success requires read-back fileSize; first-file failure is compensated
+  ---
+  duration_ms: 2.1062
+  type: 'test'
+  ...
+# Subtest: failed/no-op overwrite never creates a replacement or removes the tracked file/duplicates
+ok 41 - failed/no-op overwrite never creates a replacement or removes the tracked file/duplicates
+  ---
+  duration_ms: 6.9516
+  type: 'test'
+  ...
+# Subtest: sharing/cleanup failure reports failure; overwrite failure never trashes an existing avatar
+ok 42 - sharing/cleanup failure reports failure; overwrite failure never trashes an existing avatar
+  ---
+  duration_ms: 8.0849
+  type: 'test'
+  ...
+# Subtest: delete targets X and legacy duplicates, is idempotent, and leaves other members/roots intact
+ok 43 - delete targets X and legacy duplicates, is idempotent, and leaves other members/roots intact
+  ---
+  duration_ms: 3.0245
+  type: 'test'
+  ...
+# Subtest: invalid delete X fails without legacy cleanup; delete without ID cleans legacy only
+ok 44 - invalid delete X fails without legacy cleanup; delete without ID cleans legacy only
+  ---
+  duration_ms: 3.0625
+  type: 'test'
+  ...
+# Subtest: complete dispatcher supports all three contracts; diagnostics expose versions without folder IDs
+ok 45 - complete dispatcher supports all three contracts; diagnostics expose versions without folder IDs
+  ---
+  duration_ms: 6.7426
+  type: 'test'
+  ...
+1..45
+# tests 45
+# suites 0
+# pass 45
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 929.419

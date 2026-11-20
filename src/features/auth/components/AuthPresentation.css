@@ -1,0 +1,12 @@
+.ds-modal.auth-login > .custom-scrollbar { padding:var(--space-8); background:var(--surface-primary); }
+.auth-login .auth-close,.auth-register .auth-close { display:grid; width:44px; height:44px; place-items:center; }
+.auth-login form,.auth-register form { font-size:var(--type-body-small); line-height:1.6; }
+.auth-login form > label { min-height:44px; }
+.auth-login form > button[type=submit],.auth-register form > button[type=submit] { background:var(--action-primary); color:var(--on-action-primary); }
+.auth-login form > button[type=submit]:hover,.auth-register form > button[type=submit]:hover { background:var(--brand-primary-hover); }
+.auth-login .auth-close:focus-visible,.auth-register .auth-close:focus-visible { outline:2px solid var(--brand-primary); outline-offset:2px; }
+@media(max-width:639px) {
+  .ds-modal.auth-login > .custom-scrollbar { padding:var(--space-6); }
+  .auth-register > .relative { padding:var(--space-6); }
+  .auth-register__utilities { position:static; justify-content:flex-end; margin-bottom:var(--space-4); }
+}

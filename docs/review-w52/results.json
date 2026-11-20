@@ -1,0 +1,184 @@
+[
+  {
+    "renderer": "shadcn",
+    "theme": "light",
+    "width": 1920,
+    "height": 1080,
+    "selection": "pass",
+    "overflow": false
+  },
+  {
+    "renderer": "shadcn",
+    "theme": "dark",
+    "width": 1920,
+    "height": 1080,
+    "selection": "pass",
+    "overflow": false
+  },
+  {
+    "renderer": "shadcn",
+    "theme": "light",
+    "width": 1440,
+    "height": 900,
+    "selection": "pass",
+    "overflow": false
+  },
+  {
+    "renderer": "shadcn",
+    "theme": "dark",
+    "width": 1440,
+    "height": 900,
+    "selection": "pass",
+    "overflow": false
+  },
+  {
+    "renderer": "shadcn",
+    "theme": "light",
+    "width": 1366,
+    "height": 768,
+    "selection": "pass",
+    "overflow": false
+  },
+  {
+    "renderer": "shadcn",
+    "theme": "dark",
+    "width": 1366,
+    "height": 768,
+    "selection": "pass",
+    "overflow": false
+  },
+  {
+    "renderer": "shadcn",
+    "theme": "light",
+    "width": 820,
+    "height": 1180,
+    "selection": "pass",
+    "overflow": false
+  },
+  {
+    "renderer": "shadcn",
+    "theme": "dark",
+    "width": 820,
+    "height": 1180,
+    "selection": "pass",
+    "overflow": false
+  },
+  {
+    "renderer": "shadcn",
+    "theme": "light",
+    "width": 390,
+    "height": 844,
+    "selection": "pass",
+    "overflow": false
+  },
+  {
+    "renderer": "shadcn",
+    "theme": "dark",
+    "width": 390,
+    "height": 844,
+    "selection": "pass",
+    "overflow": false
+  },
+  {
+    "renderer": "shadcn",
+    "rapidSelection": "pass",
+    "search": "pass",
+    "pan": "pass",
+    "zoom": "pass",
+    "fullscreen": "pass",
+    "branch": "pass",
+    "png": "pass",
+    "consoleErrors": []
+  },
+  {
+    "renderer": "stable",
+    "theme": "light",
+    "width": 1920,
+    "height": 1080,
+    "selection": "pass",
+    "overflow": false
+  },
+  {
+    "renderer": "stable",
+    "theme": "dark",
+    "width": 1920,
+    "height": 1080,
+    "selection": "pass",
+    "overflow": false
+  },
+  {
+    "renderer": "stable",
+    "theme": "light",
+    "width": 1440,
+    "height": 900,
+    "selection": "pass",
+    "overflow": false
+  },
+  {
+    "renderer": "stable",
+    "theme": "dark",
+    "width": 1440,
+    "height": 900,
+    "selection": "pass",
+    "overflow": false
+  },
+  {
+    "renderer": "stable",
+    "theme": "light",
+    "width": 1366,
+    "height": 768,
+    "selection": "pass",
+    "overflow": false
+  },
+  {
+    "renderer": "stable",
+    "theme": "dark",
+    "width": 1366,
+    "height": 768,
+    "selection": "pass",
+    "overflow": false
+  },
+  {
+    "renderer": "stable",
+    "theme": "light",
+    "width": 820,
+    "height": 1180,
+    "selection": "pass",
+    "overflow": false
+  },
+  {
+    "renderer": "stable",
+    "theme": "dark",
+    "width": 820,
+    "height": 1180,
+    "selection": "pass",
+    "overflow": false
+  },
+  {
+    "renderer": "stable",
+    "theme": "light",
+    "width": 390,
+    "height": 844,
+    "selection": "pass",
+    "overflow": false
+  },
+  {
+    "renderer": "stable",
+    "theme": "dark",
+    "width": 390,
+    "height": 844,
+    "selection": "pass",
+    "overflow": false
+  },
+  {
+    "renderer": "stable",
+    "rapidSelection": "pass",
+    "search": "pass",
+    "pan": "pass",
+    "zoom": "pass",
+    "fullscreen": "pass",
+    "branch": "pass",
+    "png": "pass",
+    "consoleErrors": []
+  }
+]

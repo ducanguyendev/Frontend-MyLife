@@ -1,0 +1,151 @@
+.family-flip-card {
+  min-width: 0;
+}
+
+.family-member-card__open {
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  min-height: 248px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  overflow: hidden;
+  border-radius: 1rem;
+  padding: 1.25rem 1rem;
+  cursor: pointer;
+  text-align: center;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--primary-text) 5%, transparent);
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+  border-color: var(--generation-accent-border, var(--custom-border));
+}
+
+.family-member-card__open:hover {
+  transform: translateY(-2px);
+  border-color: var(--generation-accent, var(--accent-color));
+  box-shadow: 0 5px 14px color-mix(in srgb, var(--generation-accent, var(--primary-text)) 16%, transparent);
+}
+
+.family-member-card__open:focus-visible {
+  outline: 3px solid var(--focus-border);
+  outline-offset: 3px;
+}
+
+.family-member-card__illustration {
+  position: absolute;
+  right: 0.4rem;
+  bottom: 0.2rem;
+  width: 8.75rem;
+  height: 6.75rem;
+  color: color-mix(in srgb, var(--accent-color) 68%, var(--custom-border));
+  opacity: 0.16;
+  pointer-events: none;
+}
+
+.family-member-card__illustration svg {
+  width: 100%;
+  height: 100%;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+
+.family-member-card__illustration circle {
+  fill: var(--secondary-bg);
+}
+
+.family-member-card__motif {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.7rem;
+  z-index: 0;
+  color: var(--generation-accent, var(--accent-color));
+  opacity: 0.16;
+  pointer-events: none;
+}
+
+.family-member-card__generation {
+  border-color: var(--generation-accent-border, currentColor);
+}
+
+.family-member-card__life-status {
+  position: relative;
+  z-index: 1;
+  margin-top: 0.15rem;
+  font-size: 0.72rem;
+  font-weight: 650;
+}
+
+.family-member-card__life-status.is-living {
+  color: #16834a;
+}
+
+.family-member-card__life-status.is-deceased {
+  color: var(--secondary-text);
+}
+
+.family-member-card--origin { --generation-accent: #b7791f; --generation-accent-border: #e6c88e; }
+.family-member-card--branch { --generation-accent: #1683a7; --generation-accent-border: #9ed8e7; }
+.family-member-card--leaf { --generation-accent: #25845a; --generation-accent-border: #a8d9ba; }
+.family-member-card--blossom { --generation-accent: #7c56ad; --generation-accent-border: #c9b6e3; }
+.family-member-card--sun { --generation-accent: #c66a24; --generation-accent-border: #eac09a; }
+.family-member-card--bird { --generation-accent: #16899a; --generation-accent-border: #9ad9df; }
+.family-member-card--flower { --generation-accent: #bd4e86; --generation-accent-border: #e8b4cf; }
+.family-member-card--seed { --generation-accent: #688d20; --generation-accent-border: #c8d99b; }
+.family-member-card--vine { --generation-accent: #208077; --generation-accent-border: #a6d5d0; }
+.family-member-card--harvest { --generation-accent: #aa8216; --generation-accent-border: #e5d38e; }
+.family-member-card--neutral { --generation-accent: #75808b; --generation-accent-border: #cbd1d6; }
+
+.family-member-card__avatar {
+  border-color: var(--generation-accent-border, var(--custom-border));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--generation-accent) 14%, transparent);
+}
+
+.family-flip-card__avatar,
+.family-flip-card__name,
+.family-flip-card__meta,
+.family-flip-card__role {
+  position: relative;
+  z-index: 1;
+}
+
+.family-flip-card__name {
+  max-width: 100%;
+  margin: 0.2rem 0 0;
+  overflow: hidden;
+  font-size: 1.1rem;
+  font-weight: 750;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.family-flip-card__meta {
+  display: flex;
+  max-width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  font-size: 0.75rem;
+}
+
+.family-flip-card__role {
+  max-width: 90%;
+  overflow: hidden;
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 550;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.family-flip-card__menu {
+  line-height: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .family-member-card__open {
+    transition-duration: 0.01ms;
+  }
+}

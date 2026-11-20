@@ -1,0 +1,230 @@
+[
+  {
+    "renderer": "stable",
+    "width": 1440,
+    "height": 900,
+    "theme": "light",
+    "contentSelection": "pass",
+    "explicitDetail": "pass",
+    "editOnly": "pass",
+    "menuOnly": "pass",
+    "keyboard": "pass",
+    "lineageAndSegments": "pass",
+    "cousinsDimmed": 0.38,
+    "focusRing": {
+      "width": 2,
+      "style": "solid"
+    },
+    "clear": "pass",
+    "errors": []
+  },
+  {
+    "renderer": "stable",
+    "width": 1440,
+    "height": 900,
+    "theme": "dark",
+    "contentSelection": "pass",
+    "explicitDetail": "pass",
+    "editOnly": "pass",
+    "menuOnly": "pass",
+    "keyboard": "pass",
+    "lineageAndSegments": "pass",
+    "cousinsDimmed": 0.38,
+    "focusRing": {
+      "width": 2,
+      "style": "solid"
+    },
+    "clear": "pass",
+    "errors": []
+  },
+  {
+    "renderer": "stable",
+    "width": 1920,
+    "height": 1080,
+    "theme": "light",
+    "contentSelection": "pass",
+    "explicitDetail": "pass",
+    "editOnly": "pass",
+    "menuOnly": "pass",
+    "keyboard": "pass",
+    "lineageAndSegments": "pass",
+    "cousinsDimmed": 0.38,
+    "focusRing": {
+      "width": 2,
+      "style": "solid"
+    },
+    "clear": "pass",
+    "errors": []
+  },
+  {
+    "renderer": "stable",
+    "width": 1920,
+    "height": 1080,
+    "theme": "dark",
+    "contentSelection": "pass",
+    "explicitDetail": "pass",
+    "editOnly": "pass",
+    "menuOnly": "pass",
+    "keyboard": "pass",
+    "lineageAndSegments": "pass",
+    "cousinsDimmed": 0.38,
+    "focusRing": {
+      "width": 2,
+      "style": "solid"
+    },
+    "clear": "pass",
+    "errors": []
+  },
+  {
+    "renderer": "stable",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "contentSelection": "pass",
+    "explicitDetail": "pass",
+    "editOnly": "pass",
+    "menuOnly": "pass",
+    "keyboard": "pass",
+    "lineageAndSegments": "pass",
+    "cousinsDimmed": 0.38,
+    "focusRing": {
+      "width": 2,
+      "style": "solid"
+    },
+    "clear": "pass",
+    "errors": []
+  },
+  {
+    "renderer": "stable",
+    "width": 390,
+    "height": 844,
+    "theme": "dark",
+    "contentSelection": "pass",
+    "explicitDetail": "pass",
+    "editOnly": "pass",
+    "menuOnly": "pass",
+    "keyboard": "pass",
+    "lineageAndSegments": "pass",
+    "cousinsDimmed": 0.38,
+    "focusRing": {
+      "width": 2,
+      "style": "solid"
+    },
+    "clear": "pass",
+    "errors": []
+  },
+  {
+    "renderer": "shadcn",
+    "width": 1440,
+    "height": 900,
+    "theme": "light",
+    "contentSelection": "pass",
+    "explicitDetail": "pass",
+    "editOnly": "pass",
+    "menuOnly": "pass",
+    "keyboard": "pass",
+    "lineageAndSegments": "pass",
+    "cousinsDimmed": 0.38,
+    "focusRing": {
+      "width": 2,
+      "style": "solid"
+    },
+    "clear": "pass",
+    "errors": []
+  },
+  {
+    "renderer": "shadcn",
+    "width": 1440,
+    "height": 900,
+    "theme": "dark",
+    "contentSelection": "pass",
+    "explicitDetail": "pass",
+    "editOnly": "pass",
+    "menuOnly": "pass",
+    "keyboard": "pass",
+    "lineageAndSegments": "pass",
+    "cousinsDimmed": 0.38,
+    "focusRing": {
+      "width": 2,
+      "style": "solid"
+    },
+    "clear": "pass",
+    "errors": []
+  },
+  {
+    "renderer": "shadcn",
+    "width": 1920,
+    "height": 1080,
+    "theme": "light",
+    "contentSelection": "pass",
+    "explicitDetail": "pass",
+    "editOnly": "pass",
+    "menuOnly": "pass",
+    "keyboard": "pass",
+    "lineageAndSegments": "pass",
+    "cousinsDimmed": 0.38,
+    "focusRing": {
+      "width": 2,
+      "style": "solid"
+    },
+    "clear": "pass",
+    "errors": []
+  },
+  {
+    "renderer": "shadcn",
+    "width": 1920,
+    "height": 1080,
+    "theme": "dark",
+    "contentSelection": "pass",
+    "explicitDetail": "pass",
+    "editOnly": "pass",
+    "menuOnly": "pass",
+    "keyboard": "pass",
+    "lineageAndSegments": "pass",
+    "cousinsDimmed": 0.38,
+    "focusRing": {
+      "width": 2,
+      "style": "solid"
+    },
+    "clear": "pass",
+    "errors": []
+  },
+  {
+    "renderer": "shadcn",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "contentSelection": "pass",
+    "explicitDetail": "pass",
+    "editOnly": "pass",
+    "menuOnly": "pass",
+    "keyboard": "pass",
+    "lineageAndSegments": "pass",
+    "cousinsDimmed": 0.38,
+    "focusRing": {
+      "width": 2,
+      "style": "solid"
+    },
+    "clear": "pass",
+    "errors": []
+  },
+  {
+    "renderer": "shadcn",
+    "width": 390,
+    "height": 844,
+    "theme": "dark",
+    "contentSelection": "pass",
+    "explicitDetail": "pass",
+    "editOnly": "pass",
+    "menuOnly": "pass",
+    "keyboard": "pass",
+    "lineageAndSegments": "pass",
+    "cousinsDimmed": 0.38,
+    "focusRing": {
+      "width": 2,
+      "style": "solid"
+    },
+    "clear": "pass",
+    "errors": []
+  }
+]

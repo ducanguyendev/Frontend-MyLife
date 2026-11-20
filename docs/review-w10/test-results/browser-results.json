@@ -1,0 +1,44 @@
+[
+  {
+    "suite": "global-polish.browser.cjs",
+    "exitCode": 0,
+    "durationMs": 188752,
+    "api": "intercepted fixtures"
+  },
+  {
+    "suite": "global-polish-interactions.browser.cjs",
+    "exitCode": 0,
+    "durationMs": 78099,
+    "api": "intercepted fixtures"
+  },
+  {
+    "suite": "global-polish-touch.browser.cjs",
+    "exitCode": 0,
+    "durationMs": 10655,
+    "api": "intercepted fixtures"
+  },
+  {
+    "suite": "admin-console.browser.cjs",
+    "exitCode": 0,
+    "durationMs": 95103,
+    "api": "intercepted fixtures"
+  },
+  {
+    "suite": "admin-actions-access.browser.cjs",
+    "exitCode": 0,
+    "durationMs": 23189,
+    "api": "intercepted fixtures"
+  },
+  {
+    "suite": "admin-visual-states.browser.cjs",
+    "exitCode": 0,
+    "durationMs": 7724,
+    "api": "intercepted fixtures"
+  },
+  {
+    "suite": "profile-layout.browser.cjs",
+    "exitCode": 0,
+    "durationMs": 26381,
+    "api": "intercepted fixtures"
+  }
+]

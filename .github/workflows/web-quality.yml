@@ -1,0 +1,39 @@
+name: Web quality
+
+on:
+  push:
+    branches: [feature_minhduc]
+  pull_request:
+    branches: [feature_minhduc]
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check TypeScript
+        run: npm exec -- tsc -b
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build production assets
+        run: npm run build

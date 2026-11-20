@@ -1,0 +1,157 @@
+[
+  {
+    "file": "src/features/admin/services/familyV2Service.ts",
+    "check": "entire service module unchanged",
+    "pass": true
+  },
+  {
+    "file": "src/features/admin/services/anniversaryService.ts",
+    "check": "entire service module unchanged",
+    "pass": true
+  },
+  {
+    "file": "src/features/admin/services/libraryService.ts",
+    "check": "entire service module unchanged",
+    "pass": true
+  },
+  {
+    "file": "src/features/my-life/pages/FamilyTimelinePage.tsx",
+    "check": "blank",
+    "pass": true
+  },
+  {
+    "file": "src/features/my-life/pages/FamilyTimelinePage.tsx",
+    "check": "load",
+    "pass": true
+  },
+  {
+    "file": "src/features/my-life/pages/FamilyTimelinePage.tsx",
+    "check": "beginEdit",
+    "pass": true
+  },
+  {
+    "file": "src/features/my-life/pages/FamilyTimelinePage.tsx",
+    "check": "save",
+    "pass": true
+  },
+  {
+    "file": "src/features/my-life/pages/FamilyTimelinePage.tsx",
+    "check": "remove",
+    "pass": true
+  },
+  {
+    "file": "src/features/my-life/pages/FamilyTimelinePage.tsx",
+    "check": "dateLabel",
+    "pass": true
+  },
+  {
+    "file": "src/features/my-life/pages/FamilyTimelinePage.tsx",
+    "check": "filtered",
+    "pass": true
+  },
+  {
+    "file": "src/features/my-life/pages/FamilyTimelinePage.tsx",
+    "check": "yearGroups",
+    "pass": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/AnniversaryTab.tsx",
+    "check": "openEditor",
+    "pass": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/AnniversaryTab.tsx",
+    "check": "load",
+    "pass": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/AnniversaryTab.tsx",
+    "check": "save",
+    "pass": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/AnniversaryTab.tsx",
+    "check": "confirmDelete",
+    "pass": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/AnniversaryTab.tsx",
+    "check": "filtered",
+    "pass": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/AnniversaryTab.tsx",
+    "check": "eventsByDate",
+    "pass": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/AnniversaryTab.tsx",
+    "check": "moveMonth",
+    "pass": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/AnniversaryTab.tsx",
+    "check": "selectDay",
+    "pass": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/AnniversaryTab.tsx",
+    "check": "applyMonthPicker",
+    "pass": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/FamilyAnniversaryModal.tsx",
+    "check": "submit",
+    "pass": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/FamilyAnniversaryModal.tsx",
+    "check": "handleRelatedMemberChange",
+    "pass": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/FamilyAnniversaryModal.tsx",
+    "check": "validSolarDate",
+    "pass": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/FamilyAnniversaryModal.tsx",
+    "check": "validLunarParts",
+    "pass": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/LibraryTab.tsx",
+    "check": "requestDelete",
+    "pass": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/LibraryTab.tsx",
+    "check": "confirmDelete",
+    "pass": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/LibraryTab.tsx",
+    "check": "savePhoto",
+    "pass": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/LibraryTab.tsx",
+    "check": "filteredPhotos",
+    "pass": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/LibraryUploadModal.tsx",
+    "check": "submit",
+    "pass": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/LibraryAlbumModal.tsx",
+    "check": "submit",
+    "pass": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/LibraryPhotoEditModal.tsx",
+    "check": "submit",
+    "pass": true
+  }
+]

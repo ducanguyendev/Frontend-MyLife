@@ -1,0 +1,38 @@
+{
+  "database": "mylife_w10_29d4b44c6910",
+  "host": "127.0.0.1",
+  "pgPort": 54485,
+  "cluster": ".tmp\\w10-integration-PVtMqR",
+  "databaseDropped": true,
+  "postgresStopped": true,
+  "results": [
+    {
+      "name": "isolated-initdb",
+      "exitCode": 0
+    },
+    {
+      "name": "isolated-postgres-start",
+      "exitCode": 0
+    },
+    {
+      "name": "isolated-createdb",
+      "exitCode": 0
+    },
+    {
+      "name": "isolated-backend-tests",
+      "exitCode": 0
+    },
+    {
+      "name": "isolated-http-browser",
+      "exitCode": 1
+    },
+    {
+      "name": "isolated-dropdb",
+      "exitCode": 0
+    },
+    {
+      "name": "isolated-postgres-stop",
+      "exitCode": 0
+    }
+  ]
+}

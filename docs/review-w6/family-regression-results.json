@@ -1,0 +1,500 @@
+{
+  "report": [],
+  "writes": [
+    {
+      "method": "POST",
+      "path": "/api/family-tree",
+      "payload": {
+        "fullName": "Nguyễn Mới",
+        "generation": 1,
+        "dateOfBirth": null,
+        "lifeStatus": "LIVING",
+        "deathDate": null,
+        "role": "Thành viên",
+        "address": "",
+        "phoneNumber": "",
+        "biography": "",
+        "fatherId": null,
+        "motherId": null,
+        "spouseId": null,
+        "childIds": [],
+        "horizontalRelations": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/family-tree/99/avatar"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/family-tree/99",
+      "payload": {
+        "id": 99,
+        "fullName": "Nguyễn Sửa",
+        "generation": 1,
+        "role": "Thành viên",
+        "gender": "Nam",
+        "lifeStatus": "LIVING",
+        "dateOfBirth": null,
+        "childIds": [],
+        "horizontalRelations": [],
+        "createdAt": "2026-11-03T00:00:00Z",
+        "updatedAt": "2026-11-03T00:00:00Z",
+        "deathDate": null,
+        "address": "",
+        "phoneNumber": "",
+        "biography": "",
+        "fatherId": null,
+        "motherId": null,
+        "spouseId": null,
+        "hasManagedAvatar": true
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/family-tree/99/avatar"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/family-tree/99"
+    }
+  ],
+  "errors": [],
+  "requests": [
+    {
+      "method": "OPTIONS",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/family-tree",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/family-tree/timeline",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree/timeline",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree/timeline",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/family-tree/anniversaries",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree/anniversaries",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree/anniversaries",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/library/overview",
+      "query": ""
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/library/overview",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/library/overview",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/family-tree/map",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree/map",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree/map",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree",
+      "query": ""
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/family-tree",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree",
+      "query": ""
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/family-tree/1/profile",
+      "query": ""
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/family-tree/1/profile",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree/1/profile",
+      "query": ""
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/family-tree/relationship",
+      "query": "?fromMemberId=1&toMemberId=2"
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree/relationship",
+      "query": "?fromMemberId=1&toMemberId=2"
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree",
+      "query": ""
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/family-tree/generations",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree/generations",
+      "query": ""
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/family-tree",
+      "query": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/family-tree",
+      "query": ""
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/family-tree/99/avatar",
+      "query": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/family-tree/99/avatar",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree/99/avatar/image",
+      "query": "?v=2026-11-03T00%3A00%3A00Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree/generations",
+      "query": ""
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/family-tree/99",
+      "query": ""
+    },
+    {
+      "method": "PUT",
+      "path": "/api/family-tree/99",
+      "query": ""
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/family-tree/99/avatar",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree",
+      "query": ""
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/family-tree/99",
+      "query": ""
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree",
+      "query": ""
+    }
+  ]
+}

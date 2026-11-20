@@ -1,0 +1,47 @@
+[
+  {
+    "name": "startup, PostgreSQL readiness, role seed, registration, cookie-only web login",
+    "status": "PASS",
+    "transport": "real HTTP / Kestrel / PostgreSQL"
+  },
+  {
+    "name": "server RBAC, CSRF, untrusted Origin and mobile-header cookie spoof rejection",
+    "status": "PASS",
+    "transport": "real HTTP / Kestrel / PostgreSQL"
+  },
+  {
+    "name": "member CRUD/update persistence, parent relation, cross-account isolation, invalid and manual map coordinates",
+    "status": "PASS",
+    "transport": "real HTTP / Kestrel / PostgreSQL"
+  },
+  {
+    "name": "timeline/anniversary CRUD, lunar preview, library read and missing image permission path",
+    "status": "PASS",
+    "transport": "real HTTP / Kestrel / PostgreSQL"
+  },
+  {
+    "name": "account lock revokes session, rejects login/refresh, unlock and admin metrics/logs",
+    "status": "PASS",
+    "transport": "real HTTP / Kestrel / PostgreSQL"
+  },
+  {
+    "name": "logout rejects copied access and refresh cookies immediately",
+    "status": "PASS",
+    "transport": "real HTTP / Kestrel / PostgreSQL"
+  },
+  {
+    "name": "real browser login, reload restoration, HttpOnly storage and six requests sharing one expired-token refresh",
+    "status": "PASS",
+    "transport": "real HTTP / Kestrel / PostgreSQL"
+  },
+  {
+    "name": "real member rendering, direct protected navigation and localStorage role spoof prevention",
+    "status": "PASS",
+    "transport": "real HTTP / Kestrel / PostgreSQL"
+  },
+  {
+    "name": "member deletion persists after refetch",
+    "status": "PASS",
+    "transport": "real HTTP / Kestrel / PostgreSQL"
+  }
+]

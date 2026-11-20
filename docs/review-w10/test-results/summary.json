@@ -1,0 +1,109 @@
+{
+  "date": "2026-11-10",
+  "timezone": "Asia/Saigon",
+  "verdict": "PARTIAL PASS",
+  "publicReleaseReady": false,
+  "frontend": {
+    "tests": 360,
+    "pass": 360,
+    "fail": 0,
+    "skipped": 0
+  },
+  "backend": {
+    "baseline": {
+      "total": 181,
+      "passed": 176,
+      "failed": 5,
+      "skipped": 0
+    },
+    "final": {
+      "total": 182,
+      "passed": 182,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "backendNode": {
+    "total": 45,
+    "passed": 45,
+    "failed": 0
+  },
+  "baselineFailureStatus": {
+    "resolved": 29,
+    "remaining": 0,
+    "obsoleteExpectations": 23,
+    "fixtureProblems": 6
+  },
+  "build": {
+    "frontend": "PASS",
+    "backend": "PASS",
+    "lint": {
+      "errors": 0,
+      "warnings": 0
+    }
+  },
+  "browser": {
+    "fixtureViews": 240,
+    "matrixCases": 16,
+    "interactionChecks": 78,
+    "adminVisualCases": 16,
+    "adminBehaviorGroups": 11,
+    "profileCases": 10,
+    "realHttpBrowserGroups": 9,
+    "physicalMobile": "NOT TESTED"
+  },
+  "limitations": [
+    "Live Google OAuth",
+    "Live Google Drive/Apps Script",
+    "Live VietMap tiles/geocoding",
+    "Production HTTPS/cookie/CORS deployment",
+    "Physical mobile/Safari",
+    "Multi-tab refresh stress",
+    "Memory soak and real-device performance benchmark"
+  ],
+  "authoredFrontendFiles": [
+    "package-lock.json",
+    "package.json",
+    "scripts/run-browser-qa.cjs",
+    "scripts/run-isolated-integration.cjs",
+    "scripts/run-regression.cjs",
+    "src/features/my-life/components/TimelineEventModal.tsx",
+    "tests/address-input.test.cjs",
+    "tests/admin-actions-access.browser.cjs",
+    "tests/admin-console.browser.cjs",
+    "tests/admin-visual-states.browser.cjs",
+    "tests/api-performance.test.cjs",
+    "tests/family-member-picker.test.cjs",
+    "tests/family-role.test.cjs",
+    "tests/feature-i18n.test.cjs",
+    "tests/focus-visual.test.cjs",
+    "tests/global-polish-interactions.browser.cjs",
+    "tests/global-polish-touch.browser.cjs",
+    "tests/global-polish.browser.cjs",
+    "tests/helpers/current-ui-mocks.cjs",
+    "tests/member-form-layout.test.cjs",
+    "tests/member-table.test.cjs",
+    "tests/my-life-hub.test.cjs",
+    "tests/my-life-workspace.test.cjs",
+    "tests/optimization.test.cjs",
+    "tests/profile-layout.browser.cjs",
+    "tests/real-backend.integration.cjs",
+    "tests/scroll-sibling.test.cjs",
+    "tests/search-bar.test.cjs",
+    "tests/select-native.test.cjs",
+    "tests/shared-select.test.cjs",
+    "tests/theme-switch.test.cjs"
+  ],
+  "authoredBackendFiles": [
+    "API_CONTRACT.md",
+    "Features/Auth/Controllers/AccountController.cs",
+    "Features/Auth/Services/TokenService.cs",
+    "Features/FamilyTree/Services/FamilyTimelineService.cs",
+    "Program.cs",
+    "Shared/Data/DatabaseStartup.cs",
+    "Tests/LibraryCategoryMigrationTests.cs",
+    "Tests/SystemFlowsTests.cs",
+    "Tests/W10SessionRegressionTests.cs",
+    "docs/W10_STABILIZATION.md"
+  ]
+}

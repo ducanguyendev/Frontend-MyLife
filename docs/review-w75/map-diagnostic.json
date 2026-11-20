@@ -1,0 +1,69 @@
+{
+  "visibility": "visible",
+  "maps": [
+    {
+      "loaded": false,
+      "styleLoaded": false,
+      "center": {
+        "lng": 106.99133203125002,
+        "lat": 15.966297750678486
+      },
+      "zoom": 4,
+      "size": {
+        "width": 914,
+        "height": 679
+      },
+      "transform": {
+        "width": 914,
+        "height": 679
+      },
+      "sources": [
+        {
+          "id": "openmaptiles",
+          "type": "vector",
+          "tileCount": 1
+        }
+      ],
+      "sourceCaches": []
+    }
+  ],
+  "responses": [
+    {
+      "path": "/maps/styles/lm/style.json",
+      "status": 200
+    },
+    {
+      "path": "/maps/styles/lm/sprite.png",
+      "status": 200
+    },
+    {
+      "path": "/maps/styles/lm/sprite.json",
+      "status": 200
+    },
+    {
+      "path": "/maps/tiles/vlc-20261026/4/12/6.pbf",
+      "status": 200
+    },
+    {
+      "path": "/maps/tiles/vlc-20261026/4/11/7.pbf",
+      "status": 200
+    },
+    {
+      "path": "/maps/tiles/vlc-20261026/4/12/7.pbf",
+      "status": 200
+    },
+    {
+      "path": "/maps/tiles/vlc-20261026/4/13/6.pbf",
+      "status": 200
+    },
+    {
+      "path": "/maps/tiles/vlc-20261026/4/13/7.pbf",
+      "status": 200
+    }
+  ],
+  "messages": [
+    "You have Reduced Motion enabled on your device. Animations may not appear as expected.. For more information and steps for solving, visit https://motion.dev/troubleshooting/reduced-motion-disabled"
+  ],
+  "errors": [],
+  "snapshotTiming": "Immediately after first tile response; not a load-completion assertion"
+}

@@ -1,0 +1,4 @@
+.member-age-status { display:inline-flex; align-items:flex-start; gap:6px; min-width:0; max-width:100%; color:var(--text-secondary); font-size:inherit; line-height:1.5; vertical-align:top; }
+.member-age-status__icon { flex:none; width:14px; height:14px; margin-top:2px; color:var(--text-secondary); }
+.member-age-status__text { min-width:0; overflow-wrap:anywhere; }
+.member-age-status[data-layout=stacked] .member-age-status__secondary { display:block; margin-top:2px; }

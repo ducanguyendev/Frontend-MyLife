@@ -1,0 +1,34 @@
+[
+  {
+    "width": 1440,
+    "theme": "light",
+    "loading": "pass",
+    "apiError": "pass",
+    "retry": "pass",
+    "empty": "pass"
+  },
+  {
+    "width": 1440,
+    "theme": "dark",
+    "loading": "pass",
+    "apiError": "pass",
+    "retry": "pass",
+    "empty": "pass"
+  },
+  {
+    "width": 390,
+    "theme": "light",
+    "loading": "pass",
+    "apiError": "pass",
+    "retry": "pass",
+    "empty": "pass"
+  },
+  {
+    "width": 390,
+    "theme": "dark",
+    "loading": "pass",
+    "apiError": "pass",
+    "retry": "pass",
+    "empty": "pass"
+  }
+]

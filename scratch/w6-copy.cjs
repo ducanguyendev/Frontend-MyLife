@@ -1,0 +1,2 @@
+const fs=require('node:fs');
+for(const p of ['src/features/admin/components/family-tree/LibraryTab.tsx','src/features/admin/components/family-tree/LibraryUploadModal.tsx','tests/memories-w6.browser.cjs']){let s=fs.readFileSync(p,'utf8').replaceAll("t('admin.library_ui.upload')","t('memories.uploadPhotos')");if(p.endsWith('LibraryTab.tsx'))s=s.replace("title={t('admin.library_title')}","title={t('appShell.library')}");fs.writeFileSync(p,s);}

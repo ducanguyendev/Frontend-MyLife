@@ -1,0 +1,89 @@
+[
+  {
+    "file": "src/features/admin/components/family-tree/MemberTable.tsx",
+    "unchanged": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/family-view/FamilyPersonCard.tsx",
+    "unchanged": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/MemberFormModal.tsx",
+    "unchanged": true
+  },
+  {
+    "file": "src/features/admin/components/FamilyTreeManager.tsx",
+    "unchanged": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/FamilyRelationSelect.tsx",
+    "unchanged": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/FamilyMemberPicker.tsx",
+    "unchanged": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/types.ts",
+    "unchanged": true
+  },
+  {
+    "file": "src/shared/components/ui/DateInput.tsx",
+    "unchanged": true
+  },
+  {
+    "file": "src/design-system/editorial-fonts.css",
+    "unchanged": true
+  },
+  {
+    "file": "src/features/admin/components/family-tree/FamilyExperience.css",
+    "check": "only mobile button selector corrected; typography retained",
+    "unchanged": true
+  },
+  {
+    "file": "src/features/my-life/components/memories/Memories.css",
+    "unchanged": true
+  },
+  {
+    "file": "src/features/landing/pages/MyLifeLandingPage.css",
+    "unchanged": true
+  },
+  {
+    "file": "src/features/admin/services/anniversaryService.ts",
+    "unchanged": true
+  },
+  {
+    "file": "src/features/admin/services/familyMapService.ts",
+    "unchanged": true
+  },
+  {
+    "file": "src/features/admin/services/familyV2Service.ts",
+    "unchanged": true
+  },
+  {
+    "file": "src/features/admin/services/featureMessages.ts",
+    "unchanged": true
+  },
+  {
+    "file": "src/features/admin/services/libraryService.ts",
+    "unchanged": true
+  },
+  {
+    "file": "src/features/auth/services/authService.ts",
+    "unchanged": true
+  },
+  {
+    "file": "src/shared/api/apiClient.ts",
+    "unchanged": true
+  },
+  {
+    "file": "src/shared/locales/en/family.json",
+    "check": "all existing translations unchanged",
+    "unchanged": true
+  },
+  {
+    "file": "src/shared/locales/vi/family.json",
+    "check": "all existing translations unchanged",
+    "unchanged": true
+  }
+]

@@ -1,0 +1,7 @@
+{
+  "title": "Giới thiệu về tôi",
+  "subtitle": "Kiến Trúc Backend, Hệ Thống Server & Phát Triển Game",
+  "bioPart1": "Xin chào! Tôi là một kỹ sư lập trình chuyên về mảng Backend và phát triển Game. Niềm đam mê của tôi là xây dựng hệ thống máy chủ mạnh mẽ, tối ưu hóa truy vấn cơ sở dữ liệu hiệu năng cao và biến các ý tưởng gameplay độc đáo thành hiện thực thông qua những dòng code tối ưu. Tôi luôn tìm kiếm sự cân bằng hoàn hảo giữa tính logic chặt chẽ của lập trình backend và tính sáng tạo không giới hạn của thiết kế chuyển động game.",
+  "bioPart2": "Tôi liên tục mài giũa các kỹ năng phát triển phần mềm với C#, C++, Go và các hệ cơ sở dữ liệu SQL/NoSQL, đồng thời tích cực thử nghiệm trên các Engine hàng đầu như Unity và Unreal Engine. Mục tiêu của tôi là viết nên các hệ thống có kiến trúc sạch sẽ, dễ mở rộng, giảm thiểu tối đa độ trễ mạng và đem lại trải nghiệm chơi game hoặc vận hành ứng dụng tốt nhất. Hãy kết nối để chúng ta cùng tạo nên những sản phẩm công nghệ đột phá nhé!",
+  "btnDownload": "Tải CV"
+}

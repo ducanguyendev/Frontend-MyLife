@@ -1,0 +1,748 @@
+{
+  "report": [
+    {
+      "name": "family-patch-Tree",
+      "pageOverflow": false,
+      "mainOverflow": false,
+      "dialogOverflow": false,
+      "active": 1,
+      "bodyScroll": false
+    },
+    {
+      "name": "family-patch-Cards",
+      "pageOverflow": false,
+      "mainOverflow": false,
+      "dialogOverflow": false,
+      "active": 1,
+      "bodyScroll": false
+    },
+    {
+      "name": "family-patch-List",
+      "pageOverflow": false,
+      "mainOverflow": false,
+      "dialogOverflow": false,
+      "active": 1,
+      "bodyScroll": false
+    }
+  ],
+  "writes": [
+    {
+      "method": "POST",
+      "path": "/api/family-tree/timeline",
+      "payload": {
+        "memberId": 3,
+        "eventType": "CUSTOM",
+        "title": "An approximate family memory",
+        "description": null,
+        "eventDate": null,
+        "eventYear": 1999,
+        "isApproximate": true,
+        "location": "Huế",
+        "latitude": null,
+        "longitude": null,
+        "relatedMemberId": 4
+      },
+      "contentType": "application/json"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/family-tree/timeline/99",
+      "payload": {
+        "memberId": 3,
+        "eventType": "CUSTOM",
+        "title": "A revised family memory",
+        "description": null,
+        "eventDate": null,
+        "eventYear": 1999,
+        "isApproximate": true,
+        "location": "Huế",
+        "latitude": null,
+        "longitude": null,
+        "relatedMemberId": 4
+      },
+      "contentType": "application/json"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/family-tree/timeline/99"
+    },
+    {
+      "method": "POST",
+      "path": "/api/family-tree/anniversaries",
+      "payload": {
+        "eventType": "DEATH_ANNIVERSARY",
+        "title": "Anniversary of Nguyễn Văn An",
+        "relatedMemberId": 1,
+        "lunarDay": 1,
+        "lunarMonth": 1,
+        "isLeapMonth": false,
+        "originalSolarDate": "2020-01-25",
+        "lunarYear": 2020,
+        "place": null,
+        "host": null,
+        "notes": null
+      },
+      "contentType": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/family-tree/anniversaries",
+      "payload": {
+        "eventType": "FAMILY_EVENT",
+        "title": "A new family gathering",
+        "relatedMemberId": 3,
+        "lunarDay": null,
+        "lunarMonth": null,
+        "isLeapMonth": false,
+        "originalSolarDate": "2026-12-20",
+        "lunarYear": null,
+        "place": "Our family home",
+        "host": "Family host",
+        "notes": "A gathering to remember."
+      },
+      "contentType": "application/json"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/family-tree/anniversaries/100",
+      "payload": {
+        "eventType": "FAMILY_EVENT",
+        "title": "A revised family gathering",
+        "relatedMemberId": 3,
+        "lunarDay": null,
+        "lunarMonth": null,
+        "isLeapMonth": false,
+        "originalSolarDate": "2026-12-20",
+        "lunarYear": null,
+        "place": "Our family home",
+        "host": "Family host",
+        "notes": "A gathering to remember."
+      },
+      "contentType": "application/json"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/family-tree/anniversaries/100"
+    },
+    {
+      "method": "POST",
+      "path": "/api/library/albums",
+      "payload": {
+        "name": "A new memory album",
+        "description": "Photographs from our family archive."
+      },
+      "contentType": "application/json"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/library/albums/99",
+      "payload": {
+        "name": "A revised memory album",
+        "description": "Photographs from our family archive."
+      },
+      "contentType": "application/json"
+    },
+    {
+      "method": "POST",
+      "path": "/api/library/albums/99/photos",
+      "contentType": "multipart/form-data; boundary=----WebKitFormBoundarykaLlBZljADq4wZD9"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/library/photos/90",
+      "payload": {
+        "title": "A carefully captioned memory",
+        "displayDate": "20/05/2025",
+        "description": "An afternoon of stories and familiar places, kept for another generation.",
+        "author": "Family archivist"
+      },
+      "contentType": "application/json"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/library/photos/90"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/library/albums/99"
+    }
+  ],
+  "requests": [
+    {
+      "method": "OPTIONS",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/family-tree",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/family-tree/timeline",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree/timeline",
+      "query": ""
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/family-tree/timeline",
+      "query": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/family-tree/timeline",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree/timeline",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree",
+      "query": ""
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/family-tree/timeline/99",
+      "query": ""
+    },
+    {
+      "method": "PUT",
+      "path": "/api/family-tree/timeline/99",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree/timeline",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree",
+      "query": ""
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/family-tree/timeline/99",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree/timeline",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/family-tree/anniversaries",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree/anniversaries",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree",
+      "query": ""
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/family-tree/anniversaries/next-occurrence",
+      "query": "?day=1&month=1&isLeapMonth=false"
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree/anniversaries/next-occurrence",
+      "query": "?day=1&month=1&isLeapMonth=false"
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/family-tree/anniversaries/lunar-to-solar",
+      "query": "?day=1&month=1&year=2020&isLeapMonth=false"
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree/anniversaries/lunar-to-solar",
+      "query": "?day=1&month=1&year=2020&isLeapMonth=false"
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/family-tree/anniversaries",
+      "query": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/family-tree/anniversaries",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree/anniversaries",
+      "query": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/family-tree/anniversaries",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree/anniversaries",
+      "query": ""
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/family-tree/anniversaries/100",
+      "query": ""
+    },
+    {
+      "method": "PUT",
+      "path": "/api/family-tree/anniversaries/100",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree/anniversaries",
+      "query": ""
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/family-tree/anniversaries/100",
+      "query": ""
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/library/overview",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/library/overview",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/library/photos/1/image",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/library/photos/5/image",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/library/photos/2/image",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/library/photos/3/image",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/library/photos/4/image",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/library/photos/6/image",
+      "query": ""
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/library/albums",
+      "query": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/library/albums",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/library/overview",
+      "query": ""
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/library/albums/99",
+      "query": ""
+    },
+    {
+      "method": "PUT",
+      "path": "/api/library/albums/99",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/library/overview",
+      "query": ""
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/library/albums/99/photos",
+      "query": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/library/albums/99/photos",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/library/overview",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/library/photos/90/image",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/library/photos/91/image",
+      "query": ""
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/library/photos/90",
+      "query": ""
+    },
+    {
+      "method": "PUT",
+      "path": "/api/library/photos/90",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/library/overview",
+      "query": ""
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/library/photos/90",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/library/overview",
+      "query": ""
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/library/albums/99",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/library/overview",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/family-tree/timeline",
+      "query": ""
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/family-tree",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree/timeline",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree/timeline",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree/timeline",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree/timeline",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree/anniversaries",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/family-tree/anniversaries",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree/anniversaries",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree/anniversaries",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree/anniversaries",
+      "query": ""
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/library/overview",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/library/overview",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/library/overview",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/library/overview",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/library/photos/1/image",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/library/photos/5/image",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/library/photos/2/image",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/library/photos/3/image",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/library/photos/4/image",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/library/photos/6/image",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/library/overview",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/family-tree/timeline",
+      "query": ""
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/family-tree",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree/timeline",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/family-tree/anniversaries",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/library/overview",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/library/photos/1/image",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/library/photos/5/image",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/library/photos/2/image",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/library/photos/3/image",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/library/photos/4/image",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/library/photos/6/image",
+      "query": ""
+    }
+  ],
+  "errors": []
+}
