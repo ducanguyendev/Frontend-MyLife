@@ -35,6 +35,20 @@ export async function fetchMemberProfile(memberId: number, signal?: AbortSignal)
   return dataOf(await apiClient.get<ApiEnvelope<FamilyMemberProfile>>(`/api/family-tree/${memberId}/profile`, { signal }));
 }
 
+export async function uploadMemberAvatar(memberId: number, file: File): Promise<FamilyMember> {
+  const body = new FormData();
+  body.append('file', file);
+  const response = await apiClient.post<ApiEnvelope<FamilyMember>>(`/api/family-tree/${memberId}/avatar`, body);
+  if (!response.success || response.data?.id !== memberId) throw new Error('FAMILY_INVALID_RESPONSE');
+  return response.data;
+}
+
+export async function deleteMemberAvatar(memberId: number): Promise<FamilyMember> {
+  const response = await apiClient.delete<ApiEnvelope<FamilyMember>>(`/api/family-tree/${memberId}/avatar`);
+  if (!response.success || response.data?.id !== memberId) throw new Error('FAMILY_INVALID_RESPONSE');
+  return response.data;
+}
+
 export async function fetchFamilyMembers(signal?: AbortSignal): Promise<FamilyMember[]> {
   return dataOf(await apiClient.get<ApiEnvelope<FamilyMember[]>>('/api/family-tree', { signal }));
 }

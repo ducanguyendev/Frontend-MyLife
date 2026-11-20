@@ -43,13 +43,13 @@ test('family timeline UI exposes source data, safe event CRUD and useful filters
   assert.match(page, /fetchFamilyTimeline/);
   assert.match(page, /event\.isDerived/);
   assert.match(page, /isDerivedOnlyEventType\(event\.eventType\)/);
-  assert.match(page, /matchesTimelineFilter/);
+  assert.match(page, /selectTimelineEvents/);
   assert.match(card, /event\.latitude !== null && event\.longitude !== null/);
   assert.match(page, /groupTimelineEventsByYear\(filtered\)/);
   assert.match(page, /actions=\{defaultEventType &&/);
   assert.match(page, /birth_death_auto_hint/);
   assert.match(page, /other_events_readonly_hint/);
-  assert.match(page, /matchesTimelineFilter\(event\.eventType, filter\)/);
+  assert.match(page, /selectTimelineEvents\(events, filter, search, year/);
   assert.match(page, /eventType: event\.eventType/);
   assert.match(groups, /event\.eventDate[\s\S]*event\.eventYear/);
   assert.match(routes, /path="\/timeline"/);

@@ -8,7 +8,9 @@ import 'leaflet/dist/leaflet.css';
 import { Button, PageHeader, Badge, ErrorState } from '@/shared/components/ui';
 import { FamilyViewSkeleton } from '@/features/admin/components/family-tree/FamilyViewSkeleton';
 import { MemberAvatarImage } from '@/features/admin/components/family-tree/MemberAvatarImage';
-import { getSiblingKind } from '@/features/admin/components/family-tree/siblingRelations';
+import { MemberAvatarActions } from '@/features/admin/components/family-tree/MemberAvatarActions';
+import { classifyMemberRelations, type ProfileRelationGroup } from '@/features/admin/components/family-tree/memberProfileRelations';
+import { useAuth } from '@/features/auth/context/AuthContext';
 import { MyLifeWorkspaceLayout } from '@/shared/layouts/MyLifeWorkspaceLayout';
 import { useLanguage } from '@/shared/hooks/useLanguage';
 import { fetchMemberProfile, type FamilyMemberProfile } from '@/features/admin/services/familyV2Service';
@@ -22,6 +24,7 @@ export const FamilyMemberProfilePage: React.FC = () => {
   const memberId = Number(id);
   const navigate = useNavigate();
   const { t, language } = useLanguage();
+  const { isAuthenticated, isUser, user } = useAuth();
   const [profile, setProfile] = useState<FamilyMemberProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -30,28 +33,34 @@ export const FamilyMemberProfilePage: React.FC = () => {
   useEffect(() => {
     const controller = new AbortController();
     setLoading(true); setError(false);
-    fetchMemberProfile(memberId, controller.signal).then(setProfile).catch(() => { if (!controller.signal.aborted) setError(true); })
+    fetchMemberProfile(memberId, controller.signal).then(data => { if (!controller.signal.aborted) setProfile(data); }).catch(() => { if (!controller.signal.aborted) setError(true); })
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
-  }, [memberId, retry]);
+  }, [memberId, retry, user?.id]);
 
   const member = profile?.member;
   const relatives = profile?.relatives ?? [];
-  const parents = relatives.filter(item => item.id === member?.fatherId || item.id === member?.motherId);
-  const spouse = relatives.filter(item => item.id === member?.spouseId);
-  const children = relatives.filter(item => item.fatherId === memberId || item.motherId === memberId || member?.childIds?.includes(item.id));
-  const siblings = relatives.filter(item => item.id !== memberId && getSiblingKind(member!, item) === 'biological');
-  const cousins = relatives.filter(item => item.id !== memberId && getSiblingKind(member!, item) === 'cousin');
-  const unknownRelations = relatives.filter(item => item.id !== memberId && getSiblingKind(member!, item) === 'unknown');
+  const relationGroups = member ? classifyMemberRelations(member, relatives) : [];
+  const canEdit = isAuthenticated && isUser;
+  const updateAvatar = (updated: FamilyMember) => setProfile(current => current?.member.id === updated.id ? {
+    ...current, member: updated, relatives: current.relatives.map(relative => relative.id === updated.id ? updated : relative),
+  } : current);
   const dateLocale = language === 'vi' ? 'vi-VN' : 'en-GB';
   const birth = member?.dateOfBirth ? new Date(`${member.dateOfBirth.slice(0, 10)}T00:00:00Z`) : null;
   const death = member?.lifeStatus === 'DECEASED' && member.deathDate ? new Date(`${member.deathDate.slice(0, 10)}T00:00:00Z`) : null;
   const hasCoordinates = Number.isFinite(member?.latitude) && Number.isFinite(member?.longitude)
     && Number(member?.latitude) >= -90 && Number(member?.latitude) <= 90 && Number(member?.longitude) >= -180 && Number(member?.longitude) <= 180;
 
-  const relationGroup = (label: string, list: FamilyMember[]) => <div key={label} className="grid gap-3 border-b border-custom-border/60 py-4 last:border-0 sm:grid-cols-[8rem_minmax(0,1fr)]">
-    <h3 className="m-0 pt-2 text-xs font-semibold text-secondary-text">{label}</h3>
-    <ul className="m-0 flex flex-wrap gap-2 p-0">{list.length ? list.map(item => <li key={item.id} className="list-none"><Link className="family-profile__relation" to={`/mylife/family/member/${item.id}`}><MemberAvatarImage member={item} alt="" className="family-relation-avatar"/><span>{normalizeDisplayText(item.fullName)}</span></Link></li>) : <li className="list-none pt-2 text-sm text-secondary-text">{t('admin.family_v2.not_updated')}</li>}</ul>
+  const relationGroup = (group: ProfileRelationGroup) => <div key={group.key} className="grid gap-3 border-b border-custom-border/60 py-4 last:border-0 sm:grid-cols-[8rem_minmax(0,1fr)]">
+    <h3 className="m-0 pt-2 text-xs font-semibold text-secondary-text">{t(group.labelKey)}</h3>
+    <div className="min-w-0">
+      {group.hintKey && <p className="mb-2 mt-0 text-xs text-secondary-text">{t(group.hintKey)}</p>}
+      <ul className="m-0 flex flex-wrap gap-2 p-0">{group.rows.length ? group.rows.map((row, index) => {
+        const item = relatives.find(relative => relative.id === row.memberId);
+        const detail = row.labelKey ? t(row.labelKey) : row.recordedType;
+        return <li key={`${row.memberId}:${index}`} className="min-w-0 list-none">{item ? <Link className="family-profile__relation max-w-full" to={`/mylife/family/member/${item.id}`}><MemberAvatarImage member={item} alt="" className="family-relation-avatar"/><span className="min-w-0 break-words">{normalizeDisplayText(item.fullName)}<span className="block text-xs font-normal text-secondary-text">{detail}</span></span></Link> : <span className="text-sm text-secondary-text">{t('family.relations.missingMember', { id: row.memberId })} · {detail}</span>}</li>;
+      }) : <li className="list-none pt-2 text-sm text-secondary-text">{t('admin.family_v2.not_updated')}</li>}</ul>
+    </div>
   </div>;
 
   return <MyLifeWorkspaceLayout backTo="/familytree" breadcrumbName={normalizeDisplayText(member?.fullName)} showDock contentScroll="auto">
@@ -68,19 +77,14 @@ export const FamilyMemberProfilePage: React.FC = () => {
                 {member.role && <Badge variant="outline">{t(`admin.role_${member.role.toLowerCase()}`, { defaultValue: member.role })}</Badge>}
               </div>
               <div className="mt-3 text-sm"><MemberAgeStatus member={member} layout="stacked"/></div>
+              {canEdit && <MemberAvatarActions key={`${user?.id}:${member.id}`} member={member} onChanged={updateAvatar} />}
               {member.address && <p className="mb-0 mt-3 flex items-start gap-2 text-sm text-secondary-text"><MapPin size={15} className="mt-0.5 shrink-0"/>{member.address}</p>}
             </div>
-            <Button variant="primary" onClick={() => navigate('/familytree', { state: { editMemberId: member.id } })} leftIcon={<Edit3 size={16}/>}>{t('admin.family_v2.edit_member')}</Button>
+            {canEdit && <Button variant="primary" onClick={() => navigate('/familytree', { state: { editMemberId: member.id } })} leftIcon={<Edit3 size={16}/>}>{t('admin.family_v2.edit_member')}</Button>}
           </header>
           <div className="family-profile__layout"><div className="family-profile__main">
             <section className="family-profile__section"><h2><UsersRound/>{t('admin.family_v2.family_relations')}</h2><div>
-              {relationGroup(t('admin.field_father'), parents.filter(item => item.id === member.fatherId))}
-              {relationGroup(t('admin.field_mother'), parents.filter(item => item.id === member.motherId))}
-              {relationGroup(t('admin.field_spouse'), spouse)}
-              {relationGroup(t('admin.field_children'), children)}
-              {relationGroup(t('admin.family_v2.biological_siblings'), siblings)}
-              {relationGroup(t('admin.family_v2.cousins'), cousins)}
-              {unknownRelations.length > 0 && relationGroup(t('admin.family_v2.unknown_relations'), unknownRelations)}
+              {relationGroups.map(relationGroup)}
             </div></section>
             <RelationshipExplorer key={member.id} members={[member, ...relatives]} initialMemberId={member.id}/>
             <section className="family-profile__section"><h2><CalendarDays/>{normalizeDisplayText(t('admin.family_v2.member_timeline', { name: member.fullName }))}</h2>

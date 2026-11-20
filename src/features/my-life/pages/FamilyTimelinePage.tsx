@@ -10,8 +10,8 @@ import { TimelineEventModal } from '@/features/my-life/components/TimelineEventM
 import { TimelineFilterBar } from '@/features/my-life/components/timeline/TimelineFilterBar';
 import { TimelineYearSection } from '@/features/my-life/components/timeline/TimelineYearSection';
 import { groupTimelineEventsByYear } from '@/features/my-life/components/timeline/timelineUtils';
-import { getDefaultEventTypeForFilter, isDerivedOnlyEventType, matchesTimelineFilter, type Filter } from '@/features/my-life/components/timeline/types';
-import { formatTimelineDate } from '@/features/my-life/components/timeline/timelinePresentation';
+import { getDefaultEventTypeForFilter, isDerivedOnlyEventType, selectTimelineEvents, type Filter } from '@/features/my-life/components/timeline/types';
+import { formatTimelineDate, getTimelineEventDisplayTitle } from '@/features/my-life/components/timeline/timelinePresentation';
 import { TimelineYearRail } from '../components/timeline/TimelineYearRail';
 import { MemorySkeleton } from '../components/memories/MemorySkeleton';
 import '../components/memories/Memories.css';
@@ -26,6 +26,8 @@ export const FamilyTimelinePage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [filter, setFilter] = useState<Filter>('ALL');
+  const [search, setSearch] = useState('');
+  const [year, setYear] = useState('all');
   const [form, setForm] = useState<FamilyTimelineWrite | null>(null);
   const [editingId, setEditingId] = useState<number | undefined>();
   const [saving, setSaving] = useState(false);
@@ -45,8 +47,10 @@ export const FamilyTimelinePage: React.FC = () => {
   }, []);
   useEffect(() => { const controller = new AbortController(); void load(controller.signal); return () => controller.abort(); }, [load]);
 
-  const filtered = useMemo(() => events.filter(event => matchesTimelineFilter(event.eventType, filter)), [events, filter]);
+  const filtered = useMemo(() => selectTimelineEvents(events, filter, search, year, event => getTimelineEventDisplayTitle(event, t)), [events, filter, search, year, t]);
   const yearGroups = useMemo(() => groupTimelineEventsByYear(filtered), [filtered]);
+  const years = useMemo(() => groupTimelineEventsByYear(events).map(group => group.year), [events]);
+  const clearFilters = () => { setFilter('ALL'); setSearch(''); setYear('all'); };
   const beginEdit = (event: FamilyTimelineEvent) => {
     if (event.isDerived || isDerivedOnlyEventType(event.eventType)) return;
     setEditingId(event.id); setForm({ memberId: event.memberId, eventType: event.eventType, title: event.title, description: event.description,
@@ -72,12 +76,12 @@ export const FamilyTimelinePage: React.FC = () => {
   return <MyLifeWorkspaceLayout backTo="/mylife" showDock>
     <div className="memory-page memory-page--timeline">
       <PageHeader eyebrow={t('appShell.memories')} title={t('appShell.timeline')} description={t('memories.timelineDescription')} actions={defaultEventType && (events.length > 0 || loading || error) ? <Button leftIcon={<Plus size={16}/>} onClick={openCreateModal}>{t('admin.family_v2.add_event')}</Button> : undefined}/>
-      <div className="memory-toolbar"><TimelineFilterBar value={filter} onChange={setFilter} label={t('admin.family_v2.timeline_filters')} translate={t}/></div>
+      <div className="memory-toolbar"><TimelineFilterBar value={filter} onChange={setFilter} search={search} onSearchChange={setSearch} year={year} onYearChange={setYear} years={years} label={t('admin.family_v2.timeline_filters')} translate={t}/></div>
       {filter === 'BIRTH' && <p className="m-0 text-sm text-secondary-text" role="status">{t('admin.family_v2.birth_death_auto_hint')}</p>}
       {filter === 'OTHER' && <p className="m-0 text-sm text-secondary-text" role="status">{t('admin.family_v2.other_events_readonly_hint')}</p>}
       {loading ? <MemorySkeleton module="timeline"/>
         : error ? <ErrorState message={t('admin.family_v2.timeline_error')} action={<Button variant="secondary" onClick={() => { setLoading(true); void load(); }}>{t('admin.family_v2.retry')}</Button>}/>
-          : filtered.length === 0 ? <EmptyState title={t(events.length ? 'memories.noTimelineResults' : 'memories.emptyTimeline')} description={t(events.length ? 'memories.clearTimelineFilters' : 'memories.emptyTimelineDescription')} action={events.length ? <Button variant="secondary" onClick={() => setFilter('ALL')}>{t('memories.clearFilters')}</Button> : defaultEventType ? <Button onClick={openCreateModal}>{t('admin.family_v2.add_event')}</Button> : undefined}/>
+          : filtered.length === 0 ? <EmptyState title={t(events.length ? 'memories.noTimelineResults' : 'memories.emptyTimeline')} description={t(events.length ? 'memories.clearTimelineFilters' : 'memories.emptyTimelineDescription')} action={events.length ? <Button variant="secondary" onClick={clearFilters}>{t('memories.clearFilters')}</Button> : defaultEventType ? <Button onClick={openCreateModal}>{t('admin.family_v2.add_event')}</Button> : undefined}/>
             : <div className="timeline-layout"><TimelineYearRail groups={yearGroups}/><div className="timeline-years">{yearGroups.map(group => <TimelineYearSection key={group.year ?? 'unknown'} group={group} unknown={t('admin.family_v2.unknown_date')} dateLabel={dateLabel} onEdit={beginEdit} onDelete={setPendingDelete} translate={t} members={members}/>)}</div></div>}
     </div>
     {form && <TimelineEventModal isOpen form={form} members={members} editing={editingId !== undefined} saving={saving}

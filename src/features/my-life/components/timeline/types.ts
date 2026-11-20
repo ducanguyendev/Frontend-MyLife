@@ -1,3 +1,5 @@
+import type { FamilyTimelineEvent } from '@/features/admin/services/familyV2Service';
+
 export type Filter = 'ALL' | 'BIRTH' | 'MARRIAGE' | 'FAMILY' | 'LOCATION' | 'MEMORY' | 'OTHER';
 export type CreatableTimelineEventType = 'CUSTOM' | 'MEMORY' | 'ADDRESS_CHANGE' | 'MARRIAGE';
 export const DERIVED_ONLY_EVENT_TYPES = ['BIRTH', 'DEATH'] as const;
@@ -28,6 +30,19 @@ export function matchesTimelineFilter(eventType: string, filter: Filter): boolea
   if (filter === 'ALL') return true;
   if (filter === 'OTHER') return !KNOWN_FILTER_EVENT_TYPES.includes(eventType);
   return FILTER_TYPES[filter].includes(eventType);
+}
+
+export const normalizeTimelineSearch = (value: string): string => value.normalize('NFD').replace(/\p{M}/gu, '').replace(/[đĐ]/g, 'd').toLowerCase().trim();
+
+/** Search only the supplied events; no additional requests or inferred dates. */
+export function selectTimelineEvents(events: readonly FamilyTimelineEvent[], filter: Filter, search: string, year = 'all', displayTitle?: (event: FamilyTimelineEvent) => string): FamilyTimelineEvent[] {
+  const query = normalizeTimelineSearch(search);
+  return events.filter(event => {
+    const eventYear = event.eventDate ? String(Number(event.eventDate.slice(0, 4))) : event.eventYear?.toString() ?? 'unknown';
+    return matchesTimelineFilter(event.eventType, filter)
+      && (year === 'all' || eventYear === year)
+      && (!query || normalizeTimelineSearch([event.title, displayTitle?.(event), event.description].filter(Boolean).join(' ')).includes(query));
+  });
 }
 
 export function getDefaultEventTypeForFilter(filter: Filter): CreatableTimelineEventType | null {

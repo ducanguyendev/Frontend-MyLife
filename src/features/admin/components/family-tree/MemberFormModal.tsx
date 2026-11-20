@@ -20,6 +20,7 @@ import {
 import { type FamilyMember, type Generation, removeVietnameseTones } from "./types";
 import { getSiblingKind, isBiologicalSibling, type SiblingKind } from "./siblingRelations";
 import { MemberAvatarImage } from "./MemberAvatarImage";
+import { isValidMemberAvatar, MEMBER_AVATAR_ACCEPT } from './memberAvatar';
 import { FamilyRelationSelect } from "./FamilyRelationSelect";
 import { FamilyMemberPicker } from "./FamilyMemberPicker";
 import { AddressInput } from "@/shared/components/AddressInput";
@@ -607,9 +608,9 @@ export const MemberFormModal: React.FC<MemberFormModalProps> = ({
                       <div className="flex flex-wrap gap-2">
                         <label className="inline-flex items-center gap-2 rounded-xl border border-custom-border px-3 py-2 text-sm cursor-pointer hover:bg-primary-bg">
                           <ImagePlus size={16} /> {t("admin.member_avatar_choose")}
-                          <input className="sr-only" type="file" accept="image/jpeg,image/png,image/webp,image/gif" disabled={isSaving} onChange={event => {
+                          <input className="sr-only" type="file" accept={MEMBER_AVATAR_ACCEPT} disabled={isSaving} onChange={event => {
                             const file = event.currentTarget.files?.[0]; event.currentTarget.value = ""; if (!file) return;
-                            if (!["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"].includes(file.type) || file.size <= 0 || file.size > 5 * 1024 * 1024) {
+                            if (!isValidMemberAvatar(file)) {
                               onPendingAvatarChange(null); onRemoveAvatarChange(false);
                               setErrors(prev => ({ ...prev, avatarUrl: "admin.member_avatar_errors.invalid_file" }));
                               setOpenSections((prev) => prev.includes("bio") ? prev : [...prev, "bio"]);

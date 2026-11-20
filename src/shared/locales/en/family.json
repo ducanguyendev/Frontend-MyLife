@@ -29,6 +29,23 @@
     "deceased": "Deceased"
   },
   "selectMember": "Select member",
+  "avatar": {
+    "saving": "Saving avatar…",
+    "saved": "Member avatar updated.",
+    "removed": "Member avatar removed.",
+    "failed": "Could not save the avatar. Please try again.",
+    "removeTitle": "Remove this avatar?",
+    "removeDescription": "The member will use the default avatar."
+  },
+  "relations": {
+    "parents": "Parents",
+    "recorded": "Recorded horizontal relationships",
+    "recordedSibling": "Sibling (recorded)",
+    "recordedHint": "A recorded relationship does not establish biological parentage. Other recorded types are preserved.",
+    "sharedParent": "Shared known parent",
+    "sharedParentHint": "Derived from recorded parent links. Change those parent links to change this grouping.",
+    "missingMember": "Member #{{id}} is unavailable"
+  },
   "recordedSiblingCount": "Recorded siblings: {{count}}",
   "siblingKind": {
     "same-recorded-parents": "Same two recorded parents",

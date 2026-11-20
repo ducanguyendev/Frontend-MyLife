@@ -96,7 +96,7 @@ test('AuthContext restores a versioned latest avatar after login and page reload
       getUserInfo: async () => serverUser,
       clearSessionState: () => {},
     } },
-  }, { window: { addEventListener: () => {}, removeEventListener: () => {} } });
+  }, { window: { addEventListener: () => {}, removeEventListener: () => {}, dispatchEvent: () => {} } });
   const tree = AuthProvider({ children: null });
   const context = tree.props.value;
   await context.login({ email: serverUser.email, password: 'test', rememberMe: false });
